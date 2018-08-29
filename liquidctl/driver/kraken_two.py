@@ -1,4 +1,4 @@
-"""USB driver for second generation NZXT Kraken X liquid coolers.
+"""USB driver for third generation NZXT Kraken X liquid coolers.
 
 These coolers (X72, X62, X52 and X42) are made by Asetek, housing a 5-th
 generation pump and a second PCB for advanced RGB LED capabilites.
@@ -92,7 +92,7 @@ WRITE_TIMEOUT = 2000
 
 
 class KrakenTwoDriver:
-    """USB driver for second generation NZXT Kraken X liquid coolers."""
+    """USB driver for third generation NZXT Kraken X liquid coolers."""
 
     def __init__(self, device, description):
         self.device = device

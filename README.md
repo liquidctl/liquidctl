@@ -1,6 +1,6 @@
 # liquidctl – liquid cooler control
 
-An open-source and cross-platform command-line tool to control 2nd generation Kraken X liquid coolers from NZXT and, in the future, more devices.
+An open-source and cross-platform command-line tool to control third generation Kraken X liquid coolers from NZXT and, in the future, more devices.
 
 ```
 # liquidctl list
@@ -26,7 +26,7 @@ Firmware version       4.0.2
 For more information, check the following sections:
 
 1. [Getting liquidctl](#getting-liquidctl)
-2. [Controlling a NZXT Kraken X](#nzxt-kraken-x-2nd-generation)
+2. [Controlling a NZXT Kraken X](#nzxt-kraken-x-3rd-generation)
 3. [Other devices](#other-devices)
 4. [License](#license)
 5. [Related projects](#related-projects)
@@ -63,7 +63,7 @@ On Windows a suitable backend for PyUSB will need to be installed, such as libus
 In the case of libusb 1.0.21, a very simple way of installing it is to download the appropriate package from [libusb/releases](https://github.com/libusb/libusb/releases) and extract the `.dll` and `.lib` files that match you runtime (e.g. MS64) to your python installation directory (e.g. `%homepath%\Anaconda3\`).
 
 
-## NZXT Kraken X, 2nd generation
+## NZXT Kraken X, 3rd generation
 _X42, X52, X62 and X72_
 <!-- move to /doc once there are more devices -->
 
@@ -135,7 +135,7 @@ One of this project's goals is to support multiple devices with the same tool an
 The following additional drivers are already planned:
 
  - EVGA CLC: need a device or someone to collaborate with [**[help!]**][newissue]
- - NZXT Kraken M22: LEDs likely similar to 2nd gen. Kraken X, but need someone to test it [**[help!]**][newissue]
+ - NZXT Kraken M22: LEDs likely similar to 3rd gen. Kraken X, but need someone to test it [**[help!]**][newissue]
  - NZXT Smart Device from H700i and other i version cases: have it, enqueued
 
 If you would like to see liquidctl handle another device, please [open an issue][newissue].
@@ -167,7 +167,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
 
-Another cross-plataform interface for controlling 2nd generation NZXT Kraken X coolers.
+Another cross-plataform interface for controlling third generation NZXT Kraken X coolers.
 
 While liquidctl handles each setting separately, for easy configuration of individual aspects of the coolers, krakenx allows a device to be completly configured in a single command.
 
@@ -177,7 +177,7 @@ A special thank you to all krakenx contributors.  This project was based on it.
 
 ### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
-Linux kernel-space driver for 1st and 2nd generation NZXT Kraken X coolers.
+Linux kernel-space driver for 2nd and 3rd generation NZXT Kraken X coolers.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
