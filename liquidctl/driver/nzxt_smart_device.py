@@ -101,7 +101,7 @@ class NzxtSmartDeviceDriver:
 
     def set_color(self, channel, mode, colors, speed):
         mval, mod3, mod4, mincolors, maxcolors = COLOR_MODES[mode]
-        colors = list(colors)
+        colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
             raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
         elif maxcolors == 0:
