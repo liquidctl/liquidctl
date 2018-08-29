@@ -50,6 +50,7 @@ COLOR_CHANNELS = {
 }
 COLOR_MODES = {
     # (byte3/mode, byte2/reverse, byte4/modifier, min colors, max colors, only ring)
+    'off':                           (0x00, 0x00, 0x00, 0, 0, False),
     'fixed':                         (0x00, 0x00, 0x00, 1, 1, False),
     'fading':                        (0x01, 0x00, 0x00, 2, 8, False),
     'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0, False),
@@ -140,7 +141,7 @@ class KrakenTwoDriver:
         if len(colors) < mincolors:
             raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
         elif maxcolors == 0:
-            colors = [(0xff,0xff,0xff)]
+            colors = [(0, 0, 0)]
         elif len(colors) > maxcolors:
             liquidctl.util.debug('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
             colors = colors[:maxcolors]

@@ -114,6 +114,7 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 
 | Channel | Color mode | Minimum colors | Maximum colors | Notes |
 | --- | --- | --- | --- | --- |
+| any | `off` | 0 | 0 ||
 | any | `fixed` | 1 | 1 ||
 | any | `fading` | 2 | 8 ||
 | any | `spectrum-wave` | 0 | 0 ||
