@@ -23,12 +23,22 @@ The embedded `--help` lists all available commands and their syntax.
 
 In the case of multiple devices the intended target can be specified with `--device <number>`.
 
+```
+# liquidctl list
+Device 0, NZXT Kraken X (X42, X52, X62 or X72) at bus:address 1:4
+Device 1, NZXT Smart Device at bus:address 1:2
+
+# liquidctl --device 0 set fan speed 80
+# liquidctl --device 1 set fan3 speed 25
+```
+
 Check the documentation for more details.
 
 <!-- stop here for PyPI -->
 
 1. [Getting liquidctl](#getting-liquidctl)
 2. [Controlling a NZXT Kraken X](#nzxt-kraken-x-3rd-generation)
+2. [Controlling a NZXT H-series case](#nzxt-smart-device)
 3. [Other devices](#other-devices)
 4. [License](#license)
 5. [Related projects](#related-projects)
@@ -147,6 +157,16 @@ We would like to continously support more and more devices.  At the moment, some
  - Smart Device from NZXT's H700i/H500i/H400i/H200i cases: soon (tm)
 
 If you would like to see liquidctl handle another device, [open an issue][newissue] and let us know.
+
+
+## NZXT Smart Device
+<!-- move to /doc -->
+
+NZXT's H-series cases – H700i, H500i, H400i and H200i – come a with hardware device that powers the case fans and lighting and that allows software based control of both.
+
+In addition, the Smart Device, as it is called, features automatic fan curve configuration for optimized noise levels, through NZXT's CAM software and AI.
+
+As of now, it is only partially supported by liquidctl.
 
 
 ## License
