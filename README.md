@@ -1,6 +1,6 @@
 # liquidctl – liquid cooler control
 
-An open-source and cross-platform command-line tool to control third generation Kraken X liquid coolers from NZXT and, in the future, more devices.
+*liquidctl* is an open-source and cross-platform command-line tool to configure and query third generation Kraken X liquid coolers from NZXT and, in the future, more devices.
 
 ```
 # liquidctl list
@@ -17,13 +17,15 @@ Firmware version       4.0.2
 # liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
 # liquidctl set ring color fading 350017 ff2608
 # liquidctl set logo color fixed af5a2f
-
-# liquidctl --help
 ```
 
-<!-- stop here for PyPI -->
+The embedded `--help` lists all available commands and their syntax.
 
-For more information, check the following sections:
+In the case of multiple devices the intended target can be specified with `--device <number>`.
+
+Check the documentation for more details.
+
+<!-- stop here for PyPI -->
 
 1. [Getting liquidctl](#getting-liquidctl)
 2. [Controlling a NZXT Kraken X](#nzxt-kraken-x-3rd-generation)
@@ -34,19 +36,19 @@ For more information, check the following sections:
 
 ## Getting liquidctl
 
-The latest version can be installed from PyPI.
+The easiest way to get liquidctl is to grab a release from PyPI.
 
 ```
 # pip install liquidctl
 ```
 
-Pip can also install the latest HEAD directly from GtiHub.
+Pip can also install the latest snapshot directly from GitHub.
 
 ```
 # pip install git+https://github.com/jonasmalacofilho/liquidctl
 ```
 
-If you plan on contributing to the project, clone the repository manually and install liquidctl in editable mode.
+And if you want to work on the source and contribute to the project, you will find that it is more convenient to clone the repository manually and install liquidctl in editable mode.
 
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
@@ -54,24 +56,27 @@ $ cd liquidctl
 # pip install --editable .
 ```
 
-Of course, a virtual environment can be used instead of having the package installed globally.
+Of course, a virtual environment can always be used instead of installing the package globally.
 
 ### Additional dependency on Windows: a backend for PyUSB
 
-On Windows a suitable backend for PyUSB will need to be installed, such as libusb.  In the case of libusb, version 1.0.21 is recommended over later ones, as those generate some errors during device release.
+On Windows a suitable backend for PyUSB is necessary, such as *libusb*.  If you already use Python programs that interact with USB devices, you probably already have it.
 
-In the case of libusb 1.0.21, a very simple way of installing it is to download the appropriate package from [libusb/releases](https://github.com/libusb/libusb/releases) and extract the `.dll` and `.lib` files that match you runtime (e.g. MS64) to your python installation directory (e.g. `%homepath%\Anaconda3\`).
+If you need to install a backend, libusb v1.0.21 is recommended; later versions can crash when trying to release the device.  A simple way of installing it is to download the appropriate package from [libusb/releases](https://github.com/libusb/libusb/releases) and extract the `.dll` and `.lib` files that match you runtime (e.g. MS64) to your python installation directory (e.g. `%homepath%\Anaconda3\`).
 
 
 ## NZXT Kraken X, 3rd generation
-_X42, X52, X62 and X72_
 <!-- move to /doc once there are more devices -->
 
-This generation of Kraken X coolers are made by Asetek and house 5th generation pumps, with secondary PCBs designed by NZXT.  They incorporate customizable fan and pump speed control with PWM, a liquid temperature probe at the block and addressable RGB lighting.
+The Kraken X42, X52, X62 and X72 compose the third generation of liquid coolers by NZXT.  These devices are manufactured by Asetek and house fifth generation Asetek pumps and PCBs, plus secondary PCBs specially designed by NZXT for enhanced control and lighting.
+
+They incorporate customizable fan and pump speed control with PWM, a liquid temperature probe in the block and addressable RGB lighting.  The coolers are powered directly by the power supply unit.
+
+All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The cooler also reports fan and pump speed and liquid temperature via USB; pump speed can also be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
 ### Setting fan and pump speeds
 
-Fan and pump speeds can be set either to fixed PWM duty values or as profiles dependent on liquid temperature.
+Fan and pump speeds can be set either to fixed PWM duty values or as profiles dependent on the liquid temperature.
 
 Fixed speed values can be set simply by specifying the desired channel (`fan` or `pump`) and PWM duty.
 
@@ -90,13 +95,13 @@ For profiles, any number of temperature–duty pairs can be specified; liquidctl
 # liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
 ```
 
-Fan and pump speeds will always be set to 100% for liquid temperatures of 60°C and above.
+As a safety measure, fan and pump speeds will always be set to 100% for liquid temperatures of 60°C and above.
 
 **Always check that the settings are appropriate for the use case, and that they correctly apply and persist.**
 
 ### Configuring the lighting
 
-For lighting, the user can control a total of nine LEDs: one behind the NZXT logo and eight forming the ring that surrounds it.  These are separated into two channels, independently accessed through `logo` and `ring`, or syncronized with `sync`.
+For lighting, the user can control a total of nine LEDs: one behind the NZXT logo and eight forming the ring that surrounds it.  These are separated into two channels, independently accessed through `logo` and `ring`, or synchronized with `sync`.
 
 ```
 # liquidctl set sync color fixed af5a2f
@@ -130,15 +135,13 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 
 ## Other devices
 
-One of this project's goals is to support multiple devices with the same tool and interface.
+We would like to continously support more and more devices.  At the moment, some additional drivers are already planned:
 
-The following additional drivers are already planned:
+ - EVGA CLC 120/240/280: need to borrow a device or get the protocol specs [**[I can help/I know someone]**][newissue]
+ - NZXT Kraken M22: probably easy to add, need a beta tester [**[I can help/I know someone]**][newissue]
+ - Smart Device from NZXT's H700i/H500i/H400i/H200i cases: soon (tm)
 
- - EVGA CLC: need a device or someone to collaborate with [**[help!]**][newissue]
- - NZXT Kraken M22: LEDs likely similar to 3rd gen. Kraken X, but need someone to test it [**[help!]**][newissue]
- - NZXT Smart Device from H700i and other i version cases: have it, enqueued
-
-If you would like to see liquidctl handle another device, please [open an issue][newissue].
+If you would like to see liquidctl handle another device, [open an issue][newissue] and let us know.
 
 
 ## License
@@ -169,11 +172,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Another cross-plataform interface for controlling third generation NZXT Kraken X coolers.
 
-While liquidctl handles each setting separately, for easy configuration of individual aspects of the coolers, krakenx allows a device to be completly configured in a single command.
+While liquidctl handles each setting separately, for easy configuration of individual aspects of the coolers, krakenx allows a device to be completely configured in a single command.
 
 Feature wise, liquidctl currently extends krakenx with the support for pump and fan speed profiles, and fixes two open issues that seem to manifest with recent firmware versions.  It also further extends the list of supported RGB animations.
 
-A special thank you to all krakenx contributors.  This project was based on it.
+A special thank you to all krakenx contributors.  This project would not exist were not for it.
 
 ### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
