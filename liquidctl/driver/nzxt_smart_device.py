@@ -4,8 +4,10 @@ Supported features in this driver:
 
  - [x] set the fan speeds
  - [x] set the lighing mode and colors
- - [ ] read the fan speeds
+ - [x] read the fan speeds
+ - [x] read fan states and voltages
  - [x] read the firmware version
+ - [ ] support fan hot swapping
  - [ ] read the noise level
 
 Copyright (C) 2018  Jonas Malaco
@@ -116,12 +118,20 @@ class NzxtSmartDeviceDriver:
             self.device.attach_kernel_driver(0)
 
     def get_status(self):
-        msg = self.device.read(READ_ENDPOINT, READ_LENGTH, READ_TIMEOUT)
-        liquidctl.util.debug('read {}'.format(' '.join(format(i, '02x') for i in msg)))
-        firmware = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
-        return [
-            ('Firmware version', firmware, '')
-        ]
+        status = []
+        for i in range(0, 3):
+            msg = self.device.read(READ_ENDPOINT, READ_LENGTH, READ_TIMEOUT)
+            liquidctl.util.debug('read {}'.format(' '.join(format(i, '02x') for i in msg)))
+            num = (msg[15] >> 4) + 1
+            state = msg[15] & 0x3
+            status.append(('Fan {}'.format(num), ['NC', 'DC', 'PWM'][state], ''))
+            if state:
+                status.append(('Fan {} speed'.format(num), msg[3] << 8 | msg[4], 'rpm'))
+                status.append(('Fan {} voltage'.format(num), msg[7] + msg[8]/100, 'V'))
+            if i == 0:
+                fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
+                status.append(( 'Firmware version', fw, ''))
+        return sorted(status)
 
     def set_color(self, channel, mode, colors, speed):
         mval, mod3, mod4, mincolors, maxcolors = COLOR_MODES[mode]
