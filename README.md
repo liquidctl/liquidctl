@@ -123,8 +123,8 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | any | `pulse` | 1 | 8 ||
 | `ring` | `marquee-<length>` | 1 | 1 | 3	≤ `length` ≤ 6 |
 | `ring` | `backwards-marquee-<length>` | 1 | 1 | 3	≤ `length` ≤ 6 |
-| `ring` | `covering-marquee` | 2 | 8 ||
-| `ring` | `covering-backwards-marquee` | 2 | 8 ||
+| `ring` | `covering-marquee` | 1 | 8 ||
+| `ring` | `covering-backwards-marquee` | 1 | 8 ||
 | `ring` | `alternating` | 2 | 2 ||
 | `ring` | `moving-alternating` | 2 | 2 ||
 | `ring` | `tai-chi` | 2 | 2 ||
