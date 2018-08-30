@@ -127,6 +127,7 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | `ring` | `covering-backwards-marquee` | 1 | 8 ||
 | `ring` | `alternating` | 2 | 2 ||
 | `ring` | `moving-alternating` | 2 | 2 ||
+| `ring` | `backwards-moving-alternating` | 2 | 2 ||
 | `ring` | `tai-chi` | 2 | 2 ||
 | `ring` | `water-cooler` | 0 | 0 ||
 | `ring` | `loading` | 1 | 1 ||

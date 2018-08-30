@@ -67,6 +67,7 @@ COLOR_MODES = {
     'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8, True),
     'alternating':                   (0x05, 0x00, 0x00, 2, 2, True),
     'moving-alternating':            (0x05, 0x08, 0x00, 2, 2, True),
+    'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2, True),
     'breathing':                     (0x06, 0x00, 0x00, 1, 8, False),
     'pulse':                         (0x07, 0x00, 0x00, 1, 8, False),
     'tai-chi':                       (0x08, 0x00, 0x00, 2, 2, True),
