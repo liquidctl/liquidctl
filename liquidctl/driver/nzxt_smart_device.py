@@ -8,7 +8,8 @@ Supported features in this driver:
  - [x] read fan states and voltages
  - [x] read the firmware version
  - [x] support fan hot swapping
- - [ ] read the noise level
+ - [x] read the noise level
+ - [ ] documentation
 
 Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
@@ -119,18 +120,21 @@ class NzxtSmartDeviceDriver:
 
     def get_status(self):
         status = []
+        noise = []
         for i in range(0, 3):
             msg = self.device.read(READ_ENDPOINT, READ_LENGTH, READ_TIMEOUT)
             liquidctl.util.debug('read {}'.format(' '.join(format(i, '02x') for i in msg)))
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
             status.append(('Fan {}'.format(num), ['NC', 'DC', 'PWM'][state], ''))
+            noise.append(msg[1])
             if state:
                 status.append(('Fan {} speed'.format(num), msg[3] << 8 | msg[4], 'rpm'))
                 status.append(('Fan {} voltage'.format(num), msg[7] + msg[8]/100, 'V'))
             if i == 0:
                 fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
                 status.append(( 'Firmware version', fw, ''))
+        status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
         return sorted(status)
 
     def set_color(self, channel, mode, colors, speed):
