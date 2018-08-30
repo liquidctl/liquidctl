@@ -46,10 +46,10 @@ COLOR_CHANNELS = {
 }
 COLOR_MODES = {
     # (byte2/mode, byte3/modified, byte4/modifier, min colors, max colors)
-    'off':                           (0x00, 0x00, 0x00,  0,  0),
-    'fixed':                         (0x00, 0x00, 0x00,  1,  1),
+    'off':                           (0x00, 0x00, 0x00, 0,  0),
+    'fixed':                         (0x00, 0x00, 0x00, 1,  1),
     # supercharged control: set each of the 20 leds separately
-    'super':                         (0x00, 0x00, 0x00, 20, 20),
+    'super':                         (0x00, 0x00, 0x00, 0, 40),
 }
 ANIMATION_SPEEDS = {
     'normal':   0x2,
@@ -103,24 +103,27 @@ class NzxtSmartDeviceDriver:
         mval, mod3, mod4, mincolors, maxcolors = COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
+            raise ValueError('Not enough colors for mode={}, at least {} required'
+                             .format(mode, mincolors))
         elif maxcolors == 0:
-            colors = [(0, 0, 0)]
+            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            liquidctl.util.debug('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
+            liquidctl.util.debug('too many colors for mode={}, dropping to {}'
+                                 .format(mode, maxcolors))
             colors = colors[:maxcolors]
-        # from mode and colors generate the steps
+        # generate steps from mode and colors: usually each color set by the user generates
+        # one step, where it is specified to all leds and the device handles the animation;
+        # but in super mode there is a single step and each color directly controls a led
         if mode == 'super':
-            steps = list(zip(*[iter(colors)]*20))
+            steps = [list(itertools.chain(*colors))]
         else:
-            steps = [(color,)*20 for color in colors]
+            steps = [color*40 for color in colors] 
         sval = ANIMATION_SPEEDS[speed]
-        for i, colors in enumerate(steps):
+        for i, leds in enumerate(steps):
             seq = i << 5
             byte4 = sval | seq | mod4
-            stripcolor = list(itertools.chain(*colors))
-            self._write([0x2, 0x4b, mval, mod3, byte4] + stripcolor)
-            self._write([0x3] + stripcolor)
+            self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
+            self._write([0x3] + leds[57:])
 
     def set_speed_profile(self, channel, profile):
         raise NotImplementedError("The Smart Device does not support onboard speed profiles")
