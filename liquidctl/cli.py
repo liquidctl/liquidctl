@@ -6,6 +6,7 @@ Usage:
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl [options] list
+  liquidctl [options] reset
   liquidctl --help
   liquidctl --version
 
@@ -113,6 +114,8 @@ def main():
             elif args['set'] and args['color']:
                 color = map(lambda c: list(parse_color(c)), args['<color>'])
                 dev.set_color(args['<channel>'], args['<mode>'], color, args['--speed'])
+            elif args['reset']:
+                dev.reset()
             else:
                 raise Exception('Not sure what to do')
         finally:

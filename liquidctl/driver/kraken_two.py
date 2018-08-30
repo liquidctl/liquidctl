@@ -191,6 +191,9 @@ class KrakenTwoDriver:
     def set_fixed_speed(self, channel, speed):
         self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
 
+    def reset(self, channel, profile):
+        raise NotImplementedError("Device does not implement reset")
+
     def _write(self, data):
         liquidctl.util.debug('write {}'.format(' '.join(format(i, '02x') for i in data)))
         padding = [0x0]*(WRITE_LENGTH - len(data))

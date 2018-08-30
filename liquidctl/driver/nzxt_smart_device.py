@@ -7,7 +7,7 @@ Supported features in this driver:
  - [x] read the fan speeds
  - [x] read fan states and voltages
  - [x] read the firmware version
- - [ ] support fan hot swapping
+ - [x] support fan hot swapping
  - [ ] read the noise level
 
 Copyright (C) 2018  Jonas Malaco
@@ -160,7 +160,7 @@ class NzxtSmartDeviceDriver:
             self._write([0x3] + leds[57:])
 
     def set_speed_profile(self, channel, profile):
-        raise NotImplementedError("The Smart Device does not support onboard speed profiles")
+        raise NotImplementedError("Device does not implement onboard speed profiles")
 
     def set_fixed_speed(self, channel, duty):
         cid, dmin, dmax = SPEED_CHANNELS[channel]
@@ -169,6 +169,10 @@ class NzxtSmartDeviceDriver:
         elif duty > dmax:
             duty = dmax
         self._write([0x2, 0x4d, cid, 0, duty])
+
+    def reset(self):
+        self._write([0x1, 0x5c])
+        self._write([0x1, 0x5d])
 
     def _write(self, data):
         liquidctl.util.debug('write {}'.format(' '.join(format(i, '02x') for i in data)))
