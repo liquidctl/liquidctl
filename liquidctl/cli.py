@@ -43,7 +43,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-VERSION = 'liquidctl v1.0.0rc1'
+VERSION = 'liquidctl v1.0.0'
 
 import itertools
 
