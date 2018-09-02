@@ -112,27 +112,30 @@ For lighting, the user can control a total of nine LEDs: one behind the NZXT log
 
 Colors are set in hexadecimal RGB, and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
 
-| Channel | Color mode | Minimum colors | Maximum colors | Notes |
-| --- | --- | --- | --- | --- |
-| any | `off` | 0 | 0 ||
-| any | `fixed` | 1 | 1 ||
-| any | `fading` | 2 | 8 ||
-| any | `spectrum-wave` | 0 | 0 ||
-| any | `backwards-spectrum-wave` | 0 | 0 ||
-| any | `breathing` | 1 | 8 ||
-| any | `pulse` | 1 | 8 ||
-| `ring` | `marquee-<length>` | 1 | 1 | 3	≤ `length` ≤ 6 |
-| `ring` | `backwards-marquee-<length>` | 1 | 1 | 3	≤ `length` ≤ 6 |
-| `ring` | `covering-marquee` | 1 | 8 ||
-| `ring` | `covering-backwards-marquee` | 1 | 8 ||
-| `ring` | `alternating` | 2 | 2 ||
-| `ring` | `moving-alternating` | 2 | 2 ||
-| `ring` | `backwards-moving-alternating` | 2 | 2 ||
-| `ring` | `tai-chi` | 2 | 2 ||
-| `ring` | `water-cooler` | 0 | 0 ||
-| `ring` | `loading` | 1 | 1 ||
-| `ring` | `wings` | 1 | 1 ||
-| any | `super` | 9 | 9 | logo + each ring LED |
+| `ring` | `logo` | `sync` | Mode | Colors | Notes |
+| --- | --- | --- | --- | --- | --- |
+| ✓ | ✓ | ✓ | `off` | None |
+| ✓ | ✓ | ✓ | `fixed` | One |
+| ✓ | ✓ | ✓ | `super-fixed` | Up to 9 (logo + each ring LED) |
+| ✓ | ✓ | ✓ | `fading` | Between 2 and 8, one for each step |
+| ✓ | ✓ | ✓ | `spectrum-wave` | None |
+| ✓ | ✓ | ✓ | `backwards-spectrum-wave` | None |
+| ✓ |   |   | `super-wave` | Up to 8 |
+| ✓ |   |   | `backwards-super-wave` | Up to 8 |
+| ✓ |   |   | `marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
+| ✓ |   |   | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
+| ✓ |   |   | `covering-marquee` | Up to 8, one for each step |
+| ✓ |   |   | `covering-backwards-marquee` | Up to 8, one for each step |
+| ✓ |   |   | `alternating` | Two |
+| ✓ |   |   | `moving-alternating` | Two |
+| ✓ |   |   | `backwards-moving-alternating` | Two |
+| ✓ | ✓ | ✓ | `breathing` | Up to 8, one for each step |
+| ✓ | ✓ | ✓ | `super-breathing` | Up to 9 (logo + each ring LED) | Only one step |
+| ✓ | ✓ | ✓ | `pulse` | Up to 8, one for each pulse |
+| ✓ |   |   | `tai-chi` | Two |
+| ✓ |   |   | `water-cooler` | None |
+| ✓ |   |   | `loading` | One |
+| ✓ |   |   | `wings` | One |
 
 
 ## Other devices

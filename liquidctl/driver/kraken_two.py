@@ -52,6 +52,7 @@ COLOR_MODES = {
     # (byte3/mode, byte2/reverse, byte4/modifier, min colors, max colors, only ring)
     'off':                           (0x00, 0x00, 0x00, 0, 0, False),
     'fixed':                         (0x00, 0x00, 0x00, 1, 1, False),
+    'super-fixed':                   (0x00, 0x00, 0x00, 1, 9, False),  # independent logo + ring leds
     'fading':                        (0x01, 0x00, 0x00, 2, 8, False),
     'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0, False),
     'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0, False),
@@ -68,15 +69,15 @@ COLOR_MODES = {
     'alternating':                   (0x05, 0x00, 0x00, 2, 2, True),
     'moving-alternating':            (0x05, 0x08, 0x00, 2, 2, True),
     'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2, True),
-    'breathing':                     (0x06, 0x00, 0x00, 1, 8, False),
+    'breathing':                     (0x06, 0x00, 0x00, 1, 8, False),  # colors for each step
+    'super-breathing':               (0x06, 0x00, 0x00, 1, 9, False),  # one step, independent logo + ring leds
     'pulse':                         (0x07, 0x00, 0x00, 1, 8, False),
     'tai-chi':                       (0x08, 0x00, 0x00, 2, 2, True),
     'water-cooler':                  (0x09, 0x00, 0x00, 0, 0, True),
     'loading':                       (0x0a, 0x00, 0x00, 1, 1, True),
     'wings':                         (0x0c, 0x00, 0x00, 1, 1, True),
-
-    # supercharged control: set logo + each of the 8 ring leds separately
-    'super':                         (0x00, 0x00, 0x00, 9, 9, False),
+    'super-wave':                    (0x0d, 0x00, 0x00, 1, 8, True),  # independent ring leds
+    'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 8, True),  # independent ring leds
 }
 ANIMATION_SPEEDS = {
     'slowest':  0x0,
@@ -134,23 +135,30 @@ class KrakenTwoDriver:
         ]
 
     def set_color(self, channel, mode, colors, speed):
+        if mode == 'super':
+            print('Deprecated mode; try \'super-fixed\', \'super-breathing\' or \'super-wave\'')
+            mode = 'super-fixed'
         mval, mod2, mod4, mincolors, maxcolors, ringonly = COLOR_MODES[mode]
         colors = list(colors)
         if ringonly and channel != 'ring':
-            liquidctl.util.debug('mode={} unsupported with channel={}, dropping to ring'.format(mode, channel))
+            liquidctl.util.debug('mode={} unsupported with channel={}, dropping to ring'
+                                 .format(mode, channel))
             channel = 'ring'
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
+            raise ValueError('Not enough colors for mode={}, at least {} required'
+                             .format(mode, mincolors))
         elif maxcolors == 0:
             colors = [(0, 0, 0)]
         elif len(colors) > maxcolors:
             liquidctl.util.debug('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
             colors = colors[:maxcolors]
         # from mode and colors generate the steps
-        if mode == 'super':
-            steps = list(zip(*[iter(colors)]*9))
-        else:
+        if not 'super' in mode:
             steps = [(color,)*9 for color in colors]
+        elif ringonly:
+            steps = [[(0,0,0)] + colors]
+        else:
+            steps = [colors]
         sval = ANIMATION_SPEEDS[speed]
         byte2 = mod2 | COLOR_CHANNELS[channel]
         for i, colors in enumerate(steps):
