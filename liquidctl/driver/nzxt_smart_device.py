@@ -1,15 +1,34 @@
-"""USB driver for NZXT's Smart Device from their H-series cases.
+"""USB driver for the NZXT Smart Device.
 
-Supported features in this driver:
+The device – that ships with the H200i, H400i, H500i and H700i cases – is a fan
+and LED controller.  It also includes a onboard microphone for noise level
+optimization through CAM.
 
- - [x] set the fan speeds
- - [x] set the lighing mode and colors
- - [x] read the fan speeds
- - [x] read fan states and voltages
- - [x] read the firmware version
- - [x] support fan hot swapping
- - [x] read the noise level
- - [ ] documentation
+This driver implements monitoring and control of all features available at the
+hardware level:
+
+ - control fan speed per channel
+ - monitor fan presence, control mode, speed and voltage
+ - (re)detect installed fans and their appropriate control mode
+ - customize and apply one of the preset color modes
+ - independently set each individual LED to a different color
+ - read the noise level with the onboard microphone
+
+Software based features offered by CAM, like noise level optimization, have not
+been implemented.
+
+There are three independent fan channels with standard 4-pin connectors.  All
+of them support PWM and DC modes of control, and the device will automatically
+select the appropriate one after starting from Mechanical Off.
+
+The device will also recheck the installed fans and their types during a
+`reset()` call.  Scripts that run without supervision should call `reset()`
+before or after setting the speeds for all channels.
+
+For lighting, there is a single por capable of driving up to four chained NZXT
+LED strips.  The firmware installed on the device exposes several presets, most
+of them common to other NZXT devices.  The LEDs can also be individually set to
+different colors, as long as they are fixed.
 
 Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
@@ -71,7 +90,7 @@ COLOR_MODES = {
     'breathing':                     (0x07, 0x00, 0x00, 1, 8),
     'candle':                        (0x09, 0x00, 0x00, 1, 1),
     'wings':                         (0x0c, 0x00, 0x00, 1, 1),
-    # supercharged control: set each of the 20 leds separately
+    # supercharged control: set each led separately
     'super':                         (0x00, 0x00, 0x00, 0, 40),
 }
 ANIMATION_SPEEDS = {
@@ -90,7 +109,7 @@ WRITE_TIMEOUT = 2000
 
 
 class NzxtSmartDeviceDriver:
-    """USB driver for NZXT's Smart Device from their H-series cases."""
+    """USB driver to a NZXT Smart Device."""
 
     def __init__(self, device, description):
         self.device = device
@@ -184,3 +203,4 @@ class NzxtSmartDeviceDriver:
         if liquidctl.util.dryrun:
             return
         self.device.write(WRITE_ENDPOINT, data + padding, WRITE_TIMEOUT)
+
