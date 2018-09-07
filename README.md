@@ -35,7 +35,7 @@ Noise level               55  dB
 ## Summary
 
 1. [Getting liquidctl](#getting-liquidctl)
-2. [The command-line interface](#quick-reference)
+2. [The command-line interface](#the-command-line-interface)
 3. [Supported devices](#supported-devices)
 4. [License](#license)
 6. [Related projects](#related-projects)
