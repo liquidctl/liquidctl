@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
  - [Kraken] Add `super-breathing`, `super-wave` and `backwards-super-wave`
+ - Add driver for the NZXT Smart Device fan and LED controller
 ### Deprecated
  - [Kraken] Deprecate `super`, use `super-fixed` instead
 

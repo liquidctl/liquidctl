@@ -154,7 +154,6 @@ We would like to continously support more and more devices.  At the moment, some
 
  - EVGA CLC 120/240/280: need to borrow a device or get the protocol specs [**[I can help/I know someone]**][newissue]
  - NZXT Kraken M22: probably easy to add, need a beta tester [**[I can help/I know someone]**][newissue]
- - Smart Device from NZXT's H700i/H500i/H400i/H200i cases: soon (tm)
 
 If you would like to see liquidctl handle another device, [open an issue][newissue] and let us know.
 
@@ -162,11 +161,7 @@ If you would like to see liquidctl handle another device, [open an issue][newiss
 ## NZXT Smart Device
 <!-- move to /doc -->
 
-NZXT's H-series cases – H700i, H500i, H400i and H200i – come a with hardware device that powers the case fans and lighting and that allows software based control of both.
-
-In addition, the Smart Device, as it is called, features automatic fan curve configuration for optimized noise levels, through NZXT's CAM software and AI.
-
-As of now, it is only partially supported by liquidctl.
+NZXT's H-series cases – H700i, H500i, H400i and H200i – come a with hardware device that can control the case fans and the included LED strips.
 
 
 ## License
