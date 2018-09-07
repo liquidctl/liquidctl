@@ -159,11 +159,13 @@ class KrakenTwoDriver:
             raise ValueError('Not enough colors for mode={}, at least {} required'
                              .format(mode, mincolors))
         elif maxcolors == 0:
-            colors = [(0, 0, 0)]
+            colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
             liquidctl.util.debug('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
             colors = colors[:maxcolors]
-        # from mode and colors generate the steps
+        # generate steps from mode and colors: usually each color set by the user generates
+        # one step, where it is specified to all leds and the device handles the animation;
+        # but in super mode there is a single step and each color directly controls a led
         if not 'super' in mode:
             steps = [(color,)*9 for color in colors]
         elif ringonly:

@@ -1,35 +1,36 @@
 """USB driver for the NZXT Smart Device.
 
-The device – that ships with the H200i, H400i, H500i and H700i cases – is a fan
-and LED controller.  It also includes a onboard microphone for noise level
-optimization through CAM.
+The device is a fan and LED controller that ships with the H200i, H400i, H500i
+and H700i cases.
 
-This driver implements monitoring and control of all features available at the
-hardware level:
+It provides three independent fan channels with standard 4-pin connectors.
+Both PWM and DC control is supported, and the device automatically chooses the
+appropriate mode.
 
+Additionally, up to four chained HUE+ LED strips can be driven from a single
+channel.  The firmware installed on the device exposes several presets, most of
+them familiar to other NZXT products.
+
+A microphone is also present onboard, for  noise level optimization through CAM
+and AI.
+
+This driver implements all features available at the hardware level:
+
+ - initialize
+ - detect connected fans and LED strips
  - control fan speed per channel
  - monitor fan presence, control mode, speed, voltage and current
- - (re)detect installed fans and their appropriate control mode
  - customize and apply color modes
  - report LED strip count
  - monitor the noise level with the onboard microphone
  - report the firmware version
 
+After powering on from Mechanical Off, or if there have been hardware changes,
+the device must be initilizated by calling `reset()`: connected fans and LED
+strips will be detected and data reporting will begin.
+
 Software based features offered by CAM, like noise level optimization, have not
 been implemented.
-
-There are three independent fan channels with standard 4-pin connectors.  All
-of them support PWM and DC modes of control, and the device will automatically
-select the appropriate one after starting from Mechanical Off.
-
-The device will also recheck the installed fans and their types during a
-`reset()` call.  Scripts that run without supervision should call `reset()`
-before or after setting the speeds for all channels.
-
-For lighting, there is a single por capable of driving up to four chained NZXT
-LED strips.  The firmware installed on the device exposes several presets, most
-of them common to other NZXT devices.  The LEDs can also be individually set to
-different colors, as long as they are fixed.
 
 Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
@@ -71,6 +72,7 @@ COLOR_MODES = {
     # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
     'off':                           (0x00, 0x00, 0x00, 0, 0),
     'fixed':                         (0x00, 0x00, 0x00, 1, 1),
+    'super-fixed':                   (0x00, 0x00, 0x00, 1, 40),  # independent leds
     'fading':                        (0x01, 0x00, 0x00, 1, 8),
     'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
     'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
@@ -88,11 +90,12 @@ COLOR_MODES = {
     'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
     'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
     'pulse':                         (0x06, 0x00, 0x00, 1, 8),
-    'breathing':                     (0x07, 0x00, 0x00, 1, 8),
+    'breathing':                     (0x07, 0x00, 0x00, 1, 8),  # colors for each step
+    'super-breathing':               (0x07, 0x00, 0x00, 1, 40),  # one step, independent leds
     'candle':                        (0x09, 0x00, 0x00, 1, 1),
     'wings':                         (0x0c, 0x00, 0x00, 1, 1),
-    # supercharged control: set each led separately
-    'super':                         (0x00, 0x00, 0x00, 0, 40),
+    'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
+    'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 40),  # independent ring leds
 }
 ANIMATION_SPEEDS = {
     'slowest':  0x0,
@@ -174,7 +177,7 @@ class NzxtSmartDeviceDriver:
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
-        if mode == 'super':
+        if 'super' in mode:
             steps = [list(itertools.chain(*colors))]
         else:
             steps = [color*40 for color in colors] 
@@ -197,8 +200,8 @@ class NzxtSmartDeviceDriver:
         self._write([0x2, 0x4d, cid, 0, duty])
 
     def reset(self):
-        self._write([0x1, 0x5c])
-        self._write([0x1, 0x5d])
+        self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
+        self._write([0x1, 0x5d])  # start reporting
 
     def _write(self, data):
         liquidctl.util.debug('write {}'.format(' '.join(format(i, '02x') for i in data)))
