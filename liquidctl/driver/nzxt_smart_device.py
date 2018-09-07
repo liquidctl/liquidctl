@@ -8,11 +8,12 @@ This driver implements monitoring and control of all features available at the
 hardware level:
 
  - control fan speed per channel
- - monitor fan presence, control mode, speed and voltage
+ - monitor fan presence, control mode, speed, voltage and current
  - (re)detect installed fans and their appropriate control mode
- - customize and apply one of the preset color modes
- - independently set each individual LED to a different color
- - read the noise level with the onboard microphone
+ - customize and apply color modes
+ - report LED strip count
+ - monitor the noise level with the onboard microphone
+ - report the firmware version
 
 Software based features offered by CAM, like noise level optimization, have not
 been implemented.
@@ -145,14 +146,16 @@ class NzxtSmartDeviceDriver:
             liquidctl.util.debug('read {}'.format(' '.join(format(i, '02x') for i in msg)))
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
-            status.append(('Fan {}'.format(num), ['NC', 'DC', 'PWM'][state], ''))
+            status.append(('Fan {}'.format(num), ['—', 'DC', 'PWM'][state], ''))
             noise.append(msg[1])
             if state:
                 status.append(('Fan {} speed'.format(num), msg[3] << 8 | msg[4], 'rpm'))
                 status.append(('Fan {} voltage'.format(num), msg[7] + msg[8]/100, 'V'))
+                status.append(('Fan {} current'.format(num), msg[10]/100, 'A'))
             if i == 0:
                 fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
                 status.append(( 'Firmware version', fw, ''))
+                status.append(( 'LED strips', msg[0x11], ''))
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
         return sorted(status)
 
