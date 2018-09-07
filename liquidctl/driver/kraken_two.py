@@ -139,11 +139,22 @@ class KrakenTwoDriver:
             print('Deprecated mode; try \'super-fixed\', \'super-breathing\' or \'super-wave\'')
             mode = 'super-fixed'
         mval, mod2, mod4, mincolors, maxcolors, ringonly = COLOR_MODES[mode]
-        colors = list(colors)
         if ringonly and channel != 'ring':
             liquidctl.util.debug('mode={} unsupported with channel={}, dropping to ring'
                                  .format(mode, channel))
             channel = 'ring'
+        steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
+        sval = ANIMATION_SPEEDS[speed]
+        byte2 = mod2 | COLOR_CHANNELS[channel]
+        for i, leds in enumerate(steps):
+            seq = i << 5
+            byte4 = sval | seq | mod4
+            logo = [leds[0][1], leds[0][0], leds[0][2]]
+            ring = list(itertools.chain(*leds[1:]))
+            self._write([0x2, 0x4c, byte2, mval, byte4] + logo + ring)
+
+    def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
+        colors = list(colors)
         if len(colors) < mincolors:
             raise ValueError('Not enough colors for mode={}, at least {} required'
                              .format(mode, mincolors))
@@ -159,14 +170,7 @@ class KrakenTwoDriver:
             steps = [[(0,0,0)] + colors]
         else:
             steps = [colors]
-        sval = ANIMATION_SPEEDS[speed]
-        byte2 = mod2 | COLOR_CHANNELS[channel]
-        for i, colors in enumerate(steps):
-            seq = i << 5
-            byte4 = sval | seq | mod4
-            textcolor = [colors[0][1], colors[0][0], colors[0][2]]
-            ringcolor = list(itertools.chain(*colors[1:]))
-            self._write([0x2, 0x4c, byte2, mval, byte4] + textcolor + ringcolor)
+        return steps
 
     def set_speed_profile(self, channel, profile):
         cbase, dmin, dmax = SPEED_CHANNELS[channel]
