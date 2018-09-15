@@ -4,8 +4,8 @@ repo_url = 'https://github.com/jonasmalacofilho/liquidctl'
 version = '1.0.0'
 
 with open('README.md', 'r', encoding='utf-8') as fh:
-    long_description = fh.read().split('<!-- stop here for PyPI -->', 1)[0]
-                       + 'Check the project page page for more information.'
+    long_description = (fh.read().split('<!-- stop here for PyPI -->', 1)[0]
+                        + 'Check the project page page for more information.')
 
 setuptools.setup(
     name='liquidctl',
