@@ -29,15 +29,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import itertools
-import sys
-
-import usb.core
-import usb.util
 
 import liquidctl.util
+from liquidctl.driver.base_usb import BaseUsbDriver
 
-SUPPORTED_DEVICES = [   # (vendor, product, description)
-    (0x1e71, 0x170e, 'NZXT Kraken X (X42, X52, X62 or X72)'),
+
+SUPPORTED_DEVICES = [
+    (0x1e71, 0x170e, None, 'NZXT Kraken X (X42, X52, X62 or X72)', {}),
 ]
 SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'fan':   (0x80, 25, 100),
@@ -94,34 +92,10 @@ WRITE_LENGTH = 65
 WRITE_TIMEOUT = 2000
 
 
-class KrakenTwoDriver:
+class KrakenTwoDriver(BaseUsbDriver):
     """USB driver for third generation NZXT Kraken X liquid coolers."""
 
-    def __init__(self, device, description):
-        self.device = device
-        self.description = description
-        self._should_reattach_kernel_driver = False
-
-    @classmethod
-    def find_supported_devices(cls):
-        devs = []
-        for vid, pid, desc in SUPPORTED_DEVICES:
-            usbdevs = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
-            devs = devs + [cls(i, desc) for i in usbdevs]
-        return devs
-
-    def initialize(self):
-        if sys.platform.startswith('linux') and self.device.is_kernel_driver_active(0):
-            liquidctl.util.debug('detaching currently active kernel driver')
-            self.device.detach_kernel_driver(0)
-            self._should_reattach_kernel_driver = True
-        self.device.set_configuration()
-
-    def finalize(self):
-        usb.util.dispose_resources(self.device)
-        if self._should_reattach_kernel_driver:
-            liquidctl.util.debug('reattaching previously active kernel driver')
-            self.device.attach_kernel_driver(0)
+    supported_devices = SUPPORTED_DEVICES
 
     def get_status(self):
         msg = self.device.read(READ_ENDPOINT, READ_LENGTH, READ_TIMEOUT)
@@ -193,12 +167,18 @@ class KrakenTwoDriver:
     def set_fixed_speed(self, channel, speed):
         self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
 
-    def reset(self, channel, profile):
-        raise NotImplementedError("Device does not implement reset")
-
     def _write(self, data):
         liquidctl.util.debug('write {}'.format(' '.join(format(i, '02x') for i in data)))
         padding = [0x0]*(WRITE_LENGTH - len(data))
         if liquidctl.util.dryrun:
             return
         self.device.write(WRITE_ENDPOINT, data + padding, WRITE_TIMEOUT)
+
+    def initialize(self):
+        # deprecated behavior: connect to the Kraken
+        self.connect()
+
+    def finalize(self):
+        # deprecated: disconnect from the Kraken
+        self.disconnect()
+

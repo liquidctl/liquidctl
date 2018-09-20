@@ -5,17 +5,24 @@ Usage:
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
+  liquidctl [options] initialize
   liquidctl [options] list
-  liquidctl [options] reset
   liquidctl --help
   liquidctl --version
 
-Options:
-  --device <no>    Select the device
-  --speed <value>  Animation speed [default: normal]
-  -n, --dry-run    Do not actually set anything (implies --verbose)
-  -v, --verbose    Output additional/debug information to stderr
-  --help           Show this message
+Device selection options:
+  -d, --device <no>         Select device by listing number (see: list)
+  --vendor <id>             Filter devices by vendor id
+  --product <id>            Filter devices by product id
+  --usb-port <no>           Filter devices by USB port
+  --serial <no>             Filter devices by serial number
+
+Other options:
+  --speed <value>           Animation speed [default: normal]
+  -n, --dry-run             Do not apply any settings (implies --verbose)
+  -v, --verbose             Output supplemental information to stderr
+  --version                 Display the version number
+  --help                    Show this message
 
 Examples:
   liquidctl status
@@ -24,28 +31,24 @@ Examples:
   liquidctl set ring color fading 350017 ff2608
   liquidctl set logo color fixed af5a2f
 
-Copyright (C) 2018  Jonas Malaco  
-Copyright (C) 2018  each contribution's author
-
-Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
-the terms of the GNU General Public License.
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
+Copyright (C) 2018  Jonas Malaco
+Copyright (C) 2018  each contribution's author
+
+Incorporates work by leaty, KsenijaS, Alexander Tong and Jens
+Neumaier, under the terms of the GNU General Public License.
+
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-VERSION = 'liquidctl v1.0.0'
-
+import inspect
 import itertools
 
 from docopt import docopt
@@ -53,17 +56,79 @@ from docopt import docopt
 import liquidctl.util
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.driver.nzxt_smart_device import NzxtSmartDeviceDriver
-# from liquidctl.driver.evga_clc import EvgaClcDriver
-# from liquidctl.driver.kraken_em import KrakenEmDriver
+
+
+DRIVERS = [
+    KrakenTwoDriver,
+    NzxtSmartDeviceDriver,
+    # only append new drivers, keep the behavior of --device stable
+]
+
+VERSION = 'liquidctl v1.0.0'
 
 
 def find_all_supported_devices():
-    # only append to keep the behavior of --device stable
-    alldrivers = [
-        KrakenTwoDriver,
-        NzxtSmartDeviceDriver,
-    ]
-    return list(itertools.chain(*map(lambda driver: driver.find_supported_devices(), alldrivers)))
+    search_res = map(lambda driver: driver.find_supported_devices(), DRIVERS)
+    return list(enumerate(itertools.chain(*search_res)))
+
+
+def filter_devices(devices, args):
+    def selected(attr, arg_name):
+        return not args[arg_name] or attr == int(args[arg_name], 0)
+    if args['--device']:
+        return [devices[int(args['--device'])]]
+    sel = []
+    for i, dev in devices:
+        und = dev.device
+        if (selected(und.idVendor, '--vendor') and
+            selected(und.idProduct, '--product') and
+            selected(und.port_number, '--usb-port') and
+            (not args['--serial'] or und.serial_number == args['--serial'])):
+            # --serial handled differently to avoid unnecessary root
+            sel.append((i, dev))
+    return sel
+
+
+def list_devices(devices):
+    for i, dev in devices:
+        und = dev.device
+        print('Device {}, {}'.format(i, dev.description))
+        if liquidctl.util.verbose:
+            print('  Vendor: {:#06x}'.format(und.idVendor))
+            print('  Product: {:#06x}'.format(und.idProduct))
+            print('  Port number: {}'.format(und.port_number))
+            try:
+                print('  Serial number: {}'.format(und.serial_number or '<empty>'))
+            except:
+                print('  Serial number: <n/a> (try again as root)')
+            hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+            print('  Hierarchy: {}'.format(', '.join(hier)))
+            print('')
+
+
+def device_get_status(dev, num):
+    print('Device {}, {}'.format(num, dev.description))
+    dev.connect()
+    try:
+        status = dev.get_status()
+        for k, v, u in status:
+            print('{:<20}  {:>6}  {:<3}'.format(k, v, u))
+    finally:
+        dev.disconnect()
+    print('')
+
+
+def device_set_color(dev, args):
+    color = map(lambda c: list(parse_color(c)), args['<color>'])
+    dev.set_color(args['<channel>'], args['<mode>'], color, args['--speed'])
+
+
+def device_set_speed(dev, args):
+    if len(args['<temperature>']) > 0:
+        profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
+        dev.set_speed_profile(args['<channel>'], profile)
+    else:
+        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]))
 
 
 def parse_color(color):
@@ -74,54 +139,35 @@ def main():
     args = docopt(__doc__, version=VERSION)
     liquidctl.util.dryrun = args['--dry-run']
     liquidctl.util.verbose = args['--verbose'] or liquidctl.util.dryrun
-
-    devices = find_all_supported_devices()
-    if args['--device']:
-        desired = int(args['--device'])
-    elif len(devices) == 1:
-        desired = 0
-    else:
-        desired = None
+    all_devices = find_all_supported_devices()
+    selected = filter_devices(all_devices, args)
 
     if args['list']:
-        for i, cooler in enumerate(devices):
-            liquidctl.util.debug(cooler.device)
-            print('Device {}, {} at bus:address {}:{}'.format(
-                i, cooler.description, cooler.device.bus, cooler.device.address))
-    elif args['status']:
-        for i,dev in enumerate(devices):
-            if desired is not None and desired != i:
-                continue
-            print('{}, device {}'.format(dev.description, i))
+        list_devices(selected)
+        return
+    if args['status']:
+        for i,dev in selected:
+            device_get_status(dev, i)
+        return
+
+    if len(selected) > 1:
+        raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
+    elif len(selected) == 0:
+        raise SystemExit('No devices matches available drivers and selection criteria')
+    num, dev = selected[0]
+
+    dev.connect()
+    try:
+        if args['initialize']:
             dev.initialize()
-            try:
-                status = dev.get_status()
-                for k,v,u in status:
-                    print('{:<20}  {:>6}  {:<3}'.format(k, v, u))
-            finally:
-                dev.finalize()
-            print('')
-    elif desired is not None:
-        dev = devices[desired]
-        dev.initialize()
-        try:
-            if args['set'] and args['speed']:
-                if len(args['<temperature>']) > 0:
-                    profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-                    dev.set_speed_profile(args['<channel>'], profile)
-                else:
-                    dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]))
-            elif args['set'] and args['color']:
-                color = map(lambda c: list(parse_color(c)), args['<color>'])
-                dev.set_color(args['<channel>'], args['<mode>'], color, args['--speed'])
-            elif args['reset']:
-                dev.reset()
-            else:
-                raise Exception('Not sure what to do')
-        finally:
-            dev.finalize()
-    else:
-        raise SystemExit('Many devices available, specify one with --device <no>\n(try also: liquidctl list)')
+        elif args['set'] and args['speed']:
+            device_set_speed(dev, args)
+        elif args['set'] and args['color']:
+            device_set_color(dev, args)
+        else:
+            raise Exception('Not sure what to do')
+    finally:
+        dev.disconnect()
 
 
 if __name__ == '__main__':

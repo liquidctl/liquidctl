@@ -26,8 +26,8 @@ This driver implements all features available at the hardware level:
  - report the firmware version
 
 After powering on from Mechanical Off, or if there have been hardware changes,
-the device must be initilizated by calling `reset()`: connected fans and LED
-strips will be detected and data reporting will begin.
+the device must be initilizated by calling `initialize()`: connected fans and
+LED strips will be detected and data reporting will begin.
 
 Software based features offered by CAM, like noise level optimization, have not
 been implemented.
@@ -50,15 +50,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import itertools
-import sys
-
-import usb.core
-import usb.util
 
 import liquidctl.util
+from liquidctl.driver.base_usb import BaseUsbDriver
 
-SUPPORTED_DEVICES = [   # (vendor, product, description)
-    (0x1e71, 0x1714, 'NZXT Smart Device'),
+
+SUPPORTED_DEVICES = [
+    (0x1e71, 0x1714, None, 'NZXT Smart Device', {}),
 ]
 SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'fan1': (0x00, 0, 100),
@@ -112,34 +110,14 @@ WRITE_LENGTH = 65
 WRITE_TIMEOUT = 2000
 
 
-class NzxtSmartDeviceDriver:
+class NzxtSmartDeviceDriver(BaseUsbDriver):
     """USB driver to a NZXT Smart Device."""
 
-    def __init__(self, device, description):
-        self.device = device
-        self.description = description
-        self._should_reattach_kernel_driver = False
-
-    @classmethod
-    def find_supported_devices(cls):
-        devs = []
-        for vid, pid, desc in SUPPORTED_DEVICES:
-            usbdevs = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
-            devs = devs + [cls(i, desc) for i in usbdevs]
-        return devs
+    supported_devices = SUPPORTED_DEVICES
 
     def initialize(self):
-        if sys.platform.startswith('linux') and self.device.is_kernel_driver_active(0):
-            liquidctl.util.debug('detaching currently active kernel driver')
-            self.device.detach_kernel_driver(0)
-            self._should_reattach_kernel_driver = True
-        self.device.set_configuration()
-
-    def finalize(self):
-        usb.util.dispose_resources(self.device)
-        if self._should_reattach_kernel_driver:
-            liquidctl.util.debug('reattaching previously active kernel driver')
-            self.device.attach_kernel_driver(0)
+        self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
+        self._write([0x1, 0x5d])  # start reporting
 
     def get_status(self):
         status = []
@@ -180,16 +158,13 @@ class NzxtSmartDeviceDriver:
         if 'super' in mode:
             steps = [list(itertools.chain(*colors))]
         else:
-            steps = [color*40 for color in colors] 
+            steps = [color*40 for color in colors]
         sval = ANIMATION_SPEEDS[speed]
         for i, leds in enumerate(steps):
             seq = i << 5
             byte4 = sval | seq | mod4
             self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
             self._write([0x3] + leds[57:])
-
-    def set_speed_profile(self, channel, profile):
-        raise NotImplementedError("Device does not implement onboard speed profiles")
 
     def set_fixed_speed(self, channel, duty):
         cid, dmin, dmax = SPEED_CHANNELS[channel]
@@ -198,10 +173,6 @@ class NzxtSmartDeviceDriver:
         elif duty > dmax:
             duty = dmax
         self._write([0x2, 0x4d, cid, 0, duty])
-
-    def reset(self):
-        self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
-        self._write([0x1, 0x5d])  # start reporting
 
     def _write(self, data):
         liquidctl.util.debug('write {}'.format(' '.join(format(i, '02x') for i in data)))
