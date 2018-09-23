@@ -19,8 +19,9 @@ Device selection options:
 
 Other options:
   --speed <value>           Animation speed [default: normal]
-  -n, --dry-run             Do not apply any settings (implies --verbose)
+  -n, --dry-run             Do not apply any settings
   -v, --verbose             Output supplemental information to stderr
+  -g, --debug               Output debug information to stderr
   --version                 Display the version number
   --help                    Show this message
 
@@ -50,6 +51,7 @@ GNU General Public License for more details.
 
 import inspect
 import itertools
+import logging
 
 from docopt import docopt
 
@@ -66,9 +68,16 @@ DRIVERS = [
 
 VERSION = 'liquidctl v1.0.0'
 
+logger = logging.getLogger(__name__)
 
-def find_all_supported_devices():
-    search_res = map(lambda driver: driver.find_supported_devices(), DRIVERS)
+
+def find_all_supported_devices(args):
+    def apply_dry_run(dev):
+        dev.dry_run = args['--dry-run']
+        return dev
+    def find_devices(driver):
+        return map(apply_dry_run, driver.find_supported_devices())
+    search_res = map(lambda driver: find_devices(driver), DRIVERS)
     return list(enumerate(itertools.chain(*search_res)))
 
 
@@ -137,9 +146,21 @@ def parse_color(color):
 
 def main():
     args = docopt(__doc__, version=VERSION)
-    liquidctl.util.dryrun = args['--dry-run']
-    liquidctl.util.verbose = args['--verbose'] or liquidctl.util.dryrun
-    all_devices = find_all_supported_devices()
+
+    if args['--debug']:
+        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+        logging.getLogger('usb').setLevel(logging.DEBUG)
+        import usb._debug
+        usb._debug.enable_tracing(True)
+    elif args['--verbose']:
+        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+
+    if args['--dry-run']:
+        logger.warning('--dry-run has been set')
+
+    all_devices = find_all_supported_devices(args)
     selected = filter_devices(all_devices, args)
 
     if args['list']:

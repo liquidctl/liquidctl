@@ -1,4 +1,4 @@
-"""Utilities for profile manipulation and debugging.
+"""Utilities for profile manipulation.
 
 Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
@@ -19,18 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import itertools
 import sys
-
-
-dryrun = False
-verbose = False
-
-
-def debug(*args, **kwrds):
-    """Print auxiliary information if in verbose mode."""
-    if verbose:
-        print(*args, file=sys.stderr, **kwrds)
-    else:
-        None
 
 
 def delta(profile):
@@ -108,7 +96,7 @@ def interpolate_profile(profile, x):
     Requires the profile to be sorted by x, with no duplicate x values (see
     normalize_profile).  Expects profiles with integer x and y values, and
     returns duty rounded to the nearest integer.
-    
+
     >>> interpolate_profile([(20, 50), (50, 70), (60, 100)], 33)
     59
     >>> interpolate_profile([(20, 50), (50, 70)], 19)

@@ -29,10 +29,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import itertools
+import logging
 
 import liquidctl.util
 from liquidctl.driver.base_usb import BaseUsbDriver
 
+
+logger = logging.getLogger(__name__)
 
 SUPPORTED_DEVICES = [
     (0x1e71, 0x170e, None, 'NZXT Kraken X (X42, X52, X62 or X72)', {}),
@@ -99,7 +102,7 @@ class KrakenTwoDriver(BaseUsbDriver):
 
     def get_status(self):
         msg = self.device.read(READ_ENDPOINT, READ_LENGTH, READ_TIMEOUT)
-        liquidctl.util.debug('read {}'.format(' '.join(format(i, '02x') for i in msg)))
+        logger.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         firmware = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
         return [
             ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
@@ -110,12 +113,12 @@ class KrakenTwoDriver(BaseUsbDriver):
 
     def set_color(self, channel, mode, colors, speed):
         if mode == 'super':
-            print('Deprecated mode; try \'super-fixed\', \'super-breathing\' or \'super-wave\'')
+            logger.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
         mval, mod2, mod4, mincolors, maxcolors, ringonly = COLOR_MODES[mode]
         if ringonly and channel != 'ring':
-            liquidctl.util.debug('mode={} unsupported with channel={}, dropping to ring'
-                                 .format(mode, channel))
+            logger.warning('mode=%s unsupported with channel=%s, dropping to ring',
+                           mode, channel)
             channel = 'ring'
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
         sval = ANIMATION_SPEEDS[speed]
@@ -135,7 +138,8 @@ class KrakenTwoDriver(BaseUsbDriver):
         elif maxcolors == 0:
             colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            liquidctl.util.debug('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
+            logger.warning('too many colors for mode=%s, dropping to %i',
+                           mode, maxcolors)
             colors = colors[:maxcolors]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
@@ -160,17 +164,18 @@ class KrakenTwoDriver(BaseUsbDriver):
                 duty = dmin
             elif duty > dmax:
                 duty = dmax
-            liquidctl.util.debug('for liquid temperature >= {}°C, setting {} PWM duty to {}%'
-                                 .format(temp, channel, duty))
+            logger.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+                         channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
     def set_fixed_speed(self, channel, speed):
         self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
 
     def _write(self, data):
-        liquidctl.util.debug('write {}'.format(' '.join(format(i, '02x') for i in data)))
         padding = [0x0]*(WRITE_LENGTH - len(data))
-        if liquidctl.util.dryrun:
+        logger.debug('write %s (and %i padding bytes)',
+                     ' '.join(format(i, '02x') for i in data), len(padding))
+        if self.dry_run:
             return
         self.device.write(WRITE_ENDPOINT, data + padding, WRITE_TIMEOUT)
 

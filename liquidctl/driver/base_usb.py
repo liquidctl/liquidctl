@@ -18,12 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import sys
+import logging
 
 import usb.core
 import usb.util
 
 import liquidctl.util
 
+
+logger = logging.getLogger(__name__)
 
 class BaseUsbDriver(object):
     """Base driver class for USB devices.
@@ -44,6 +47,7 @@ class BaseUsbDriver(object):
         Supplied kwargs will be saved as attributes.
         """
         self._should_reattach_kernel_driver = False
+        self.dry_run = False
         self.device = device
         self.description = description
         for k, v in kwargs.items():
@@ -67,7 +71,7 @@ class BaseUsbDriver(object):
     def connect(self):
         """Connect to the device."""
         if sys.platform.startswith('linux') and self.device.is_kernel_driver_active(0):
-            liquidctl.util.debug('detaching currently active kernel driver')
+            logger.debug('detaching currently active kernel driver')
             self.device.detach_kernel_driver(0)
             self._should_reattach_kernel_driver = True
         self.device.set_configuration()
@@ -76,7 +80,7 @@ class BaseUsbDriver(object):
         """Disconnect from the device."""
         usb.util.dispose_resources(self.device)
         if self._should_reattach_kernel_driver:
-            liquidctl.util.debug('reattaching previously active kernel driver')
+            logger.debug('reattaching previously active kernel driver')
             self.device.attach_kernel_driver(0)
 
     def initialize(self):
