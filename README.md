@@ -28,7 +28,7 @@ Noise level               55  dB
 # liquidctl --device 0 set ring color fading 350017 ff2608
 ```
 
-*liquidctl* is an open-source and cross-platform command-line tool to monitor and control liquid coolers and other devices.
+*liquidctl* is an open-source and cross-platform command-line tool and set of drivers to monitor and control liquid coolers and related devices.
 
 <!-- stop here for PyPI -->
 
@@ -76,49 +76,42 @@ A simple way of installing it is to download the appropriate package from [libus
 
 ## The command-line interface
 
-A good place to start is to ask liquidctl to list all recognized devices.
+The complete list of commands and options can be seen with `liquidctl --help`, but a good place to start is to ask liquidctl to list all recognized devices.
 
 ```
-liquidctl [options] list
+liquidctl list
 ```
 
-In case more than one supported device is found, the desired target for each command can be selected with `--device <no>`, using the device number reported by `list`.
+In case more than one supported device is found, they can be selected with the `--device <no>` option, according to the output of `list`.  They can also be filtered by `--vendor` id, `--product` id, `--usb-port`, or even `--serial` number.
 
-Most devices will provide status information like fan speeds and liquid temperatures.
+Most devices provide some status information, like fan speeds and liquid temperatures.  This can be queried for all devices or together with the filtering methods mentioned before.
 
 ```
 liquidctl [options] status
 ```
 
-Fan and pump speeds can be set to fixed values or custom profiles, depending on the device.  The documentation for each driver will list the available channels and their capabilities.
+Fan and pump speeds can be set to fixed values or, if the device supports them, custom profiles.  The documentation for each driver lists their exact capabilities.
 
 ```
 liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
 liquidctl [options] set <channel> speed <percentage>
 ```
 
-Lighting is controlled in a similar fashion.  Animation speed can be controlled with the `--speed` flag.  The documentation for each device will list the available channels, lighting modes and speed values.
+Lighting is controlled in a similar fashion and, again, the specific documentation lists the available channels, modes and other details.  The animation speed can be controlled with the `--speed` flag.
 
 ```
 liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
-To view all available options and commands, run `liquidctl --help`.
 
+## Supported devices
 
-## Supported devices 
-
-The following devices are supported:
+The links bellow lead to the documentation for each supported device:
 
  - [NZXT Kraken X42, X52, X62 and X72 coolers](docs/nzxt-kraken-x-3rd-generation.md)
  - [NZXT Smart Device and H200i/H400i/H500i/H700i cases](docs/nzxt-smart-device.md)
 
-We aim to soon add drivers for these coolers as well:
-
- - EVGA CLC 120/240/280: need to borrow a device or get the protocol specs [**[I can help/I know someone]**][newissue]
- - NZXT Kraken M22: probably easy to add, need a beta tester [**[I can help/I know someone]**][newissue]
-
-If you would like to use liquidctl with another device not listed here, feel free to [open an issue][newissue] and let us know.
+[Open an issue][newissue] to let us know which other drivers we should implement first, and if/how you can help.
 
 
 ## License
