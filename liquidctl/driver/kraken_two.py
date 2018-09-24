@@ -136,6 +136,8 @@ class KrakenTwoDriver(BaseUsbDriver):
             raise ValueError('Not enough colors for mode={}, at least {} required'
                              .format(mode, mincolors))
         elif maxcolors == 0:
+            if len(colors) > 0:
+                logger.warning('too many colors for mode=%s, none needed', mode)
             colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
             logger.warning('too many colors for mode=%s, dropping to %i',
