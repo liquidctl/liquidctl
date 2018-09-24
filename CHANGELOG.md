@@ -6,22 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 ### Added
+ - **Add driver for the NZXT Smart Device**
  - [Kraken] Add `super-breathing`, `super-wave` and `backwards-super-wave`
- - **Add driver for the NZXT Smart Device fan and LED controller**
  - Add `initialize` command for products like the NZXT Smart Device
- - Add filtering by `--vendor <id>`, `--product <id>`, `--usb-port <no>` and
-   `--serial-number <serial>`
- - Add `-d` alternative to the `--device` options
- - Add `-g`,`--debug`
+ - Add device filtering options: `--vendor`, `--product`, `--usb-port` and
+   `--serial`
+ - Add `--debug` to complement `--verbose`
 ### Changed
  - No longer imply `--verbose` from `--dry-run`
- - Improve the driver API for external callers
+ - Improve the API for external code that uses our drivers
 ### Deprecated
  - [Kraken] Deprecate `super`; use `super-fixed` instead
- - [Kraken] Deprecate previous undocumented behavior of `initialize()` and
+ - [Kraken] Deprecate undocumented API behavior of `initialize()` and
    `finalize()`; use `connect()` and `disconnect()` instead
 ### Removed
- - Remove internal `liquidctl.util` symbols: `verbose`, `dryrun` and `debug`
+ - Remove no longer used symbols in `liquidctl.util`
 
 ## [1.0.0] - 2018-08-31
 ### Added
