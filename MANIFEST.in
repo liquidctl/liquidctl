@@ -1,2 +1,4 @@
 include CHANGELOG.md
 include LICENSE.txt
+include docs/*.md
+
