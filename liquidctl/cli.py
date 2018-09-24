@@ -98,11 +98,11 @@ def filter_devices(devices, args):
     return sel
 
 
-def list_devices(devices):
+def list_devices(devices, args):
     for i, dev in devices:
         und = dev.device
         print('Device {}, {}'.format(i, dev.description))
-        if liquidctl.util.verbose:
+        if args['--verbose']:
             print('  Vendor: {:#06x}'.format(und.idVendor))
             print('  Product: {:#06x}'.format(und.idProduct))
             print('  Port number: {}'.format(und.port_number))
@@ -152,6 +152,7 @@ def main():
         logging.getLogger('usb').setLevel(logging.DEBUG)
         import usb._debug
         usb._debug.enable_tracing(True)
+        args['--verbose'] = True
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
@@ -164,7 +165,7 @@ def main():
     selected = filter_devices(all_devices, args)
 
     if args['list']:
-        list_devices(selected)
+        list_devices(selected, args)
         return
     if args['status']:
         for i,dev in selected:
@@ -193,3 +194,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
