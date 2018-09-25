@@ -10,9 +10,16 @@ All configuration is done through USB, and persists as long as the device still 
 
 ## Fan and pump speeds
 
-Fan and pump speeds can be set either to fixed PWM duty values or as profiles dependent on the liquid temperature.
+First, some important notes...
 
-Fixed speed values can be set simply by specifying the desired channel (`fan` or `pump`) and PWM duty.
+*You must carefully consider what pump and fan speeds to run.  Heat output, case airflow, radiator size, installed fans and ambient temperature are some of the factors to take into account.  Test your settings under different scenarios, and make sure that they are appropriate, correctly applied and persistent.*
+
+*Additionally, the liquid temperature should never reach 60°C, as at that point the pump and tubes might fail or quickly degrade.  You must monitor this during your tests and make any necessary adjustments.  As a safety measure, fan and pump speeds will forcibly be programmed to 100% for liquid temperatures of 60°C and above.*
+
+*You should also consider monitoring your hardware temperatures and setting alerts for overheating components or pump failures.*
+
+With those out of the way, each channel can be independently configured to a fixed duty value or with a profile dependent on the liquid temperature.  Fixed speeds can be set by specifying the desired channel – `fan` or `pump` – and duty.
+
 
 ```
 # liquidctl set pump speed 90
@@ -21,17 +28,15 @@ Fixed speed values can be set simply by specifying the desired channel (`fan` or
 | Channel | Minimum duty | Maximum duty |
 | --- | --- | --- |
 | fan | 25% | 100% |
-| pump | 60% | 100% |
+| pump | 50% | 100% |
 
-For profiles, any number of temperature–duty pairs can be specified; liquidctl will normalize and optimize the profile before pushing it to the Kraken.  You can use `--verbose` to inspect the final profile.
+*Another important note: while allowed by the firmware, pump speeds bellow 60% are not currently exposed in CAM.  Presumably, there are scenarios when such low speeds are not be suitable at all.*
+
+For profiles, one or more temperature–duty pairs must be supplied.  Liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
 
 ```
 # liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
 ```
-
-As a safety measure, fan and pump speeds will always be set to 100% for liquid temperatures of 60°C and above.
-
-**Always check that the settings are appropriate for the use case, and that they correctly apply and persist.**
 
 
 ## RGB lighting

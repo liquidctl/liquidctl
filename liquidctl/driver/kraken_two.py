@@ -42,7 +42,7 @@ SUPPORTED_DEVICES = [
 ]
 SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'fan':   (0x80, 25, 100),
-    'pump':  (0xc0, 60, 100),  # firmware accepts 50% but keep CAM's safety margin
+    'pump':  (0xc0, 50, 100),
 }
 COLOR_CHANNELS = {
     'sync':     0x0,

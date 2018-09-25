@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Changed
  - No longer imply `--verbose` from `--dry-run`
  - Improve the API for external code that uses our drivers
+ - [Kraken] Lower the minimum pump duty to 50%
 ### Deprecated
  - [Kraken] Deprecate `super`; use `super-fixed` instead
  - [Kraken] Deprecate undocumented API behavior of `initialize()` and
