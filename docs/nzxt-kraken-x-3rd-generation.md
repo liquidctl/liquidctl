@@ -8,6 +8,11 @@ They incorporate customizable fan and pump speed control with PWM, a liquid temp
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The cooler also reports fan and pump speed and liquid temperature via USB; pump speed can also be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
 
+## Experimental support for the Kraken M22
+
+This driver also has **experimental** support for the NZXT Kraken M22.  Note that the M22 has no pump or fan control, nor reports liquid temperatures.
+
+
 ## Fan and pump speeds
 
 First, some important notes...

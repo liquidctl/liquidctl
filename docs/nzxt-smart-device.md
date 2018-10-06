@@ -14,6 +14,11 @@ All configuration is done through USB, and persists as long as the device still 
 All capabilities available at the hardware level are supported, but other features offered by CAM, like noise level optimization, have not been implemented.
 
 
+## Experimental support for the Grid+ V3
+
+This driver also has **experimental** support for the NZXT Grid+ V3 fan controller.
+
+
 ## Initialization
 
 After powering on from Mechanical Off, or if there have been hardware changes, the device must be re-initilizated.
@@ -33,11 +38,14 @@ Fan speeds can only be set to fixed PWM duty values.
 # liquidctl set fan2 speed 90
 ```
 
-| Channel | Minimum duty | Maximum duty |
-| --- | --- | --- |
-| fan1 | 0% | 100% |
-| fan2 | 0% | 100% |
-| fan3 | 0% | 100% |
+| Channel | Minimum duty | Maximum duty | Note |
+| --- | --- | --- | - |
+| fan1 | 0% | 100% ||
+| fan2 | 0% | 100% ||
+| fan3 | 0% | 100% ||
+| fan4 | 0% | 100% | Grid+ V3 only |
+| fan5 | 0% | 100% | Grid+ V3 only |
+| fan6 | 0% | 100% | Grid+ V3 only |
 
 **Always check that the settings are appropriate for the use case, and that they correctly apply and persist.**
 

@@ -23,35 +23,28 @@ import logging
 import usb.core
 import usb.util
 
-import liquidctl.util
 
+LOGGER = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
 
 class BaseUsbDriver(object):
     """Base driver class for USB devices.
 
-    Each driver should provide its own list of supported_devices, as well as
-    implementations for all methods that are supported by the device.
+    Each driver should provide its own list of SUPPORTED_DEVICES, as well as
+    implementations for all methods applicable to the devices is supports.
 
-    The list of supported_devices should consist of (vendor id, product id,
-    device release range, description, kwargs) tuples; the device release range
-    can either be a (lower bound, [inclusive] upper bould) tuple or None.
+    SUPPORTED_DEVICES should consist of a list of tuples (vendor id, product
+    id, device release range, description, kwargs).
     """
 
-    supported_devices = []
+    SUPPORTED_DEVICES = []
 
-    def __init__(self, device, description, **kwargs):
-        """Instantiate a driver with a device handle.
-
-        Supplied kwargs will be saved as attributes.
-        """
-        self._should_reattach_kernel_driver = False
-        self.dry_run = False
+    def __init__(self, device, description):
+        """Instantiate a driver with a device handle."""
         self.device = device
         self.description = description
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+        self.dry_run = False
+        self._should_reattach_kernel_driver = False
 
     @classmethod
     def find_supported_devices(cls):
@@ -60,7 +53,7 @@ class BaseUsbDriver(object):
         Returns a list of driver class instances.
         """
         drivers = []
-        for vid, pid, ver, description, kwargs in cls.supported_devices:
+        for vid, pid, ver, description, kwargs in cls.SUPPORTED_DEVICES:
             usbdevs = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
             for dev in usbdevs:
                 if ver and (dev.bcdDevice < ver[0] or dev.bcdDevice > ver[1]):
@@ -71,7 +64,7 @@ class BaseUsbDriver(object):
     def connect(self):
         """Connect to the device."""
         if sys.platform.startswith('linux') and self.device.is_kernel_driver_active(0):
-            logger.debug('detaching currently active kernel driver')
+            LOGGER.debug('detaching currently active kernel driver')
             self.device.detach_kernel_driver(0)
             self._should_reattach_kernel_driver = True
         self.device.set_configuration()
@@ -80,7 +73,7 @@ class BaseUsbDriver(object):
         """Disconnect from the device."""
         usb.util.dispose_resources(self.device)
         if self._should_reattach_kernel_driver:
-            logger.debug('reattaching previously active kernel driver')
+            LOGGER.debug('reattaching previously active kernel driver')
             self.device.attach_kernel_driver(0)
 
     def initialize(self):

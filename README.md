@@ -2,26 +2,31 @@
 
 ```
 # liquidctl list
-Device 0, NZXT Kraken X (X42, X52, X62 or X72) at bus:address 2:5
-Device 1, NZXT Smart Device at bus:address 2:4
+Device 0, NZXT Kraken X (X42, X52, X62 or X72)
+Device 1, NZXT Kraken M22 (experimental)
+Device 2, NZXT Smart Device
+Device 3, NZXT Grid+ V3 (experimental)
 
-# liquidctl status
-NZXT Kraken X (X42, X52, X62 or X72), device 0
-Liquid temperature      29.3  °C
-Fan speed                684  rpm
-Pump speed              2133  rpm
-Firmware version       4.0.2
+# liquidctl --device 0 status
+Device 0, NZXT Kraken X (X42, X52, X62 or X72)
+Liquid temperature          29.4  °C
+Fan speed                    639  rpm
+Pump speed                  1910  rpm
+Firmware version           4.0.2
 
-NZXT Smart Device, device 1
-Fan 1                    PWM
-Fan 1 current           0.03  A
-Fan 1 speed             1346  rpm
-Fan 1 voltage          12.04  V
-Fan 2                      —
-Fan 3                      —
-Firmware version       1.0.7
-LED strips                 2
-Noise level               55  dB
+# liquidctl --device 2 status
+Device 2, NZXT Smart Device
+Fan 1                        PWM
+Fan 1 current               0.04  A
+Fan 1 speed                 1519  rpm
+Fan 1 voltage              11.91  V
+Fan 2                          —
+Fan 3                          —
+Firmware version           1.0.7
+LED accessories                2
+LED accessory type    Hue+ Strip
+LED count (total)             20
+Noise level                   61  dB
 
 # liquidctl --device 0 set pump speed 90
 # liquidctl --device 0 set fan speed  20 30  30 50  34 80  40 90  50 100
@@ -109,14 +114,16 @@ liquidctl [options] set <channel> color <mode> [<color>] ...
 The links bellow lead to the documentation for each supported device:
 
  - [NZXT Kraken X42, X52, X62 and X72 coolers](docs/nzxt-kraken-x-3rd-generation.md)
+ - [NZXT Kraken M22 cooler (experimental)](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22)
  - [NZXT Smart Device and H200i/H400i/H500i/H700i cases](docs/nzxt-smart-device.md)
+ - [NZXT Grid+ V3 fan controller (experimental)](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3)
 
 [Open an issue][newissue] to let us know which other drivers we should implement first, and if/how you can help.
 
 
 ## License
 
-Copyright (C) 2018  Jonas Malaco  
+Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
 
 Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under

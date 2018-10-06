@@ -1,12 +1,20 @@
-"""USB driver for third generation NZXT Kraken X liquid coolers.
+"""USB driver for third generation NZXT Kraken X and M liquid coolers.
 
-These coolers (X72, X62, X52 and X42) are made by Asetek, housing a 5-th
-generation pump and a second PCB for advanced RGB LED capabilites.
 
-Note: the Kraken M22 shares similar RGB funcionality, but is otherwise very
-different: made by Apaltek, it has no liquid temperature sensor and no fan or
-pump speed readings or control.  This driver does not support it at the moment,
-but its lighting control scheme is likely similar.
+Kraken X (X42, X52, X62 and X72)
+--------------------------------
+
+These coolers house 5-th generation Asetek pumps with additional PCBs for
+advanced control and RGB capabilites.
+
+
+Kraken M22
+----------
+
+The Kraken M22 shares similar RGB funcionality to the X models of the same
+generation, but has no liquid temperature sensor and no hability to report or
+set fan or pump speeds.
+
 
 Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
@@ -35,21 +43,19 @@ import liquidctl.util
 from liquidctl.driver.base_usb import BaseUsbDriver
 
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-SUPPORTED_DEVICES = [
-    (0x1e71, 0x170e, None, 'NZXT Kraken X (X42, X52, X62 or X72)', {}),
-]
-SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
+_SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'fan':   (0x80, 25, 100),
     'pump':  (0xc0, 50, 100),
 }
-COLOR_CHANNELS = {
+_CRITICAL_TEMPERATURE = 60
+_COLOR_CHANNELS = {
     'sync':     0x0,
     'logo':     0x1,
     'ring':     0x2,
 }
-COLOR_MODES = {
+_COLOR_MODES = {
     # (byte3/mode, byte2/reverse, byte4/modifier, min colors, max colors, only ring)
     'off':                           (0x00, 0x00, 0x00, 0, 0, False),
     'fixed':                         (0x00, 0x00, 0x00, 1, 1, False),
@@ -80,49 +86,70 @@ COLOR_MODES = {
     'super-wave':                    (0x0d, 0x00, 0x00, 1, 8, True),  # independent ring leds
     'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 8, True),  # independent ring leds
 }
-ANIMATION_SPEEDS = {
+_ANIMATION_SPEEDS = {
     'slowest':  0x0,
     'slower':   0x1,
     'normal':   0x2,
     'faster':   0x3,
     'fastest':  0x4,
 }
-READ_ENDPOINT = 0x81
-READ_LENGTH = 64
-READ_TIMEOUT = 2000
-WRITE_ENDPOINT = 0x1
-WRITE_LENGTH = 65
-WRITE_TIMEOUT = 2000
+_READ_ENDPOINT = 0x81
+_READ_LENGTH = 64
+_READ_TIMEOUT = 2000
+_WRITE_ENDPOINT = 0x1
+_WRITE_LENGTH = 65
+_WRITE_TIMEOUT = 2000
 
 
 class KrakenTwoDriver(BaseUsbDriver):
-    """USB driver for third generation NZXT Kraken X liquid coolers."""
+    """USB driver for third generation NZXT Kraken X and M liquid coolers."""
 
-    supported_devices = SUPPORTED_DEVICES
+    DEVICE_KRAKENX = 'Kraken X'
+    DEVICE_KRAKENM = 'Kraken M'
+    SUPPORTED_DEVICES = [
+        (0x1e71, 0x170e, None, 'NZXT Kraken X (X42, X52, X62 or X72)', {
+            'device_type': DEVICE_KRAKENX
+        }),
+        (0x1e71, 0x1715, None, 'NZXT Kraken M22 (experimental)', {
+            'device_type': DEVICE_KRAKENM
+        }),
+    ]
+
+    def __init__(self, device, description, device_type=DEVICE_KRAKENX):
+        super().__init__(device, description)
+        self.device_type = device_type
 
     def get_status(self):
-        msg = self.device.read(READ_ENDPOINT, READ_LENGTH, READ_TIMEOUT)
-        logger.debug('received %s', ' '.join(format(i, '02x') for i in msg))
+        """Get a status report.
+
+        Returns a list of (key, value, unit) tuples.
+        """
+        msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
+        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         firmware = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
-        return [
-            ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
-            ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
-            ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
-            ('Firmware version', firmware, '')
-        ]
+        if self.device_type == self.DEVICE_KRAKENM:
+            return [('Firmware version', firmware, '')]
+        else:
+            return [
+                ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
+                ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
+                ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
+                ('Firmware version', firmware, '')
+            ]
 
     def set_color(self, channel, mode, colors, speed):
+        """Set the color mode for a specific channel."""
         if mode == 'super':
-            logger.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
+            LOGGER.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
-        mval, mod2, mod4, mincolors, maxcolors, ringonly = COLOR_MODES[mode]
+        mval, mod2, mod4, mincolors, maxcolors, ringonly = _COLOR_MODES[mode]
         if ringonly and channel != 'ring':
-            logger.warning('mode=%s unsupported with channel=%s, dropping to ring',
+            LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
                            mode, channel)
             channel = 'ring'
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
-        sval = ANIMATION_SPEEDS[speed]
-        byte2 = mod2 | COLOR_CHANNELS[channel]
+        sval = _ANIMATION_SPEEDS[speed]
+        byte2 = mod2 | _COLOR_CHANNELS[channel]
         for i, leds in enumerate(steps):
             seq = i << 5
             byte4 = sval | seq | mod4
@@ -137,10 +164,10 @@ class KrakenTwoDriver(BaseUsbDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if len(colors) > 0:
-                logger.warning('too many colors for mode=%s, none needed', mode)
+                LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            logger.warning('too many colors for mode=%s, dropping to %i',
+            LOGGER.warning('too many colors for mode=%s, dropping to %i',
                            mode, maxcolors)
             colors = colors[:maxcolors]
         # generate steps from mode and colors: usually each color set by the user generates
@@ -155,37 +182,56 @@ class KrakenTwoDriver(BaseUsbDriver):
         return steps
 
     def set_speed_profile(self, channel, profile):
-        cbase, dmin, dmax = SPEED_CHANNELS[channel]
+        """Set channel to use a speed profile."""
+        if self.device_type == self.DEVICE_KRAKENM:  # FIXME
+            raise NotImplemented()
+        cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         # ideally we could just call normalize_profile (optionally followed by autofill_profile),
         # but Kraken devices currently require the same set of temperatures on both channels
         stdtemps = range(20, 62, 2)
-        tmp = liquidctl.util.normalize_profile(profile, 60)
+        tmp = liquidctl.util.normalize_profile(profile, _CRITICAL_TEMPERATURE)
         norm = [(t, liquidctl.util.interpolate_profile(tmp, t)) for t in stdtemps]
         for i, (temp, duty) in enumerate(norm):
             if duty < dmin:
                 duty = dmin
             elif duty > dmax:
                 duty = dmax
-            logger.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+            LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
     def set_fixed_speed(self, channel, speed):
-        self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
+        """Set channel to a fixed speed."""
+        if True:  # FIXME
+            self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
+        else:
+            self.set_instantaneous_speed(channel, speed)
+
+    def set_instantaneous_speed(self, channel, speed):
+        """Set channel to speed, but do not ensure persistence."""
+        cbase, smin, smax = self._speed_channels[channel]
+        if speed < smin:
+            speed = smin
+        elif speed > smax:
+            speed = smax
+        self._write([0x2, 0x4d, cbase & 0x70, 0, speed])
 
     def _write(self, data):
-        padding = [0x0]*(WRITE_LENGTH - len(data))
-        logger.debug('write %s (and %i padding bytes)',
+        padding = [0x0]*(_WRITE_LENGTH - len(data))
+        LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
         if self.dry_run:
             return
-        self.device.write(WRITE_ENDPOINT, data + padding, WRITE_TIMEOUT)
+        self.device.write(_WRITE_ENDPOINT, data + padding, _WRITE_TIMEOUT)
 
     def initialize(self):
-        # deprecated behavior: connect to the Kraken
+        """NOOP.
+
+        Deprecated behavior: connect to the Kraken.
+        """
         self.connect()
 
     def finalize(self):
-        # deprecated: disconnect from the Kraken
+        """Deprecated."""
         self.disconnect()
 

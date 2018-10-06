@@ -63,22 +63,25 @@ from liquidctl.driver.nzxt_smart_device import NzxtSmartDeviceDriver
 DRIVERS = [
     KrakenTwoDriver,
     NzxtSmartDeviceDriver,
-    # only append new drivers, keep the behavior of --device stable
 ]
 
-VERSION = 'liquidctl v1.0.0'
+VERSION = (1, 0, 0)
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
-def find_all_supported_devices(args):
-    def apply_dry_run(dev):
-        dev.dry_run = args['--dry-run']
-        return dev
-    def find_devices(driver):
-        return map(apply_dry_run, driver.find_supported_devices())
-    search_res = map(lambda driver: find_devices(driver), DRIVERS)
-    return list(enumerate(itertools.chain(*search_res)))
+def find_all_supported_devices():
+    """Deprecated."""
+    return [dev for i, dev in find_all_supported_devices2({'--dry-run': False})]
+
+
+def find_all_supported_devices2(args):
+    res = map(lambda driver: driver.find_supported_devices(), DRIVERS)
+    devices = list(enumerate(itertools.chain(*res)))
+    if args['--dry-run']:
+        for i, dev in devices:
+            dev.dry_run = True
+    return devices
 
 
 def filter_devices(devices, args):
@@ -121,7 +124,7 @@ def device_get_status(dev, num):
     try:
         status = dev.get_status()
         for k, v, u in status:
-            print('{:<20}  {:>6}  {:<3}'.format(k, v, u))
+            print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
     finally:
         dev.disconnect()
     print('')
@@ -145,7 +148,7 @@ def parse_color(color):
 
 
 def main():
-    args = docopt(__doc__, version=VERSION)
+    args = docopt(__doc__, version='liquidctl v{}.{}.{}'.format(*VERSION))
 
     if args['--debug']:
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
@@ -159,9 +162,9 @@ def main():
         logging.basicConfig(level=logging.WARNING, format='%(message)s')
 
     if args['--dry-run']:
-        logger.warning('--dry-run has been set')
+        LOGGER.warning('This is a --dry-run')
 
-    all_devices = find_all_supported_devices(args)
+    all_devices = find_all_supported_devices2(args)
     selected = filter_devices(all_devices, args)
 
     if args['list']:
