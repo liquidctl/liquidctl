@@ -76,6 +76,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import itertools
 import logging
 
+import usb.util
+
 from liquidctl.driver.base_usb import BaseUsbDriver
 
 
@@ -156,6 +158,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
         """
         self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
         self._write([0x1, 0x5d])  # start reporting
+        usb.util.dispose_resources(self.device)
 
     def get_status(self):
         """Get a status report.
@@ -187,6 +190,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
                     status.append(('LED accessory type', ltype, ''))
                     status.append(('LED count (total)', lcount*lsize, ''))
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
+        usb.util.dispose_resources(self.device)
         return sorted(status)
 
     def set_color(self, channel, mode, colors, speed):
@@ -222,6 +226,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
             byte4 = sval | seq | mod4
             self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
             self._write([0x3] + leds[57:])
+        usb.util.dispose_resources(self.device)
 
     def set_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
@@ -231,6 +236,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
         elif speed > smax:
             speed = smax
         self._write([0x2, 0x4d, cid, 0, speed])
+        usb.util.dispose_resources(self.device)
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))

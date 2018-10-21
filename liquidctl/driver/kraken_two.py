@@ -39,6 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import itertools
 import logging
 
+import usb.util
+
 import liquidctl.util
 from liquidctl.driver.base_usb import BaseUsbDriver
 
@@ -125,6 +127,7 @@ class KrakenTwoDriver(BaseUsbDriver):
         Returns a list of (key, value, unit) tuples.
         """
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
+        usb.util.dispose_resources(self.device)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         firmware = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
         if self.device_type == self.DEVICE_KRAKENM:
@@ -156,6 +159,7 @@ class KrakenTwoDriver(BaseUsbDriver):
             logo = [leds[0][1], leds[0][0], leds[0][2]]
             ring = list(itertools.chain(*leds[1:]))
             self._write([0x2, 0x4c, byte2, mval, byte4] + logo + ring)
+        usb.util.dispose_resources(self.device)
 
     def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
         colors = list(colors)
@@ -199,6 +203,7 @@ class KrakenTwoDriver(BaseUsbDriver):
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
+        usb.util.dispose_resources(self.device)
 
     def set_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
@@ -215,6 +220,7 @@ class KrakenTwoDriver(BaseUsbDriver):
         elif speed > smax:
             speed = smax
         self._write([0x2, 0x4d, cbase & 0x70, 0, speed])
+        usb.util.dispose_resources(self.device)
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
