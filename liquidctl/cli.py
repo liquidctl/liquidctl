@@ -65,7 +65,7 @@ DRIVERS = [
     NzxtSmartDeviceDriver,
 ]
 
-VERSION = (1, 0, 0)
+VERSION = (1, 1, 0)
 
 LOGGER = logging.getLogger(__name__)
 
