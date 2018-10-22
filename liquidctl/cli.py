@@ -71,20 +71,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 def find_all_supported_devices():
-    """Deprecated."""
-    return [dev for i, dev in find_all_supported_devices2({'--dry-run': False})]
-
-
-def find_all_supported_devices2(args):
     res = map(lambda driver: driver.find_supported_devices(), DRIVERS)
-    devices = list(enumerate(itertools.chain(*res)))
-    if args['--dry-run']:
-        for i, dev in devices:
-            dev.dry_run = True
-    return devices
+    return itertools.chain(*res)
 
 
-def filter_devices(devices, args):
+def _filter_devices(devices, args):
     def selected(attr, arg_name):
         return not args[arg_name] or attr == int(args[arg_name], 0)
     if args['--device']:
@@ -101,7 +92,7 @@ def filter_devices(devices, args):
     return sel
 
 
-def list_devices(devices, args):
+def _list_devices(devices, args):
     for i, dev in devices:
         und = dev.device
         print('Device {}, {}'.format(i, dev.description))
@@ -118,7 +109,7 @@ def list_devices(devices, args):
             print('')
 
 
-def device_get_status(dev, num):
+def _device_get_status(dev, num):
     print('Device {}, {}'.format(num, dev.description))
     dev.connect()
     try:
@@ -130,12 +121,12 @@ def device_get_status(dev, num):
     print('')
 
 
-def device_set_color(dev, args):
-    color = map(lambda c: list(parse_color(c)), args['<color>'])
+def _device_set_color(dev, args):
+    color = map(lambda c: list(_parse_color(c)), args['<color>'])
     dev.set_color(args['<channel>'], args['<mode>'], color, args['--speed'])
 
 
-def device_set_speed(dev, args):
+def _device_set_speed(dev, args):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
         dev.set_speed_profile(args['<channel>'], profile)
@@ -143,7 +134,7 @@ def device_set_speed(dev, args):
         dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]))
 
 
-def parse_color(color):
+def _parse_color(color):
     return bytes.fromhex(color)
 
 
@@ -164,15 +155,18 @@ def main():
     if args['--dry-run']:
         LOGGER.warning('This is a --dry-run')
 
-    all_devices = find_all_supported_devices2(args)
-    selected = filter_devices(all_devices, args)
+    all_devices = list(enumerate(find_all_supported_devices()))
+    if args['--dry-run']:
+        for i, dev in all_devices:
+            dev.dry_run = True
+    selected = _filter_devices(all_devices, args)
 
     if args['list']:
-        list_devices(selected, args)
+        _list_devices(selected, args)
         return
     if args['status']:
         for i,dev in selected:
-            device_get_status(dev, i)
+            _device_get_status(dev, i)
         return
 
     if len(selected) > 1:
@@ -186,9 +180,9 @@ def main():
         if args['initialize']:
             dev.initialize()
         elif args['set'] and args['speed']:
-            device_set_speed(dev, args)
+            _device_set_speed(dev, args)
         elif args['set'] and args['color']:
-            device_set_color(dev, args)
+            _device_set_color(dev, args)
         else:
             raise Exception('Not sure what to do')
     finally:
