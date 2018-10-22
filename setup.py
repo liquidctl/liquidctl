@@ -1,7 +1,7 @@
 import setuptools
 
 repo_url = 'https://github.com/jonasmalacofilho/liquidctl'
-version = '1.0.0'
+version = '1.1.0'
 
 with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = (fh.read().split('<!-- stop here for PyPI -->', 1)[0]
@@ -26,7 +26,7 @@ setuptools.setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Programming Language :: Python :: 3',
     ],
-    keywords='cross-platform driver nzxt kraken smart-device',
+    keywords='cross-platform driver nzxt kraken smart-device grid',
     project_urls={
         'Documentation': '{}/blob/v{}/README.md'.format(repo_url, version),
         'Changelog': '{}/blob/v{}/CHANGELOG.md'.format(repo_url, version),
