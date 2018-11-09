@@ -6,22 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 ### Added
+ - [Kraken] Add `super-breathing`, `super-wave` and `backwards-super-wave`
  - **Add driver for the NZXT Smart Device**
- - **Add experimental support for the NZXT Kraken M22**
- - **Add experimental support for the NZXT Grid+ V3**
- - Add `initialize` command for products like the NZXT Smart Device
+ - Add `initialize` command for the NZXT Smart Device, NZXT Grid+ V3 and similar products
  - Add device filtering options: `--vendor`, `--product`, `--usb-port` and `--serial`
  - Add `--debug` to complement `--verbose`
- - [Kraken] Add `super-breathing`, `super-wave` and `backwards-super-wave`
+ - **Add experimental support for the NZXT Grid+ V3**
+ - **Add experimental support for the NZXT Kraken M22**
+ - [Kraken][API] Add `set_instantaneous_speed(channel, speed)`
+ - [Kraken][API] Expose `supports_lighting`, `supports_cooling` and `supports_cooling_profiles` properties
 ### Changed
- - Improve the API for external code that uses our drivers
+ - [API] Improve the API for external code that uses our drivers
+ - [API] Switch to the standard Python `logging` module
  - No longer imply `--verbose` from `--dry-run`
  - [Kraken] Lower the minimum pump duty to 50%
+### Fixes
+ - Fix standalone module entry point for the CLI
+ - [Kraken] Fix fan and pump speed configuration on firmware v2.1.8 or older
 ### Deprecated
  - [Kraken] Deprecate `super`; use `super-fixed` instead
  - [Kraken] Deprecate undocumented API behavior of `initialize()` and `finalize()`; use `connect()` and `disconnect()` instead
 ### Removed
- - Remove no longer used symbols in `liquidctl.util`
+ - Remove unused symbols in `liquidctl.util`
 
 ## [1.0.0] - 2018-08-31
 ### Added

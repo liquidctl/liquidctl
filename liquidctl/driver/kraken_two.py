@@ -120,16 +120,17 @@ class KrakenTwoDriver(BaseUsbDriver):
     def __init__(self, device, description, device_type=DEVICE_KRAKENX):
         super().__init__(device, description)
         self.device_type = device_type
+        self.supports_lighting = True
+        self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
+        self._supports_cooling_profiles = None  # physical storage/later inferred from fw version
 
     def get_status(self):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
         """
-        msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
-        usb.util.dispose_resources(self.device)
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-        firmware = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
+        msg = self._read()
+        firmware = '{}.{}.{}'.format(*self._firmware_version)
         if self.device_type == self.DEVICE_KRAKENM:
             return [('Firmware version', firmware, '')]
         else:
@@ -142,6 +143,8 @@ class KrakenTwoDriver(BaseUsbDriver):
 
     def set_color(self, channel, mode, colors, speed):
         """Set the color mode for a specific channel."""
+        if not self.supports_lighting:
+            raise NotImplemented()
         if mode == 'super':
             LOGGER.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
@@ -187,7 +190,7 @@ class KrakenTwoDriver(BaseUsbDriver):
 
     def set_speed_profile(self, channel, profile):
         """Set channel to use a speed profile."""
-        if self.device_type == self.DEVICE_KRAKENM:  # FIXME
+        if not self.supports_cooling_profiles:
             raise NotImplemented()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         # ideally we could just call normalize_profile (optionally followed by autofill_profile),
@@ -207,20 +210,42 @@ class KrakenTwoDriver(BaseUsbDriver):
 
     def set_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
-        if True:  # FIXME
+        if not self.supports_cooling:
+            raise NotImplemented()
+        elif self.supports_cooling_profiles:
             self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
         else:
             self.set_instantaneous_speed(channel, speed)
 
     def set_instantaneous_speed(self, channel, speed):
         """Set channel to speed, but do not ensure persistence."""
-        cbase, smin, smax = self._speed_channels[channel]
+        if not self.supports_cooling:
+            raise NotImplemented()
+        cbase, smin, smax = _SPEED_CHANNELS[channel]
         if speed < smin:
             speed = smin
         elif speed > smax:
             speed = smax
+        LOGGER.info('setting %s PWM duty to %i%%', channel, speed)
         self._write([0x2, 0x4d, cbase & 0x70, 0, speed])
         usb.util.dispose_resources(self.device)
+
+    @property
+    def supports_cooling_profiles(self):
+        if self._supports_cooling_profiles is None:
+            if self.supports_cooling:
+                self._read()
+                self._supports_cooling_profiles = self._firmware_version >= (3, 0, 0)
+            else:
+                self._supports_cooling_profiles = False
+        return self._supports_cooling_profiles
+
+    def _read(self):
+        msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
+        usb.util.dispose_resources(self.device)
+        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
+        self._firmware_version = (msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
+        return msg
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
