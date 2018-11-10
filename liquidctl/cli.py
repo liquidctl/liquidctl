@@ -62,6 +62,7 @@ import sys
 
 from docopt import docopt
 
+import liquidctl.driver.asetek
 import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.usb
@@ -70,6 +71,7 @@ from liquidctl.version import __version__
 
 
 DRIVERS = [
+    liquidctl.driver.asetek.AsetekDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
     liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
 ]
