@@ -52,6 +52,7 @@ GNU General Public License for more details.
 import inspect
 import itertools
 import logging
+import usb
 
 from docopt import docopt
 
@@ -116,6 +117,8 @@ def _device_get_status(dev, num):
         status = dev.get_status()
         for k, v, u in status:
             print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
+    except usb.core.USBError as e:
+        LOGGER.error(str(e))
     finally:
         dev.disconnect()
     print('')
