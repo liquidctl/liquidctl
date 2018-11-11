@@ -1,5 +1,7 @@
 # liquidctl – liquid cooler control
 
+[![Join the chat at https://gitter.im/liquidctl/Lobby](https://badges.gitter.im/liquidctl/Lobby.svg)](https://gitter.im/liquidctl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ```
 # liquidctl list
 Device 0, NZXT Kraken X (X42, X52, X62 or X72)
