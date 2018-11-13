@@ -72,7 +72,7 @@ class AsetekDriver(BaseUsbDriver):
         (0x1b1c, 0x0c0a, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H115i
     ]
 
-    def __init__(self, device, description, speed_channel_count, color_channel_count):
+    def __init__(self, device, description):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
 
