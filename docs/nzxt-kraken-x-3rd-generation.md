@@ -13,6 +13,20 @@ All configuration is done through USB, and persists as long as the device still 
 This driver also has **experimental** support for the NZXT Kraken M22.  Note that the M22 has no pump or fan control, nor reports liquid temperatures.
 
 
+## Monitoring
+
+The device can report the fan and pump speed, as well as the liquid temperature.
+
+```
+# liquidctl status
+Device 0, NZXT Kraken X (X42, X52, X62 or X72)
+Liquid temperature          26.3  °C 
+Fan speed                    844  rpm
+Pump speed                  1992  rpm
+Firmware version           4.0.2     
+```
+
+
 ## Fan and pump speeds
 
 First, some important notes...

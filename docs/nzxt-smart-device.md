@@ -28,6 +28,32 @@ After powering on from Mechanical Off, or if there have been hardware changes, t
 ```
 
 
+## Monitoring
+
+The device can report fan information for each channel, the noise level at the onboard sensor, as well as the type of the connected LED accessories.
+
+```
+# liquidctl status
+Device 0, NZXT Smart Device
+Fan 1                        PWM     
+Fan 1 current               0.03  A  
+Fan 1 speed                 1634  rpm
+Fan 1 voltage              11.91  V  
+Fan 2                        PWM     
+Fan 2 current               0.07  A  
+Fan 2 speed                 1618  rpm
+Fan 2 voltage              11.91  V  
+Fan 3                        PWM     
+Fan 3 current               0.03  A  
+Fan 3 speed                 1732  rpm
+Fan 3 voltage              11.91  V  
+Firmware version           1.0.7     
+LED accessories                2     
+LED accessory type    Hue+ Strip     
+LED count (total)             20     
+Noise level                   61  dB 
+```
+
 
 ## Fan speeds
 
