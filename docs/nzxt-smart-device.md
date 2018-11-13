@@ -21,13 +21,12 @@ This driver also has **experimental** support for the NZXT Grid+ V3 fan controll
 
 ## Initialization
 
-After powering on from Mechanical Off, or if there have been hardware changes, the device must be re-initilizated.
+After powering on from Mechanical Off, or if there have been hardware changes, the device must first be initialized.  This takes a few seconds and should detect all connected fans and LED accessories.  Only then monitoring, proper fan control and all lighting effects will be available.
 
 ```
-liquidctl reset
+# liquidctl initialize
 ```
 
-Connected fans and LED strips will be detected and data reporting will begin.
 
 
 ## Fan speeds
