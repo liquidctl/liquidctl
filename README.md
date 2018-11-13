@@ -73,7 +73,7 @@ In all cases, a suitable backend for PyUSB, such as *libusb*, is necessary.  If 
 
 ### Windows and libusb
 
-On Windows, libusb v1.0.21 is recommended; later versions can crash when trying to release the device.
+On Windows, libusb v1.0.21 is recommended over the latest v1.0.22.  A known issue with PyUSB generates some annoying – if probably harmless – errors when trying to release the device.
 
 A simple way of installing it is to download the appropriate package from [libusb/releases](https://github.com/libusb/libusb/releases) and extract the `.dll` and `.lib` files that match you runtime (e.g. MS64) to your python installation directory (e.g. `%homepath%\Anaconda3\`).
 
