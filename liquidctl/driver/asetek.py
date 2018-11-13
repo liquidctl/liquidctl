@@ -4,9 +4,8 @@
 Supported devices
 -----------------
 
- - [⋯] Kraken X (X31, X41 and X61)
- - [ ] Corsair Hydro (H80i GTX/v2, H100i GTX/v2, H110 GTX and H115i)
- - [ ] EVGA CLC 120, 240 and 280 (except CLC 120 CL11)
+ - [⋯] NZXT Kraken X (X31, X41 or X61)
+ - [ ] EVGA CLC (120 CL12, 240 or 280)
 
 
 Driver features
@@ -17,7 +16,7 @@ Driver features
  - [⋯] reporting of firmware version
  - [⋯] monitoring of pump and fan speeds, and of liquid temperature
  - [⋯] control of pump and fan speeds
- - [ ] control of lighting modes and colors
+ - [✕] control of lighting modes and colors
 
 
 Copyright (C) 2018  Jonas Malaco
@@ -63,13 +62,7 @@ class AsetekDriver(BaseUsbDriver):
     """USB driver for fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'NZXT Kraken X (X31, X41 or X61; experimental)', {}),  # FIXME differentiate from EVGA CLCs
-        (0x1b1c, 0x0c02, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H80i GT
-        (0x1b1c, 0x0c03, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H100i GTX
-        (0x1b1c, 0x0c07, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H110i GTX
-        (0x1b1c, 0x0c08, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H80i v2
-        (0x1b1c, 0x0c09, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H100i v2
-        (0x1b1c, 0x0c0a, None, 'Possibly supported device (experimental)', {}),  # Corsair Hydro H115i
+        (0x2433, 0xb200, None, 'NZXT Kraken X (X31, X41 or X61) (experimental)', {}),  # TODO also EVGA CLC (120 CL12, 240 or 280)
     ]
 
     def __init__(self, device, description):
@@ -87,6 +80,7 @@ class AsetekDriver(BaseUsbDriver):
         Returns a list of (key, value, unit) tuples.
         """
         self._begin_transaction()
+        self._send_dummy_command()  # TODO test self.device.write([0x20]) (from Corsair coolers/OpenCorsairLink)
         msg = self._end_transaction_and_read()
         firmware = '{}.{}.{}.{}'.format(tuple(msg[0x17:0x1b]))
         return [
@@ -118,6 +112,26 @@ class AsetekDriver(BaseUsbDriver):
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         usb.util.dispose_resources(self.device)
         return msg
+
+    def _send_dummy_command(self):
+        """Send a dummy command to allow get_status to succeed.
+
+        It appears that reading from the device requires sending a command to
+        it first.  While there is likelly a command specically meant for this,
+        we are not aware of it yet.  Instead, this uses a color change command,
+        turning it off.
+
+        Assumes a transaction has already been started.
+        """
+        self.device.write(2, [
+            0x10,  # cmd: color change
+            0x00, 0x00, 0x00,  # main color: #000000
+            0x00, 0x00, 0x00,  # alt. color: #000000
+            0x00, 0x00, 0x00, 0x3c,  # constant
+            0x00, 0x00,  # interval: 0
+            0x01, 0x00, 0x00,  # mode: off
+            0x01, 0x00, 0x01  # constant
+            ])
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
