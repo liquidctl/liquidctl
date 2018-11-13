@@ -88,7 +88,7 @@ class AsetekDriver(BaseUsbDriver):
         """
         self._begin_transaction()
         msg = self._end_transaction_and_read()
-        firmware = '{}.{}.{}'.format(msg[0x17], msg[0x18] << 8 | msg[0x19], msg[0x1a])
+        firmware = '{}.{}.{}.{}'.format(tuple(msg[0x17:0x1b]))
         return [
             ('Liquid temperature', msg[10] + msg[14]/10, '°C'),  # TODO sensible?
             ('Fan speed', msg[0] << 8 | msg[1], 'rpm'),  # TODO sensible?
