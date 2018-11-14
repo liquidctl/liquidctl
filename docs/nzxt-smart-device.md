@@ -57,7 +57,7 @@ Noise level                   61  dB
 
 ## Fan speeds
 
-Fan speeds can only be set to fixed PWM duty values.
+Fan speeds can only be set to fixed duty values.
 
 ```
 # liquidctl set fan2 speed 90
@@ -77,7 +77,7 @@ Fan speeds can only be set to fixed PWM duty values.
 
 ## RGB lighting
 
-For lighting, the user can control up to 40 LEDs, if all four strips are connected.  They are chained in a single channel: `led`.
+For lighting, the user can control up to 40 LEDs, if all four strips or five fans are connected.  They are chained in a single channel: `led`.
 
 ```
 # liquidctl set led color fixed af5a2f
