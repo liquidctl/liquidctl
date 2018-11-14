@@ -56,9 +56,9 @@ import logging
 from docopt import docopt
 
 import liquidctl.util
-from liquidctl.version import __version__
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.driver.nzxt_smart_device import NzxtSmartDeviceDriver
+from liquidctl.version import __version__
 
 
 DRIVERS = [
