@@ -52,10 +52,11 @@ _ &nbsp; _Not available at the hardware level_
 
 ## Getting liquidctl
 
-The easiest way to get liquidctl is to grab a release from PyPI with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
+The easiest way to get liquidctl is to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history) with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
 
 ```
 # pip install liquidctl
+# pip install liquidctl==<version>
 # pip install git+https://github.com/jonasmalacofilho/liquidctl
 ```
 
