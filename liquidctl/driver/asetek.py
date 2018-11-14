@@ -82,7 +82,7 @@ class AsetekDriver(BaseUsbDriver):
         self._begin_transaction()
         self._send_dummy_command()  # TODO test self.device.write([0x20]) (from Corsair coolers/OpenCorsairLink)
         msg = self._end_transaction_and_read()
-        firmware = '{}.{}.{}.{}'.format(tuple(msg[0x17:0x1b]))
+        firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
             ('Liquid temperature', msg[10] + msg[14]/10, '°C'),  # TODO sensible?
             ('Fan speed', msg[0] << 8 | msg[1], 'rpm'),  # TODO sensible?
