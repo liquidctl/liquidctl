@@ -1,7 +1,11 @@
 import setuptools
 
 repo_url = 'https://github.com/jonasmalacofilho/liquidctl'
-version = '1.1.0'
+
+with open('liquidctl/version.py', 'r') as fv:
+    vals = {}
+    exec(fv.read(), vals)
+    version = vals['__version__']
 
 with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = (fh.read().split('<!-- stop here for PyPI -->', 1)[0]

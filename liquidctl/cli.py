@@ -56,6 +56,7 @@ import logging
 from docopt import docopt
 
 import liquidctl.util
+from liquidctl.version import __version__
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.driver.nzxt_smart_device import NzxtSmartDeviceDriver
 
@@ -65,7 +66,6 @@ DRIVERS = [
     NzxtSmartDeviceDriver,
 ]
 
-VERSION = (1, 1, 0)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ def _parse_color(color):
 
 
 def main():
-    args = docopt(__doc__, version='liquidctl v{}.{}.{}'.format(*VERSION))
+    args = docopt(__doc__, version='liquidctl v{}'.format(__version__))
 
     if args['--debug']:
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')

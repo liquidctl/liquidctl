@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html), using version identifiers translated to [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning)-compatible equivalents.
 
-## [Unreleased]
+## [1.1.0rc1] - 2018-11-14
 ### Added
  - [Kraken] Add `super-breathing`, `super-wave` and `backwards-super-wave`
  - **Add driver for the NZXT Smart Device**
@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - [API] Switch to the standard Python `logging` module
  - No longer imply `--verbose` from `--dry-run`
  - [Kraken] Lower the minimum pump duty to 50%
+ - Improve the documentation
 ### Fixes
  - Fix standalone module entry point for the CLI
  - [Kraken] Fix fan and pump speed configuration on firmware v2.1.8 or older

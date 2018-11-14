@@ -8,6 +8,7 @@ community.
 """
 
 from liquidctl.driver.kraken_two import KrakenTwoDriver
+from liquidctl.version import __version__
 import liquidctl.cli
 
 SPECTRUM = [
@@ -22,7 +23,7 @@ SPECTRUM = [
 ]
 
 if __name__ == '__main__':
-    print('Running on liquidctl version: {}'.format(liquidctl.cli.VERSION))
+    print('Running on liquidctl version: {}'.format(__version__))
 
     devices = liquidctl.cli.find_all_supported_devices()  # used by GKraken
 
