@@ -5,7 +5,7 @@ The Smart Device is a fan and LED controller that ships with the H200i, H400i, H
 
 It provides three independent fan channels with standard 4-pin connectors.  Both PWM and DC control is supported, and the device automatically chooses the appropriate mode.
 
-Additionally, up to four chained HUE+ LED strips can be driven from a single channel.  The firmware installed on the device exposes several presets, most of them familiar to other NZXT products.
+Additionally, up to four chained HUE+ LED strips, or five chained Aer RGB fans, can be driven from a single RGB channel.  The firmware installed on the device exposes several presets, most of them familiar to other NZXT products.
 
 A microphone is also present onboard, for  noise level optimization through CAM and AI.
 
