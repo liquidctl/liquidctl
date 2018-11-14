@@ -11,7 +11,7 @@ A microphone is also present onboard, for  noise level optimization through CAM 
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The device also reports the state of each fan channel, as well as speed, voltage and current.
 
-All capabilities available at the hardware level are supported, but other features offered by CAM, like noise level optimization, have not been implemented.
+All capabilities available at the hardware level are supported, but other features offered by CAM, like noise level optimization and presets based on CPU/GPU temperatures, have not been implemented.
 
 
 ## Experimental support for the Grid+ V3

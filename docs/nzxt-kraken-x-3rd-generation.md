@@ -7,6 +7,8 @@ They incorporate customizable fan and pump speed control with PWM, a liquid temp
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The cooler also reports fan and pump speed and liquid temperature via USB; pump speed can also be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
+All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, have not been implemented.  Pump and fan control based on liquid temperature might be supported depending on the firmware version.
+
 
 ## Experimental support for the Kraken M22
 
