@@ -41,7 +41,7 @@ import logging
 
 import usb.util
 
-from liquidctl.driver.base_usb import BaseUsbDriver
+from liquidctl.driver.usb import UsbDeviceDriver
 
 
 LOGGER = logging.getLogger(__name__)
@@ -58,23 +58,43 @@ _WRITE_LENGTH = 32  # FIXME
 _WRITE_TIMEOUT = 2000
 
 
-class AsetekDriver(BaseUsbDriver):
+class AsetekDriver(UsbDeviceDriver):
     """USB driver for fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'NZXT Kraken X (X31, X41 or X61) (experimental)', {}),  # TODO also EVGA CLC (120 CL12, 240 or 280)
     ]
 
-    def __init__(self, device, description):
+    def __init__(self, device, description, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
 
-    def initialize(self):
-        """Initialize the device."""
-        self.device.ctrl_transfer(0x40, 0x2, 0x0002)
-        usb.util.dispose_resources(self.device)
+    def connect(self, **kwargs):
+        """Connect to the device.
 
-    def get_status(self):
+        Attaches to the kernel driver (or, on Linux, replaces it) and, if no
+        configuration has been set, configures the device to use the first
+        available one.  Finally, opens the device.
+        """
+        super().connect()
+        try:
+            self._open()
+        except Exception as err:
+            LOGGER.debug('failed to open (will retry): {}'.format(err),
+                         exc_info=True)
+            self._close()
+            self._open()
+
+    def disconnect(self, **kwargs):
+        """Disconnect from the device.
+
+        Closes the device, cleans up and, on Linux, reattaches the
+        previously used kernel driver.
+        """
+        self._close()
+        super().disconnect()
+
+    def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -90,7 +110,7 @@ class AsetekDriver(BaseUsbDriver):
             ('Firmware version', firmware, '')  # TODO sensible?
         ]
 
-    def set_fixed_speed(self, channel, speed):
+    def set_fixed_speed(self, channel, speed, **kwargs):
         """Set channel to a fixed speed."""
         mtype, smin, smax = _SPEED_CHANNELS[channel]
         if speed < smin:
@@ -102,15 +122,35 @@ class AsetekDriver(BaseUsbDriver):
         self._write([mtype, speed])
         self._end_transaction_and_read()
 
+    def _open(self):
+        """Open the USBXpress device."""
+        LOGGER.debug('open device')
+        try:
+            self.device.ctrl_transfer(0x40, 0x0, 0xFFFF)
+            self.clear_halt(_READ_ENDPOINT)
+            self.clear_halt(_WRITE_ENDPOINT)
+        except Exception as err:
+            LOGGER.debug('ignoring early failure: {}'.format(err),
+                         exc_info=True)
+        self.device.ctrl_transfer(0x40, 0x2, 0x0002)
+
+    def _close(self):
+        """Close the USBXpress device."""
+        LOGGER.debug('close device')
+        self.device.ctrl_transfer(0x40, 0x2, 0x0004)
+
     def _begin_transaction(self):
-        # TODO test if this can be moved to connect()
+        """Begin a new transaction before writing to the device."""
+        # TODO try to remove
+        LOGGER.debug('begin transaction')
         self.device.ctrl_transfer(0x40, 0x2, 0x0001)
 
     def _end_transaction_and_read(self):
+        """End the transaction by reading from the device."""
         # TODO test if this is unnecessary (unless we actually want the status)
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-        usb.util.dispose_resources(self.device)
+        self.device.release()
         return msg
 
     def _send_dummy_command(self):
@@ -137,7 +177,5 @@ class AsetekDriver(BaseUsbDriver):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
-        if self.dry_run:
-            return
         self.device.write(_WRITE_ENDPOINT, data + padding, _WRITE_TIMEOUT)
 
