@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 
-import usb.util
+import usb
 
 from liquidctl.driver.usb import UsbDeviceDriver
 
@@ -73,7 +73,7 @@ class AsetekDriver(UsbDeviceDriver):
         super().connect()
         try:
             self._open()
-        except Exception as err:
+        except usb.core.USBError as err:
             LOGGER.debug('failed to open (will retry): %s', str(err), exc_info=True)
             self._close()
             self._open()
@@ -122,7 +122,7 @@ class AsetekDriver(UsbDeviceDriver):
             self.device.ctrl_transfer(0x40, 0x0, 0xFFFF)
             self.device.clear_halt(_READ_ENDPOINT)
             self.device.clear_halt(_WRITE_ENDPOINT)
-        except Exception as err:
+        except usb.core.USBError as err:
             LOGGER.debug('ignoring early failure: %s', str(err), exc_info=True)
         self.device.ctrl_transfer(0x40, 0x2, 0x0002)
 
