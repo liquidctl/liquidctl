@@ -159,7 +159,7 @@ class AsetekDriver(UsbDeviceDriver):
         not aware of any command specifically for getting data.  Instead, this
         uses a color change command, turning it off.
         """
-        self.device.write(2, [
+        self._write([
             0x10,  # cmd: color change
             0x00, 0x00, 0x00,  # main color: #000000
             0x00, 0x00, 0x00,  # alt. color: #000000
