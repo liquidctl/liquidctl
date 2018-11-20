@@ -36,7 +36,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import itertools
 import logging
 
 import usb.util
@@ -63,10 +62,6 @@ class AsetekDriver(UsbDeviceDriver):
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'NZXT Kraken X (X31, X41 or X61) (experimental)', {}),  # TODO also EVGA CLC (120 CL12, 240 or 280)
     ]
-
-    def __init__(self, device, description, **kwargs):
-        """Instantiate a driver with a device handle."""
-        super().__init__(device, description)
 
     def connect(self, **kwargs):
         """Connect to the device.
