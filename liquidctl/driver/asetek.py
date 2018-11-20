@@ -79,8 +79,7 @@ class AsetekDriver(UsbDeviceDriver):
         try:
             self._open()
         except Exception as err:
-            LOGGER.debug('failed to open (will retry): {}'.format(err),
-                         exc_info=True)
+            LOGGER.debug('failed to open (will retry): %s', str(err), exc_info=True)
             self._close()
             self._open()
 
@@ -126,11 +125,10 @@ class AsetekDriver(UsbDeviceDriver):
         LOGGER.debug('open device')
         try:
             self.device.ctrl_transfer(0x40, 0x0, 0xFFFF)
-            self.clear_halt(_READ_ENDPOINT)
-            self.clear_halt(_WRITE_ENDPOINT)
+            self.device.clear_halt(_READ_ENDPOINT)
+            self.device.clear_halt(_WRITE_ENDPOINT)
         except Exception as err:
-            LOGGER.debug('ignoring early failure: {}'.format(err),
-                         exc_info=True)
+            LOGGER.debug('ignoring early failure: %s', str(err), exc_info=True)
         self.device.ctrl_transfer(0x40, 0x2, 0x0002)
 
     def _close(self):
