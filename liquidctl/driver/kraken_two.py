@@ -112,7 +112,7 @@ class KrakenTwoDriver(BaseUsbDriver):
         (0x1e71, 0x170e, None, 'NZXT Kraken X (X42, X52, X62 or X72)', {
             'device_type': DEVICE_KRAKENX
         }),
-        (0x1e71, 0x1715, None, 'NZXT Kraken M22 (experimental)', {
+        (0x1e71, 0x1715, None, 'NZXT Kraken M22', {
             'device_type': DEVICE_KRAKENM
         }),
     ]
