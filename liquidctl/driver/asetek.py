@@ -51,7 +51,7 @@ _SPEED_CHANNELS = {  # (message type, minimum duty, maximum duty)
     'pump':  (0x13, 0, 100),  # TODO adjust min duty
 }
 _READ_ENDPOINT = 0x82
-_READ_LENGTH = 64  # TODO test if 32 is sufficient
+_READ_LENGTH = 32
 _READ_TIMEOUT = 2000
 _WRITE_ENDPOINT = 0x2
 _WRITE_LENGTH = 32  # FIXME
@@ -100,14 +100,14 @@ class AsetekDriver(UsbDeviceDriver):
         Returns a list of (key, value, unit) tuples.
         """
         self._begin_transaction()
-        self._send_dummy_command()  # TODO test self.device.write([0x20]) (from Corsair coolers/OpenCorsairLink)
+        self._send_dummy_command()
         msg = self._end_transaction_and_read()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
-            ('Liquid temperature', msg[10] + msg[14]/10, '°C'),  # TODO sensible?
-            ('Fan speed', msg[0] << 8 | msg[1], 'rpm'),  # TODO sensible?
-            ('Pump speed', msg[8] << 8 | msg[9], 'rpm'),  # TODO sensible?
-            ('Firmware version', firmware, '')  # TODO sensible?
+            ('Liquid temperature', msg[10] + msg[14]/10, '°C'),  # TODO sensible decimal?
+            ('Fan speed', msg[0] << 8 | msg[1], 'rpm'),
+            ('Pump speed', msg[8] << 8 | msg[9], 'rpm'),
+            ('Firmware version', firmware, '')  # TODO sensible firmware version?
         ]
 
     def set_fixed_speed(self, channel, speed, **kwargs):
@@ -156,12 +156,9 @@ class AsetekDriver(UsbDeviceDriver):
     def _send_dummy_command(self):
         """Send a dummy command to allow get_status to succeed.
 
-        It appears that reading from the device requires sending a command to
-        it first.  While there is likelly a command specically meant for this,
-        we are not aware of it yet.  Instead, this uses a color change command,
-        turning it off.
-
-        Assumes a transaction has already been started.
+        Reading from the device appears to require writing to it first.  We are
+        not aware of any command specifically for getting data.  Instead, this
+        uses a color change command, turning it off.
         """
         self.device.write(2, [
             0x10,  # cmd: color change
