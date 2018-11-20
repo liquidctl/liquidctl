@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased]
 ### Changed
  - Change Kraken M22 from experimental to implemented
+ - Only show exception tracebacks if -g has been set
 
 ## [1.1.0rc1] - 2018-11-14
 ### Added

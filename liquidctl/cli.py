@@ -20,8 +20,8 @@ Device selection options:
 Other options:
   --speed <value>           Animation speed [default: normal]
   -n, --dry-run             Do not apply any settings
-  -v, --verbose             Output supplemental information to stderr
-  -g, --debug               Output debug information to stderr
+  -v, --verbose             Output additional information
+  -g, --debug               Show debug information on stderr
   --version                 Display the version number
   --help                    Show this message
 
@@ -52,6 +52,7 @@ GNU General Public License for more details.
 import inspect
 import itertools
 import logging
+import sys
 
 from docopt import docopt
 
@@ -151,6 +152,7 @@ def main():
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
         logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        sys.tracebacklimit = 0
 
     if args['--dry-run']:
         LOGGER.warning('This is a --dry-run')
