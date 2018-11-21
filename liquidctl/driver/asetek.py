@@ -40,6 +40,7 @@ import logging
 
 import usb
 
+import liquidctl.util
 from liquidctl.driver.usb import UsbDeviceDriver
 
 
@@ -49,6 +50,12 @@ _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
     'fan':   (0x12, 0, 100),  # TODO adjust min duty
     'pump':  (0x13, 0, 100),  # TODO adjust min duty
 }
+_VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
+    'fan':   (0x11, 0, 100)   # TODO adjust min duty
+}
+_MAX_PROFILE_POINTS = 6
+_CRITICAL_TEMPERATURE = 60
+_PUMP_REF_TEMPERATURE = 50
 _READ_ENDPOINT = 0x82
 _READ_LENGTH = 32
 _READ_TIMEOUT = 2000
@@ -102,6 +109,33 @@ class AsetekDriver(UsbDeviceDriver):
             ('Pump speed', msg[8] << 8 | msg[9], 'rpm'),
             ('Firmware version', firmware, '')  # TODO sensible firmware version?
         ]
+
+    def set_speed_profile(self, pseudo_channel, profile, **kwargs):
+        """Set (pseudo) channel to use a speed profile."""
+        channel = pseudo_channel if pseudo_channel != 'cooler' else 'fan'
+        mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
+        opt_profile = self._prepare_profile(profile, dmin, dmax)
+        self._begin_transaction()
+        if pseudo_channel == 'cooler':
+            # set the pump to whatever duty the fans will be at a reference temperature
+            pump_duty = liquidctl.util.interpolate_profile(opt_profile, _PUMP_REF_TEMPERATURE)
+            self._send_fixed_speed('pump', pump_duty)
+        for temp, duty in opt_profile:
+            LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+                        channel, duty, temp)
+        temps, duties = map(list, zip(*opt_profile))
+        self._write([mtype, 0] + temps + duties)
+        self._end_transaction_and_read()
+
+    def _prepare_profile(self, profile, min_duty, max_duty):
+        norm = liquidctl.util.normalize_profile(profile, _CRITICAL_TEMPERATURE)
+        opt = liquidctl.util.autofill_profile(norm, _MAX_PROFILE_POINTS)
+        for i, (temp, duty) in enumerate(opt):
+            if duty < min_duty:
+                opt[i] = (temp, min_duty)
+            elif duty > max_duty:
+                opt[i] = (temp, max_duty)
+        return opt
 
     def set_fixed_speed(self, pseudo_channel, speed, **kwargs):
         """Set (pseudo) channel to a fixed speed."""
