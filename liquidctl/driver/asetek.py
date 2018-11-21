@@ -45,7 +45,7 @@ from liquidctl.driver.usb import UsbDeviceDriver
 
 LOGGER = logging.getLogger(__name__)
 
-_SPEED_CHANNELS = {  # (message type, minimum duty, maximum duty)
+_FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
     'fan':   (0x12, 0, 100),  # TODO adjust min duty
     'pump':  (0x13, 0, 100),  # TODO adjust min duty
 }
@@ -103,17 +103,25 @@ class AsetekDriver(UsbDeviceDriver):
             ('Firmware version', firmware, '')  # TODO sensible firmware version?
         ]
 
-    def set_fixed_speed(self, channel, speed, **kwargs):
+    def set_fixed_speed(self, pseudo_channel, speed, **kwargs):
+        """Set (pseudo) channel to a fixed speed."""
+        self._begin_transaction()
+        if pseudo_channel == 'cooler':
+            self._send_fixed_speed('pump', speed)
+            self._send_fixed_speed('fan', speed)
+        else:
+            self._send_fixed_speed(pseudo_channel, speed)
+        self._end_transaction_and_read()
+
+    def _send_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
-        mtype, smin, smax = _SPEED_CHANNELS[channel]
+        mtype, smin, smax = _FIXED_SPEED_CHANNELS[channel]
         if speed < smin:
             speed = smin
         elif speed > smax:
             speed = smax
         LOGGER.info('setting %s PWM duty to %i%%', channel, speed)
-        self._begin_transaction()
         self._write([mtype, speed])
-        self._end_transaction_and_read()
 
     def _open(self):
         """Open the USBXpress device."""
