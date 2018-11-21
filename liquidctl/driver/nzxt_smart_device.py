@@ -235,6 +235,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
             speed = smin
         elif speed > smax:
             speed = smax
+        LOGGER.info('setting %s duty to %i%%', channel, speed)
         self._write([0x2, 0x4d, cid, 0, speed])
         usb.util.dispose_resources(self.device)
 
