@@ -144,7 +144,7 @@ class KrakenTwoDriver(BaseUsbDriver):
     def set_color(self, channel, mode, colors, speed):
         """Set the color mode for a specific channel."""
         if not self.supports_lighting:
-            raise NotImplemented()
+            raise NotImplementedError()
         if mode == 'super':
             LOGGER.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
@@ -191,7 +191,7 @@ class KrakenTwoDriver(BaseUsbDriver):
     def set_speed_profile(self, channel, profile):
         """Set channel to use a speed profile."""
         if not self.supports_cooling_profiles:
-            raise NotImplemented()
+            raise NotImplementedError()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         # ideally we could just call normalize_profile (optionally followed by autofill_profile),
         # but Kraken devices currently require the same set of temperatures on both channels
@@ -211,7 +211,7 @@ class KrakenTwoDriver(BaseUsbDriver):
     def set_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
-            raise NotImplemented()
+            raise NotImplementedError()
         elif self.supports_cooling_profiles:
             self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
         else:
@@ -220,7 +220,7 @@ class KrakenTwoDriver(BaseUsbDriver):
     def set_instantaneous_speed(self, channel, speed):
         """Set channel to speed, but do not ensure persistence."""
         if not self.supports_cooling:
-            raise NotImplemented()
+            raise NotImplementedError()
         cbase, smin, smax = _SPEED_CHANNELS[channel]
         if speed < smin:
             speed = smin
