@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""Adjust Kraken speeds in realtime with software.
+"""Adjust Kraken speeds dynamically, with software.
 
-This is still just a proof of concept.
+This is just a proof of concept.
 
 Usage:
   krakencurve-poc [options] show-sensors
@@ -67,8 +67,8 @@ def parse_profile(arg, mintemp, maxtemp, minduty=0, maxduty=100):
     [(0, 35), (59, 35), (60, 100)]
 
     The profile is validated in structure and acceptable ranges.  Duty is
-    checked against `minduty` and `maxduty`.  Temperature must be between 0°C
-    and `maxtemp`.
+    checked against `minduty` and `maxduty`.  Temperature must be between
+    `mintemp` and `maxtemp`.
 
     >>> parse_profile('(20,30),(50,100', 0, 60, 25, 100)
     Traceback (most recent call last):
@@ -126,7 +126,7 @@ def control(cooler, pump_profile, fan_profile, update_interval,
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'doctest':
+    if len(sys.argv) == 2 and sys.argv[1] == 'doctest':
         import doctest
         doctest.testmod(verbose=True)
         sys.exit(0)
