@@ -70,6 +70,8 @@ $ cd liquidctl
 
 Of course, a virtual environment can always be used instead of installing the package globally.
 
+AUR package is available at: https://aur.archlinux.org/packages/python-liquidctl/
+
 In all cases, a suitable backend for PyUSB, such as *libusb*, is necessary.  If you use other Python programs that interact with USB devices, one might already be installed.
 
 ### Windows and libusb
@@ -116,6 +118,33 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will print as much information as possible to help identify its cause; be sure to include it when opening a new issue.
 
+### Running liquidctl as systemd service
+
+Copy the sample below to `/etc/system.d/system/liquidctl.service` and edit
+according to your preferences:
+
+```
+[Unit]
+Description=AIO startup service
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=liquidctl set pump speed 100
+ExecStart=liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
+ExecStart=liquidctl set logo color fading ea02ff ff0004
+ExecStart=liquidctl set ring color alternating 836aff f706ff
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then, enable and start it:
+
+```
+# systemctl enable liquidctl
+# systemctl start liquidctl
+```
 
 ## License
 
