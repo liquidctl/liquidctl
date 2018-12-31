@@ -70,8 +70,6 @@ $ cd liquidctl
 
 Of course, a virtual environment can always be used instead of installing the package globally.
 
-AUR package is available at: https://aur.archlinux.org/packages/python-liquidctl/
-
 In all cases, a suitable backend for PyUSB, such as *libusb*, is necessary.  If you use other Python programs that interact with USB devices, one might already be installed.
 
 ### Windows and libusb
@@ -79,6 +77,10 @@ In all cases, a suitable backend for PyUSB, such as *libusb*, is necessary.  If 
 On Windows, libusb v1.0.21 is recommended over the latest v1.0.22.  A known issue with PyUSB generates some annoying – if probably harmless – errors when trying to release the device.
 
 A simple way of installing it is to download the appropriate package from [libusb/releases](https://github.com/libusb/libusb/releases) and extract the `.dll` and `.lib` files that match you runtime (e.g. MS64) to your python installation directory (e.g. `%homepath%\Anaconda3\`).
+
+### Packages for Linux distributions
+
+An AUR package has been made available for Arch Linux by a third-party contributor: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/).
 
 
 ## The command-line interface
