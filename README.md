@@ -118,33 +118,34 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will print as much information as possible to help identify its cause; be sure to include it when opening a new issue.
 
-### Running liquidctl as systemd service
+### Running liquidctl from a Systemd service
 
-Copy the sample below to `/etc/system.d/system/liquidctl.service` and edit
-according to your preferences:
+On systems running Linux and Systemd, a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, you can edit it to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
 
 ```
 [Unit]
 Description=AIO startup service
-After=multi-user.target
 
 [Service]
 Type=oneshot
-ExecStart=liquidctl set pump speed 100
+ExecStart=liquidctl set pump speed 90
 ExecStart=liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-ExecStart=liquidctl set logo color fading ea02ff ff0004
-ExecStart=liquidctl set ring color alternating 836aff f706ff
+ExecStart=liquidctl set ring color fading 350017 ff2608
+ExecStart=liquidctl set logo color spectrum-wave
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 
-Then, enable and start it:
+The unit can be started manually or set to automatically run during boot using standard Systemd tools:
 
 ```
-# systemctl enable liquidctl
-# systemctl start liquidctl
+# systemctl start liquidcfg
+# systemctl enable liquidcfg
 ```
+
+A more thorough example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl).
+
 
 ## License
 
