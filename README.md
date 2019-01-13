@@ -151,7 +151,7 @@ A more thorough example can be seen at [jonasmalacofilho/dotfiles](https://githu
 
 ## License
 
-Copyright (C) 2018  Jonas Malaco
+Copyright (C) 2018  Jonas Malaco  
 Copyright (C) 2018  each contribution's author
 
 Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
@@ -175,8 +175,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
 
-A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.  
-A special thanks to all krakenx contributors; this project would not exist were not for it.
+A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.  A special thanks to all krakenx contributors; this project would not exist were not for it.
 
 ### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
