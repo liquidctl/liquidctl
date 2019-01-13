@@ -175,7 +175,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
 
-A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.  A special thanks to all krakenx contributors; this project would not exist were not for it.
+A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.
+
+A special thanks to all krakenx contributors; this project would not exist were not for it.
 
 ### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
