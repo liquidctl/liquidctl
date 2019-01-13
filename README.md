@@ -175,13 +175,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
 
-Another cross-plataform interface for controlling third generation NZXT Kraken X coolers.
-
-While liquidctl handles each setting separately, for easy configuration of individual aspects of the coolers, krakenx allows a device to be completely configured in a single command.
-
-Feature wise, liquidctl currently extends krakenx with the support for pump and fan speed profiles, and fixes two open issues that seem to manifest with recent firmware versions.  It also further extends the list of supported RGB animations.
-
-A special thank you to all krakenx contributors.  This project would not exist were not for it.
+A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.  
+A special thanks to all krakenx contributors; this project would not exist were not for it.
 
 ### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
