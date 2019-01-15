@@ -148,6 +148,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
         super().__init__(device, description)
         self._speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                                 for i in range(speed_channel_count)}
+        self._speed_channels['fans-all'] = (-1, _MIN_DUTY, _MAX_DUTY)
         self._color_channels = {'sync': (0)} if color_channel_count else {}
 
     def initialize(self):
@@ -235,8 +236,14 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
             speed = smin
         elif speed > smax:
             speed = smax
+
         LOGGER.info('setting %s duty to %i%%', channel, speed)
-        self._write([0x2, 0x4d, cid, 0, speed])
+        if cid >= 0:
+            self._write([0x2, 0x4d, cid, 0, speed])
+        else:
+            for i in range(self.device.speed_channel_count):
+                self._write([0x2, 0x4d, i, 0, speed])
+
         usb.util.dispose_resources(self.device)
 
     def _write(self, data):
