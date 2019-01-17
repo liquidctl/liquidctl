@@ -19,8 +19,8 @@ Driver features
  - [✕] control of lighting modes and colors
 
 
-Copyright (C) 2018  Jonas Malaco
-Copyright (C) 2018  each contribution's author
+Copyright (C) 2018–2019  Jonas Malaco
+Copyright (C) 2018–2019  each contribution's author
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,20 +47,34 @@ from liquidctl.driver.usb import UsbDeviceDriver
 LOGGER = logging.getLogger(__name__)
 
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'fan':   (0x12, 0, 100),  # TODO adjust min duty
-    'pump':  (0x13, 0, 100),  # TODO adjust min duty
+    'fan':   (0x12, 30, 100),
+    'pump':  (0x13, 30, 100),
 }
 _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
-    'fan':   (0x11, 0, 100)   # TODO adjust min duty
+    'fan':   (0x11, 30, 100)
 }
 _MAX_PROFILE_POINTS = 6
 _CRITICAL_TEMPERATURE = 60
-_PUMP_REF_TEMPERATURE = 50
 _READ_ENDPOINT = 0x82
 _READ_LENGTH = 32
 _READ_TIMEOUT = 2000
 _WRITE_ENDPOINT = 0x2
 _WRITE_TIMEOUT = 2000
+
+# USBXpress specific control parameters; from the USBXpress SDK
+# (Customization/CP21xx_Customization/AN721SW_Linux/silabs_usb.h)
+_USBXPRESS_REQUEST = 0x02
+_USBXPRESS_FLUSH_BUFFERS = 0x01
+_USBXPRESS_CLEAR_TO_SEND = 0x02
+_USBXPRESS_NOT_CLEAR_TO_SEND = 0x04
+_USBXPRESS_GET_PART_NUM = 0x08
+
+# Unknown control parameters; from Craig's libSiUSBXp and OpenCorsairLink
+_UNKNOWN_OPEN_REQUEST = 0x00
+_UNKNOWN_OPEN_VALUE = 0xFFFF
+
+# Control request type
+_USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
 
 
 class AsetekDriver(UsbDeviceDriver):
@@ -81,7 +95,7 @@ class AsetekDriver(UsbDeviceDriver):
         try:
             self._open()
         except usb.core.USBError as err:
-            LOGGER.debug('failed to open (will retry): %s', str(err), exc_info=True)
+            LOGGER.warning('failed to open (%s), trying to close first', str(err), exc_info=True)
             self._close()
             self._open()
 
@@ -110,20 +124,16 @@ class AsetekDriver(UsbDeviceDriver):
             ('Firmware version', firmware, '')  # TODO sensible firmware version?
         ]
 
-    def set_speed_profile(self, pseudo_channel, profile, **kwargs):
-        """Set (pseudo) channel to use a speed profile."""
-        channel = pseudo_channel if pseudo_channel != 'cooler' else 'fan'
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Set channel to use a speed profile."""
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
         opt_profile = self._prepare_profile(profile, dmin, dmax)
-        self._begin_transaction()
-        if pseudo_channel == 'cooler':
-            # set the pump to whatever duty the fans will be at a reference temperature
-            pump_duty = liquidctl.util.interpolate_profile(opt_profile, _PUMP_REF_TEMPERATURE)
-            self._send_fixed_speed('pump', pump_duty)
         for temp, duty in opt_profile:
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                         channel, duty, temp)
         temps, duties = map(list, zip(*opt_profile))
+        self._begin_transaction()
+        # note: it might be necessary to call _send_dummy_command first
         self._write([mtype, 0] + temps + duties)
         self._end_transaction_and_read()
 
@@ -137,15 +147,21 @@ class AsetekDriver(UsbDeviceDriver):
                 opt[i] = (temp, max_duty)
         return opt
 
-    def set_fixed_speed(self, pseudo_channel, speed, **kwargs):
+    def set_fixed_speed(self, channel, speed, **kwargs):
         """Set (pseudo) channel to a fixed speed."""
-        self._begin_transaction()
-        if pseudo_channel == 'cooler':
+        if channel == 'sync':  # TODO remove once setting independently is working well
+            self._begin_transaction()
             self._send_fixed_speed('pump', speed)
             self._send_fixed_speed('fan', speed)
-        else:
-            self._send_fixed_speed(pseudo_channel, speed)
-        self._end_transaction_and_read()
+            self._end_transaction_and_read()
+        elif _FIXED_SPEED_CHANNELS[channel]:
+            self._begin_transaction()
+            if channel == 'fan':  # TODO check order of dummy and real command
+                self._send_dummy_command()
+            self._send_fixed_speed(channel, speed)
+            if channel == 'pump':
+                self._send_dummy_command()
+            self._end_transaction_and_read()
 
     def _send_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
@@ -161,27 +177,32 @@ class AsetekDriver(UsbDeviceDriver):
         """Open the USBXpress device."""
         LOGGER.debug('open device')
         try:
-            self.device.ctrl_transfer(0x40, 0x0, 0xFFFF)
+            self.device.ctrl_transfer(_USBXPRESS, _UNKNOWN_OPEN_REQUEST, _UNKNOWN_OPEN_VALUE)
             self.device.clear_halt(_READ_ENDPOINT)
             self.device.clear_halt(_WRITE_ENDPOINT)
         except usb.core.USBError as err:
-            LOGGER.debug('ignoring early failure: %s', str(err), exc_info=True)
-        self.device.ctrl_transfer(0x40, 0x2, 0x0002)
+            LOGGER.warning('failed to (pre) open (%s), but continuing', str(err), exc_info=True)
+        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
 
     def _close(self):
         """Close the USBXpress device."""
         LOGGER.debug('close device')
-        self.device.ctrl_transfer(0x40, 0x2, 0x0004)
+        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_NOT_CLEAR_TO_SEND)
 
     def _begin_transaction(self):
         """Begin a new transaction before writing to the device."""
-        # TODO try to remove
         LOGGER.debug('begin transaction')
-        self.device.ctrl_transfer(0x40, 0x2, 0x0001)
+        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_FLUSH_BUFFERS)
 
     def _end_transaction_and_read(self):
-        """End the transaction by reading from the device."""
-        # TODO test if this is unnecessary (unless we actually want the status)
+        """End the transaction by reading from the device.
+
+        According to the official documentation, as well as Craig's open-source
+        implementation (libSiUSBXp), it should be necessary to check the queue
+        size and read data in chunks.  However, leviathan and its derivatives
+        seem to work fine without this complexity; we are currently try the
+        same approach.
+        """
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         self.device.release()
