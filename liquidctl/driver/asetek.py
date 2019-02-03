@@ -95,7 +95,8 @@ class AsetekDriver(UsbDeviceDriver):
         try:
             self._open()
         except usb.core.USBError as err:
-            LOGGER.warning('failed to open (%s), trying to close first', str(err), exc_info=True)
+            LOGGER.warning('report: failed to open right away, will close first')
+            LOGGER.debug(err, exc_info=True)
             self._close()
             self._open()
 
@@ -177,11 +178,15 @@ class AsetekDriver(UsbDeviceDriver):
         """Open the USBXpress device."""
         LOGGER.debug('open device')
         try:
+            pre = 'control: open'
             self.device.ctrl_transfer(_USBXPRESS, _UNKNOWN_OPEN_REQUEST, _UNKNOWN_OPEN_VALUE)
+            pre = 'clear halt: read'
             self.device.clear_halt(_READ_ENDPOINT)
+            pre = 'clear halt: write'
             self.device.clear_halt(_WRITE_ENDPOINT)
         except usb.core.USBError as err:
-            LOGGER.warning('failed to (pre) open (%s), but continuing', str(err), exc_info=True)
+            LOGGER.warning('report: failed to (pre) open (%s), ignoring', pre)
+            LOGGER.debug(err, exc_info=True)
         self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
 
     def _close(self):
