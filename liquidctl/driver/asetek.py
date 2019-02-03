@@ -5,7 +5,7 @@ Supported devices
 -----------------
 
  - [⋯] NZXT Kraken X (X31, X41 or X61)
- - [ ] EVGA CLC (120 CL12, 240 or 280)
+ - [⋯] EVGA CLC (120 CL12, 240 or 280)
 
 
 Driver features
@@ -81,7 +81,7 @@ class AsetekDriver(UsbDeviceDriver):
     """USB driver for fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'NZXT Kraken X (X31, X41 or X61) (experimental)', {}),  # TODO also EVGA CLC (120 CL12, 240 or 280)
+        (0x2433, 0xb200, None, 'Asetek 690LC (NZXT, EVGA or other) (experimental)', {}),
     ]
 
     def connect(self, **kwargs):
