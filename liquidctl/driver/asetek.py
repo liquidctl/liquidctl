@@ -157,12 +157,12 @@ class AsetekDriver(UsbDeviceDriver):
             self._end_transaction_and_read()
         elif _FIXED_SPEED_CHANNELS[channel]:
             self._begin_transaction()
-            if channel == 'fan':  # TODO check order of dummy and real command
-                self._send_dummy_command()
             self._send_fixed_speed(channel, speed)
-            if channel == 'pump':
-                self._send_dummy_command()
-            self._end_transaction_and_read()
+            try:
+                self._end_transaction_and_read()
+            except usb.core.USBError as err:
+                LOGGER.warning('report: failed to read after setting speed')
+                LOGGER.debug(err, exc_info=True)
 
     def _send_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
