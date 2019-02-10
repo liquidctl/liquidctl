@@ -214,10 +214,10 @@ class AsetekDriver(UsbDeviceDriver):
             0x10,  # cmd: color change
             0x00, 0x00, 0x00,  # main color: #000000
             0x00, 0x00, 0x00,  # alt. color: #000000
-            0x00, 0x00, 0x00, 0x3c,  # constant
-            0x00, 0x00,  # interval: 0
-            0x01, 0x00, 0x00,  # mode: off
-            0x01, 0x00, 0x01  # constant
+            0xff, 0x00, 0x00, 0x37,  # TODO
+            0x00, 0x00,  # interval (alternating, blinking): 0
+            0x01, 0x00, 0x00,  # mode: on, !alternating, !fixed
+            0x01, 0x00, 0x01  # TODO
             ])
 
     def _write(self, data):
