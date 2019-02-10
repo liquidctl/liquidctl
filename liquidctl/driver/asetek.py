@@ -115,14 +115,14 @@ class AsetekDriver(UsbDeviceDriver):
         Returns a list of (key, value, unit) tuples.
         """
         self._begin_transaction()
-        self._send_dummy_command()
+        self._write([0x14, 0, 0, 0])
         msg = self._end_transaction_and_read()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
-            ('Liquid temperature', msg[10] + msg[14]/10, '°C'),  # TODO sensible decimal?
+            ('Liquid temperature', msg[10] + msg[14]/10, '°C'),
             ('Fan speed', msg[0] << 8 | msg[1], 'rpm'),
             ('Pump speed', msg[8] << 8 | msg[9], 'rpm'),
-            ('Firmware version', firmware, '')  # TODO sensible firmware version?
+            ('Firmware version', firmware, '')
         ]
 
     def set_speed_profile(self, channel, profile, **kwargs):
