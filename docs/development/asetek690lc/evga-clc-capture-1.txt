@@ -1,0 +1,189 @@
+Captures by bmuzika; received 2 Feb 2019
+Original data: Wireshark Captures.zip/Opening-only_clc.pcapng
+Original data: Wireshark Captures.zip/Closing-only_clc.pcapng
+
+---
+
+Using filter
+
+  usb.data_flag == 0 || usb.transfer_type == 0x02
+
+to show only relevant data packets plus all control packets (including errors).
+
+---
+
+Connect:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=0    wValue=0xffff  wIndex=0  wLength=0  // -EPIPE!
+2  URB_CONTROL  out  bmRequestType=0x40  bRequest=2    wValue=0x0002  wIndex=0  wLength=0
+3  URB_CONTROL  in   bmRequestType=0xc0  bRequest=255  wValue=0x370b  wIndex=0  wLength=1  // -EPIPE!
+4  URB_CONTROL  out  bmRequestType=0x40  bRequest=0    wValue=0x0000  wIndex=0  wLength=0  // -EPIPE!
+
+bmRequestType=0x40: CTRL_OUT | CTRL_TYPE_VENDOR | CTRL_RECIPIENT_DEVICE
+bmRequestType=0xc0: CTRL_IN  | CTRL_TYPE_VENDOR | CTRL_RECIPIENT_DEVICE
+
+Connect (interpreted):
+
+1  out non understood request (0, 0xffff)        // -EPIPE
+2  out usbxpress clear to send
+3  in  unknown request                           // -EPIPE  (TODO check usbexpress docs/sdk)
+4  out invalid get_status (wLength should be 2)  // -EPIPE  (TODO check linux usb)
+
+It is probably enough to do send the "clear to send" usbxpress configuration message.
+
+Additionally, no endpoint clearing/halting is observed, as that would require:
+
+   URB_CONTROL out  bmRequestType=0x02  bRequest=1    wValue=0x0000  wIndex=130  wLength=0
+   URB_CONTROL out  bmRequestType=0x02  bRequest=1    wValue=0x0000  wIndex=2    wLength=0
+
+---
+
+Get cooler status:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  URB_BULK     out  14:00:00:00
+3  URB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:14:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Get coolor status (interpreted):
+
+1  out usbxpress flush buffers
+2  out read status
+3  in  cooler status
+
+Response packet syntax:
+
+ 0           4           8           b          10          14          18          1b          20
+00:00:01:24:00:06:01:10:04:ec:1f:14:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+^^^^^                   ^^^^^ ^^          ^^                         ^^^^^^^^^^^
+ fan                    pump  lqi         lqd                        fw version
+
+offset  description
+   0-1  fan speed in rpm, big endian
+   2-7  unknown (TODO)
+   8-9  pump speed in rpm, big endian
+    10  liquid temperature, integer part in °C  (TODO check)
+ 11-13  unknown (TODO)
+    14  liquid temperature, decimal part in °C tenths  (TODO check)
+ 15-22  unknown (TODO)
+ 23-26  firmware version
+ 27-31  unknown (TODO)
+
+Interpreted: fan=0rpm, pump=1260rpm, liquid=31.1°C, fw=2.10.0.0
+
+---
+
+Change pump speed:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  URB_BULK     out  13:32
+3  URB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:13:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Change pump speed (interpreted):
+
+1  out usbxpress flush buffers
+2  out change pump speed
+3  in  cooler status
+
+Command packet syntax:
+
+13:32
+^^ ^^
+ │  └ 50%
+ └ change pump
+
+After 2 seconds the reported pump speed changed from 1260 (0x04ec) rpm to 1290 (0x050a) rpm.
+
+---
+
+Unknown command (TODO):
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  URB_BULK     out  23:03
+
+Note: not perfectly clear whether a response was read for this unknown command.
+
+---
+
+Configure a fan profile:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  11:00:14:20:2a:2e:34:3c:64:64:64:64:64:64
+3  USB_BULK     in   00:00:01:24:00:07:01:10:04:ec:1f:11:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Configure a fan profile (interpreted):
+
+1  out usbxpress flush buffers
+2  out change other settings
+3  in  cooler status
+
+Command packet syntax:
+
+11:00:14:20:2a:2e:34:3c:64:64:64:64:64:64
+^^    ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
+│     └ temperatures    └ duties
+│
+└ configure a fan profile
+
+Interpreted: [(temperature, duty)]=[(20°C, 100%), (32°C, 100%), (42°C, 100%), (46°C, 100%), (52°C, 100%), (60°C, 100%)]
+
+---
+
+Change other settings (1/2):
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  10:ff:ff:ff:00:ff:ff:ff:00:00:2d:0a:05:01:00:00:00:00:01
+3  USB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:10:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Change other settings (2/2):
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  10:ff:ff:ff:00:ff:ff:ff:00:00:2d:0a:05:01:00:00:00:00:01
+3  USB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:23:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Notes:
+
+ - in reality "Unknown command" above appears between changes 1 and 2; "Configure a fan profile" appers after (2/2);
+ - not perfectly clear the exact request–response pairs in (2/2) and "Configure a fan profile".
+
+Change other settings (interpreted):
+
+1  out usbxpress flush buffers
+2  out change other settings
+3  in  cooler status
+
+Command packet syntax:
+
+10:ff:ff:ff:00:ff:ff:ff:00:00:2d:0a:05:01:00:00:00:00:01
+^^ ^^^^^^^^    ^^^^^^^^
+│  │           └ alternate color
+│  └ main color
+│
+└ configure a fan profile
+
+offset  description
+     0  change other settings prefix
+   1-3  color 1/main (TODO unknown r,g,b sequence)
+     4  unknown (TODO)
+   5-7  color 2/alternate (TODO unknown r,g,b sequence)
+  8-14  TODO
+
+Interpreted: TODO
+
+---
+
+Disconnect:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  21
+3  USB_BULK     in   00:00:01:26:00:06:01:10:05:0a:1e:21:00:00:08:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+4  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0004  wIndex=0  wLength=0
+
+Disconnect (interpreted):
+
+1  out usbxpress flush buffers
+2  out unknown disconnection command
+3  in  cooler status
+4  out ubsxpress not clear to send
+
+Requests 1-3 might be unrelated to the disconnection procedure, but bulk request 0x21 was not seen elsewhere.
+
