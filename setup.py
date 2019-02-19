@@ -35,7 +35,7 @@ setuptools.setup(
         'Documentation': '{}/blob/v{}/README.md'.format(repo_url, version),
         'Changelog': '{}/blob/v{}/CHANGELOG.md'.format(repo_url, version),
     },
-    install_requires=['docopt', 'pyusb'],
+    install_requires=['docopt', 'pyusb', 'hidapi'],
     python_requires='>=3',
     entry_points={
         'console_scripts': [

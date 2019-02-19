@@ -14,14 +14,15 @@ Device selection options:
   -d, --device <no>         Select device by listing number (see: list)
   --vendor <id>             Filter devices by vendor id
   --product <id>            Filter devices by product id
-  --usb-port <no>           Filter devices by USB port
   --serial <no>             Filter devices by serial number
+  --usb-port <no>           Filter devices by USB port
 
 Other options:
   --speed <value>           Animation speed [default: normal]
   -n, --dry-run             Do not apply any settings
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
+  --hid <module>            Force a specific API for USB HIDs
   --version                 Display the version number
   --help                    Show this message
 
@@ -59,23 +60,24 @@ import sys
 
 from docopt import docopt
 
+import liquidctl.driver.kraken_two
+import liquidctl.driver.nzxt_smart_device
+import liquidctl.driver.usb
 import liquidctl.util
-from liquidctl.driver.kraken_two import KrakenTwoDriver
-from liquidctl.driver.nzxt_smart_device import NzxtSmartDeviceDriver
 from liquidctl.version import __version__
 
 
 DRIVERS = [
-    KrakenTwoDriver,
-    NzxtSmartDeviceDriver,
+    liquidctl.driver.kraken_two.KrakenTwoDriver,
+    liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
 ]
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def find_all_supported_devices():
-    res = map(lambda driver: driver.find_supported_devices(), DRIVERS)
+def find_all_supported_devices(**kwargs):
+    res = map(lambda driver: driver.find_supported_devices(**kwargs), DRIVERS)
     return itertools.chain(*res)
 
 
@@ -86,11 +88,11 @@ def _filter_devices(devices, args):
         return [devices[int(args['--device'])]]
     sel = []
     for i, dev in devices:
-        und = dev.device
-        if (selected(und.idVendor, '--vendor') and
-            selected(und.idProduct, '--product') and
-            selected(und.port_number, '--usb-port') and
-            (not args['--serial'] or und.serial_number == args['--serial'])):
+        infos = dev.device_infos
+        if (selected(dev.vendor_id, '--vendor') and
+            selected(dev.product_id, '--product') and
+            selected(infos.get('port_number'), '--usb-port') and
+            (not args['--serial'] or infos.get('serial_number') == args['--serial'])):
             # --serial handled differently to avoid unnecessary root
             sel.append((i, dev))
     return sel
@@ -98,19 +100,24 @@ def _filter_devices(devices, args):
 
 def _list_devices(devices, args):
     for i, dev in devices:
-        und = dev.device
         print('Device {}, {}'.format(i, dev.description))
-        if args['--verbose']:
-            print('  Vendor: {:#06x}'.format(und.idVendor))
-            print('  Product: {:#06x}'.format(und.idProduct))
-            print('  Port number: {}'.format(und.port_number))
-            try:
-                print('  Serial number: {}'.format(und.serial_number or '<empty>'))
-            except:
-                print('  Serial number: <n/a> (try again as root)')
-            hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            print('  Hierarchy: {}'.format(', '.join(hier)))
-            print('')
+        if not args['--verbose']:
+            continue
+        hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+        hier.append(dev.implementation)
+        print('  Hierarchy: {}'.format(', '.join(hier)))
+        print('  Vendor: {:#06x}'.format(dev.vendor_id))
+        print('  Product: {:#06x}'.format(dev.product_id))
+
+        infos = dev.device_infos
+        print('  Revision: {:#06x}'.format(infos.get('release_number', '<empty>')))
+        try:
+            print('  Serial number: {}'.format(infos.get('serial_number', '<empty>')))
+        except:
+            print('  Serial number: <n/a> (try again as root)')
+        # FIXME only if PyUsbHidDevice or compatible
+        print('  Port number: {}'.format(infos.get('port_number', '<empty>')))
+        print('')
 
 
 def _device_get_status(dev, num):
@@ -142,25 +149,35 @@ def _parse_color(color):
     return bytes.fromhex(color)
 
 
+def _get_options_to_forward(args):
+    def opt_to_field(opt):
+        return opt.replace('--', '').replace('-', '_')
+    whitelist = ['--dry-run', '--hid']
+    return {opt_to_field(i): args[i] for i in whitelist}
+
+
 def main():
     args = docopt(__doc__, version='liquidctl v{}'.format(__version__))
 
     if args['--debug']:
+        args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+        import usb  # now to set up the 'usb' logger, otherwise setLevel bellow wont work
         logging.getLogger('usb').setLevel(logging.DEBUG)
         import usb._debug
         usb._debug.enable_tracing(True)
-        args['--verbose'] = True
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
         logging.basicConfig(level=logging.WARNING, format='%(message)s')
         sys.tracebacklimit = 0
 
+    frwd = _get_options_to_forward(args)
+
     if args['--dry-run']:
         LOGGER.warning('This is a --dry-run')
 
-    all_devices = list(enumerate(find_all_supported_devices()))
+    all_devices = list(enumerate(find_all_supported_devices(**frwd)))
     if args['--dry-run']:
         for i, dev in all_devices:
             dev.dry_run = True
