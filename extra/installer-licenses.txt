@@ -1,3 +1,13 @@
+The Windows binary of liquidctl includes libusb-1.0 (LGPLv2.1)
+which is dynamically searched for via pyusb (Apache License 2.0).
+
+The binary also includes docopt (MIT) and is built
+with PyInstaller (Modified GPL).
+
+The libraries bundled with this program have their licences listed below.
+
+# liquidctl
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -674,9 +684,9 @@ Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
 
-Support libraries licenses
+# Support libraries licenses
 
-docopt
+## docopt
 
 
 Copyright (c) 2012 Vladimir Keleshev, <vladimir@keleshev.com>
@@ -704,7 +714,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-libusb
+## libusb
 
 
 		  GNU LESSER GENERAL PUBLIC LICENSE
@@ -1211,7 +1221,7 @@ necessary.  Here is a sample; alter the names:
 That's all there is to it!
 
 
-pyusb
+## pyusb
 
 
 
