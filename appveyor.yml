@@ -1,0 +1,30 @@
+version: 1.1.0-{build}
+
+skip_commits:
+  message: /\[skip ci\]/
+
+
+image:
+#  - Ubuntu1804
+  - Visual Studio 2017
+
+platform: x64
+
+install:
+  - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.7z -FileName libusb.7z
+  - cmd: 7z x libusb.7z
+  - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools --ignore-installed
+  - cmd: C:\Python36-x64\python setup.py
+#  - sh: sudo apt install python3-pip -y
+#  - sh: sudo python3.6 -m pip install --upgrade pip setuptools --ignore-installed --no-cache-dir
+#  - sh: sudo python3.6 setup.py
+
+
+build_script:
+  - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl
+#  - sh: pyinstaller --add-data libusb-1.0.dll;. liquidctl\cli.py  --clean -F --name liquidctl
+
+test: off
+
+artifacts:
+  - path: dist\*
