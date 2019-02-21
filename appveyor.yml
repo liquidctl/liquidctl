@@ -5,7 +5,7 @@ skip_commits:
 
 
 image:
-#  - Ubuntu1804
+  - Ubuntu1804
   - Visual Studio 2017
 
 platform: x64
@@ -15,14 +15,14 @@ install:
   - cmd: 7z x libusb.7z
   - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools pyinstaller --ignore-installed
   - cmd: C:\Python36-x64\python setup.py install
-#  - sh: sudo apt install python3-pip -y
-#  - sh: sudo python3.6 -m pip install --upgrade pip setuptools --ignore-installed --no-cache-dir
-#  - sh: sudo python3.6 setup.py
+  - sh: sudo apt install python3-pip -y
+  - sh: sudo python3.6 -m pip install --upgrade pip setuptools pyinstaller --ignore-installed --no-cache-dir
+  - sh: sudo python3.6 setup.py install
 
 
 build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl
-#  - sh: pyinstaller --add-data libusb-1.0.dll;. liquidctl\cli.py  --clean -F --name liquidctl
+  - sh: pyinstaller liquidctl\cli.py  --clean -F --name liquidctl
 
 test: off
 
