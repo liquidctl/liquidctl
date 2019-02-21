@@ -21,10 +21,10 @@ install:
 
 
 build_script:
-  - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl
-  - sh: sudo pyinstaller liquidctl/cli.py  --clean -F --name liquidctl
+  - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .\py_dist
+  - sh: sudo pyinstaller liquidctl/cli.py  --clean -F --name liquidctl --distpath ./py_dist
 
 test: off
 
 artifacts:
-  - path: dist\*
+  - path: py_dist\*
