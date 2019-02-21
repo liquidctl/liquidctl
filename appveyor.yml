@@ -24,4 +24,8 @@ build_script:
 test: off
 
 artifacts:
-  - path: py_dist\*
+  - path: py_dist\LICENSE.txt
+    name: LICENSE.txt
+
+  - path: py_dist\liquidctl.exe
+    name: liquidctl.exe
