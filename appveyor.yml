@@ -1,11 +1,10 @@
-version: 1.1.0-{build}
+version: {build}
 
 skip_commits:
   message: /\[skip ci\]/
 
 
 image:
-  - Ubuntu1804
   - Visual Studio 2017
 
 platform: x64
@@ -15,14 +14,12 @@ install:
   - cmd: 7z x libusb.7z
   - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools pyinstaller --ignore-installed
   - cmd: C:\Python36-x64\python setup.py install
-  - sh: sudo apt install python3-pip -y
-  - sh: sudo python3.6 -m pip install --upgrade pip setuptools pyinstaller --ignore-installed --no-cache-dir
-  - sh: sudo python3.6 setup.py install
 
 
 build_script:
+  - cmd: copy extra\installer-licenses.txt LICENSE.txt
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .\py_dist
-  - sh: sudo pyinstaller liquidctl/cli.py  --clean -F --name liquidctl --distpath ./py_dist
+  - cmd: copy extra\installer-licenses.txt py_dist\LICENSE.txt
 
 test: off
 
