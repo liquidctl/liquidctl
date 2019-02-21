@@ -19,7 +19,6 @@ install:
 build_script:
   - cmd: copy extra\installer-licenses.txt LICENSE.txt
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
-  - cmd: copy extra\installer-licenses.txt py_dist\LICENSE.txt
 
 test: off
 
