@@ -22,7 +22,7 @@ install:
 
 build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl
-  - sh: pyinstaller liquidctl\cli.py  --clean -F --name liquidctl
+  - sh: sudo pyinstaller liquidctl\cli.py  --clean -F --name liquidctl
 
 test: off
 
