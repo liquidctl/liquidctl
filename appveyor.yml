@@ -14,7 +14,7 @@ install:
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
   - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools --ignore-installed
-  - cmd: C:\Python36-x64\python setup.py
+  - cmd: C:\Python36-x64\python setup.py install
 #  - sh: sudo apt install python3-pip -y
 #  - sh: sudo python3.6 -m pip install --upgrade pip setuptools --ignore-installed --no-cache-dir
 #  - sh: sudo python3.6 setup.py
