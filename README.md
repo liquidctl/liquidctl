@@ -33,7 +33,8 @@ Firmware version           4.0.2
 1. [Supported devices](#supported-devices)
 2. [Getting liquidctl](#getting-liquidctl)
 3. [The command-line interface](#the-command-line-interface)
-4. [License](#license)
+4. [Automation and running at boot](#automation-and-running-at-boot)
+5. [License](#license)
 6. [Related projects](#related-projects)
 
 
@@ -135,7 +136,13 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will print as much information as possible to help identify its cause; be sure to include it when opening a new issue.
 
-### Running liquidctl from a Systemd service
+# Automation and running at boot
+
+In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough for, and some specifics about this are given in the following sections.
+
+If you need more control for some really ambitious automation, you can also write a Python program that calls the driver APIs directly.
+
+### Linux
 
 On systems running Linux and Systemd, a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, you can edit it to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
 
@@ -161,7 +168,30 @@ The unit can be started manually or set to automatically run during boot using s
 # systemctl enable liquidcfg
 ```
 
-A more thorough example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl).
+A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), that handles multiple devices and uses the LEDs to convey progress or eventual errors.
+
+### Windows
+
+The configuration of devices can be automated by writing a batch file and setting up a new scheduled task for (every) log on.  The batch file can be really simple and just list the various invocations of liquidctl you would otherwise do by hand.
+
+```batchfile
+liquidctl set pump speed 90
+liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
+liquidctl set ring color fading 350017 ff2608
+liquidctl set logo color spectrum-wave
+```
+
+Make sure that Python and executables from its packages are available in the context where the batch file will run: in short, `python --version` and `liquidctl --version` should work within a _normal_ Command Prompt window.
+
+If necessary, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH. Alternatively, if you're using Anaconda, try adding the following line to the beginning of the file:
+
+```batchfile
+call %homepath%\Anaconda3\Scripts\activate.bat
+```
+
+A slightly more complex example can be seen in [issue #14](https://github.com/jonasmalacofilho/liquidctl/issues/14#issuecomment-456519098) ("Can I autostart liquidctl on Windows?"), that uses the LEDs to convey progress or eventual errors.
+
+Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) goes into a lot more detail and is a good read.
 
 
 ## License
