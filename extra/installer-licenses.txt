@@ -1,11 +1,33 @@
-The Windows binary of liquidctl includes libusb-1.0 (LGPLv2.1)
-which is dynamically searched for via pyusb (Apache License 2.0).
+liquidctl executables for Windows bundle the following projects:
 
-The binary includes docopt (MIT) and is built with PyInstaller
-(Modified GPL). The libraries bundled with this program have their
-licences listed below.
+ - liquidctl
+ - docopt
+ - libusb-1.0
+ - pyusb
 
-# liquidctl
+Applicable disclaimers, original licenses, and links for the source code of
+each project are provided bellow.
+
+================================================================================
+
+liquidctl – liquid cooler control
+https://github.com/jonasmalacofilho/liquidctl
+
+Copyright (C) 2018–2019  Jonas Malaco
+Copyright (C) 2018–2019  each contribution's author
+
+Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
+the terms of the GNU General Public License.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
@@ -682,11 +704,9 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
+================================================================================
 
-# Support libraries licenses
-
-## docopt
-
+docopt – https://github.com/docopt/docopt
 
 Copyright (c) 2012 Vladimir Keleshev, <vladimir@keleshev.com>
 
@@ -712,9 +732,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+================================================================================
 
-## libusb
-
+libusb-1.0 – https://github.com/libusb/libusb
 
 		  GNU LESSER GENERAL PUBLIC LICENSE
 		       Version 2.1, February 1999
@@ -1219,10 +1239,24 @@ necessary.  Here is a sample; alter the names:
 
 That's all there is to it!
 
+================================================================================
 
-## pyusb
+pyusb – https://github.com/pyusb/pyusb
 
+Copyright (C) 2009-2017 Wander Lairson Costa
+Copyright (C) 2017-2018 Robert Wlodarczyk
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
                                  Apache License
                            Version 2.0, January 2004

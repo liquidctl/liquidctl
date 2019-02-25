@@ -32,21 +32,24 @@ Examples:
   liquidctl set ring color fading 350017 ff2608
   liquidctl set logo color fixed af5a2f
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-Copyright (C) 2018  Jonas Malaco
-Copyright (C) 2018  each contribution's author
+Copyright (C) 2018–2019  Jonas Malaco
+Copyright (C) 2018–2019  each contribution's author
 
-Incorporates work by leaty, KsenijaS, Alexander Tong and Jens
-Neumaier, under the terms of the GNU General Public License.
+Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
+the terms of the GNU General Public License.  Depending on how it was packaged,
+this program might also bundle copies of docopt, libusb-1.0 and pyusb.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+You should have received a copy of all applicable licenses along with this
+program, in a file called LICENSE.txt.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
 import inspect

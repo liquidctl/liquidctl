@@ -2,7 +2,9 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
-[![Join the chat at https://gitter.im/liquidctl/Lobby](https://badges.gitter.im/liquidctl/Lobby.svg)](https://gitter.im/liquidctl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build status on Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/master?svg=true)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/master)
+[![Join the chat on Gitter](https://badges.gitter.im/liquidctl/Lobby.svg)](https://gitter.im/liquidctl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 ```
 # liquidctl list
@@ -151,8 +153,8 @@ A more thorough example can be seen at [jonasmalacofilho/dotfiles](https://githu
 
 ## License
 
-Copyright (C) 2018  Jonas Malaco  
-Copyright (C) 2018  each contribution's author
+Copyright (C) 2018–2019  Jonas Malaco  
+Copyright (C) 2018–2019  each contribution's author
 
 Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
 the terms of the GNU General Public License.
