@@ -54,6 +54,8 @@ _ &nbsp; _Not available at the hardware level_
 
 ## Getting liquidctl
 
+### The pythonic way
+
 The easiest way to get liquidctl is to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history) with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
 
 ```
@@ -72,17 +74,28 @@ $ cd liquidctl
 
 Of course, a virtual environment can always be used instead of installing the package globally.
 
-In all cases, a suitable backend for PyUSB, such as *libusb*, is necessary.  If you use other Python programs that interact with USB devices, one might already be installed.
 
-### Windows and libusb
+### Pre-built packages and executables
 
-On Windows, libusb v1.0.21 is recommended over the latest v1.0.22.  A known issue with PyUSB generates some annoying – if probably harmless – errors when trying to release the device.
+Packages for Linux distributions:
 
-A simple way of installing it is to download the appropriate package from [libusb/releases](https://github.com/libusb/libusb/releases) and extract the `.dll` and `.lib` files that match you runtime (e.g. MS64) to your python installation directory (e.g. `%homepath%\Anaconda3\`).
+ - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/)
+ - Fedora (28, 29, Rawhide): [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
 
-### Packages for Linux distributions
+Pre-built binaries for Windows:
 
-An AUR package has been made available for Arch Linux by a third-party contributor: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/).
+ - Releases: check the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
+ - Nightly builds: check AppVeyor's [artifacts](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/build/artifacts) tab
+
+### System dependencies
+
+liquidctl uses PyUSB to communicate with USB devices, and thus a suitable backend for it must be available at runtime.
+
+Pre-built packages and executables should take of these dependencies automatically.  And if you use other user-space programs that interact with USB devices, it is possible that you already installed compatible libraries.
+
+In all other cases we recommend you install libusb-1.0.  On Linux, it is usually available in a libusb-1.0 or similar pacakge.
+
+On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
 
 ## The command-line interface
