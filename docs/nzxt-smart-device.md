@@ -71,6 +71,7 @@ Fan speeds can only be set to fixed duty values.
 | fan4 | 0% | 100% | Grid+ V3 only |
 | fan5 | 0% | 100% | Grid+ V3 only |
 | fan6 | 0% | 100% | Grid+ V3 only |
+| sync | 0% | 100% | all available channels |
 
 **Always check that the settings are appropriate for the use case, and that they correctly apply and persist.**
 
