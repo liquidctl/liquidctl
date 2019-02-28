@@ -230,13 +230,17 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
 
     def set_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
-        cid, smin, smax = self._speed_channels[channel]
-        if speed < smin:
-            speed = smin
-        elif speed > smax:
-            speed = smax
-        LOGGER.info('setting %s duty to %i%%', channel, speed)
-        self._write([0x2, 0x4d, cid, 0, speed])
+        if channel == 'sync':
+            selected_channels = self._speed_channels
+        else:
+            selected_channels = { channel: self._speed_channels[channel] }
+        for cname, (cid, smin, smax) in selected_channels.items():
+            if speed < smin:
+                speed = smin
+            elif speed > smax:
+                speed = smax
+            LOGGER.info('setting %s duty to %i%%', cname, speed)
+            self._write([0x2, 0x4d, cid, 0, speed])
         usb.util.dispose_resources(self.device)
 
     def _write(self, data):
