@@ -86,7 +86,7 @@ Packages for Linux distributions:
 Pre-built binaries for Windows:
 
  - Releases: check the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
- - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl) on AppVeyor and check the artifacts tab
+ - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
 ### System dependencies
 
