@@ -122,8 +122,29 @@ class KrakenTwoDriver(UsbHidDriver):
         self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
         self._supports_cooling_profiles = None  # physical storage/later inferred from fw version
         self.dry_run = dry_run
+        self._connected = False
 
-    def get_status(self):
+    def connect(self, **kwargs):
+        super().connect(**kwargs)
+        self._connected = True
+
+    def disconnect(self, **kwargs):
+        super().disconnect(**kwargs)
+        self._connected = False
+
+    def initialize(self, **kwargs):
+        # before v1.1 `initialize` was used to connect to the device; that has
+        # since been deprecated, but we have to support that usage until v2
+        if not self._connected:
+            self.connect(**kwargs)
+
+    def finalize(self):
+        """Deprecated."""
+        LOGGER.warning('deprecated: use disconnect() instead')
+        if self._connected:
+            self.disconnect()
+
+    def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -140,7 +161,7 @@ class KrakenTwoDriver(UsbHidDriver):
                 ('Firmware version', firmware, '')
             ]
 
-    def set_color(self, channel, mode, colors, speed):
+    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel."""
         if not self.supports_lighting:
             raise NotImplementedError()
@@ -187,7 +208,7 @@ class KrakenTwoDriver(UsbHidDriver):
             steps = [colors]
         return steps
 
-    def set_speed_profile(self, channel, profile):
+    def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
         if not self.supports_cooling_profiles:
             raise NotImplementedError()
@@ -207,7 +228,7 @@ class KrakenTwoDriver(UsbHidDriver):
             self._write([0x2, 0x4d, cbase + i, temp, duty])
         self.device.release()
 
-    def set_fixed_speed(self, channel, speed):
+    def set_fixed_speed(self, channel, speed, **kwargs):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
             raise NotImplementedError()
@@ -216,7 +237,7 @@ class KrakenTwoDriver(UsbHidDriver):
         else:
             self.set_instantaneous_speed(channel, speed)
 
-    def set_instantaneous_speed(self, channel, speed):
+    def set_instantaneous_speed(self, channel, speed, **kwargs):
         """Set channel to speed, but do not ensure persistence."""
         if not self.supports_cooling:
             raise NotImplementedError()
@@ -254,12 +275,4 @@ class KrakenTwoDriver(UsbHidDriver):
             return
         self.device.write(data + padding)
 
-    def initialize(self):
-        """NOOP."""
-        self.connect()  # deprecated behavior from v1.0.0
-
-    def finalize(self):
-        """Deprecated."""
-        LOGGER.warning('deprecated: use disconnect() instead')
-        self.disconnect()
 

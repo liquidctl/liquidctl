@@ -77,11 +77,11 @@ class UsbHidDriver(BaseDriver):
         wrapper_name = type(self.device).__name__
         api_name = self.device.api.__name__
 
-    def connect(self):
+    def connect(self, **kwargs):
         """Connect to the device."""
         self.device.open()
 
-    def disconnect(self):
+    def disconnect(self, **kwargs):
         """Disconnect from the device."""
         self.device.close()
 

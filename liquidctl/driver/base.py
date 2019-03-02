@@ -42,7 +42,7 @@ class BaseDriver:
         """
         raise NotImplementedError()
 
-    def connect(self):
+    def connect(self, **kwargs):
         """Connect to the device.
 
         Procedure before any read or write operation can be performed.
@@ -50,7 +50,7 @@ class BaseDriver:
         """
         raise NotImplementedError()
 
-    def initialize(self):
+    def initialize(self, **kwargs):
         """Initialize the device.
 
         Apart from `connect()`, some devices might require a onetime
@@ -59,7 +59,7 @@ class BaseDriver:
         """
         raise NotImplementedError()
 
-    def disconnect(self):
+    def disconnect(self, **kwargs):
         """Disconnect from the device.
 
         Procedure before the driver can safely unbind from the device.
@@ -67,22 +67,22 @@ class BaseDriver:
         """
         raise NotImplementedError()
 
-    def get_status(self):
+    def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
         """
         raise NotImplementedError()
 
-    def set_color(self, channel, mode, colors, speed):
+    def set_color(self, channel, mode, colors, **kwargs):
         """Set the color mode for a specific channel."""
         raise NotImplementedError()
 
-    def set_speed_profile(self, channel, profile):
+    def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to follow a speed duty profile."""
         raise NotImplementedError()
 
-    def set_fixed_speed(self, channel, duty):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         raise NotImplementedError()
 

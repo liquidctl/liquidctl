@@ -120,29 +120,29 @@ def _list_devices(devices, args):
         print('')
 
 
-def _device_get_status(dev, num):
+def _device_get_status(dev, num, **kwargs):
     print('Device {}, {}'.format(num, dev.description))
-    dev.connect()
+    dev.connect(**kwargs)
     try:
-        status = dev.get_status()
+        status = dev.get_status(**kwargs)
         for k, v, u in status:
             print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
     finally:
-        dev.disconnect()
+        dev.disconnect(**kwargs)
     print('')
 
 
-def _device_set_color(dev, args):
+def _device_set_color(dev, args, **kwargs):
     color = map(lambda c: list(_parse_color(c)), args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, args['--speed'])
+    dev.set_color(args['<channel>'], args['<mode>'], color, **kwargs)
 
 
-def _device_set_speed(dev, args):
+def _device_set_speed(dev, args, **kwargs):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile)
+        dev.set_speed_profile(args['<channel>'], profile, **kwargs)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]))
+        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **kwargs)
 
 
 def _parse_color(color):
@@ -152,7 +152,7 @@ def _parse_color(color):
 def _get_options_to_forward(args):
     def opt_to_field(opt):
         return opt.replace('--', '').replace('-', '_')
-    whitelist = ['--dry-run', '--hid']
+    whitelist = ['--dry-run', '--hid', '--speed']
     return {opt_to_field(i): args[i] for i in whitelist}
 
 
@@ -188,7 +188,7 @@ def main():
         return
     if args['status']:
         for i,dev in selected:
-            _device_get_status(dev, i)
+            _device_get_status(dev, i, frwd)
         return
 
     if len(selected) > 1:
@@ -197,18 +197,18 @@ def main():
         raise SystemExit('No devices matches available drivers and selection criteria')
     num, dev = selected[0]
 
-    dev.connect()
+    dev.connect(frwd)
     try:
         if args['initialize']:
-            dev.initialize()
+            dev.initialize(frwd)
         elif args['set'] and args['speed']:
-            _device_set_speed(dev, args)
+            _device_set_speed(dev, args, frwd)
         elif args['set'] and args['color']:
-            _device_set_color(dev, args)
+            _device_set_color(dev, args, frwd)
         else:
             raise Exception('Not sure what to do')
     finally:
-        dev.disconnect()
+        dev.disconnect(frwd)
 
 
 if __name__ == '__main__':

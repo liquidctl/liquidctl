@@ -149,7 +149,7 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         self._color_channels = {'sync': (0)} if color_channel_count else {}
         self.dry_run = dry_run
 
-    def initialize(self):
+    def initialize(self, **kwargs):
         """Initialize the device.
 
         Detects all connected fans and LED accessories, and allows subsequent
@@ -159,7 +159,7 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         self._write([0x1, 0x5d])  # start reporting
         self.device.release()
 
-    def get_status(self):
+    def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -192,7 +192,7 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         self.device.release()
         return sorted(status)
 
-    def set_color(self, channel, mode, colors, speed):
+    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode.
 
         Only available for the Smart Device.
@@ -227,7 +227,7 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
             self._write([0x3] + leds[57:])
         self.device.release()
 
-    def set_fixed_speed(self, channel, speed):
+    def set_fixed_speed(self, channel, speed, **kwargs):
         """Set channel to a fixed speed."""
         if channel == 'sync':
             selected_channels = self._speed_channels
