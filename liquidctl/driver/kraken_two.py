@@ -115,13 +115,12 @@ class KrakenTwoDriver(UsbHidDriver):
         }),
     ]
 
-    def __init__(self, device, description, device_type=DEVICE_KRAKENX, dry_run=False, **kwargs):
+    def __init__(self, device, description, device_type=DEVICE_KRAKENX, **kwargs):
         super().__init__(device, description)
         self.device_type = device_type
         self.supports_lighting = True
         self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
         self._supports_cooling_profiles = None  # physical storage/later inferred from fw version
-        self.dry_run = dry_run
         self._connected = False
 
     def connect(self, **kwargs):
@@ -271,8 +270,6 @@ class KrakenTwoDriver(UsbHidDriver):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
-        if self.dry_run:
-            return
         self.device.write(data + padding)
 
 

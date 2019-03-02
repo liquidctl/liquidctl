@@ -19,7 +19,6 @@ Device selection options:
 
 Other options:
   --speed <value>           Animation speed [default: normal]
-  -n, --dry-run             Do not apply any settings
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
   --hid <module>            Force a specific API for USB HIDs
@@ -152,7 +151,7 @@ def _parse_color(color):
 def _get_options_to_forward(args):
     def opt_to_field(opt):
         return opt.replace('--', '').replace('-', '_')
-    whitelist = ['--dry-run', '--hid', '--speed']
+    whitelist = ['--hid', '--speed']
     return {opt_to_field(i): args[i] for i in whitelist}
 
 
@@ -174,13 +173,7 @@ def main():
 
     frwd = _get_options_to_forward(args)
 
-    if args['--dry-run']:
-        LOGGER.warning('This is a --dry-run')
-
     all_devices = list(enumerate(find_all_supported_devices(**frwd)))
-    if args['--dry-run']:
-        for i, dev in all_devices:
-            dev.dry_run = True
     selected = _filter_devices(all_devices, args)
 
     if args['list']:

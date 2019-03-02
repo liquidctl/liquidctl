@@ -141,13 +141,12 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         }),
     ]
 
-    def __init__(self, device, description, speed_channel_count, color_channel_count, dry_run=False, **kwargs):
+    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                                 for i in range(speed_channel_count)}
         self._color_channels = {'sync': (0)} if color_channel_count else {}
-        self.dry_run = dry_run
 
     def initialize(self, **kwargs):
         """Initialize the device.
@@ -246,7 +245,5 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
-        if self.dry_run:
-            return
         self.device.write(data + padding)
 
