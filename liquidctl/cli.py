@@ -181,7 +181,7 @@ def main():
         return
     if args['status']:
         for i,dev in selected:
-            _device_get_status(dev, i, frwd)
+            _device_get_status(dev, i, **frwd)
         return
 
     if len(selected) > 1:
@@ -190,18 +190,18 @@ def main():
         raise SystemExit('No devices matches available drivers and selection criteria')
     num, dev = selected[0]
 
-    dev.connect(frwd)
+    dev.connect(**frwd)
     try:
         if args['initialize']:
-            dev.initialize(frwd)
+            dev.initialize(**frwd)
         elif args['set'] and args['speed']:
-            _device_set_speed(dev, args, frwd)
+            _device_set_speed(dev, args, **frwd)
         elif args['set'] and args['color']:
-            _device_set_color(dev, args, frwd)
+            _device_set_color(dev, args, **frwd)
         else:
             raise Exception('Not sure what to do')
     finally:
-        dev.disconnect(frwd)
+        dev.disconnect(**frwd)
 
 
 if __name__ == '__main__':
