@@ -18,7 +18,7 @@ Device selection options:
   --usb-port <no>           Filter devices by USB port
 
 Other options:
-  --speed                   Animation speed
+  --speed <value>           Animation speed
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
   --hid <module>            Force a specific API for USB HIDs

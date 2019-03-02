@@ -226,19 +226,19 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
             self._write([0x3] + leds[57:])
         self.device.release()
 
-    def set_fixed_speed(self, channel, speed, **kwargs):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
         if channel == 'sync':
             selected_channels = self._speed_channels
         else:
             selected_channels = { channel: self._speed_channels[channel] }
         for cname, (cid, smin, smax) in selected_channels.items():
-            if speed < smin:
-                speed = smin
-            elif speed > smax:
-                speed = smax
-            LOGGER.info('setting %s duty to %i%%', cname, speed)
-            self._write([0x2, 0x4d, cid, 0, speed])
+            if duty < smin:
+                duty = smin
+            elif duty > smax:
+                duty = smax
+            LOGGER.info('setting %s duty to %i%%', cname, duty)
+            self._write([0x2, 0x4d, cid, 0, duty])
         self.device.release()
 
     def _write(self, data):
