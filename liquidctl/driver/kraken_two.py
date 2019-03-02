@@ -227,26 +227,26 @@ class KrakenTwoDriver(UsbHidDriver):
             self._write([0x2, 0x4d, cbase + i, temp, duty])
         self.device.release()
 
-    def set_fixed_speed(self, channel, speed, **kwargs):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
             raise NotImplementedError()
         elif self.supports_cooling_profiles:
-            self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
+            self.set_speed_profile(channel, [(0, duty), (59, duty), (60, 100), (100, 100)])
         else:
-            self.set_instantaneous_speed(channel, speed)
+            self.set_instantaneous_speed(channel, duty)
 
-    def set_instantaneous_speed(self, channel, speed, **kwargs):
+    def set_instantaneous_speed(self, channel, duty, **kwargs):
         """Set channel to speed, but do not ensure persistence."""
         if not self.supports_cooling:
             raise NotImplementedError()
         cbase, smin, smax = _SPEED_CHANNELS[channel]
-        if speed < smin:
-            speed = smin
-        elif speed > smax:
-            speed = smax
-        LOGGER.info('setting %s PWM duty to %i%%', channel, speed)
-        self._write([0x2, 0x4d, cbase & 0x70, 0, speed])
+        if duty < smin:
+            duty = smin
+        elif duty > smax:
+            duty = smax
+        LOGGER.info('setting %s PWM duty to %i%%', channel, duty)
+        self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
         self.device.release()
 
     @property
