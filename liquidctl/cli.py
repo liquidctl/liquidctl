@@ -18,7 +18,7 @@ Device selection options:
   --usb-port <no>           Filter devices by USB port
 
 Other options:
-  --speed <value>           Animation speed [default: normal]
+  --speed                   Animation speed
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
   --hid <module>            Force a specific API for USB HIDs
@@ -151,8 +151,11 @@ def _parse_color(color):
 def _get_options_to_forward(args):
     def opt_to_field(opt):
         return opt.replace('--', '').replace('-', '_')
+    # options that can be forwarded must:
+    #  - have no default value (thus not being forwarded);
+    #  - or avoid untintential conflicts with target function arguments
     whitelist = ['--hid', '--speed']
-    return {opt_to_field(i): args[i] for i in whitelist}
+    return {opt_to_field(i): args[i] for i in whitelist if args[i]}
 
 
 def main():
