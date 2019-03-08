@@ -87,22 +87,59 @@ class BaseDriver:
         raise NotImplementedError()
 
     @property
+    def implementation(self):
+        """Human readable description of the backend used."""
+        raise NotImplementedError()
+
+    @property
     def description(self):
+        """Human readable description of the corresponding device."""
         raise NotImplementedError()
 
     @property
     def vendor_id(self):
+        """Numeric vendor identifier."""
         raise NotImplementedError()
 
     @property
     def product_id(self):
+        """Numeric product identifier."""
         raise NotImplementedError()
 
-    # @property
-    # def implementation(self):
-    #     raise NotImplementedError()
+    @property
+    def release_number(self):
+        """Device versioning number, or None if N/A.
 
-    # @property
-    # def device_infos(self):
-    #     raise NotImplementedError()
+        In USB devices this is bcdDevice.
+        """
+        raise NotImplementedError()
+
+    @property
+    def bus(self):
+        """Bus the device is connected to, or None if N/A."""
+        raise NotImplementedError()
+
+    @property
+    def address(self):
+        """Address of the device on the corresponding bus, or None if N/A.
+
+        This typically depends on the bus enumeration order.
+        """
+        raise NotImplementedError()
+
+    @property
+    def port(self):
+        """Physical location of the device, or None if N/A.
+
+        This typically refers to a USB port, which is *not* dependent on bus
+        enumeration order.  However, a USB port is hub-specific, and hubs can
+        be chained.  Thus, for USB devices, this returns a tuple of port
+        numbers, from the root hub to the parent of the connected device.
+        """
+        raise NotImplementedError()
+
+    @property
+    def serial_number(self):
+        """Serial number reported by the device, or None if N/A."""
+        raise NotImplementedError()
 

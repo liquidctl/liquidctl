@@ -1,7 +1,44 @@
-"""Base USB driver and device API.
+"""Base USB driver and device APIs.
 
-Copyright (C) 2018-2019  Jonas Malaco
-Copyright (C) 2018-2019  each contribution's author
+This modules provides abstractions over several platform and implementation
+differences.  As such, there is a lot of boilerplate here, but callers should
+be able to disregard most differences and simply work on the UsbDeviceDriver/
+UsbHidDriver level.
+
+UsbDeviceDriver
+└── device: PyUsbDevice
+    └── uses module usb (PyUSB)
+        ├── libusb-1.0
+        ├── libusb-0.1
+        └── OpenUSB
+
+UsbHidDriver
+├── device: PyUsbHid
+│   └── extends PyUsbDevice
+│       └── uses module usb (PyUSB)
+│           ├── libusb-1.0
+│           ├── libusb-0.1
+│           └── OpenUSB
+└── device: HidapiDevice
+    ├── uses module hid (hidapi)
+    │   ├── hid.dll (Windows)
+    │   ├── hidraw (Linux, depends on hidapi build options)
+    │   ├── IOHidManager (MacOS)
+    │   └── libusb-1
+    └── uses module hidraw (hidapi, depends on build options)
+        └── hidraw (Linux)
+
+UsbDeviceDriver and UsbHidDriver are meant to be used as base classes to the
+actual device drivers.  The users of those drivers do not care about read,
+write or other low level operations; thus, these are placed in <driver>.device.
+
+However, there are legitimate reasons as to why a caller would want to directly
+access the lower layers (device wrapper level, device implementation level, or
+lower).  We do not hide or mark those references as private, but good judgement
+should be exercised when calling anything in <driver>.device.
+
+Copyright (C) 2019  Jonas Malaco
+Copyright (C) 2019  each contribution's author
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -55,12 +92,12 @@ class UsbHidDriver(BaseDriver):
         if hid == 'hidraw' or hid == 'hid':
             wrapper = HidapiDevice
         elif hid == 'usb':
-            wrapper = PyUsbHidDevice
+            wrapper = PyUsbHid
         elif sys.platform.startswith('darwin'):
             wrapper = HidapiDevice
             hid = 'hid'
         else:
-            wrapper = PyUsbHidDevice
+            wrapper = PyUsbHid
             hid = 'usb'
         api = importlib.import_module(hid)
         drivers = []
@@ -86,6 +123,10 @@ class UsbHidDriver(BaseDriver):
         self.device.close()
 
     @property
+    def implementation(self):
+        return '{}={}'.format(type(self.device).__name__, self.device.api.__name__)
+
+    @property
     def description(self):
         return self._description
 
@@ -98,24 +139,33 @@ class UsbHidDriver(BaseDriver):
         return self.device.product_id
 
     @property
-    def implementation(self):
-        return '{}={}'.format(type(self.device).__name__, self.device.api.__name__)
+    def release_number(self):
+        return self.device.release_number
 
     @property
-    def device_infos(self):
-        return self.device.infos
+    def bus(self):
+        return self.device.bus
+
+    @property
+    def address(self):
+        return self.device.address
+
+    @property
+    def port(self):
+        return self.device.port
+
+    @property
+    def serial_number(self):
+        return self.device.serial_number
 
 
-class PyUsbHidDevice:
+class PyUsbDevice:
     """"A PyUSB backed device."""
 
-    def __init__(self, api, device):
+    def __init__(self, api, usbdev):
         self.api = api
-        self._device = device
-        self._read_endpoint = 0x81  # FIXME
-        self._write_endpoint = 0x1  # FIXME
+        self.usbdev = usbdev
         self._attached = False
-        self._device_infos = None
 
     def open(self):
         """Connect to the device.
@@ -123,17 +173,17 @@ class PyUsbHidDevice:
         Replace the kernel driver (Linux only) and set the device configuration
         to the first available one, if none has been set.
         """
-        if sys.platform.startswith('linux') and self._device.is_kernel_driver_active(0):
+        if sys.platform.startswith('linux') and self.usbdev.is_kernel_driver_active(0):
             LOGGER.debug('replacing stock kernel driver with libusb')
-            self._device.detach_kernel_driver(0)
+            self.usbdev.detach_kernel_driver(0)
             self._attached = True
-        cfg = self._device.get_active_configuration()
+        cfg = self.usbdev.get_active_configuration()
         if cfg is None:
             LOGGER.debug('setting the (first) configuration')
-            self._device.set_configuration()
+            self.usbdev.set_configuration()
 
     def release(self):
-        self.api.util.dispose_resources(self._device)
+        self.api.util.dispose_resources(self.usbdev)
 
     def close(self):
         """Disconnect from the device.
@@ -143,13 +193,13 @@ class PyUsbHidDevice:
         self.release()
         if self._attached:
             LOGGER.debug('restoring stock kernel driver')
-            self._device.attach_kernel_driver(0)
+            self.usbdev.attach_kernel_driver(0)
 
-    def read(self, length):
-        return self._device.read(self._read_endpoint, length)
+    def read(self, endpoint, length):
+        return self.usbdev.read(endpoint, length)
 
-    def write(self, data):
-        return self._device.write(self._write_endpoint, data)
+    def write(self, endpoint, data):
+        return self.usbdev.write(endpoint, data)
 
     @classmethod
     def enumerate(cls, api, vid, pid):
@@ -158,26 +208,52 @@ class PyUsbHidDevice:
 
     @property
     def vendor_id(self):
-        return self._device.idVendor
+        return self.usbdev.idVendor
 
     @property
     def product_id(self):
-        return self._device.idProduct
+        return self.usbdev.idProduct
 
     @property
-    def infos(self):
-        if not self._device_infos:
-            self._device_infos = {
-                'vendor_id': self._device.idVendor,
-                'product_id': self._device.idProduct,
-                'serial_number': self._device.serial_number,
-                'release_number': self._device.bcdDevice,
-                'manufacturer_string': self._device.manufacturer,
-                'product_string': self._device.product,
-                'port_number': self._device.port_number,
-                'interface_number': 0  # FIXME
-            }
-        return self._device_infos
+    def release_number(self):
+        return self.usbdev.bcdDevice
+
+    @property
+    def bus(self):
+        return 'usb{}'.format(self.usbdev.bus)  # follow Linux model
+
+    @property
+    def address(self):
+        return self.usbdev.address
+
+    @property
+    def port(self):
+        return self.usbdev.port_numbers
+
+    @property
+    def serial_number(self):
+        return self.usbdev.serial_number
+
+
+class PyUsbHid(PyUsbDevice):
+    """A PyUSB backed HID device.
+
+    The signatures of read() and write() are changed, and no longer accept
+    target (in/out) endpoints, which are automatically inferred.
+
+    This (while unorthodox) unifies the behavior of read() and write() between
+    PyUsbHid and HidapiDevice.
+    """
+    def __init__(self, api, usbdev):
+        super().__init__(api, usbdev)
+        self.hidin = 0x81
+        self.hidout = 0x1  # FIXME apart from NZXT HIDs, usually ctrl (0x0)
+
+    def read(self, length):
+        return self.usbdev.read(self.hidin, length)
+
+    def write(self, data):
+        return self.usbdev.write(self.hidout, data)
 
 
 class HidapiDevice:
@@ -192,18 +268,24 @@ class HidapiDevice:
      - FreeBSD (using libusb-1.0)
      - Mac (using IOHidManager)
 
-    The default API is the module 'hid'.  On standard Linux builds of the
+    The default hidapi API is the module 'hid'.  On standard Linux builds of the
     hidapi package, this will default to a libusb-1.0 backed implementation; at
     the same time, an alternate 'hidraw' module will also be available in
     normal installations.
+
+    Note: if 'hid' is used with libusb on Linux, it will detach the Kernel
+    driver but fail to reattach it later, making hidraw and hwmon unavailable
+    on that devcie.  To fix, rebind the device to usbhid with:
+
+        echo '<bus>-<port>:1.0' | _ tee /sys/bus/usb/drivers/usbhid/bind
     """
-    def __init__(self, api, info):
-        self.api = api
-        self.device_infos = info
-        self._device = self.api.device()
+    def __init__(self, hidapi, hidapi_dev_info):
+        self.api = hidapi
+        self.hidinfo = hidapi_dev_info
+        self.hiddev = self.api.device()
 
     def open(self):
-        self._device.open_path(self.device_infos['path'])
+        self.hiddev.open_path(self.hidinfo['path'])
 
     def release(self):
         pass
@@ -212,10 +294,10 @@ class HidapiDevice:
         pass
 
     def read(self, length):
-        return self._device.read(length)
+        return self.hiddev.read(length)
 
     def write(self, data):
-        return self._device.write(data)
+        return self.hiddev.write(data)
 
     @classmethod
     def enumerate(cls, api, vid, pid):
@@ -224,13 +306,29 @@ class HidapiDevice:
 
     @property
     def vendor_id(self):
-        return self.device_infos['vendor_id']
+        return self.hidinfo['vendor_id']
 
     @property
     def product_id(self):
-        return self.device_infos['product_id']
+        return self.hidinfo['product_id']
 
     @property
-    def infos(self):
-        return self.device_infos
+    def release_number(self):
+        return self.hidinfo['release_number']
+
+    @property
+    def bus(self):
+        return 'hid'  # follow Linux model
+
+    @property
+    def address(self):
+        return None
+
+    @property
+    def port(self):
+        return None
+
+    @property
+    def serial_number(self):
+        return self.hidinfo['serial_number']
 

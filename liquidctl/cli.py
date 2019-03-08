@@ -14,8 +14,11 @@ Device selection options:
   -d, --device <no>         Select device by listing number (see: list)
   --vendor <id>             Filter devices by vendor id
   --product <id>            Filter devices by product id
-  --serial <no>             Filter devices by serial number
-  --usb-port <no>           Filter devices by USB port
+  --release <no>            Filter devices by release number
+  --serial <serial>         Filter devices by serial number
+  --bus <bus>               Filter devices by bus
+  --address <no>            Filter devices by address
+  --usb-port <port>         Filter devices by USB port
 
 Other options:
   --speed <value>           Animation speed
@@ -81,19 +84,26 @@ def find_all_supported_devices(**kwargs):
 
 
 def _filter_devices(devices, args):
-    def selected(attr, arg_name):
-        return not args[arg_name] or attr == int(args[arg_name], 0)
     if args['--device']:
         return [devices[int(args['--device'])]]
     sel = []
     for i, dev in devices:
-        infos = dev.device_infos
-        if (selected(dev.vendor_id, '--vendor') and
-            selected(dev.product_id, '--product') and
-            selected(infos.get('port_number'), '--usb-port') and
-            (not args['--serial'] or infos.get('serial_number') == args['--serial'])):
-            # --serial handled differently to avoid unnecessary root
-            sel.append((i, dev))
+        if args['--vendor'] and dev.vendor_id != int(args['--vendor'], 0):
+            continue
+        if args['--product'] and dev.product_id != int(args['--product'], 0):
+            continue
+        if args['--release'] and dev.release_number != int(args['--release'], 0):
+            continue
+        if args['--serial'] and dev.serial_number != args['--serial']:
+            continue
+        if args['--bus'] and dev.bus != args['--bus']:
+            continue
+        if args['--address'] and dev.address != int(args['--address'], 0):
+            continue
+        if (args['--usb-port'] and
+            dev.port != tuple(map(int, args['--usb-port'].split('.')))):
+            continue
+        sel.append((i, dev))
     return sel
 
 
@@ -102,20 +112,27 @@ def _list_devices(devices, args):
         print('Device {}, {}'.format(i, dev.description))
         if not args['--verbose']:
             continue
-        hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-        hier.append(dev.implementation)
-        print('  Hierarchy: {}'.format(', '.join(hier)))
+
+        # always available
         print('  Vendor: {:#06x}'.format(dev.vendor_id))
         print('  Product: {:#06x}'.format(dev.product_id))
 
-        infos = dev.device_infos
-        print('  Revision: {:#06x}'.format(infos.get('release_number', '<empty>')))
-        try:
-            print('  Serial number: {}'.format(infos.get('serial_number', '<empty>')))
-        except:
-            print('  Serial number: <n/a> (try again as root)')
-        # FIXME only if PyUsbHidDevice or compatible
-        print('  Port number: {}'.format(infos.get('port_number', '<empty>')))
+        # optionally available
+        if dev.release_number:
+            print('  Release number: {:#06x}'.format(dev.release_number))
+        if dev.serial_number:
+            print('  Serial number: {}'.format(dev.serial_number))
+        if dev.bus:
+            print('  Bus: {}'.format(dev.bus))
+        if dev.address:
+            print('  Address: {}'.format(dev.address))
+        if dev.port:
+            print('  Port: {}'.format('.'.join(map(str, dev.port))))
+
+        hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+        hier.append(dev.implementation)
+        print('  Hierarchy:\n    {}'.format('\n    '.join(hier)))
+
         print('')
 
 
