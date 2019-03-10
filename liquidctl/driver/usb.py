@@ -2,7 +2,7 @@
 
 This modules provides abstractions over several platform and implementation
 differences.  As such, there is a lot of boilerplate here, but callers should
-be able to disregard most differences and simply work on the UsbDeviceDriver/
+be able to disregard almost everything and simply work on the UsbDeviceDriver/
 UsbHidDriver level.
 
 UsbDeviceDriver
@@ -30,12 +30,13 @@ UsbHidDriver
 
 UsbDeviceDriver and UsbHidDriver are meant to be used as base classes to the
 actual device drivers.  The users of those drivers do not care about read,
-write or other low level operations; thus, these are placed in <driver>.device.
+write or other low level operations; thus, these low level operations are
+placed in <driver>.device.
 
-However, there are legitimate reasons as to why a caller would want to directly
-access the lower layers (device wrapper level, device implementation level, or
-lower).  We do not hide or mark those references as private, but good judgement
-should be exercised when calling anything in <driver>.device.
+However, there still are legitimate reasons as to why someone would want to
+directly access the lower layers (device wrapper level, device implementation
+level, or lower).  We do not hide or mark those references as private, but good
+judgement should be exercised when calling anything within <driver>.device.
 
 Copyright (C) 2019  Jonas Malaco
 Copyright (C) 2019  each contribution's author
@@ -69,9 +70,11 @@ class UsbHidDriver(BaseDriver):
     Each driver should provide its own list of SUPPORTED_DEVICES, as well as
     implementations for all methods applicable to the devices is supports.
 
-    SUPPORTED_DEVICES should consist of a list of tuples (vendor id, product
-    id, None (reserved), description, and extra kwargs).  The extra keyword
-    arguments will be passed to the constructor.
+    SUPPORTED_DEVICES should consist of a list of (vendor id, product
+    id, None (reserved), description, and extra kwargs) tuples.
+
+    find_supported_devices will pass these extra kwargs, as well as any it
+    receives, to the constructor.
     """
 
     SUPPORTED_DEVICES = []
@@ -80,14 +83,15 @@ class UsbHidDriver(BaseDriver):
     def find_supported_devices(cls, hid=None, **kwargs):
         """Find and bind to compatible devices.
 
-        Both hidapi and PyUSB backends are supported.  On all platforms except
-        MacOS, the default is to use PyUSB.
+        Both hidapi and PyUSB backends are supported.  On Mac the default is
+        hidapi; on all other platforms it is PyUSB.
 
-        This can be overiden with `hid`:
+        The choice of API for HID can be overiden with `hid`:
 
-         - `usb`: use default PyUSB backend (depends on available runtime libraries)
-         - `hid`: use default hidapi backend (depends on hidapi build options)
-         - `hidraw`: use hidraw hidapi backend (Linux; depends on hidapi build options)
+         - `hid='usb'`: use PyUSB (libusb-1.0, libusb-0.1 or OpenUSB)
+         - `hid='hid'`: use hidapi (backend depends on hidapi build options)
+         - `hid='hidraw'`: specifically try to use hidraw (Linux; depends on
+           hidapi build options)
         """
         if hid == 'hidraw' or hid == 'hid':
             wrapper = HidapiDevice
@@ -123,39 +127,62 @@ class UsbHidDriver(BaseDriver):
 
     @property
     def description(self):
+        """Human readable description of the corresponding device."""
         return self._description
 
     @property
     def vendor_id(self):
+        """16-bit numeric vendor identifier."""
         return self.device.vendor_id
 
     @property
     def product_id(self):
+        """16-bit umeric product identifier."""
         return self.device.product_id
 
     @property
     def release_number(self):
+        """16-bit BCD device versioning number."""
         return self.device.release_number
 
     @property
+    def serial_number(self):
+        """Serial number reported by the device, or None if N/A."""
+        return self.device.serial_number
+
+    @property
     def bus(self):
+        """Bus the device is connected to, or None if N/A."""
         return self.device.bus
 
     @property
     def address(self):
+        """Address of the device on the corresponding bus, or None if N/A.
+
+        Dependendent on bus enumeration order.
+        """
         return self.device.address
 
     @property
     def port(self):
-        return self.device.port
+        """Physical location of the device, or None if N/A.
 
-    @property
-    def serial_number(self):
-        return self.device.serial_number
+        Tuple of USB port numbers, from the root hub to this device.  Not
+        dependendent on bus enumeration order.
+        """
+        return self.device.port
 
 
 class PyUsbDevice:
-    """"A PyUSB backed device."""
+    """"A PyUSB backed device.
+
+    PyUSB will automatically pick the first available backend (at runtime).
+    The supported backends are:
+
+     - libusb-1.0
+     - libusb-0.1
+     - OpenUSB
+    """
 
     def __init__(self, api, usbdev):
         self.api = api
@@ -178,6 +205,7 @@ class PyUsbDevice:
             self.usbdev.set_configuration()
 
     def release(self):
+        """Release the device to other programs."""
         self.api.util.dispose_resources(self.usbdev)
 
     def close(self):
@@ -191,9 +219,11 @@ class PyUsbDevice:
             self.usbdev.attach_kernel_driver(0)
 
     def read(self, endpoint, length):
+        """Read from endpoint."""
         return self.usbdev.read(endpoint, length)
 
     def write(self, endpoint, data):
+        """Write to endpoint."""
         return self.usbdev.write(endpoint, data)
 
     @classmethod
@@ -214,6 +244,10 @@ class PyUsbDevice:
         return self.usbdev.bcdDevice
 
     @property
+    def serial_number(self):
+        return self.usbdev.serial_number
+
+    @property
     def bus(self):
         return 'usb{}'.format(self.usbdev.bus)  # follow Linux model
 
@@ -225,19 +259,15 @@ class PyUsbDevice:
     def port(self):
         return self.usbdev.port_numbers
 
-    @property
-    def serial_number(self):
-        return self.usbdev.serial_number
-
 
 class PyUsbHid(PyUsbDevice):
     """A PyUSB backed HID device.
 
-    The signatures of read() and write() are changed, and no longer accept
-    target (in/out) endpoints, which are automatically inferred.
+    The signatures of read() and write() are changed from PyUsbDevice, and no
+    longer accept target (in/out) endpoints, which are automatically inferred.
 
-    This (while unorthodox) unifies the behavior of read() and write() between
-    PyUsbHid and HidapiDevice.
+    This change (while unorthodox) unifies the behavior of read() and write()
+    between PyUsbHid and HidapiDevice.
     """
     def __init__(self, api, usbdev):
         super().__init__(api, usbdev)
@@ -245,17 +275,19 @@ class PyUsbHid(PyUsbDevice):
         self.hidout = 0x1  # FIXME apart from NZXT HIDs, usually ctrl (0x0)
 
     def read(self, length):
+        """Read raw report from HID."""
         return self.usbdev.read(self.hidin, length)
 
     def write(self, data):
+        """Write raw report to HID."""
         return self.usbdev.write(self.hidout, data)
 
 
 class HidapiDevice:
     """A hidapi backed device.
 
-    Depending on the platform, the selected api and how the package was built,
-    this might use any of the following backends:
+    Depending on the platform, the selected `hidapi` and how it was built, this
+    might use any of the following backends:
 
      - Windows (using hid.dll)
      - Linux/hidraw (using the Kernel's hidraw driver)
@@ -280,18 +312,23 @@ class HidapiDevice:
         self.hiddev = self.api.device()
 
     def open(self):
+        """Connect to the device."""
         self.hiddev.open_path(self.hidinfo['path'])
 
     def release(self):
+        """NOOP."""
         pass
 
     def close(self):
+        """NOOP."""
         pass
 
     def read(self, length):
+        """Read raw report from HID."""
         return self.hiddev.read(length)
 
     def write(self, data):
+        """Write raw report to HID."""
         return self.hiddev.write(data)
 
     @classmethod
@@ -312,6 +349,10 @@ class HidapiDevice:
         return self.hidinfo['release_number']
 
     @property
+    def serial_number(self):
+        return self.hidinfo['serial_number']
+
+    @property
     def bus(self):
         return 'hid'  # follow Linux model
 
@@ -322,8 +363,4 @@ class HidapiDevice:
     @property
     def port(self):
         return None
-
-    @property
-    def serial_number(self):
-        return self.hidinfo['serial_number']
 

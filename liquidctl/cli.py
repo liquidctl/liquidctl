@@ -10,21 +10,21 @@ Usage:
   liquidctl --help
   liquidctl --version
 
-Device selection options:
-  -d, --device <no>         Select device by listing number (see: list)
+Device selection options (see: list -v):
+  -d, --device <number>     Select device by listing number
   --vendor <id>             Filter devices by vendor id
   --product <id>            Filter devices by product id
-  --release <no>            Filter devices by release number
-  --serial <serial>         Filter devices by serial number
+  --release <number>        Filter devices by release number
+  --serial <number>         Filter devices by serial number
   --bus <bus>               Filter devices by bus
-  --address <no>            Filter devices by address
-  --usb-port <port>         Filter devices by USB port
+  --address <address>       Filter devices by address in bus
+  --usb-port <port>         Filter devices by USB port in bus
 
 Other options:
   --speed <value>           Animation speed
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
-  --hid <module>            Force a specific API for USB HIDs
+  --hid <module>            Override API for USB HIDs: usb, hid or hidraw
   --version                 Display the version number
   --help                    Show this message
 
@@ -112,12 +112,9 @@ def _list_devices(devices, args):
         print('Device {}, {}'.format(i, dev.description))
         if not args['--verbose']:
             continue
+        print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
+        print('  Product ID: {:#06x}'.format(dev.product_id))
 
-        # always available
-        print('  Vendor: {:#06x}'.format(dev.vendor_id))
-        print('  Product: {:#06x}'.format(dev.product_id))
-
-        # optionally available
         if dev.release_number:
             print('  Release number: {:#06x}'.format(dev.release_number))
         if dev.serial_number:

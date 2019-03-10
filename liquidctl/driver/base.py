@@ -20,14 +20,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class BaseDriver:
     """Base driver API.
 
-    All drivers are expected to implement this API for the liquidctl CLI and
-    thirdy party tools.
+    All drivers are expected to implement this API for compatibility with the
+    liquidctl CLI or other thirdy party tools.
 
     Example usage:
 
         for dev in <Driver>.find_supported_devices():
             dev.connect()
-            print(dev.status())
+            print(dev.get_status())
             if dev.serial_number == '49385027ZP':
                 dev.set_fixed_speed("fan3", 42)
             dev.disconnect()
@@ -110,6 +110,11 @@ class BaseDriver:
         raise NotImplementedError()
 
     @property
+    def serial_number(self):
+        """Serial number reported by the device, or None if N/A."""
+        raise NotImplementedError()
+
+    @property
     def bus(self):
         """Bus the device is connected to, or None if N/A."""
         raise NotImplementedError()
@@ -131,10 +136,5 @@ class BaseDriver:
         be chained.  Thus, for USB devices, this returns a tuple of port
         numbers, from the root hub to the parent of the connected device.
         """
-        raise NotImplementedError()
-
-    @property
-    def serial_number(self):
-        """Serial number reported by the device, or None if N/A."""
         raise NotImplementedError()
 
