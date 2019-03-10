@@ -123,10 +123,6 @@ class UsbHidDriver(BaseDriver):
         self.device.close()
 
     @property
-    def implementation(self):
-        return '{}={}'.format(type(self.device).__name__, self.device.api.__name__)
-
-    @property
     def description(self):
         return self._description
 

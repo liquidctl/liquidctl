@@ -87,11 +87,6 @@ class BaseDriver:
         raise NotImplementedError()
 
     @property
-    def implementation(self):
-        """Human readable description of the backend used."""
-        raise NotImplementedError()
-
-    @property
     def description(self):
         """Human readable description of the corresponding device."""
         raise NotImplementedError()

@@ -129,10 +129,10 @@ def _list_devices(devices, args):
         if dev.port:
             print('  Port: {}'.format('.'.join(map(str, dev.port))))
 
-        hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-        hier.append(dev.implementation)
-        print('  Hierarchy:\n    {}'.format('\n    '.join(hier)))
-
+        driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+        # only applicable to devices built on top of liqudictl.drivers.usb:
+        dev_hier = '{}={}'.format(type(dev.device).__name__, dev.device.api.__name__)
+        print('  Hierarchy: {}; {}'.format(', '.join(driver_hier), dev_hier))
         print('')
 
 
