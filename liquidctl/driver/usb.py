@@ -102,9 +102,10 @@ class UsbHidDriver(BaseDriver):
         api = importlib.import_module(hid)
         drivers = []
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
-            devargs.update(kwargs)
+            consargs = devargs.copy()
+            consargs.update(kwargs)
             for dev in wrapper.enumerate(api, vid, pid):
-                drivers.append(cls(dev, description, **devargs))
+                drivers.append(cls(dev, description, **consargs))
         return drivers
 
     def __init__(self, device, description, **kwargs):
