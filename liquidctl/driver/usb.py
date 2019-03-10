@@ -111,8 +111,6 @@ class UsbHidDriver(BaseDriver):
     def __init__(self, device, description, **kwargs):
         self.device = device
         self._description = description
-        driver_name = type(self).__name__
-        wrapper_name = type(self.device).__name__
         api_name = self.device.api.__name__
 
     def connect(self, **kwargs):
