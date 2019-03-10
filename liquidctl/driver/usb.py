@@ -60,8 +60,6 @@ import importlib
 import logging
 import sys
 
-import usb
-
 from liquidctl.driver.base import BaseDriver
 
 LOGGER = logging.getLogger(__name__)
@@ -89,13 +87,14 @@ class UsbDeviceDriver(BaseDriver):
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
             consargs = devargs.copy()
             consargs.update(kwargs)
-            for dev in PyUsbDevice.enumerate(vid, pid):
+            for dev in PyUsbDevice.enumerate(importlib.import_module('usb'), vid, pid):
                 drivers.append(cls(dev, description, **consargs))
         return drivers
 
     def __init__(self, device, description, **kwargs):
         self.device = device
         self._description = description
+        api_name = self.device.api.__name__
 
     def connect(self, **kwargs):
         """Connect to the device."""
@@ -178,21 +177,14 @@ class UsbHidDriver(UsbDeviceDriver):
             hid = 'hid'
         else:
             wrapper = PyUsbHid
-
+            hid = 'usb'
+        api = importlib.import_module(hid)
         drivers = []
-        if wrapper == HidapiDevice:
-            api = importlib.import_module(hid)
-            for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
-                consargs = devargs.copy()
-                consargs.update(kwargs)
-                for dev in wrapper.enumerate(api, vid, pid):
-                    drivers.append(cls(dev, description, **consargs))
-        else:
-            for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
-                consargs = devargs.copy()
-                consargs.update(kwargs)
-                for dev in PyUsbHid.enumerate(vid, pid):
-                    drivers.append(cls(dev, description, **consargs))
+        for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
+            consargs = devargs.copy()
+            consargs.update(kwargs)
+            for dev in wrapper.enumerate(api, vid, pid):
+                drivers.append(cls(dev, description, **consargs))
         return drivers
 
 
@@ -207,7 +199,8 @@ class PyUsbDevice:
      - OpenUSB
     """
 
-    def __init__(self, usbdev):
+    def __init__(self, api, usbdev):
+        self.api = api
         self.usbdev = usbdev
         self._attached = False
 
@@ -228,7 +221,7 @@ class PyUsbDevice:
 
     def release(self):
         """Release the device to other programs."""
-        usb.util.dispose_resources(self.usbdev)
+        self.api.util.dispose_resources(self.usbdev)
 
     def close(self):
         """Disconnect from the device.
@@ -256,9 +249,9 @@ class PyUsbDevice:
                                          timeout=timeout)
 
     @classmethod
-    def enumerate(cls, vid, pid):
-        for handle in usb.core.find(idVendor=vid, idProduct=pid, find_all=True):
-            yield cls(handle)
+    def enumerate(cls, api, vid, pid):
+        for handle in api.core.find(idVendor=vid, idProduct=pid, find_all=True):
+            yield cls(api, handle)
 
     @property
     def vendor_id(self):
@@ -298,8 +291,8 @@ class PyUsbHid(PyUsbDevice):
     This change (while unorthodox) unifies the behavior of read() and write()
     between PyUsbHid and HidapiDevice.
     """
-    def __init__(self, usbdev):
-        super().__init__(usbdev)
+    def __init__(self, api, usbdev):
+        super().__init__(api, usbdev)
         self.hidin = 0x81
         self.hidout = 0x1  # FIXME apart from NZXT HIDs, usually ctrl (0x0)
 
