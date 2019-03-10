@@ -13,6 +13,7 @@ UsbDeviceDriver
         └── OpenUSB
 
 UsbHidDriver
+├── extends: UsbDeviceDriver
 ├── device: PyUsbHid
 │   └── extends PyUsbDevice
 │       └── uses module usb (PyUSB)
@@ -64,8 +65,8 @@ from liquidctl.driver.base import BaseDriver
 LOGGER = logging.getLogger(__name__)
 
 
-class UsbHidDriver(BaseDriver):
-    """Base driver class for USB Human Interface Devices (HIDs).
+class UsbDeviceDriver(BaseDriver):
+    """Base driver class for generic USB devices.
 
     Each driver should provide its own list of SUPPORTED_DEVICES, as well as
     implementations for all methods applicable to the devices is supports.
@@ -80,35 +81,13 @@ class UsbHidDriver(BaseDriver):
     SUPPORTED_DEVICES = []
 
     @classmethod
-    def find_supported_devices(cls, hid=None, **kwargs):
-        """Find and bind to compatible devices.
-
-        Both hidapi and PyUSB backends are supported.  On Mac the default is
-        hidapi; on all other platforms it is PyUSB.
-
-        The choice of API for HID can be overiden with `hid`:
-
-         - `hid='usb'`: use PyUSB (libusb-1.0, libusb-0.1 or OpenUSB)
-         - `hid='hid'`: use hidapi (backend depends on hidapi build options)
-         - `hid='hidraw'`: specifically try to use hidraw (Linux; depends on
-           hidapi build options)
-        """
-        if hid == 'hidraw' or hid == 'hid':
-            wrapper = HidapiDevice
-        elif hid == 'usb':
-            wrapper = PyUsbHid
-        elif sys.platform.startswith('darwin'):
-            wrapper = HidapiDevice
-            hid = 'hid'
-        else:
-            wrapper = PyUsbHid
-            hid = 'usb'
-        api = importlib.import_module(hid)
+    def find_supported_devices(cls, **kwargs):
+        """Find and bind to compatible devices."""
         drivers = []
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
             consargs = devargs.copy()
             consargs.update(kwargs)
-            for dev in wrapper.enumerate(api, vid, pid):
+            for dev in PyUsbDevice.enumerate(importlib.import_module('usb'), vid, pid):
                 drivers.append(cls(dev, description, **consargs))
         return drivers
 
@@ -173,6 +152,42 @@ class UsbHidDriver(BaseDriver):
         return self.device.port
 
 
+class UsbHidDriver(UsbDeviceDriver):
+    """Base driver class for USB Human Interface Devices (HIDs)."""
+    @classmethod
+    def find_supported_devices(cls, hid=None, **kwargs):
+        """Find and bind to compatible devices.
+
+        Both hidapi and PyUSB backends are supported.  On Mac the default is
+        hidapi; on all other platforms it is PyUSB.
+
+        The choice of API for HID can be overiden with `hid`:
+
+         - `hid='usb'`: use PyUSB (libusb-1.0, libusb-0.1 or OpenUSB)
+         - `hid='hid'`: use hidapi (backend depends on hidapi build options)
+         - `hid='hidraw'`: specifically try to use hidraw (Linux; depends on
+           hidapi build options)
+        """
+        if hid == 'hidraw' or hid == 'hid':
+            wrapper = HidapiDevice
+        elif hid == 'usb':
+            wrapper = PyUsbHid
+        elif sys.platform.startswith('darwin'):
+            wrapper = HidapiDevice
+            hid = 'hid'
+        else:
+            wrapper = PyUsbHid
+            hid = 'usb'
+        api = importlib.import_module(hid)
+        drivers = []
+        for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
+            consargs = devargs.copy()
+            consargs.update(kwargs)
+            for dev in wrapper.enumerate(api, vid, pid):
+                drivers.append(cls(dev, description, **consargs))
+        return drivers
+
+
 class PyUsbDevice:
     """"A PyUSB backed device.
 
@@ -218,13 +233,20 @@ class PyUsbDevice:
             LOGGER.debug('restoring stock kernel driver')
             self.usbdev.attach_kernel_driver(0)
 
-    def read(self, endpoint, length):
+    def read(self, endpoint, length, timeout=None):
         """Read from endpoint."""
-        return self.usbdev.read(endpoint, length)
+        return self.usbdev.read(endpoint, length, timeout=timeout)
 
-    def write(self, endpoint, data):
+    def write(self, endpoint, data, timeout=None):
         """Write to endpoint."""
-        return self.usbdev.write(endpoint, data)
+        return self.usbdev.write(endpoint, data, timeout=timeout)
+
+    def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
+                      data_or_wLength = None, timeout = None):
+        return self.usbdev.ctrl_transfer(bmRequestType, bRequest,
+                                         wValue=wValue, wIndex=wIndex,
+                                         data_or_wLength=data_or_wLength,
+                                         timeout=timeout)
 
     @classmethod
     def enumerate(cls, api, vid, pid):
