@@ -94,7 +94,6 @@ class UsbDeviceDriver(BaseDriver):
     def __init__(self, device, description, **kwargs):
         self.device = device
         self._description = description
-        api_name = self.device.api.__name__
 
     def connect(self, **kwargs):
         """Connect to the device."""
