@@ -39,10 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import itertools
 import logging
 
-import usb.util
-
 import liquidctl.util
-from liquidctl.driver.base_usb import BaseUsbDriver
+from liquidctl.driver.usb import UsbHidDriver
 
 
 LOGGER = logging.getLogger(__name__)
@@ -103,7 +101,7 @@ _WRITE_LENGTH = 65
 _WRITE_TIMEOUT = 2000
 
 
-class KrakenTwoDriver(BaseUsbDriver):
+class KrakenTwoDriver(UsbHidDriver):
     """USB driver for third generation NZXT Kraken X and M liquid coolers."""
 
     DEVICE_KRAKENX = 'Kraken X'
@@ -117,14 +115,35 @@ class KrakenTwoDriver(BaseUsbDriver):
         }),
     ]
 
-    def __init__(self, device, description, device_type=DEVICE_KRAKENX):
+    def __init__(self, device, description, device_type=DEVICE_KRAKENX, **kwargs):
         super().__init__(device, description)
         self.device_type = device_type
         self.supports_lighting = True
         self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
         self._supports_cooling_profiles = None  # physical storage/later inferred from fw version
+        self._connected = False
 
-    def get_status(self):
+    def connect(self, **kwargs):
+        super().connect(**kwargs)
+        self._connected = True
+
+    def disconnect(self, **kwargs):
+        super().disconnect(**kwargs)
+        self._connected = False
+
+    def initialize(self, **kwargs):
+        # before v1.1 `initialize` was used to connect to the device; that has
+        # since been deprecated, but we have to support that usage until v2
+        if not self._connected:
+            self.connect(**kwargs)
+
+    def finalize(self):
+        """Deprecated."""
+        LOGGER.warning('deprecated: use disconnect() instead')
+        if self._connected:
+            self.disconnect()
+
+    def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -141,7 +160,7 @@ class KrakenTwoDriver(BaseUsbDriver):
                 ('Firmware version', firmware, '')
             ]
 
-    def set_color(self, channel, mode, colors, speed):
+    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel."""
         if not self.supports_lighting:
             raise NotImplementedError()
@@ -162,7 +181,7 @@ class KrakenTwoDriver(BaseUsbDriver):
             logo = [leds[0][1], leds[0][0], leds[0][2]]
             ring = list(itertools.chain(*leds[1:]))
             self._write([0x2, 0x4c, byte2, mval, byte4] + logo + ring)
-        usb.util.dispose_resources(self.device)
+        self.device.release()
 
     def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
         colors = list(colors)
@@ -188,7 +207,7 @@ class KrakenTwoDriver(BaseUsbDriver):
             steps = [colors]
         return steps
 
-    def set_speed_profile(self, channel, profile):
+    def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
         if not self.supports_cooling_profiles:
             raise NotImplementedError()
@@ -206,29 +225,29 @@ class KrakenTwoDriver(BaseUsbDriver):
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
-        usb.util.dispose_resources(self.device)
+        self.device.release()
 
-    def set_fixed_speed(self, channel, speed):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
             raise NotImplementedError()
         elif self.supports_cooling_profiles:
-            self.set_speed_profile(channel, [(0, speed), (59, speed), (60, 100), (100, 100)])
+            self.set_speed_profile(channel, [(0, duty), (59, duty), (60, 100), (100, 100)])
         else:
-            self.set_instantaneous_speed(channel, speed)
+            self.set_instantaneous_speed(channel, duty)
 
-    def set_instantaneous_speed(self, channel, speed):
+    def set_instantaneous_speed(self, channel, duty, **kwargs):
         """Set channel to speed, but do not ensure persistence."""
         if not self.supports_cooling:
             raise NotImplementedError()
         cbase, smin, smax = _SPEED_CHANNELS[channel]
-        if speed < smin:
-            speed = smin
-        elif speed > smax:
-            speed = smax
-        LOGGER.info('setting %s PWM duty to %i%%', channel, speed)
-        self._write([0x2, 0x4d, cbase & 0x70, 0, speed])
-        usb.util.dispose_resources(self.device)
+        if duty < smin:
+            duty = smin
+        elif duty > smax:
+            duty = smax
+        LOGGER.info('setting %s PWM duty to %i%%', channel, duty)
+        self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
+        self.device.release()
 
     @property
     def supports_cooling_profiles(self):
@@ -241,8 +260,8 @@ class KrakenTwoDriver(BaseUsbDriver):
         return self._supports_cooling_profiles
 
     def _read(self):
-        msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
-        usb.util.dispose_resources(self.device)
+        msg = self.device.read(_READ_LENGTH)
+        self.device.release()
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         self._firmware_version = (msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
         return msg
@@ -251,18 +270,6 @@ class KrakenTwoDriver(BaseUsbDriver):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
-        if self.dry_run:
-            return
-        self.device.write(_WRITE_ENDPOINT, data + padding, _WRITE_TIMEOUT)
+        self.device.write(data + padding)
 
-    def initialize(self):
-        """NOOP.
-
-        Deprecated behavior: connect to the Kraken.
-        """
-        self.connect()
-
-    def finalize(self):
-        """Deprecated."""
-        self.disconnect()
 

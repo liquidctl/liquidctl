@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased]
 ### Added
  - Automatic bundled builds for Windows with AppVeyor
+ - [Smart Device/Grid+ V3] Add option to set all fans at once with virtual 'sync' channel
+### Removed
+ - Remove `--dry-run`
 
 ## [1.1.0] – 2018-12-15
 ### Added

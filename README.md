@@ -86,17 +86,15 @@ Packages for Linux distributions:
 Pre-built binaries for Windows:
 
  - Releases: check the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
- - Nightly builds: check AppVeyor's [artifacts](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/build/artifacts) tab
+ - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
 ### System dependencies
 
-liquidctl uses PyUSB to communicate with USB devices, and thus a suitable backend for it must be available at runtime.
+liquidctl uses [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/cython-hidapi) to communicate with USB devices.  PyUSB requires that a suitable backend for it be available at runtime; hidapi, depending on the platform and how it has been built, might also require one.
 
-Pre-built packages and executables should take of these dependencies automatically.  And if you use other user-space programs that interact with USB devices, it is possible that you already installed compatible libraries.
+Pre-built packages and executables should take of these dependencies automatically.  If you use other user-space programs that interact with USB devices, it is also possible that you already have the required libraries installed.  In all other cases we recommend you install libusb-1.0, which should cover the needs of both PyUSB and cython-hidapi.
 
-In all other cases we recommend you install libusb-1.0.  On Linux, it is usually available in a libusb-1.0 or similar pacakge.
-
-On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+On Linux, it is usually available in a libusb-1.0 or similar package.  On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
 
 ## The command-line interface
@@ -218,19 +216,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Related projects
 
-### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
+### [jonasmalacofilho/liquidctl-linux-drivers](https://github.com/jonasmalacofilho/liquidctl-linux-drivers)
 
-A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.
-
-A special thanks to all krakenx contributors; this project would not exist were not for it.
+Ongoing work on Linux kernel drivers that implement standard hwmon sysfs
+interfaces for (most of) the devices that are supported by liquidctl, allowing
+the use of standard monitoring tools (e.g. lm-sensors).
 
 ### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
-Linux kernel-space driver for second and third generation NZXT Kraken X coolers.
+Linux kernel-space drivers for second and third generation NZXT Kraken X coolers.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
 Command-line tool to control Corsair all-in-one liquid coolers and other devices.
+
+### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
+
+A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.
+
+_A special thanks to all krakenx contributors; this project would not exist were not for it._
 
 
 <!-- helper links -->

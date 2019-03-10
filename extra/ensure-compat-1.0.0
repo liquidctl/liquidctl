@@ -32,21 +32,19 @@ if __name__ == '__main__':
         if not isinstance(d, KrakenTwoDriver):
             continue
 
-        print('{} at USB port {}'.format(d.description, d.device.port_number))
-
         print('Connecting')
         # depreacted behavior in favor of connect()
-        d.initialize()
+        d.initialize()  # used by GKraken
 
         print('Setting the lighting to super')
         # deprecated in favor of super-fixed, super-breathing and super-wave
-        d.set_color('sync', 'super', [(128,0,255)] + SPECTRUM, 'normal')
+        d.set_color('sync', 'super', [(128,0,255)] + SPECTRUM, 'normal')  # used by GKraken
 
         print('Status:')
-        for k, v, u in d.get_status():
-            print('  {}: {} {}'.format(k, v, u))
+        for k, v, u in d.get_status():  # used by GKraken
+            print('  {}: {} {}'.format(k, v, u))  # ignoring: GKraken unreasonably expects a particular ordering
 
         print('Disconnecting')
         # deprecated in favor of disconnect()
-        d.finalize()
+        d.finalize()  # used by GKraken
 

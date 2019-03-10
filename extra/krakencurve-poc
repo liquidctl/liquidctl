@@ -15,7 +15,6 @@ Options:
   --pump-sensor <sensor>  Select custom sensor for pump speed
   --fan-sensor <sensor>   Select custom sensor for fan speed
   --interval <seconds>    Update interval in seconds [default: 2]
-  -n, --dry-run           Do not apply any settings
   -v, --verbose           Output additional information
   -g, --debug             Show debug information on stderr
   --version               Display the version number
@@ -152,9 +151,6 @@ if __name__ == '__main__':
 
     device = KrakenTwoDriver.find_supported_devices()[0]
     device.connect()
-    if args['--dry-run']:
-        LOGGER.warning('This is a --dry-run')
-        device.dry_run = True
 
     try:
         if args['show-sensors']:

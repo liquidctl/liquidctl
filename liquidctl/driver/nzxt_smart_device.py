@@ -76,9 +76,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import itertools
 import logging
 
-import usb.util
-
-from liquidctl.driver.base_usb import BaseUsbDriver
+from liquidctl.driver.usb import UsbHidDriver
 
 
 LOGGER = logging.getLogger(__name__)
@@ -129,7 +127,7 @@ _WRITE_LENGTH = 65
 _WRITE_TIMEOUT = 2000
 
 
-class NzxtSmartDeviceDriver(BaseUsbDriver):
+class NzxtSmartDeviceDriver(UsbHidDriver):
     """USB driver for the NZXT Smart Device and Grid+ V3."""
 
     SUPPORTED_DEVICES = [
@@ -143,14 +141,14 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
         }),
     ]
 
-    def __init__(self, device, description, speed_channel_count, color_channel_count):
+    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                                 for i in range(speed_channel_count)}
         self._color_channels = {'sync': (0)} if color_channel_count else {}
 
-    def initialize(self):
+    def initialize(self, **kwargs):
         """Initialize the device.
 
         Detects all connected fans and LED accessories, and allows subsequent
@@ -158,9 +156,9 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
         """
         self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
         self._write([0x1, 0x5d])  # start reporting
-        usb.util.dispose_resources(self.device)
+        self.device.release()
 
-    def get_status(self):
+    def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -168,7 +166,7 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
         status = []
         noise = []
         for i, _ in enumerate(self._speed_channels):
-            msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
+            msg = self.device.read(_READ_LENGTH)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
@@ -190,10 +188,10 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
                     status.append(('LED accessory type', ltype, ''))
                     status.append(('LED count (total)', lcount*lsize, ''))
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
-        usb.util.dispose_resources(self.device)
+        self.device.release()
         return sorted(status)
 
-    def set_color(self, channel, mode, colors, speed):
+    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode.
 
         Only available for the Smart Device.
@@ -226,24 +224,26 @@ class NzxtSmartDeviceDriver(BaseUsbDriver):
             byte4 = sval | seq | mod4
             self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
             self._write([0x3] + leds[57:])
-        usb.util.dispose_resources(self.device)
+        self.device.release()
 
-    def set_fixed_speed(self, channel, speed):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
-        cid, smin, smax = self._speed_channels[channel]
-        if speed < smin:
-            speed = smin
-        elif speed > smax:
-            speed = smax
-        LOGGER.info('setting %s duty to %i%%', channel, speed)
-        self._write([0x2, 0x4d, cid, 0, speed])
-        usb.util.dispose_resources(self.device)
+        if channel == 'sync':
+            selected_channels = self._speed_channels
+        else:
+            selected_channels = { channel: self._speed_channels[channel] }
+        for cname, (cid, smin, smax) in selected_channels.items():
+            if duty < smin:
+                duty = smin
+            elif duty > smax:
+                duty = smax
+            LOGGER.info('setting %s duty to %i%%', cname, duty)
+            self._write([0x2, 0x4d, cid, 0, duty])
+        self.device.release()
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
-        if self.dry_run:
-            return
-        self.device.write(_WRITE_ENDPOINT, data + padding, _WRITE_TIMEOUT)
+        self.device.write(data + padding)
 

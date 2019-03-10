@@ -10,18 +10,21 @@ Usage:
   liquidctl --help
   liquidctl --version
 
-Device selection options:
-  -d, --device <no>         Select device by listing number (see: list)
+Device selection options (see: list -v):
+  -d, --device <number>     Select device by listing number
   --vendor <id>             Filter devices by vendor id
   --product <id>            Filter devices by product id
-  --usb-port <no>           Filter devices by USB port
-  --serial <no>             Filter devices by serial number
+  --release <number>        Filter devices by release number
+  --serial <number>         Filter devices by serial number
+  --bus <bus>               Filter devices by bus
+  --address <address>       Filter devices by address in bus
+  --usb-port <port>         Filter devices by USB port in bus
 
 Other options:
-  --speed <value>           Animation speed [default: normal]
-  -n, --dry-run             Do not apply any settings
+  --speed <value>           Animation speed
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
+  --hid <module>            Override API for USB HIDs: usb, hid or hidraw
   --version                 Display the version number
   --help                    Show this message
 
@@ -59,111 +62,135 @@ import sys
 
 from docopt import docopt
 
+import liquidctl.driver.kraken_two
+import liquidctl.driver.nzxt_smart_device
+import liquidctl.driver.usb
 import liquidctl.util
-from liquidctl.driver.kraken_two import KrakenTwoDriver
-from liquidctl.driver.nzxt_smart_device import NzxtSmartDeviceDriver
 from liquidctl.version import __version__
 
 
 DRIVERS = [
-    KrakenTwoDriver,
-    NzxtSmartDeviceDriver,
+    liquidctl.driver.kraken_two.KrakenTwoDriver,
+    liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
 ]
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def find_all_supported_devices():
-    res = map(lambda driver: driver.find_supported_devices(), DRIVERS)
+def find_all_supported_devices(**kwargs):
+    res = map(lambda driver: driver.find_supported_devices(**kwargs), DRIVERS)
     return itertools.chain(*res)
 
 
 def _filter_devices(devices, args):
-    def selected(attr, arg_name):
-        return not args[arg_name] or attr == int(args[arg_name], 0)
     if args['--device']:
         return [devices[int(args['--device'])]]
     sel = []
     for i, dev in devices:
-        und = dev.device
-        if (selected(und.idVendor, '--vendor') and
-            selected(und.idProduct, '--product') and
-            selected(und.port_number, '--usb-port') and
-            (not args['--serial'] or und.serial_number == args['--serial'])):
-            # --serial handled differently to avoid unnecessary root
-            sel.append((i, dev))
+        if args['--vendor'] and dev.vendor_id != int(args['--vendor'], 0):
+            continue
+        if args['--product'] and dev.product_id != int(args['--product'], 0):
+            continue
+        if args['--release'] and dev.release_number != int(args['--release'], 0):
+            continue
+        if args['--serial'] and dev.serial_number != args['--serial']:
+            continue
+        if args['--bus'] and dev.bus != args['--bus']:
+            continue
+        if args['--address'] and dev.address != int(args['--address'], 0):
+            continue
+        if (args['--usb-port'] and
+            dev.port != tuple(map(int, args['--usb-port'].split('.')))):
+            continue
+        sel.append((i, dev))
     return sel
 
 
 def _list_devices(devices, args):
     for i, dev in devices:
-        und = dev.device
         print('Device {}, {}'.format(i, dev.description))
-        if args['--verbose']:
-            print('  Vendor: {:#06x}'.format(und.idVendor))
-            print('  Product: {:#06x}'.format(und.idProduct))
-            print('  Port number: {}'.format(und.port_number))
-            try:
-                print('  Serial number: {}'.format(und.serial_number or '<empty>'))
-            except:
-                print('  Serial number: <n/a> (try again as root)')
-            hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            print('  Hierarchy: {}'.format(', '.join(hier)))
-            print('')
+        if not args['--verbose']:
+            continue
+        print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
+        print('  Product ID: {:#06x}'.format(dev.product_id))
+
+        if dev.release_number:
+            print('  Release number: {:#06x}'.format(dev.release_number))
+        if dev.serial_number:
+            print('  Serial number: {}'.format(dev.serial_number))
+        if dev.bus:
+            print('  Bus: {}'.format(dev.bus))
+        if dev.address:
+            print('  Address: {}'.format(dev.address))
+        if dev.port:
+            print('  Port: {}'.format('.'.join(map(str, dev.port))))
+
+        driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+        # only applicable to devices built on top of liqudictl.drivers.usb:
+        dev_hier = '{}={}'.format(type(dev.device).__name__, dev.device.api.__name__)
+        print('  Hierarchy: {}; {}'.format(', '.join(driver_hier), dev_hier))
+        print('')
 
 
-def _device_get_status(dev, num):
+def _device_get_status(dev, num, **kwargs):
     print('Device {}, {}'.format(num, dev.description))
-    dev.connect()
+    dev.connect(**kwargs)
     try:
-        status = dev.get_status()
+        status = dev.get_status(**kwargs)
         for k, v, u in status:
             print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
     finally:
-        dev.disconnect()
+        dev.disconnect(**kwargs)
     print('')
 
 
-def _device_set_color(dev, args):
+def _device_set_color(dev, args, **kwargs):
     color = map(lambda c: list(_parse_color(c)), args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, args['--speed'])
+    dev.set_color(args['<channel>'], args['<mode>'], color, **kwargs)
 
 
-def _device_set_speed(dev, args):
+def _device_set_speed(dev, args, **kwargs):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile)
+        dev.set_speed_profile(args['<channel>'], profile, **kwargs)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]))
+        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **kwargs)
 
 
 def _parse_color(color):
     return bytes.fromhex(color)
 
 
+def _get_options_to_forward(args):
+    def opt_to_field(opt):
+        return opt.replace('--', '').replace('-', '_')
+    # options that can be forwarded must:
+    #  - have no default value (thus not being forwarded);
+    #  - or avoid untintential conflicts with target function arguments
+    whitelist = ['--hid', '--speed']
+    return {opt_to_field(i): args[i] for i in whitelist if args[i]}
+
+
 def main():
     args = docopt(__doc__, version='liquidctl v{}'.format(__version__))
 
     if args['--debug']:
+        args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+        import usb  # now to set up the 'usb' logger, otherwise setLevel bellow wont work
         logging.getLogger('usb').setLevel(logging.DEBUG)
         import usb._debug
         usb._debug.enable_tracing(True)
-        args['--verbose'] = True
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
         logging.basicConfig(level=logging.WARNING, format='%(message)s')
         sys.tracebacklimit = 0
 
-    if args['--dry-run']:
-        LOGGER.warning('This is a --dry-run')
+    frwd = _get_options_to_forward(args)
 
-    all_devices = list(enumerate(find_all_supported_devices()))
-    if args['--dry-run']:
-        for i, dev in all_devices:
-            dev.dry_run = True
+    all_devices = list(enumerate(find_all_supported_devices(**frwd)))
     selected = _filter_devices(all_devices, args)
 
     if args['list']:
@@ -171,7 +198,7 @@ def main():
         return
     if args['status']:
         for i,dev in selected:
-            _device_get_status(dev, i)
+            _device_get_status(dev, i, **frwd)
         return
 
     if len(selected) > 1:
@@ -180,18 +207,18 @@ def main():
         raise SystemExit('No devices matches available drivers and selection criteria')
     num, dev = selected[0]
 
-    dev.connect()
+    dev.connect(**frwd)
     try:
         if args['initialize']:
-            dev.initialize()
+            dev.initialize(**frwd)
         elif args['set'] and args['speed']:
-            _device_set_speed(dev, args)
+            _device_set_speed(dev, args, **frwd)
         elif args['set'] and args['color']:
-            _device_set_color(dev, args)
+            _device_set_color(dev, args, **frwd)
         else:
             raise Exception('Not sure what to do')
     finally:
-        dev.disconnect()
+        dev.disconnect(**frwd)
 
 
 if __name__ == '__main__':

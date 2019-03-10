@@ -7,9 +7,12 @@ with open('liquidctl/version.py', 'r') as fv:
     exec(fv.read(), vals)
     version = vals['__version__']
 
+doc_url = '{}/blob/v{}/README.md'.format(repo_url, version)
+changes_url = '{}/blob/v{}/CHANGELOG.md'.format(repo_url, version)
+
 with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = (fh.read().split('<!-- stop here for PyPI -->', 1)[0]
-                        + 'Check the project page page for more information.')
+                        + 'Continue reading on the [Documentation]({})...'.format(doc_url))
 
 setuptools.setup(
     name='liquidctl',
@@ -32,10 +35,10 @@ setuptools.setup(
     ],
     keywords='cross-platform driver nzxt kraken smart-device grid',
     project_urls={
-        'Documentation': '{}/blob/v{}/README.md'.format(repo_url, version),
-        'Changelog': '{}/blob/v{}/CHANGELOG.md'.format(repo_url, version),
+        'Documentation': doc_url,
+        'Changelog': changes_url,
     },
-    install_requires=['docopt', 'pyusb'],
+    install_requires=['docopt', 'pyusb', 'hidapi'],
     python_requires='>=3',
     entry_points={
         'console_scripts': [
