@@ -90,13 +90,11 @@ Pre-built binaries for Windows:
 
 ### System dependencies
 
-liquidctl uses PyUSB to communicate with USB devices, and thus a suitable backend for it must be available at runtime.
+liquidctl uses [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/cython-hidapi) to communicate with USB devices.  PyUSB requires that a suitable backend for it be available at runtime; hidapi, depending on the platform and how it has been built, might also require one.
 
-Pre-built packages and executables should take of these dependencies automatically.  And if you use other user-space programs that interact with USB devices, it is possible that you already installed compatible libraries.
+Pre-built packages and executables should take of these dependencies automatically.  If you use other user-space programs that interact with USB devices, it is also possible that you already have the required libraries installed.  In all other cases we recommend you install libusb-1.0, which should cover the needs of both PyUSB and cython-hidapi.
 
-In all other cases we recommend you install libusb-1.0.  On Linux, it is usually available in a libusb-1.0 or similar pacakge.
-
-On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+On Linux, it is usually available in a libusb-1.0 or similar package.  On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
 
 ## The command-line interface
