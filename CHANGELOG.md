@@ -6,8 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 ### Added
- - Automatic bundled builds for Windows with AppVeyor
+ - Make automatic bundled builds for Windows with AppVeyor
  - [Smart Device/Grid+ V3] Add option to set all fans at once with virtual 'sync' channel
+ - Add support for hidapi for HIDs
+ - Support HIDs on Mac OS with hidapi
+ - Add `--hid <module>` override for HID API selection
+ - Add release number, bus and address listing
+ - Add `--release`, `--bus`, `--address` device filters
+### Changed
+ - [internal] Revamp driver and device model in `base.py` and `usb.py`
 ### Removed
  - Remove `--dry-run`
 
