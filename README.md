@@ -96,6 +96,8 @@ Pre-built packages and executables should take of these dependencies automatical
 
 On Linux, it is usually available in a libusb-1.0 or similar package.  On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
+Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with HIDs in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.  Because of this, liquidctl will default to hidapi when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products.
+
 
 ## The command-line interface
 
@@ -190,6 +192,47 @@ call %homepath%\Anaconda3\Scripts\activate.bat
 A slightly more complex example can be seen in [issue #14](https://github.com/jonasmalacofilho/liquidctl/issues/14#issuecomment-456519098) ("Can I autostart liquidctl on Windows?"), that uses the LEDs to convey progress or eventual errors.
 
 Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) goes into a lot more detail and is a good read.
+
+### Mac OS
+
+You can use a shell script and `launchd` to automatically configure your devices upon logging in.
+
+Create your `~/liquidcfg.sh` script and make it executable:
+
+```bash
+#!/bin/bash -xe
+liquidctl set pump speed 90
+liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
+liquidctl set ring color fading 350017 ff2608
+liquidctl set logo color spectrum-wave
+```
+
+Then, create the job definition for a new `~/Library/LaunchAgents/local.liquidcfg.plist` agent:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ProgramArguments</key>
+	<array>
+		<string>~/liquidcfg.sh</string>
+	</array>
+	<key>Label</key>
+	<string>local.liquidcfg</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<false/>
+</dict>
+</plist>
+```
+
+You can enable or disable the agent with `lauchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist`.
+
+Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.  If you have issues, make sure Python was added to your PATH, or adjust it in the job definition.
+
+A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/Post_Install/pump_control).
 
 
 ## License
