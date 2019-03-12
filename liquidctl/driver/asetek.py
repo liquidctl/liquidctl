@@ -130,7 +130,7 @@ class AsetekDriver(UsbDeviceDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         self._begin_transaction()
-        self._write([0x14, 0, 0, 0])
+        self._configure_device()
         msg = self._end_transaction_and_read()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
