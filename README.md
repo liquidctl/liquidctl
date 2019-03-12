@@ -107,7 +107,9 @@ The complete list of commands and options can be seen with `liquidctl --help`, b
 # liquidctl list
 ```
 
-In case more than one supported device is found, they can be selected with the `--device <no>` option, according to the output of `list`.  They can also be filtered by `--vendor` id, `--product` id, `--usb-port`, or even `--serial` number.
+In case more than one supported device is found, `--vendor`, `--product`, `--release`, `--serial`, `--bus`, `--address` and `--usb-port` can be used to select a particular product (see `liquidctl --help`).
+
+The numbers shown by `list` can also be used for device selection with `--device <no>`.  However, these numbers are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal enumeration order variance.
 
 Devices will usually need to be initialized before they can be used, though each device has its own requirements and limitations.  This and other information specific to a particular device will appear on the documentation linked in the [supported devices](#supported-devices) section.
 
@@ -136,7 +138,8 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will print as much information as possible to help identify its cause; be sure to include it when opening a new issue.
 
-# Automation and running at boot
+
+## Automation and running at boot
 
 In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough for, and some specifics about this are given in the following sections.
 
