@@ -133,24 +133,31 @@ class AsetekDriver(UsbDeviceDriver):
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
-        opt_profile = self._prepare_profile(profile, dmin, dmax)
-        for temp, duty in opt_profile:
-            LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
-                        channel, duty, temp)
-        temps, duties = map(list, zip(*opt_profile))
+        adjusted = self._prepare_profile(profile, dmin, dmax)
+        for temp, duty in adjusted:
+            LOGGER.info('setting %s PWM point: (%i°C, %i%%), device interpolated',
+                        channel, temp, duty)
+        temps, duties = map(list, zip(*adjusted))
         self._begin_transaction()
-        # note: it might be necessary to call _send_dummy_command first
         self._write([mtype, 0] + temps + duties)
         self._end_transaction_and_read()
 
     def _prepare_profile(self, profile, min_duty, max_duty):
-        norm = liquidctl.util.normalize_profile(profile, _CRITICAL_TEMPERATURE)
-        opt = liquidctl.util.autofill_profile(norm, _MAX_PROFILE_POINTS)
+        opt = list(profile)
+        size = len(opt)
+        if size < 1:
+            raise ValueError('At least one PWM point required')
+        elif size > 6:
+            raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
         for i, (temp, duty) in enumerate(opt):
             if duty < min_duty:
                 opt[i] = (temp, min_duty)
             elif duty > max_duty:
                 opt[i] = (temp, max_duty)
+        missing = 6 - size
+        if missing:
+            LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
+            opt = opt + [(60, 100)]*missing
         return opt
 
     def set_fixed_speed(self, channel, speed, **kwargs):
