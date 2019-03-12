@@ -47,11 +47,11 @@ from liquidctl.driver.usb import UsbDeviceDriver
 LOGGER = logging.getLogger(__name__)
 
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'fan':   (0x12, 30, 100),
-    'pump':  (0x13, 30, 100),
+    'fan':   (0x12, 0, 100),
+    'pump':  (0x13, 0, 100),
 }
 _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
-    'fan':   (0x11, 30, 100)
+    'fan':   (0x11, 0, 100)
 }
 _MAX_PROFILE_POINTS = 6
 _CRITICAL_TEMPERATURE = 60
