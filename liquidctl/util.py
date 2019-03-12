@@ -51,45 +51,6 @@ def normalize_profile(profile, critx):
     return mono
 
 
-def autofill_profile(profile, n):
-    """Autofill a [(x: int, y: int), ...] profile up to n points.
-
-    Requires the profile to be sorted by x, with no duplicate x values (see
-    normalize_profile).  Simultaneously expects and returns profiles with
-    integer x and y values.
-
-    The resulting profile is optimized for systems that do not interpolate
-    between points.  For these systems it is advantageous to reduce the larger
-    Δy increments, thus reducing the errors between the system output and
-    theorically interpolated intermediate points.
-
-    All points present in the input are kept.  The output might have fewer than
-    n – down to len(profile) – points, if the profile is either too flat or too
-    complex.
-
-    >>> autofill_profile([(25, 25), (30, 40), (40, 80), (60, 100)], 7)
-    [(25, 25), (30, 40), (33, 53), (37, 67), (40, 80), (50, 90), (60, 100)]
-    >>> autofill_profile([(25, 25), (30, 25), (60, 100)], 7)
-    [(25, 25), (30, 25), (36, 40), (42, 55), (48, 70), (54, 85), (60, 100)]
-    >>> autofill_profile([(25, 100), (60, 100)], 7)
-    [(25, 100), (60, 100)]
-    >>> autofill_profile([(25, 100)], 7)
-    [(25, 100)]
-    """
-    deltas = delta(profile)
-    totaldy = sum(dy for _,dy in deltas)
-    if totaldy == 0:
-        return profile
-    # discount from n any steps that only keep points from the input
-    n -= sum(1 for dx,dy in deltas if round((n - 1)*dy/totaldy) == 0)
-    # all points present in the input are kept; do not overshoot dx
-    steps = iter(max(1, min(round((n - 1)*dy/totaldy), dx))
-                for dx,dy in deltas)
-    tmp = iter([(round(x+dx*i/m), round(y+dy*i/m)) for i in range(0, m)]
-               for (x,y),(dx,dy),m in zip(profile, deltas, steps))
-    return list(itertools.chain(*tmp)) + profile[-1:]
-
-
 def interpolate_profile(profile, x):
     """Interpolate y given x and a [(x: int, y: int), ...] profile.
 
