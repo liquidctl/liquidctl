@@ -109,6 +109,11 @@ class AsetekDriver(UsbDeviceDriver):
         self._close()
         super().disconnect()
 
+    def initialize(self, **kwargs):
+        self._begin_transaction()
+        self._send_dummy_command()
+        self._end_transaction_and_read()
+
     def get_status(self, **kwargs):
         """Get a status report.
 
