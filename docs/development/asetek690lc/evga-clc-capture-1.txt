@@ -1,7 +1,8 @@
 Capture data:
- - Opening-only_clc.pcapng by bmuzika received 2 Feb 2019
- - Closing-only_clc.pcapng by bmuzika received 2 Feb 2019
- - fan_max-min-max_only_clc.pcapng by bmuzika received 10 Feb 2019
+ - Opening-only_clc.pcapng by bmuzika received 2 Feb 2019 (unknwon CLC model)
+ - Closing-only_clc.pcapng by bmuzika received 2 Feb 2019 (unknwon CLC model)
+ - fan_max-min-max_only_clc.pcapng by bmuzika received 10 Feb 2019 (unknwon CLC model)
+ - supplemental data and realtime analysis (CLC 120 CL12)
 
 ---
 
@@ -72,6 +73,14 @@ offset  description
 
 Interpreted: fan=0rpm, pump=1260rpm, liquid=31.1°C, fw=2.10.0.0
 
+More packets (CLC 120 CL12):
+
+      ct xx zz ct ct xx             zz zz    ct zz ct ?? ct ?? ?? xx             lu lu ?? ?? !!
+03 84 01 41 00 06 01 11 0a 50 1b 14 00 00 0a f8 00 22 fa 09 2e ab 88 02 0a 00 00 ff ff 60 df 01
+03 c0 01 3c 00 06 01 10 0a 8c 1c 14 00 00 05 f8 00 22 fa 09 2e ab 88 02 0a 00 00 ff ff 60 df 01
+03 c0 01 3c 00 06 01 10 07 44 1c 14 00 00 05 f8 00 22 fa 09 2e ab 88 02 0a 00 00 ff ff 60 df 01
+03 c0 01 3e 00 06 01 11 07 44 1c 14 00 00 03 f8 00 22 fa 09 2e ab 80 02 0a 00 00 ff ff 60 df 01
+
 ---
 
 Change pump speed:
@@ -90,10 +99,15 @@ Command packet syntax:
 
 13:32
 ^^ ^^
- │  └ 50%
+ │  └ speed level? (0x32 => min, 0x42 => max)
  └ change pump
 
-After 2 seconds the reported pump speed changed from 1260 (0x04ec) rpm to 1290 (0x050a) rpm.
+On bmuzika's captures, the reported pump speed changed from 1260 (0x04ec) rpm to 1290 (0x050a) rpm after 2 seconds.
+
+Notes:
+
+ - on the CLC 120 CL12, a much higher range is seen (1800 rpm ~ 2700 rpm) for the pump speed
+ - the parameter to this command appears to be one out of the 17 possible levels between 0x32 and 0x42 (inclusive)
 
 ---
 
@@ -104,6 +118,8 @@ Unknown command (TODO):
 3  USB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:23:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
 
 Note: not perfectly clear whether a response was read for this unknown command.
+
+Note: related to LED control; 23:03 enables LED rainbow, 23:00 goes back to regular lighting modes.
 
 ---
 
