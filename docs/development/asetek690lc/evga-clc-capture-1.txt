@@ -1,0 +1,224 @@
+Capture data:
+ - Opening-only_clc.pcapng by bmuzika received 2 Feb 2019 (unknwon CLC model)
+ - Closing-only_clc.pcapng by bmuzika received 2 Feb 2019 (unknwon CLC model)
+ - fan_max-min-max_only_clc.pcapng by bmuzika received 10 Feb 2019 (unknwon CLC model)
+ - supplemental data and realtime analysis (CLC 120 CL12)
+
+---
+
+Using filter
+
+  usb.data_flag == 0 || usb.transfer_type == 0x02
+
+to show only relevant data packets plus all control packets (including errors).
+
+---
+
+Connect:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=0    wValue=0xffff  wIndex=0  wLength=0  // -EPIPE!
+2  URB_CONTROL  out  bmRequestType=0x40  bRequest=2    wValue=0x0002  wIndex=0  wLength=0
+3  URB_CONTROL  in   bmRequestType=0xc0  bRequest=255  wValue=0x370b  wIndex=0  wLength=1  // -EPIPE!
+4  URB_CONTROL  out  bmRequestType=0x40  bRequest=0    wValue=0x0000  wIndex=0  wLength=0  // -EPIPE!
+
+bmRequestType=0x40: CTRL_OUT | CTRL_TYPE_VENDOR | CTRL_RECIPIENT_DEVICE
+bmRequestType=0xc0: CTRL_IN  | CTRL_TYPE_VENDOR | CTRL_RECIPIENT_DEVICE
+
+Connect (interpreted):
+
+1  out non understood request (0, 0xffff)        // -EPIPE
+2  out usbxpress clear to send
+3  in  unknown request                           // -EPIPE  (TODO check usbexpress docs/sdk)
+4  out invalid get_status (wLength should be 2)  // -EPIPE  (TODO check linux usb)
+
+It is probably enough to do send the "clear to send" usbxpress configuration message.
+
+Additionally, no endpoint clearing/halting is observed, as that would require:
+
+   URB_CONTROL out  bmRequestType=0x02  bRequest=1    wValue=0x0000  wIndex=130  wLength=0
+   URB_CONTROL out  bmRequestType=0x02  bRequest=1    wValue=0x0000  wIndex=2    wLength=0
+
+---
+
+Get cooler status:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  URB_BULK     out  14:00:00:00
+3  URB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:14:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Get coolor status (interpreted):
+
+1  out usbxpress flush buffers
+2  out read status
+3  in  cooler status
+
+Response packet syntax:
+
+ 0           4           8           c          10          14          18          1c          20
+00:00:01:24:00:06:01:10:04:ec:1f:14:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+^^^^^                   ^^^^^ ^^ ^^       ^^                         ^^^^^^^^^^^
+ fan                    pump  lqi └ cmd   lqd                        fw version
+
+offset  description
+   0-1  fan speed in rpm, big endian
+   2-7  unknown (TODO)
+   8-9  pump speed in rpm, big endian
+    10  liquid temperature, integer part in °C  (TODO check)
+    11  command in reply to
+ 12-13  unknown (TODO)
+    14  liquid temperature, decimal part in °C tenths  (TODO check)
+ 15-22  unknown (TODO)
+ 23-26  firmware version
+ 27-31  unknown (TODO)
+
+Interpreted: fan=0rpm, pump=1260rpm, liquid=31.1°C, fw=2.10.0.0
+
+More packets (CLC 120 CL12):
+
+      ct xx zz ct ct xx             zz zz    ct zz ct ?? ct ?? ?? xx             lu lu ?? ?? !!
+03 84 01 41 00 06 01 11 0a 50 1b 14 00 00 0a f8 00 22 fa 09 2e ab 88 02 0a 00 00 ff ff 60 df 01
+03 c0 01 3c 00 06 01 10 0a 8c 1c 14 00 00 05 f8 00 22 fa 09 2e ab 88 02 0a 00 00 ff ff 60 df 01
+03 c0 01 3c 00 06 01 10 07 44 1c 14 00 00 05 f8 00 22 fa 09 2e ab 88 02 0a 00 00 ff ff 60 df 01
+03 c0 01 3e 00 06 01 11 07 44 1c 14 00 00 03 f8 00 22 fa 09 2e ab 80 02 0a 00 00 ff ff 60 df 01
+
+---
+
+Change pump speed:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  URB_BULK     out  13:32
+3  URB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:13:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Change pump speed (interpreted):
+
+1  out usbxpress flush buffers
+2  out change pump speed
+3  in  cooler status
+
+Command packet syntax:
+
+13:32
+^^ ^^
+ │  └ speed level? (0x32 => min, 0x42 => max)
+ └ change pump
+
+On bmuzika's captures, the reported pump speed changed from 1260 (0x04ec) rpm to 1290 (0x050a) rpm after 2 seconds.
+
+Notes:
+
+ - on the CLC 120 CL12, a much higher range is seen (1800 rpm ~ 2700 rpm) for the pump speed
+ - the parameter to this command appears to be one out of the 17 possible levels between 0x32 and 0x42 (inclusive)
+
+---
+
+Unknown command (TODO):
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  URB_BULK     out  23:03
+3  USB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:23:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Note: not perfectly clear whether a response was read for this unknown command.
+
+Note: related to LED control; 23:03 enables LED rainbow, 23:00 goes back to regular lighting modes.
+
+---
+
+Configure fan profile:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  10:ff:ff:ff:00:ff:ff:ff:00:00:2d:0a:05:01:00:00:00:00:01
+3  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+4  USB_BULK     out  11:00:14:20:2a:2e:34:3c:64:64:64:64:64:64
+5  USB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:10:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+6  USB_BULK     in   00:00:01:24:00:07:01:10:04:ec:1f:11:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Configure fan profile (interpreted):
+
+1  out usbxpress flush buffers
+2  out configure device
+3  out usbxpress flush buffers
+4  out configure fan profile
+5  in  cooler status (response for request #2)
+6  in  cooler status (response for request #4)
+
+Command packet syntax:
+
+ 0           4           8           c
+11:00:14:20:2a:2e:34:3c:64:64:64:64:64:64
+^^    ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
+│     └ temperatures    └ duties
+│
+└ configure fan profile
+
+Interpreted: [(temperature, duty)]=[(20°C, 100%), (32°C, 100%), (42°C, 100%), (46°C, 100%), (52°C, 100%), (60°C, 100%)]
+
+Notes:
+
+ - minimum fan duty set by FlowControl: 25%
+ - FlowControl seems to use "Configure fan profile" to only repeatedly set fixed speeds
+
+---
+
+Configure device:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  10:ff:ff:ff:00:ff:ff:ff:00:00:2d:0a:05:01:00:00:00:00:01
+3  USB_BULK     in   00:00:01:24:00:06:01:10:04:ec:1f:10:00:00:01:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+
+Notes:
+
+ - "Unknown command" requests appear just after the first "Configure device" request is seen
+ - Additional "Configure device" requests are always sent before "Configure fan profile" requests
+
+Configure device (interpreted):
+
+1  out usbxpress flush buffers
+2  out configure device
+3  in  cooler status
+
+Command packet syntax:
+
+ 0           4           8           c          10
+10:ff:ff:ff:00:ff:ff:ff:00:00:2d:0a:05:01:00:00:00:00:01
+^^ ^^^^^^^^ ^^^^^^^^
+│  │        └ alternate color
+│  └ main color
+│
+└ configure fan profile
+
+offset  description
+     0  configure device prefix
+   1-3  color 1/main RGB
+   4-6  color 2/alternate RGB
+   7-9  TODO
+    10  TODO
+    11  alternating interval (TODO seconds?)
+    12  blinking interval (TODO check? seconds?)
+    13  light on/off
+    14  alternating on/off
+    15  blinking on/off
+    16  TODO
+    17  unknown (TODO)
+    18  TODO
+
+
+Interpreted: set color fixed 0xffffff
+
+---
+
+Disconnect:
+
+1  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0001  wIndex=0  wLength=0
+2  USB_BULK     out  21
+3  USB_BULK     in   00:00:01:26:00:06:01:10:05:0a:1e:21:00:00:08:f8:00:22:df:09:f6:c0:64:02:0a:00:00:ff:ff:08:f1:21
+4  URB_CONTROL  out  bmRequestType=0x40  bRequest=2  wValue=0x0004  wIndex=0  wLength=0
+
+Disconnect (interpreted):
+
+1  out usbxpress flush buffers
+2  out unknown disconnection command
+3  in  cooler status
+4  out ubsxpress not clear to send
+
+Requests 1-3 might be unrelated to the disconnection procedure, but bulk request 0x21 was not seen elsewhere.
+

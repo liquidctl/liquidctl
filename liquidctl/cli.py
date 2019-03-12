@@ -11,7 +11,6 @@ Usage:
   liquidctl --version
 
 Device selection options (see: list -v):
-  -d, --device <number>     Select device by listing number
   --vendor <id>             Filter devices by vendor id
   --product <id>            Filter devices by product id
   --release <number>        Filter devices by release number
@@ -19,6 +18,7 @@ Device selection options (see: list -v):
   --bus <bus>               Filter devices by bus
   --address <address>       Filter devices by address in bus
   --usb-port <port>         Filter devices by USB port in bus
+  -d, --device <number>     Select device by listing number
 
 Other options:
   --speed <value>           Animation speed
@@ -62,6 +62,7 @@ import sys
 
 from docopt import docopt
 
+import liquidctl.driver.asetek
 import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.usb
@@ -70,6 +71,7 @@ from liquidctl.version import __version__
 
 
 DRIVERS = [
+    liquidctl.driver.asetek.AsetekDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
     liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
 ]
