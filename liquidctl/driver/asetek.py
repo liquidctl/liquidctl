@@ -1,11 +1,11 @@
-"""USB driver for fifth generation Asetek coolers.
+"""Work in progress: USB driver for fifth generation Asetek coolers.
 
 
 Supported devices
 -----------------
 
- - [⋯] NZXT Kraken X (X31, X41 or X61)
  - [⋯] EVGA CLC (120 CL12, 240 or 280)
+ - [ ] NZXT Kraken X (X31, X41 or X61)
 
 
 Driver features
@@ -78,10 +78,10 @@ _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIP
 
 
 class AsetekDriver(UsbDeviceDriver):
-    """USB driver for fifth generation Asetek coolers."""
+    """Work in progress: USB driver for fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (NZXT, EVGA or other) (experimental)', {}),
+        (0x2433, 0xb200, None, 'Asetek 690LC (EVGA, NZXT or other) !!very experimental!!', {}),
     ]
 
     def connect(self, **kwargs):
@@ -207,8 +207,8 @@ class AsetekDriver(UsbDeviceDriver):
         According to the official documentation, as well as Craig's open-source
         implementation (libSiUSBXp), it should be necessary to check the queue
         size and read data in chunks.  However, leviathan and its derivatives
-        seem to work fine without this complexity; we are currently try the
-        same approach.
+        seem to work fine without this complexity; we currently try the same
+        approach.
         """
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
