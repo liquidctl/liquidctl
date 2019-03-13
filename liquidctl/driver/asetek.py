@@ -47,7 +47,6 @@ from liquidctl.driver.usb import UsbDeviceDriver
 LOGGER = logging.getLogger(__name__)
 
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'fan':   (0x12, 0, 100),
     'pump':  (0x13, 0, 100),
 }
 _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
@@ -161,30 +160,30 @@ class AsetekDriver(UsbDeviceDriver):
         return opt
 
     def set_fixed_speed(self, channel, speed, **kwargs):
-        """Set (pseudo) channel to a fixed speed."""
-        if channel == 'sync':  # TODO remove once setting independently is working well
-            self._begin_transaction()
-            self._send_fixed_speed('pump', speed)
-            self._send_fixed_speed('fan', speed)
-            self._end_transaction_and_read()
-        elif _FIXED_SPEED_CHANNELS[channel]:
-            self._begin_transaction()
-            self._send_fixed_speed(channel, speed)
-            try:
-                self._end_transaction_and_read()
-            except usb.core.USBError as err:
-                LOGGER.warning('report: failed to read after setting speed')
-                LOGGER.debug(err, exc_info=True)
-
-    def _send_fixed_speed(self, channel, speed):
         """Set channel to a fixed speed."""
+        if channel == 'fan':
+            # While devices seem to recognize a specific channel for fixed fan
+            # speeds (mtype == 0x12), its use can later conflict with custom
+            # profiles.
+            # Note for a future self: the conflict can be cleared with
+            # *another* call to initialize(), i.e.  with another
+            # configuration command.
+            LOGGER.info('using a flat profile to set %s to a fixed speed', channel)
+            self.set_speed_profile(channel, [(0, speed), (_CRITICAL_TEMPERATURE - 1, speed)])
+            return
         mtype, smin, smax = _FIXED_SPEED_CHANNELS[channel]
         if speed < smin:
             speed = smin
         elif speed > smax:
             speed = smax
         LOGGER.info('setting %s PWM duty to %i%%', channel, speed)
+        self._begin_transaction()
         self._write([mtype, speed])
+        try:
+            self._end_transaction_and_read()
+        except usb.core.USBError as err:
+            LOGGER.warning('report: failed to read after setting speed')
+            LOGGER.debug(err, exc_info=True)
 
     def _open(self):
         """Open the USBXpress device."""
