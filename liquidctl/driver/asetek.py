@@ -155,8 +155,14 @@ class AsetekDriver(UsbDeviceDriver):
                 opt[i] = (temp, max_duty)
         missing = 6 - size
         if missing:
+            # Some issues were observed when padding with (0°C, 0%), though
+            # they were hard to reproduce.  So far it *seems* that in some
+            # instances the device will store the last "valid" profile index
+            # somewhere, and would need another call to initialize() to clear
+            # that up.  Padding with (CRIT, 100%) appears to avoid all issues,
+            # at least within the reasonable range of operating temperatures.
             LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
-            opt = opt + [(60, 100)]*missing
+            opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
         return opt
 
     def set_fixed_speed(self, channel, speed, **kwargs):
