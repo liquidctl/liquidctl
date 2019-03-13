@@ -11,12 +11,18 @@ Supported devices
 Driver features
 ---------------
 
- - [⋯] initialization
- - [⋯] connection and transaction life cycle
- - [⋯] reporting of firmware version
- - [⋯] monitoring of pump and fan speeds, and of liquid temperature
- - [⋯] control of pump and fan speeds
+Using the latest 690LC coolers (EVGA CLCs) as a reference:
+
+ - [✓] initialization
+ - [✓] connection and transaction life cycle
+ - [✓] reporting of firmware version
+ - [✓] monitoring of pump and fan speeds, and of liquid temperature
+ - [✓] control of pump and fan speeds
  - [✕] control of lighting modes and colors
+
+Other 690LC coolers (might) operate with quirks:
+
+ - [ ] implement quirks for second generation Krakens
 
 
 Copyright (C) 2018–2019  Jonas Malaco
