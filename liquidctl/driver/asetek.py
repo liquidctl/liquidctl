@@ -47,13 +47,15 @@ from liquidctl.driver.usb import UsbDeviceDriver
 LOGGER = logging.getLogger(__name__)
 
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'pump':  (0x13, 0, 100),
+    'pump':  (0x13, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
 }
 _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
     'fan':   (0x11, 0, 100)
 }
 _MAX_PROFILE_POINTS = 6
 _CRITICAL_TEMPERATURE = 60
+_MIN_PUMP_SPEED_CODE = 0x32
+_MAX_PUMP_SPEED_CODE = 0x42
 _READ_ENDPOINT = 0x82
 _READ_LENGTH = 32
 _READ_TIMEOUT = 2000
@@ -182,9 +184,12 @@ class AsetekDriver(UsbDeviceDriver):
             speed = smin
         elif speed > smax:
             speed = smax
-        LOGGER.info('setting %s PWM duty to %i%%', channel, speed)
+        total_levels = _MAX_PUMP_SPEED_CODE - _MIN_PUMP_SPEED_CODE + 1
+        level = round((speed - smin)/(smax - smin)*total_levels)
+        speed = round(smin + level*(smax - smin)/total_levels)
+        LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, speed, level)
         self._begin_transaction()
-        self._write([mtype, speed])
+        self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
         try:
             self._end_transaction_and_read()
         except usb.core.USBError as err:
