@@ -30,14 +30,20 @@ UsbHidDriver
         └── hidraw (Linux)
 
 UsbDeviceDriver and UsbHidDriver are meant to be used as base classes to the
-actual device drivers.  The users of those drivers do not care about read,
-write or other low level operations; thus, these low level operations are
+actual device drivers.  The users of those drivers generally do not care about
+read, write or other low level operations; thus, these low level operations are
 placed in <driver>.device.
 
 However, there still are legitimate reasons as to why someone would want to
 directly access the lower layers (device wrapper level, device implementation
 level, or lower).  We do not hide or mark those references as private, but good
 judgement should be exercised when calling anything within <driver>.device.
+
+Finally, when subclassing any drivers, prefer to instantiate them through
+find_supported_devices, rather than directly supplying a compatible device
+wrapper.  The subclass constructor can generally be kept anaware of the
+implementation details of the device parameter, and find_supported_devices
+already accepts keyword arguments and forwards them to the constructor.
 
 Copyright (C) 2019  Jonas Malaco
 Copyright (C) 2019  each contribution's author
@@ -194,6 +200,14 @@ class UsbHidDriver(UsbDeviceDriver):
                 for dev in PyUsbHid.enumerate(vid, pid):
                     drivers.append(cls(dev, description, **consargs))
         return drivers
+
+    def __init__(self, device, description, **kwargs):
+        # compatibility with v1.1.0 drivers (all HIDs): they could be directly
+        # instantiated with a usb.core.Device (but don't do it in new code)
+        if isinstance(device, usb.core.Device):
+            LOGGER.warning('deprecated: delegate to find_supported_devices or use an appropriate wrapper')
+            device = PyUsbHid(device)
+        super().__init__(device, description, **kwargs)
 
 
 class PyUsbDevice:
