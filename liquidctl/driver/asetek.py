@@ -132,7 +132,7 @@ class AsetekDriver(UsbDeviceDriver):
         ]
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to use a speed profile."""
+        """Set channel to follow a speed duty profile."""
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
         adjusted = self._prepare_profile(profile, dmin, dmax)
         for temp, duty in adjusted:
@@ -167,8 +167,8 @@ class AsetekDriver(UsbDeviceDriver):
             opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
         return opt
 
-    def set_fixed_speed(self, channel, speed, **kwargs):
-        """Set channel to a fixed speed."""
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed duty."""
         if channel == 'fan':
             # While devices seem to recognize a specific channel for fixed fan
             # speeds (mtype == 0x12), its use can later conflict with custom
@@ -176,18 +176,18 @@ class AsetekDriver(UsbDeviceDriver):
             # Note for a future self: the conflict can be cleared with
             # *another* call to initialize(), i.e.  with another
             # configuration command.
-            LOGGER.info('using a flat profile to set %s to a fixed speed', channel)
-            self.set_speed_profile(channel, [(0, speed), (_CRITICAL_TEMPERATURE - 1, speed)])
+            LOGGER.info('using a flat profile to set %s to a fixed duty', channel)
+            self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
             return
-        mtype, smin, smax = _FIXED_SPEED_CHANNELS[channel]
-        if speed < smin:
-            speed = smin
-        elif speed > smax:
-            speed = smax
+        mtype, dmin, dmax = _FIXED_SPEED_CHANNELS[channel]
+        if duty < dmin:
+            duty = dmin
+        elif duty > dmax:
+            duty = dmax
         total_levels = _MAX_PUMP_SPEED_CODE - _MIN_PUMP_SPEED_CODE + 1
-        level = round((speed - smin)/(smax - smin)*total_levels)
-        speed = round(smin + level*(smax - smin)/total_levels)
-        LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, speed, level)
+        level = round((duty - dmin)/(dmax - dmin)*total_levels)
+        effective_duty = round(dmin + level*(dmax - dmin)/total_levels)
+        LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, effective_duty, level)
         self._begin_transaction()
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
         try:
