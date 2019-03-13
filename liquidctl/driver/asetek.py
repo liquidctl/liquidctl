@@ -86,12 +86,7 @@ class AsetekDriver(UsbDeviceDriver):
     ]
 
     def connect(self, **kwargs):
-        """Connect to the device.
-
-        Attaches to the kernel driver (or, on Linux, replaces it) and, if no
-        configuration has been set, configures the device to use the first
-        available one.  Finally, opens the device.
-        """
+        """Connect to the device."""
         super().connect()
         try:
             self._open()
@@ -102,15 +97,12 @@ class AsetekDriver(UsbDeviceDriver):
             self._open()
 
     def disconnect(self, **kwargs):
-        """Disconnect from the device.
-
-        Closes the device, cleans up and, on Linux, reattaches the
-        previously used kernel driver.
-        """
+        """Disconnect from the device."""
         self._close()
         super().disconnect()
 
     def initialize(self, **kwargs):
+        """Initialize the device."""
         self._begin_transaction()
         self._send_dummy_command()
         self._end_transaction_and_read()
@@ -118,7 +110,7 @@ class AsetekDriver(UsbDeviceDriver):
     def get_status(self, **kwargs):
         """Get a status report.
 
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples.
         """
         self._begin_transaction()
         self._write([0x14, 0, 0, 0])
