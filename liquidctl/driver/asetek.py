@@ -18,7 +18,7 @@ Using the latest 690LC coolers (EVGA CLCs) as a reference:
  - [✓] reporting of firmware version
  - [✓] monitoring of pump and fan speeds, and of liquid temperature
  - [✓] control of pump and fan speeds
- - [✕] control of lighting modes and colors
+ - [✓] control of lighting modes and colors
 
 Other 690LC coolers (might) operate with quirks:
 
@@ -60,6 +60,7 @@ _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
 }
 _MAX_PROFILE_POINTS = 6
 _CRITICAL_TEMPERATURE = 60
+_HIGH_TEMPERATURE = 45
 _MIN_PUMP_SPEED_CODE = 0x32
 _MAX_PUMP_SPEED_CODE = 0x42
 _READ_ENDPOINT = 0x82
@@ -82,6 +83,16 @@ _UNKNOWN_OPEN_VALUE = 0xFFFF
 
 # Control request type
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
+
+def _clamp(val, lo, hi, desc='value'):
+    if val < lo:
+        LOGGER.info('%s %s clamped to lo=%s, hi=%s', desc, val, lo, hi)
+        return lo
+    elif val > hi:
+        LOGGER.info('%s %s clamped to lo=%s, hi=%s', desc, val, lo, hi)
+        return hi
+    else:
+        return val
 
 
 class AsetekDriver(UsbDeviceDriver):
@@ -110,7 +121,7 @@ class AsetekDriver(UsbDeviceDriver):
     def initialize(self, **kwargs):
         """Initialize the device."""
         self._begin_transaction()
-        self._send_dummy_command()
+        self._configure_device()
         self._end_transaction_and_read()
 
     def get_status(self, **kwargs):
@@ -128,6 +139,40 @@ class AsetekDriver(UsbDeviceDriver):
             ('Pump speed', msg[8] << 8 | msg[9], 'rpm'),
             ('Firmware version', firmware, '')
         ]
+
+    def set_color(self, channel, mode, colors, time_per_color=1, time_off=None, speed=3, **kwargs):
+        """Set the color mode for a specific channel."""
+        # keyword arguments may have been forwarded from cli args and need parsing
+        if isinstance(time_per_color, str):
+            time_per_color = int(time_per_color)
+        if isinstance(time_off, str):
+            time_off = int(time_off)
+        colors = list(colors)
+        self._begin_transaction()
+        if mode == 'rainbow':
+            if isinstance(speed, str):
+                speed = int(speed)
+            self._write([0x23, _clamp(speed, 1, 6, 'rainbow speed')])
+            self._configure_device()  # make sure to clear blinking or... chaos
+        elif mode == 'fading':
+            self._configure_device(fading=True, color1=colors[0], color2=colors[1],
+                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'))
+            self._write([0x23, 0])
+        elif mode == 'blinking':
+            if time_off is None:
+                time_off = time_per_color
+            self._configure_device(blinking=True, color1=colors[0],
+                                   interval1=_clamp(time_off, 1, 255, 'time off'),
+                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'))
+            self._write([0x23, 0])
+        elif mode == 'fixed':
+            self._configure_device(color1=colors[0])
+            self._write([0x23, 0])
+        elif mode == 'blackout':  # stronger than just 'off' (suppresses alerts)
+            self._configure_device(blackout=True)  # no need to clear rainbow
+        else:
+            raise KeyError('Unknown lighting mode {}'.format(mode))
+        self._end_transaction_and_read()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to follow a speed duty profile."""
@@ -223,22 +268,12 @@ class AsetekDriver(UsbDeviceDriver):
         self.device.release()
         return msg
 
-    def _send_dummy_command(self):
-        """Send a dummy command to allow get_status to succeed.
-
-        Reading from the device appears to require writing to it first.  We are
-        not aware of any command specifically for getting data.  Instead, this
-        uses a color change command, turning it off.
-        """
-        self._write([
-            0x10,  # cmd: color change
-            0x00, 0x00, 0x00,  # main color: #000000
-            0x00, 0x00, 0x00,  # alt. color: #000000
-            0xff, 0x00, 0x00, 0x37,  # TODO
-            0x00, 0x00,  # interval (alternating, blinking): 0
-            0x01, 0x00, 0x00,  # mode: on, !alternating, !fixed
-            0x01, 0x00, 0x01  # TODO
-            ])
+    def _configure_device(self, color1=[0, 0, 0], color2=[0, 0, 0], color3=[255, 0, 0],
+                          alert_temp=_HIGH_TEMPERATURE, interval1=0, interval2=0,
+                          blackout=False, fading=False, blinking=False, enable_alert=True):
+        self._write([0x10] + color1 + color2 + color3
+                    + [alert_temp, interval1, interval2, not blackout, fading,
+                       blinking, enable_alert, 0x00, 0x01])
 
     def _write(self, data):
         LOGGER.debug('write %s', ' '.join(format(i, '02x') for i in data))

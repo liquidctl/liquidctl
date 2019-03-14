@@ -20,8 +20,12 @@ Device selection options (see: list -v):
   --usb-port <port>         Filter devices by USB port in bus
   -d, --device <number>     Select device by listing number
 
+Animation options (devices/modes can support zero or more):
+  --speed <value>           Abstract animation speed (device/mode specific)
+  --time-per-color <value>  Time to wait on each color (seconds)
+  --time-off <value>        Time to wait with the LED turned off (seconds)
+
 Other options:
-  --speed <value>           Animation speed
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
   --hid <module>            Override API for USB HIDs: usb, hid or hidraw
@@ -68,6 +72,17 @@ import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.usb
 import liquidctl.util
 from liquidctl.version import __version__
+
+
+# Options that are forwarded to drivers; they must:
+#  - have no default value in the CLI level (not forwarded unless explicitly set);
+#  - or avoid untintential conflicts with target function arguments
+_OPTIONS_TO_FORWARD = [
+    '--hid',
+    '--speed',
+    '--time-per-color',
+    '--time-off'
+]
 
 
 DRIVERS = [
@@ -167,11 +182,7 @@ def _parse_color(color):
 def _get_options_to_forward(args):
     def opt_to_field(opt):
         return opt.replace('--', '').replace('-', '_')
-    # options that can be forwarded must:
-    #  - have no default value (thus not being forwarded);
-    #  - or avoid untintential conflicts with target function arguments
-    whitelist = ['--hid', '--speed']
-    return {opt_to_field(i): args[i] for i in whitelist if args[i]}
+    return {opt_to_field(i): args[i] for i in _OPTIONS_TO_FORWARD if args[i]}
 
 
 def main():
