@@ -191,14 +191,11 @@ class AsetekDriver(UsbDeviceDriver):
         size = len(opt)
         if size < 1:
             raise ValueError('At least one PWM point required')
-        elif size > 6:
+        elif size > _MAX_PROFILE_POINTS:
             raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
         for i, (temp, duty) in enumerate(opt):
-            if duty < min_duty:
-                opt[i] = (temp, min_duty)
-            elif duty > max_duty:
-                opt[i] = (temp, max_duty)
-        missing = 6 - size
+            opt[i] = (temp, _clamp(duty, min_duty, max_duty))
+        missing = _MAX_PROFILE_POINTS - size
         if missing:
             # Some issues were observed when padding with (0°C, 0%), though
             # they were hard to reproduce.  So far it *seems* that in some
@@ -223,10 +220,7 @@ class AsetekDriver(UsbDeviceDriver):
             self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
             return
         mtype, dmin, dmax = _FIXED_SPEED_CHANNELS[channel]
-        if duty < dmin:
-            duty = dmin
-        elif duty > dmax:
-            duty = dmax
+        duty = _clamp(duty, dmin, dmax)
         total_levels = _MAX_PUMP_SPEED_CODE - _MIN_PUMP_SPEED_CODE + 1
         level = round((duty - dmin)/(dmax - dmin)*total_levels)
         effective_duty = round(dmin + level*(dmax - dmin)/total_levels)
