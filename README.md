@@ -90,13 +90,35 @@ Pre-built binaries for Windows:
 
 ### System dependencies
 
-liquidctl uses [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/cython-hidapi) to communicate with USB devices.  PyUSB requires that a suitable backend for it be available at runtime; hidapi, depending on the platform and how it has been built, might also require one.
+liquidctl uses two Python libraries – [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/cython-hidapi) – to communicate with USB devices.  While these are generally installed automatically by pip or setuptools, they require a few additional system dependencies you may need to provide.
 
-Pre-built packages and executables should take of these dependencies automatically.  If you use other user-space programs that interact with USB devices, it is also possible that you already have the required libraries installed.  In all other cases we recommend you install libusb-1.0, which should cover the needs of both PyUSB and pre-built cython-hidapi.  Linux distributions usually provide a libusb-1.0 or similar package.
+PyUSB requires that a suitable backend for it be available at runtime, of which libusb-1.0 is the generally the recommended choice.  Hidapi's requirements, on the other hand, vary depending on the platform it is being installed on and how it was built.
 
-On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+#### Dependencies on Linux
 
-Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with HIDs in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.  Because of this, liquidctl will default to hidapi when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products; it can easily be installed through homebrew.
+As installing cython-hidapi will (automatically) build some extensions locally, libusb-1.0 (with development files) and libudev should be installed, and this will already cover PyUSB as well.  You may also need the development files for Python.
+
+| Linux dependency | Arch Linux | Fedora | Ubuntu |
+| --- | --- | --- | --- |
+| python3 (dev) | python | python3-devel | python3-dev |
+| libusb-1.0 (dev) | libusb-1.0 | libusbx-devel | libusb-1.0-0-dev |
+| libudev | (installed) | (installed) | libudev1 |
+
+#### Dependencies and drivers on Windows
+
+The pre-build liquidctl executables for Windows include libusb v1.0.21 and a pre-compiled cython-hidapi.  libusb v1.0.21 is recommended over later versions because of a known issue with PyUSB, that causes errors when releasing the device.
+
+If one of the devices you own is not a Human Interface Device (HID), or is not using the generic Microsoft HID Driver, you need to replace the existing driver with one that is compatible with libusb.  The recommended way to do this is with [Zadig](https://zadig.akeo.ie/), selecting the WinUSB driver.
+
+When installing liquidctl from pip, or the sources, you need to manually set up libusb.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).  Pip or setuptools should be able to install a pre-compiled cython-hidapi (automatically).
+
+#### Dependencies on Mac OS
+
+Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with Human Interface Devices (HIDs) in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.
+
+Because of this, liquidctl will default to hidapi when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Pip or setuptools should be able to build it automatically, when installing liquidctl.
+
+Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products.  It can easily be installed through homebrew: `brew install libusb`.
 
 
 ## The command-line interface
@@ -145,7 +167,7 @@ In most cases you will want to automatically apply your settings when the system
 
 If you need more control for some really ambitious automation, you can also write a Python program that calls the driver APIs directly.
 
-### Linux
+### Automation on Linux with systemd
 
 On systems running Linux and Systemd, a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, you can edit it to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
 
@@ -173,7 +195,7 @@ The unit can be started manually or set to automatically run during boot using s
 
 A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), that handles multiple devices and uses the LEDs to convey progress or eventual errors.
 
-### Windows
+### Setting up liquidctl as a scheduled task on Windows
 
 The configuration of devices can be automated by writing a batch file and setting up a new scheduled task for (every) log on.  The batch file can be really simple and just list the various invocations of liquidctl you would otherwise do by hand.
 
@@ -196,9 +218,9 @@ A slightly more complex example can be seen in [issue #14](https://github.com/jo
 
 Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) goes into a lot more detail and is a good read.
 
-### Mac OS
+### Using launchd to automatically configure devices on Mac OS
 
-You can use a shell script and `launchd` to automatically configure your devices upon logging in.
+You can use a shell script and launchd to automatically configure your devices upon logging in.
 
 Create your `~/liquidcfg.sh` script and make it executable:
 
