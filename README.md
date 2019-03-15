@@ -96,7 +96,7 @@ Pre-built packages and executables should take of these dependencies automatical
 
 On Windows, version libusb v1.0.21 is recommended over the latest, because of a known issue with PyUSB that causes errors when releasing the device.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
-Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with HIDs in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.  Because of this, liquidctl will default to hidapi when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products.
+Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with HIDs in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.  Because of this, liquidctl will default to hidapi when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products; it can easily be installed through homebrew.
 
 
 ## The command-line interface
