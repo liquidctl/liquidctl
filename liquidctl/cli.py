@@ -29,6 +29,7 @@ Other options:
   -v, --verbose             Output additional information
   -g, --debug               Show debug information on stderr
   --hid <module>            Override API for USB HIDs: usb, hid or hidraw
+  --legacy-690lc            Use Asetek 690LC in legacy mode (device is Kraken)
   --version                 Display the version number
   --help                    Show this message
 
@@ -79,14 +80,16 @@ from liquidctl.version import __version__
 #  - or avoid untintential conflicts with target function arguments
 _OPTIONS_TO_FORWARD = [
     '--hid',
+    '--legacy-690lc',
     '--speed',
     '--time-per-color',
-    '--time-off'
+    '--time-off',
 ]
 
 
 DRIVERS = [
     liquidctl.driver.asetek.AsetekDriver,
+    liquidctl.driver.asetek.LegacyAsetekDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
     liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
 ]
