@@ -28,6 +28,7 @@ Firmware version           4.0.2
 
 <!-- stop here for PyPI -->
 
+
 ## Summary
 
 1. [Supported devices](#supported-devices)
@@ -55,7 +56,15 @@ _ &nbsp; _Not available at the hardware level_
 
 ## Getting liquidctl
 
-### The pythonic way
+### Prerequisites
+
+liquidctl depends on [Python 3](https://www.python.org/), [PyUSB](https://github.com/pyusb/pyusb) and [(Cython) HIDAPI](https://github.com/trezor/Cython-hidapi).
+
+However, PyUSB generally requires the installation of a suitable backend (e.g. libusb), and special kernel drivers might also be necessary.  HIDAPI's dependencies can also vary a lot, depending on the platform and how (or where) it is built.
+
+Because of this, known platform specific details and quirks are documented bellow in more detail, after the common installation instructions.
+
+### Installing liquictl, the pythonic way
 
 The easiest way to get liquidctl is to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history) with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
 
@@ -75,7 +84,6 @@ $ cd liquidctl
 
 Of course, a virtual environment can always be used instead of installing the package globally.
 
-
 ### Pre-built packages and executables
 
 Packages for Linux distributions:
@@ -88,13 +96,7 @@ Pre-built binaries for Windows:
  - Releases: check the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
-### System dependencies
-
-liquidctl uses two Python libraries – [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/cython-hidapi) – to communicate with USB devices.  While these are generally installed automatically by pip or setuptools, they require a few additional system dependencies you may need to provide.
-
-PyUSB requires that a suitable backend for it be available at runtime, of which libusb-1.0 is the generally the recommended choice.  Hidapi's requirements, on the other hand, vary depending on the platform it is being installed on and how it was built.
-
-#### Dependencies on Linux
+### Installing on Linux
 
 As installing cython-hidapi will (automatically) build some extensions locally, libusb-1.0 (with development files) and libudev should be installed, and this will already cover PyUSB as well.  You may also need the development files for Python.
 
@@ -104,7 +106,7 @@ As installing cython-hidapi will (automatically) build some extensions locally, 
 | libusb-1.0 (dev) | libusb-1.0 | libusbx-devel | libusb-1.0-0-dev |
 | libudev (dev) | (installed) | (installed) | libudev-dev |
 
-#### Dependencies and drivers on Windows
+### Dependencies on Windows
 
 The pre-build liquidctl executables for Windows include libusb v1.0.21 and a pre-compiled cython-hidapi.  libusb v1.0.21 is recommended over later versions because of a known issue with PyUSB, that causes errors when releasing the device.
 
@@ -112,7 +114,7 @@ If one of the devices you own is not a Human Interface Device (HID), or is not u
 
 When installing liquidctl from pip, or the sources, you need to manually set up libusb.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).  Pip or setuptools should be able to install a pre-compiled cython-hidapi (automatically).
 
-#### Dependencies on Mac OS
+### Mac OS specific details
 
 Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with Human Interface Devices (HIDs) in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.
 
