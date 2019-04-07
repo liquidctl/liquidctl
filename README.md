@@ -119,7 +119,7 @@ Pre-build liquidctl executables for Windows already include libusb and HIDAPI, b
 
 Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with Human Interface Devices (HIDs) in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.
 
-Because of this, liquidctl will default to hidapi when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Pip or setuptools should be able to build it automatically, when installing liquidctl.
+Because of this, liquidctl will default to HIDAPI when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Pip or setuptools should be able to build it automatically, when installing liquidctl.
 
 Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products.  It can easily be installed through homebrew: `brew install libusb`.
 
@@ -263,9 +263,7 @@ Then, create the job definition for a new `~/Library/LaunchAgents/local.liquidcf
 
 It is important to adjust the location of Python 3 framework in the PATH environment variable above.  launchd agents use the system profile and thus will by default only find the Apple-provided Python 2.7 and its packages.
 
-You can enable or disable the agent with lauchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist.
-
-Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.  If you have issues, make sure Python was added to your PATH, or adjust it in the job definition.
+You can enable, disable and test the agent with `launchctl load|unload|kickstart ~/Library/LaunchAgents/local.liquidcfg.plist`.  Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.
 
 A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/Post_Install/pump_control).
 
