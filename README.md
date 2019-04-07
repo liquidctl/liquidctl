@@ -102,7 +102,7 @@ As installing cython-hidapi will (automatically) build some extensions locally, 
 | --- | --- | --- | --- |
 | python3 (dev) | python | python3-devel | python3-dev |
 | libusb-1.0 (dev) | libusb-1.0 | libusbx-devel | libusb-1.0-0-dev |
-| libudev | (installed) | (installed) | libudev1 |
+| libudev (dev) | (installed) | (installed) | libudev-dev |
 
 #### Dependencies and drivers on Windows
 
