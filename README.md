@@ -98,11 +98,12 @@ Pre-built binaries for Windows:
 
 ### Installing on Linux
 
-As installing cython-hidapi will (automatically) build some extensions locally, libusb-1.0 (with development files) and libudev should be installed, and this will already cover PyUSB as well.  You may also need the development files for Python.
+Installing HIDAPI on Linux requires locally building some C extensions (automatically).  Both libusb-1.0 and libudev are needed for this, together with their corresponding development files.  You may also need development files for Python.
 
 | Linux dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
 | python3 (dev) | python | python3-devel | python3-dev |
+| build tools | base-devel | "Development Tools" | build-essential |
 | libusb-1.0 (dev) | libusb-1.0 | libusbx-devel | libusb-1.0-0-dev |
 | libudev (dev) | (installed) | (installed) | libudev-dev |
 
