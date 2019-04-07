@@ -47,6 +47,7 @@ Firmware version           4.0.2
 | NZXT Smart Device | ✓ | ✓ | ✓  | [(documentation)](docs/nzxt-smart-device.md) |
 | NZXT Grid+ V3 | ✓' | ✓' | | [(documentation)](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) |
 | NZXT Kraken M22 | | | ✓ | [(documentation)](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) |
+| EVGA CLC (120 CL12, 240 or 280) | ✓' | ✓' | ✓' | _under testing_ |
 
 ✓ &nbsp; _Implemented_  
 ✓'&nbsp; _Experimental_  
