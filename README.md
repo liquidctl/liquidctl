@@ -109,11 +109,11 @@ Installing HIDAPI on Linux requires locally building some C extensions (automati
 
 ### Dependencies on Windows
 
-The pre-build liquidctl executables for Windows include libusb v1.0.21 and a pre-compiled cython-hidapi.  libusb v1.0.21 is recommended over later versions because of a known issue with PyUSB, that causes errors when releasing the device.
+Products which are not Human Interface Devices (HIDs) – i.e. that do not use the generic Microsoft HID Driver – require installing a kernel driver compatible with libusb.  The recommended way to do this is with [Zadig](https://zadig.akeo.ie/), selecting the WinUSB option.
 
-If one of the devices you own is not a Human Interface Device (HID), or is not using the generic Microsoft HID Driver, you need to replace the existing driver with one that is compatible with libusb.  The recommended way to do this is with [Zadig](https://zadig.akeo.ie/), selecting the WinUSB driver.
+On Windows libusb v1.0.21 is prefered over later versions, because of a known issue with PyUSB that causes errors when the devices are released.
 
-When installing liquidctl from pip, or the sources, you need to manually set up libusb.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).  Pip or setuptools should be able to install a pre-compiled cython-hidapi (automatically).
+Pre-build liquidctl executables for Windows already include libusb and HIDAPI, but when installing from PyPI or the sources you will need to manually set up the libusb runtime libraries.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
 ### Mac OS specific details
 
