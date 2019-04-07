@@ -252,11 +252,18 @@ Then, create the job definition for a new `~/Library/LaunchAgents/local.liquidcf
 	<true/>
 	<key>KeepAlive</key>
 	<false/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Library/Frameworks/Python.framework/Versions/<major>.<minor>/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
 </dict>
 </plist>
 ```
 
-You can enable or disable the agent with `lauchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist`.
+It is important to adjust the location of Python 3 framework in the PATH environment variable above.  launchd agents use the system profile and thus will by default only find the Apple-provided Python 2.7 and its packages.
+
+You can enable or disable the agent with lauchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist.
 
 Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.  If you have issues, make sure Python was added to your PATH, or adjust it in the job definition.
 
