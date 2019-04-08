@@ -23,37 +23,37 @@ sleep 2
 liquidctl $DEVICE $EXTRAOPTIONS status
 
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color rainbow
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow
 sleep 4
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color rainbow --speed 1
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow --speed 1
 sleep 4
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color rainbow --speed 6
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow --speed 6
 sleep 4
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color fading ff8000 00ff80
+liquidctl $DEVICE $EXTRAOPTIONS set logo color fading ff8000 00ff80
 sleep 4
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color fading ff8000 00ff80 --time-per-color 2
+liquidctl $DEVICE $EXTRAOPTIONS set logo color fading ff8000 00ff80 --time-per-color 2
 sleep 4
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color blinking 8000ff
+liquidctl $DEVICE $EXTRAOPTIONS set logo color blinking 8000ff
 sleep 6
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color blinking 8000ff --time-off 2
+liquidctl $DEVICE $EXTRAOPTIONS set logo color blinking 8000ff --time-off 2
 sleep 6
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color blinking 8000ff --time-per-color 2
+liquidctl $DEVICE $EXTRAOPTIONS set logo color blinking 8000ff --time-per-color 2
 sleep 6
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color blinking 8000ff --time-per-color 2 --time-off 1
+liquidctl $DEVICE $EXTRAOPTIONS set logo color blinking 8000ff --time-per-color 2 --time-off 1
 sleep 6
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color fixed 00ff00
+liquidctl $DEVICE $EXTRAOPTIONS set logo color fixed 00ff00
 sleep 2
 
-liquidctl $DEVICE $EXTRAOPTIONS set led color blackout
+liquidctl $DEVICE $EXTRAOPTIONS set logo color blackout
 sleep 2
 
 liquidctl $DEVICE $EXTRAOPTIONS status
