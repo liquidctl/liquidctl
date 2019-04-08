@@ -178,7 +178,7 @@ class AsetekDriver(CommonAsetekDriver):
     """USB driver for modern fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC) (experimental)', {}),
+        (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
     ]
 
     @classmethod
