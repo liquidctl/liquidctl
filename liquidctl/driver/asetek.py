@@ -325,9 +325,10 @@ class LegacyAsetekDriver(CommonAsetekDriver):
                 data = f.read().strip()
                 if len(data) == 0:
                     value = None
+                    LOGGER.debug('load %s=<empty>', name)
                 else:
                     value = int(data)
-                LOGGER.debug('load %s=%i', name, value)
+                    LOGGER.debug('load %s=%i', name, value)
                 return value
         except OSError:
             return None
@@ -338,8 +339,10 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         except FileExistsError:
             pass
         with open(os.path.join(self._data_path, name), mode='w') as f:
-            LOGGER.debug('store %s=%i', name, value)
-            if value is not None:
+            if value is None:
+                LOGGER.debug('store %s=<empty>', name)
+            else:
+                LOGGER.debug('store %s=%i', name, value)
                 f.write(str(value))
 
     def _set_all_fixed_speeds(self):
