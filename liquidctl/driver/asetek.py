@@ -4,8 +4,10 @@
 Supported devices
 -----------------
 
- - [✓] EVGA CLC (120 CL12, 240 or 280)
- - [⋯] NZXT Kraken X (X31, X41 or X61)
+ - [✓] EVGA CLC (120 CL12, 240 or 280); modern generic Asetek 690LC
+ - [⋯] NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
+ - [⋯] Corsair H80i GTX, H100i GTX or H110i GTX
+ - [⋯] Corsair H80i v2, H100i v2 or H115i
 
 
 Driver features
@@ -23,6 +25,7 @@ Using the latest 690LC coolers (EVGA CLCs) as a reference:
 Other 690LC coolers (might) operate with quirks:
 
  - [⋯] implement legacy mode for second generation Kraken X coolers
+ - [⋯] reuse legacy mode for select Corsair devices
 
 
 Copyright (C) 2018–2019  Jonas Malaco
@@ -407,3 +410,23 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         duty = _clamp(duty, dmin, dmax)
         self._store_integer('{}_duty'.format(channel), duty)
         self._set_all_fixed_speeds()
+
+
+class CorsairAsetekDriver(LegacyAsetekDriver):
+    """USB driver for Corsair-branded fifth generation Asetek coolers."""
+
+    SUPPORTED_DEVICES = [
+        (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GTX (experimental)', {}),
+        (0x1b1c, 0x0c03, None, 'Corsair Hydro H100i GTX (experimental)', {}),
+        (0x1b1c, 0x0c07, None, 'Corsair Hydro H100i GTX (experimental)', {}),
+        (0x1b1c, 0x0c08, None, 'Corsair Hydro H80i v2 (experimental)', {}),
+        (0x1b1c, 0x0c09, None, 'Corsair Hydro H100i v2 (experimental)', {}),
+        (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i (experimental)', {}),
+    ]
+
+    @classmethod
+    def find_supported_devices(cls, **kwargs):
+        """Find and bind to compatible devices."""
+        # the legacy driver overrides find_supported_devices and rigs it to
+        # depend on --legacy-690lc, so we skip that overriden method
+        return super(LegacyAsetekDriver, cls).find_supported_devices(**kwargs)

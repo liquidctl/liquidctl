@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - **Add driver for EVGA CLC 120 CL12, 240 and 280 coolers**
  - Add `--legacy-690lc` option for Asetek 690LC devices (Kraken X31/X41/X61)
  - **Add experimental legacy driver variant for NZXT Kraken X31, X41 and X61 coolers**
+ - **Add experimental support for Corsair H80i GTX, H100i GTX and H110i GTX**
+ - **Add experimental support for Corsair H80i v2, H100i v2 and H115i**
 ### Changed
  - [internal] Revamp driver and device model in `base.py` and `usb.py`
 ### Removed

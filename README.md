@@ -43,6 +43,8 @@ Firmware version           4.0.2
 
 | Device and link to documentation | Monitoring | Cooling | Lighting | Notes |
 | --- | --- | --- | --- | --- |
+| Corsair H80i GTX, H100i GTX or H110i GTX | ✓' | ✓' | ✓' | |
+| Corsair H80i v2, H100i v2 or H115i | ✓' | ✓' | ✓' | |
 | [EVGA CLC (120 CL12, 240 or 280)](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255) | ✓ | ✓ | ✓ | |
 | [NZXT Grid+ V3](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) | ✓' | ✓' | | |
 | [NZXT Kraken M22](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | | | ✓ | |

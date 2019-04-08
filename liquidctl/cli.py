@@ -89,6 +89,7 @@ _OPTIONS_TO_FORWARD = [
 
 DRIVERS = [
     liquidctl.driver.asetek.AsetekDriver,
+    liquidctl.driver.asetek.CorsairAsetekDriver,
     liquidctl.driver.asetek.LegacyAsetekDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
     liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
