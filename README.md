@@ -41,12 +41,12 @@ Firmware version           4.0.2
 
 ## Supported devices
 
-| Device and link to manual | Monitoring | Cooling | Lighting | Notes |
+| Device and link to documentation | Monitoring | Cooling | Lighting | Notes |
 | --- | --- | --- | --- | --- |
-| EVGA CLC (120 CL12, 240 or 280) | ✓' | ✓' | ✓' | _under testing_ |
+| EVGA CLC (120 CL12, 240 or 280) | ✓' | ✓' | ✓' | |
 | [NZXT Grid+ V3](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) | ✓' | ✓' | | |
 | [NZXT Kraken M22](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | | | ✓ | |
-| NZXT Kraken X (X31, X41 or X61) | ✓' | ✓' | ✓' | requires `--legacy-690lc`, _under testing_ |
+| NZXT Kraken X (X31, X41 or X61) | ✓' | ✓' | ✓' | requires `--legacy-690lc` |
 | [NZXT Kraken X (X42, X52, X62 or X72)](docs/nzxt-kraken-x-3rd-generation.md) | ✓ | ✓ | ✓ | |
 | [NZXT Smart Device](docs/nzxt-smart-device.md) | ✓ | ✓ | ✓  | |
 
