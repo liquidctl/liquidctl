@@ -41,18 +41,19 @@ Firmware version           4.0.2
 
 ## Supported devices
 
-| Device vendor and model | Monitoring | Cooling | Lighting | Details |
+| Device and link to manual | Monitoring | Cooling | Lighting | Notes |
 | --- | --- | --- | --- | --- |
 | EVGA CLC (120 CL12, 240 or 280) | ✓' | ✓' | ✓' | _under testing_ |
-| NZXT Grid+ V3 | ✓' | ✓' | | [(documentation)](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) |
-| NZXT Kraken M22 | | | ✓ | [(documentation)](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) |
-| NZXT Kraken X (X42, X52, X62 or X72) | ✓ | ✓ | ✓ | [(documentation)](docs/nzxt-kraken-x-3rd-generation.md) |
-| NZXT Smart Device | ✓ | ✓ | ✓  | [(documentation)](docs/nzxt-smart-device.md) |
+| [NZXT Grid+ V3](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) | ✓' | ✓' | | |
+| [NZXT Kraken M22](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | | | ✓ | |
+| NZXT Kraken X (X31, X41 or X61) | ✓' | ✓' | ✓' | requires `--legacy-690lc`, _under testing_ |
+| [NZXT Kraken X (X42, X52, X62 or X72)](docs/nzxt-kraken-x-3rd-generation.md) | ✓ | ✓ | ✓ | |
+| [NZXT Smart Device](docs/nzxt-smart-device.md) | ✓ | ✓ | ✓  | |
 
 ✓ &nbsp; _Implemented_  
 ✓'&nbsp; _Experimental_  
 ✗ &nbsp; _Missing/locked_  
-_ &nbsp; _Not available at the hardware level_
+␣ &nbsp; _Not available at the hardware level_
 
 
 ## Getting liquidctl
