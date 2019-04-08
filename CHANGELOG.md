@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - Add `--hid <module>` override for HID API selection
  - Add release number, bus and address listing
  - Add `--release`, `--bus`, `--address` device filters
+ - Add `--time-per-color` and `--time-off` animation options
+ - **Add experimental driver for EVGA CLC 120 CL12, 240 and 280 coolers**
+ - Add `--legacy-690lc` option for Asetek 690LC devices (Kraken X31/X41/X61)
+ - **Add experimental legacy driver variant for NZXT Kraken X31, X41 and X61 coolers**
 ### Changed
  - [internal] Revamp driver and device model in `base.py` and `usb.py`
 ### Removed
