@@ -7,6 +7,7 @@ hold() {
 	sleep $1
 }
 
+hold 0 list --verbose
 hold 0 initialize
 hold 0 status
 hold 0 set sync color off

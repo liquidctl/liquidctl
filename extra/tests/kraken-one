@@ -2,6 +2,7 @@
 
 DEVICE="--vendor 0x2433 --product 0xb200 --legacy-690lc"
 
+liquidctl $DEVICE $EXTRAOPTIONS list --verbose
 liquidctl $DEVICE $EXTRAOPTIONS initialize
 sleep 2
 liquidctl $DEVICE $EXTRAOPTIONS status
