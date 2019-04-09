@@ -320,11 +320,11 @@ class PyUsbHid(PyUsbDevice):
 
     def read(self, length):
         """Read raw report from HID."""
-        return self.usbdev.read(self.hidin, length)
+        return self.usbdev.read(self.hidin, length, timeout=0)
 
     def write(self, data):
         """Write raw report to HID."""
-        return self.usbdev.write(self.hidout, data)
+        return self.usbdev.write(self.hidout, data, timeout=0)
 
 
 class HidapiDevice:
