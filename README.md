@@ -259,7 +259,7 @@ Then, create the job definition for a new `~/Library/LaunchAgents/local.liquidcf
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/Library/Frameworks/Python.framework/Versions/<major>.<minor>/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<string>/Library/Frameworks/Python.framework/Versions/?.?/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
 	</dict>
 </dict>
 </plist>
