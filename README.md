@@ -279,6 +279,7 @@ Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2018–2019  each contribution's author
 
 Incorporates or uses as reference work by
+
  - leaty,
  - KsenijaS,
  - Alexander Tong,
@@ -286,6 +287,7 @@ Incorporates or uses as reference work by
  - Kristóf Jakab,
  - Sean Nelson,
  - Chris Griffith,
+
 under the terms of the GNU General Public License.
 
 This program is free software: you can redistribute it and/or modify
