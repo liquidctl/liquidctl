@@ -21,11 +21,13 @@ build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
 
 after_build:
-  - cmd: mkdir %package_name%
+  - cmd: mkdir %package_name%\docs
   - cmd: copy liquidctl.exe %package_name%\
   - cmd: copy README.md %package_name%\
+  - cmd: copy docs\*.md %package_name%\docs\
   - cmd: copy LICENSE.txt %package_name%\
   - cmd: copy extra\redist-notices.txt %package_name%\COPYRIGHT.txt
+  - cmd: copy CHANGELOG.md %package_name%\
   - cmd: 7z a %package_name%.zip %package_name%\
 
 test: off
