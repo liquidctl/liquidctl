@@ -1,0 +1,107 @@
+#!/bin/bash -xe
+
+DEVICE="--vendor 0x1e71 --product 0x170e"
+
+hold() {
+	liquidctl $DEVICE $EXTRAOPTIONS ${@:2}
+	sleep $1
+}
+
+hold 0 initialize
+hold 0 status
+hold 0 set sync color off
+
+hold 0 set fan speed 0
+hold 2 set pump speed 100
+hold 0 status
+
+hold 0 set fan speed 100
+hold 2 set pump speed 50
+hold 0 status
+
+hold 0 set fan speed 20 0 40 100
+hold 2 set pump speed 20 50 40 100
+hold 0 status
+
+hold 2 set sync color off
+
+hold 0 set logo color fixed ff8000
+hold 2 set ring color fixed 00ff80
+hold 2 set sync color fixed 0000ff
+hold 2 set sync color off
+
+hold 2 set sync color super-fixed \
+		ff0000 00ff00 0000ff \
+		ff0000 00ff00 0000ff \
+		ff0000 00ff00 0000ff
+hold 2 set sync color off
+
+hold 0 set logo color fading ff8000 00ff80 --speed slowest
+hold 5 set ring color fading 00ff80 8000ff
+hold 5 set sync color fading 0000ff ff0000 00ff00 --speed fastest
+hold 2 set sync color off
+
+hold 5 set logo color spectrum-wave --speed slowest
+hold 5 set ring color spectrum-wave
+hold 5 set sync color backwards-spectrum-wave --speed fastest
+hold 2 set sync color off
+
+hold 5 set ring color super-wave --speed slowest \
+		ff8000 00ff80 8000ff 800000 \
+		008000 000080 400000 004000
+hold 5 set ring color backwards-super-wave --speed fastest \
+		ff8000 00ff80 8000ff 800000 \
+		008000 000080 400000 004000
+hold 2 set sync color off
+
+hold 3 set ring color marquee-3 ff8000 --speed slower
+hold 3 set ring color backwards-marquee-3 ff8000 --speed slower
+hold 3 set ring color marquee-6 00ff80 --speed faster
+hold 3 set ring color backwards-marquee-6 00ff80 --speed faster
+hold 2 set sync color off
+
+hold 3 set ring color covering-marquee ff8000 00ff80 0080ff --speed slowest
+hold 3 set ring color covering-backwards-marquee ff8000 00ff80 0080ff --speed fastest
+hold 2 set sync color off
+
+hold 3 set ring color alternating ff8000 00ff80 --speed slowest
+hold 3 set ring color moving-alternating ff8000 00ff80
+hold 3 set ring color backwards-moving-alternating ff8000 00ff80 --speed fastest
+hold 2 set sync color off
+
+hold 0 set logo color breathing ff8000 00ff80 --speed slowest
+hold 5 set ring color breathing 00ff80 8000ff
+hold 5 set sync color breathing 0000ff ff0000 00ff00 --speed fastest
+hold 2 set sync color off
+
+hold 5 set sync color super-breathing --speed slower \
+		ff0000 00ff00 0000ff \
+		ff0000 00ff00 0000ff \
+		ff0000 00ff00 0000ff
+hold 5 set sync color super-breathing --speed faster \
+		ff0000 00ff00 0000ff \
+		ff0000 00ff00 0000ff \
+		ff0000 00ff00 0000ff
+hold 2 set sync color off
+
+hold 0 set logo color pulse ff8000 00ff80 --speed slowest
+hold 5 set ring color pulse 00ff80 8000ff
+hold 5 set sync color pulse 0000ff ff0000 00ff00 --speed fastest
+hold 2 set sync color off
+
+hold 5 set ring color tai-chi ff8000 0080ff
+hold 2 set sync color off
+
+hold 3 set ring color water-cooler --speed slower
+hold 3 set ring color water-cooler --speed faster
+hold 2 set sync color off
+
+hold 3 set ring color loading ff8000 --speed slower
+hold 3 set ring color loading 00ff80 --speed faster
+hold 2 set sync color off
+
+hold 3 set ring color wings ff8000 --speed slower
+hold 3 set ring color wings 00ff80 --speed faster
+hold 2 set sync color off
+
+hold 0 status
