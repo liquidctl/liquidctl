@@ -310,7 +310,7 @@ Ongoing work on Linux kernel drivers that implement standard hwmon sysfs
 interfaces for (most of) the devices that are supported by liquidctl, allowing
 the use of standard monitoring tools (e.g. lm-sensors).
 
-### [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
+### [jaksi/leviathan](https://github.com/jaksi/leviathan) and [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
 Linux kernel-space drivers for second and third generation NZXT Kraken X coolers.
 
