@@ -6,6 +6,7 @@ Supported devices
 
  - [✓] EVGA CLC (120 CL12, 240 or 280); modern generic Asetek 690LC
  - [⋯] NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
+ - [⋯] NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
  - [⋯] Corsair H80i GTX, H100i GTX or H110i GTX
  - [⋯] Corsair H80i v2, H100i v2 or H115i
 
