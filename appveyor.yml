@@ -17,12 +17,12 @@ install:
 
 
 build_script:
-  - cmd: copy extra\installer-licenses.txt LICENSE.txt
+  - cmd: copy extra\redist-notices.txt COPYRIGHT.txt
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
 
 test: off
 
 artifacts:
   - path: LICENSE.txt
+  - path: COPYRIGHT.txt
   - path: liquidctl.exe
-
