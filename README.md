@@ -307,12 +307,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ### [jonasmalacofilho/liquidctl-linux-drivers](https://github.com/jonasmalacofilho/liquidctl-linux-drivers)
 
 Ongoing work on Linux kernel drivers that implement standard hwmon sysfs
-interfaces for (most of) the devices that are supported by liquidctl, allowing
-the use of standard monitoring tools (e.g. lm-sensors).
+interfaces for the devices supported by liquidctl and allow the use of standard
+monitoring tools (e.g. lm-sensors).
 
 ### [jaksi/leviathan](https://github.com/jaksi/leviathan) and [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
 
-Linux kernel-space drivers for second and third generation NZXT Kraken X coolers.
+Linux kernel USB drivers for second and third generation NZXT Kraken X coolers.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
