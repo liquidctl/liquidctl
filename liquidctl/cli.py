@@ -48,9 +48,10 @@ version.
 Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2018–2019  each contribution's author
 
-Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
-the terms of the GNU General Public License.  Depending on how it was packaged,
-this program might also bundle copies of docopt, libusb-1.0 and pyusb.
+Incorporates work by leaty, KsenijaS, Alexander Tong, Jens Neumaier, Kristóf
+Jakab, Sean Nelson and Chris Griffith, under the terms of the GNU General
+Public License.  Depending on how it was packaged, this program might also
+bundle copies of docopt, libusb-1.0 and pyusb.
 
 You should have received a copy of all applicable licenses along with this
 program, in a file called LICENSE.txt.
