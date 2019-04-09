@@ -1,32 +1,25 @@
-"""USB driver for fifth generation Asetek AIO liquid coolers.
+"""USB drivers for fifth generation Asetek AIO liquid coolers.
 
 
 Supported devices
 -----------------
 
- - [✓] EVGA CLC (120 CL12, 240 or 280); modern generic Asetek 690LC
- - [⋯] NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
- - [⋯] NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
- - [⋯] Corsair H80i GTX, H100i GTX or H110i GTX
- - [⋯] Corsair H80i v2, H100i v2 or H115i
+ - EVGA CLC (120 CL12, 240 or 280); modern generic Asetek 690LC
+ - NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
+ - NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
+ - Corsair H80i GTX, H100i GTX or H110i GTX/experimental
+ - Corsair H80i v2, H100i v2 or H115i/experimental
 
 
-Driver features
----------------
+Supported features
+------------------
 
-Using the latest 690LC coolers (EVGA CLCs) as a reference:
-
- - [✓] initialization
- - [✓] connection and transaction life cycle
- - [✓] reporting of firmware version
- - [✓] monitoring of pump and fan speeds, and of liquid temperature
- - [✓] control of pump and fan speeds
- - [✓] control of lighting modes and colors
-
-Other 690LC coolers (might) operate with quirks:
-
- - [⋯] implement legacy mode for second generation Kraken X coolers
- - [⋯] reuse legacy mode for select Corsair devices
+ - initialization
+ - connection and transaction life cycle
+ - reporting of firmware version
+ - monitoring of pump and fan speeds, and of liquid temperature
+ - control of pump and fan speeds
+ - control of lighting modes and colors
 
 
 Copyright (C) 2018–2019  Jonas Malaco
