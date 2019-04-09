@@ -3,11 +3,13 @@ version: "{build}"
 skip_commits:
   message: /\[skip ci\]/
 
-
 image:
   - Visual Studio 2017
 
 platform: x64
+
+environment:
+  package_name: liquidctl-%APPVEYOR_REPO_COMMIT:~0,12%-bin-windows-x86_64
 
 install:
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.7z -FileName libusb.7z
@@ -15,14 +17,18 @@ install:
   - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools pyinstaller --ignore-installed
   - cmd: C:\Python36-x64\python setup.py install
 
-
 build_script:
-  - cmd: copy extra\redist-notices.txt COPYRIGHT.txt
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
+
+after_build:
+  - cmd: mkdir %package_name%
+  - cmd: copy liquidctl.exe %package_name%\
+  - cmd: copy README.md %package_name%\
+  - cmd: copy LICENSE.txt %package_name%\
+  - cmd: copy extra\redist-notices.txt %package_name%\COPYRIGHT.txt
+  - cmd: 7z a %package_name%.zip %package_name%\
 
 test: off
 
 artifacts:
-  - path: LICENSE.txt
-  - path: COPYRIGHT.txt
-  - path: liquidctl.exe
+  - path: liquidctl*.zip
