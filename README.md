@@ -29,12 +29,20 @@ Firmware version           4.0.2
 <!-- stop here for PyPI -->
 
 
-## Summary
+## Table of contents
 
 1. [Supported devices](#supported-devices)
 2. [Getting liquidctl](#getting-liquidctl)
-3. [The command-line interface](#the-command-line-interface)
+    1. [The Pythonic way](#installing-liquictl-the-pythonic-way)
+    2. [Pre-built packages and executables](#pre-built-packages-and-executables)
+    3. [Additional requirements on Linux](#additional-requirements-on-linux)
+    4. [Additional requirements on Windows](#additional-requirements-on-windows)
+    5. [Additional requirements on Mac OS](#additional-requirements-on-mac-os)
+3. [The command-line interface](#introducing-the-command-line-interface)
 4. [Automation and running at boot](#automation-and-running-at-boot)
+    1. [Set up Linux using systemd](#set-up-linux-using-systemd)
+    2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
+    3. [Set up Mac OS using launchd](#set-up-mac-os-using-launchd)
 5. [License](#license)
 6. [Related projects](#related-projects)
 
