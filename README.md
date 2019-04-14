@@ -230,7 +230,7 @@ Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://
 
 You can use a shell script and launchd to automatically configure your devices upon logging in.
 
-Create your `~/liquidcfg.sh` script and make it executable:
+Create a script in `/usr/local/bin/liquidcfg.sh` and make it executable; it should contain the calls to liquidctl necessary to initialize and configure your devices.
 
 ```bash
 #!/bin/bash -xe
@@ -240,7 +240,7 @@ liquidctl set ring color fading 350017 ff2608
 liquidctl set logo color spectrum-wave
 ```
 
-Then, create the job definition for a new `~/Library/LaunchAgents/local.liquidcfg.plist` agent:
+Afterwards, create a new global daemon in `/Library/LaunchDaemons/local.liquidcfg.plist` that executes the previous script.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -249,7 +249,7 @@ Then, create the job definition for a new `~/Library/LaunchAgents/local.liquidcf
 <dict>
 	<key>ProgramArguments</key>
 	<array>
-		<string>~/liquidcfg.sh</string>
+		<string>/usr/local/bin/liquidcfg.sh</string>
 	</array>
 	<key>Label</key>
 	<string>local.liquidcfg</string>
