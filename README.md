@@ -61,15 +61,11 @@ Firmware version           4.0.2
 
 ## Getting liquidctl
 
-### Prerequisites
+liquidctl requires [Python 3](https://www.python.org/).  Along with a couple of more general Python libraries, [PyUSB](https://github.com/pyusb/pyusb) and [(Cython) HIDAPI](https://github.com/trezor/Cython-hidapi) are used to communicate with devices.
 
-liquidctl depends on [Python 3](https://www.python.org/), [PyUSB](https://github.com/pyusb/pyusb) and [(Cython) HIDAPI](https://github.com/trezor/Cython-hidapi).
+Depending on the platform, PyUSB might require the installation of a suitable backend (e.g. libusb) or special kernel drivers.  HIDAPI's dependencies can also vary a lot.  Known platform details and quirks are documented bellow, after the common installation instructions.
 
-However, PyUSB generally requires the installation of a suitable backend (e.g. libusb), and special kernel drivers might also be necessary.  HIDAPI's dependencies can also vary a lot, depending on the platform and how (or where) it is built.
-
-Because of this, known platform specific details and quirks are documented bellow in more detail, after the common installation instructions.
-
-### Installing liquictl, the pythonic way
+### Installing liquictl the Pythonic way
 
 The easiest way to get liquidctl is to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history) with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
 
