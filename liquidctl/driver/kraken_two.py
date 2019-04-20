@@ -252,7 +252,8 @@ class KrakenTwoDriver(UsbHidDriver):
         if self._supports_cooling_profiles is None:
             if self.supports_cooling:
                 self._read()
-                self._supports_cooling_profiles = self._firmware_version >= (3, 0, 0)
+                self._supports_cooling_profiles = (self._firmware_version >= (3, 0, 0)
+                        and self._firmware_version != (4, 0, 4))
             else:
                 self._supports_cooling_profiles = False
         return self._supports_cooling_profiles
