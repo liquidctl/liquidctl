@@ -374,7 +374,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             ('Firmware version', firmware, '')
         ]
 
-    def set_color(self, channel, mode, colors, time_per_color=1, time_off=None, **kwargs):
+    def set_color(self, channel, mode, colors, time_per_color=None, time_off=None, **kwargs):
         """Set the color mode for a specific channel."""
         # keyword arguments may have been forwarded from cli args and need parsing
         if isinstance(time_per_color, str):
@@ -384,9 +384,13 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         colors = list(colors)
         self._begin_transaction()
         if mode == 'fading':
+            if time_per_color is None:
+                time_per_color = 3
             self._configure_device(fading=True, color1=colors[0], color2=colors[1],
                                    interval1=_clamp(time_per_color, 1, 255, 'time per color'))
         elif mode == 'blinking':
+            if time_per_color is None:
+                time_per_color = 3
             if time_off is None:
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
