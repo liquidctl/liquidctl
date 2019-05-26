@@ -385,12 +385,12 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         self._begin_transaction()
         if mode == 'fading':
             if time_per_color is None:
-                time_per_color = 3
+                time_per_color = 5
             self._configure_device(fading=True, color1=colors[0], color2=colors[1],
                                    interval1=_clamp(time_per_color, 1, 255, 'time per color'))
         elif mode == 'blinking':
             if time_per_color is None:
-                time_per_color = 3
+                time_per_color = 1
             if time_off is None:
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
