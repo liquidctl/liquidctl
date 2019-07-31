@@ -51,7 +51,7 @@ Firmware version           4.0.2
 
 Corsair H80i GTX, H100i GTX, H110i GTX …<sup>1</sup>  
 Corsair H80i v2, H100i v2, H115i …<sup>1</sup>  
-EVGA CLC 120 (CL12), 240 or 280 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255)  
+EVGA CLC 120 (CL12), 240, 280, 360 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255)  
 NZXT Grid+ V3 […documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3)  
 NZXT Kraken M22 […documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22)  
 NZXT Kraken X31, X40,<sup>1</sup> X41, X60,<sup>1</sup> X61 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136)<sup>2</sup>  
