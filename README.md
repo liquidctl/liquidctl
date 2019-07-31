@@ -49,22 +49,17 @@ Firmware version           4.0.2
 
 ## Supported devices
 
-| Device and link to documentation | Monitoring | Cooling | Lighting | Notes |
-| --- | --- | --- | --- | --- |
-| Corsair H80i, H100i or H110i GTX | ✓' | ✓' | ✓' | |
-| Corsair H80i v2, H100i v2 or H115i | ✓' | ✓' | ✓' | |
-| [EVGA CLC 120 (CL12), 240 or 280](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255) | ✓ | ✓ | ✓ | |
-| [NZXT Grid+ V3](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) | ✓' | ✓' | | |
-| [NZXT Kraken M22](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | | | ✓ | |
-| NZXT Kraken X40 or X60 | ✓' | ✓' | ✓' | requires `--legacy-690lc` |
-| [NZXT Kraken X31, X41 or X61](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | ✓' | ✓' | ✓' | requires `--legacy-690lc` |
-| [NZXT Kraken X42, X52, X62 or X72](docs/nzxt-kraken-x-3rd-generation.md) | ✓ | ✓ | ✓ | |
-| [NZXT Smart Device](docs/nzxt-smart-device.md) | ✓ | ✓ | ✓  | |
+Corsair H80i GTX, H100i GTX, H110i GTX …<sup>1</sup>  
+Corsair H80i v2, H100i v2, H115i …<sup>1</sup>  
+EVGA CLC 120 (CL12), 240 or 280 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255)  
+NZXT Grid+ V3 […documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3)  
+NZXT Kraken M22 […documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22)  
+NZXT Kraken X31, X40, X41, X60, X61 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136)<sup>1,2</sup>  
+NZXT Kraken X42, X52, X62, X72 […documentation](docs/nzxt-kraken-x-3rd-generation.md)  
+NZXT Smart Device […documentation](docs/nzxt-smart-device.md)  
 
-✓ &nbsp; _Implemented_  
-✓'&nbsp; _Experimental_  
-✗ &nbsp; _Missing/locked_  
-␣ &nbsp; _Not available at the hardware level_
+<sup>1</sup> _Experimental driver._  
+<sup>2</sup> _Use with `--legacy-690lc` flag._  
 
 
 ## Getting liquidctl
