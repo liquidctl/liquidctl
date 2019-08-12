@@ -61,7 +61,7 @@ NZXT Kraken X42, X52, X62, X72 […documentation](docs/nzxt-kraken-x-3rd-generat
 
 ### Other parts
 
-NZXT Grid+ V3 […documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3)  
+NZXT Grid+ V3 […documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3)<sup>1</sup>  
 NZXT Smart Device […documentation](docs/nzxt-smart-device.md)  
 
 <sup>1</sup> _Experimental._  
