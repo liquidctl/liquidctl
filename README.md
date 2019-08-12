@@ -51,18 +51,22 @@ Firmware version           4.0.2
 
 ### All-in-one liquid coolers
 
-Corsair H80i GTX, H100i GTX, H110i GTX …<sup>1</sup>  
-Corsair H80i v2, H100i v2, H115i …<sup>1</sup>  
-EVGA CLC 120 (CL12), 240, 280, 360 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255)  
-NZXT Kraken M22 […documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22)  
-NZXT Kraken X40, X60 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136)<sup>1,2</sup>  
-NZXT Kraken X31, X41, X61 […documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136)<sup>2</sup>  
-NZXT Kraken X42, X52, X62, X72 […documentation](docs/nzxt-kraken-x-3rd-generation.md)  
+| Family | Documentation | Notes |
+| --- | --- | --- |
+| Corsair H80i GTX, H100i GTX, H110i GTX | | <sup>1</sup> |
+| Corsair H80i v2, H100i v2, H115i | | <sup>1</sup> |
+| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255) | |
+| NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | |
+| NZXT Kraken X40, X60 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | <sup>1, 2</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | <sup>2</sup> |
+| NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
 
-NZXT Grid+ V3 […documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3)<sup>1</sup>  
-NZXT Smart Device […documentation](docs/nzxt-smart-device.md)  
+| Family | Documentation | Notes |
+| --- | --- | --- |
+| NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) | <sup>1</sup> |
+| NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
 
 <sup>1</sup> _Experimental._  
 <sup>2</sup> _Use with `--legacy-690lc` flag._  
