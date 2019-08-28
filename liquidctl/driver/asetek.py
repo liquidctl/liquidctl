@@ -239,8 +239,8 @@ class AsetekDriver(CommonAsetekDriver):
             self._configure_device(color1=colors[0], alert_temp=alert_threshold,
                                    color3=alert_color)
             self._write([0x23, 0])
-        elif mode == 'blackout':  # stronger than just 'off' (suppresses alerts)
-            self._configure_device(blackout=True)  # no need to clear rainbow
+        elif mode == 'blackout':  # stronger than just 'off', suppresses alerts and rainbow
+            self._configure_device(blackout=True, alert_temp=alert_threshold, color3=alert_color)
         else:
             raise KeyError('Unknown lighting mode {}'.format(mode))
         self._end_transaction_and_read()
@@ -417,8 +417,8 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         elif mode == 'fixed':
             self._configure_device(color1=colors[0], alert_temp=alert_threshold,
                                    color3=alert_color)
-        elif mode == 'blackout':  # stronger than just 'off' (suppresses alerts)
-            self._configure_device(blackout=True)
+        elif mode == 'blackout':  # stronger than just 'off', suppresses alerts and rainbow
+            self._configure_device(blackout=True, alert_temp=alert_threshold, color3=alert_color)
         else:
             raise KeyError('Unknown lighting mode {}'.format(mode))
         self._end_transaction_and_read()
