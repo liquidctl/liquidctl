@@ -11,27 +11,29 @@ Usage:
   liquidctl --version
 
 Device selection options (see: list -v):
-  --vendor <id>             Filter devices by vendor id
-  --product <id>            Filter devices by product id
-  --release <number>        Filter devices by release number
-  --serial <number>         Filter devices by serial number
-  --bus <bus>               Filter devices by bus
-  --address <address>       Filter devices by address in bus
-  --usb-port <port>         Filter devices by USB port in bus
-  -d, --device <number>     Select device by listing number
+  --vendor <id>               Filter devices by vendor id
+  --product <id>              Filter devices by product id
+  --release <number>          Filter devices by release number
+  --serial <number>           Filter devices by serial number
+  --bus <bus>                 Filter devices by bus
+  --address <address>         Filter devices by address in bus
+  --usb-port <port>           Filter devices by USB port in bus
+  -d, --device <number>       Select device by listing number
 
 Animation options (devices/modes can support zero or more):
-  --speed <value>           Abstract animation speed (device/mode specific)
-  --time-per-color <value>  Time to wait on each color (seconds)
-  --time-off <value>        Time to wait with the LED turned off (seconds)
+  --speed <value>             Abstract animation speed (device/mode specific)
+  --time-per-color <value>    Time to wait on each color (seconds)
+  --time-off <value>          Time to wait with the LED turned off (seconds)
+  --alert-threshold <number>  Threadhold temperature for a visual alert
+  --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
-  -v, --verbose             Output additional information
-  -g, --debug               Show debug information on stderr
-  --hid <module>            Override API for USB HIDs: usb, hid or hidraw
-  --legacy-690lc            Use Asetek 690LC in legacy mode (device is Kraken)
-  --version                 Display the version number
-  --help                    Show this message
+  -v, --verbose               Output additional information
+  -g, --debug                 Show debug information on stderr
+  --hid <module>              Override API for USB HIDs: usb, hid or hidraw
+  --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
+  --version                   Display the version number
+  --help                      Show this message
 
 Examples:
   liquidctl status
@@ -86,6 +88,8 @@ _OPTIONS_TO_FORWARD = [
     '--speed',
     '--time-per-color',
     '--time-off',
+    '--alert-threshold',
+    '--alert-color',
 ]
 
 
@@ -179,10 +183,6 @@ def _device_set_speed(dev, args, **kwargs):
         dev.set_speed_profile(args['<channel>'], profile, **kwargs)
     else:
         dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **kwargs)
-
-
-def _parse_color(color):
-    return bytes.fromhex(color)
 
 
 def _get_options_to_forward(args):

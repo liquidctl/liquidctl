@@ -48,8 +48,8 @@ import os
 import appdirs
 import usb
 
-import liquidctl.util
 from liquidctl.driver.usb import UsbDeviceDriver
+from liquidctl.util import color_from_str
 
 
 LOGGER = logging.getLogger(__name__)
@@ -201,33 +201,43 @@ class AsetekDriver(CommonAsetekDriver):
             ('Firmware version', firmware, '')
         ]
 
-    def set_color(self, channel, mode, colors, time_per_color=1, time_off=None, speed=3, **kwargs):
+    def set_color(self, channel, mode, colors, time_per_color=1, time_off=None,
+                  alert_threshold=_HIGH_TEMPERATURE, alert_color=[255, 0, 0],
+                  speed=3, **kwargs):
         """Set the color mode for a specific channel."""
         # keyword arguments may have been forwarded from cli args and need parsing
         if isinstance(time_per_color, str):
             time_per_color = int(time_per_color)
         if isinstance(time_off, str):
             time_off = int(time_off)
+        if isinstance(alert_threshold, str):
+            alert_threshold = _clamp(int(alert_threshold), 0, 100)
+        if isinstance(alert_color, str):
+            alert_color = color_from_str(alert_color)
         colors = list(colors)
         self._begin_transaction()
         if mode == 'rainbow':
             if isinstance(speed, str):
                 speed = int(speed)
             self._write([0x23, _clamp(speed, 1, 6, 'rainbow speed')])
-            self._configure_device()  # make sure to clear blinking or... chaos
+            # make sure to clear blinking or... chaos
+            self._configure_device(alert_temp=alert_threshold, color3=alert_color)
         elif mode == 'fading':
             self._configure_device(fading=True, color1=colors[0], color2=colors[1],
-                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'))
+                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'),
+                                   alert_temp=alert_threshold, color3=alert_color)
             self._write([0x23, 0])
         elif mode == 'blinking':
             if time_off is None:
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
                                    interval1=_clamp(time_off, 1, 255, 'time off'),
-                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'))
+                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'),
+                                   alert_temp=alert_threshold, color3=alert_color)
             self._write([0x23, 0])
         elif mode == 'fixed':
-            self._configure_device(color1=colors[0])
+            self._configure_device(color1=colors[0], alert_temp=alert_threshold,
+                                   color3=alert_color)
             self._write([0x23, 0])
         elif mode == 'blackout':  # stronger than just 'off' (suppresses alerts)
             self._configure_device(blackout=True)  # no need to clear rainbow
@@ -374,20 +384,27 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             ('Firmware version', firmware, '')
         ]
 
-    def set_color(self, channel, mode, colors, time_per_color=None, time_off=None, **kwargs):
+    def set_color(self, channel, mode, colors, time_per_color=None, time_off=None,
+                  alert_threshold=_HIGH_TEMPERATURE, alert_color=[255, 0, 0],
+                  **kwargs):
         """Set the color mode for a specific channel."""
         # keyword arguments may have been forwarded from cli args and need parsing
         if isinstance(time_per_color, str):
             time_per_color = int(time_per_color)
         if isinstance(time_off, str):
             time_off = int(time_off)
+        if isinstance(alert_threshold, str):
+            alert_threshold = _clamp(int(alert_threshold), 0, 100)
+        if isinstance(alert_color, str):
+            alert_color = color_from_str(alert_color)
         colors = list(colors)
         self._begin_transaction()
         if mode == 'fading':
             if time_per_color is None:
                 time_per_color = 5
             self._configure_device(fading=True, color1=colors[0], color2=colors[1],
-                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'))
+                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'),
+                                   alert_temp=alert_threshold, color3=alert_color)
         elif mode == 'blinking':
             if time_per_color is None:
                 time_per_color = 1
@@ -395,9 +412,11 @@ class LegacyAsetekDriver(CommonAsetekDriver):
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
                                    interval1=_clamp(time_off, 1, 255, 'time off'),
-                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'))
+                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'),
+                                   alert_temp=alert_threshold, color3=alert_color)
         elif mode == 'fixed':
-            self._configure_device(color1=colors[0])
+            self._configure_device(color1=colors[0], alert_temp=alert_threshold,
+                                   color3=alert_color)
         elif mode == 'blackout':  # stronger than just 'off' (suppresses alerts)
             self._configure_device(blackout=True)
         else:
