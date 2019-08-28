@@ -1,4 +1,4 @@
-"""Utilities for profile manipulation.
+"""Assorted utilities used by drivers and the CLI.
 
 Copyright (C) 2018  Jonas Malaco
 Copyright (C) 2018  each contribution's author
@@ -77,3 +77,19 @@ def interpolate_profile(profile, x):
     if lower[0] == upper[0]:
         return lower[1]
     return round(lower[1] + (x - lower[0])/(upper[0] - lower[0])*(upper[1] - lower[1]))
+
+
+def color_from_str(x):
+    """Parse a RGB color from a hexadecimal string.
+
+    >>> color_from_str('fF7f3f')
+    [255, 127, 63]
+
+    >>> color_from_str('fF7f3f1f')
+    Traceback (most recent call last):
+        ...
+    ValueError: Cannot parse color: fF7f3f1f
+    """
+    if len(x) != 6:
+        raise ValueError('Cannot parse color: {}'.format(x))
+    return list(bytes.fromhex(x))

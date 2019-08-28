@@ -73,6 +73,7 @@ import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.usb
 import liquidctl.util
+from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
 
@@ -168,7 +169,7 @@ def _device_get_status(dev, num, **kwargs):
 
 
 def _device_set_color(dev, args, **kwargs):
-    color = map(lambda c: list(_parse_color(c)), args['<color>'])
+    color = map(color_from_str, args['<color>'])
     dev.set_color(args['<channel>'], args['<mode>'], color, **kwargs)
 
 
