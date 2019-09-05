@@ -327,21 +327,28 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         location = '{}_{}'.format(self.bus, '.'.join(map(str, self.port)))
         self._data_path = os.path.join(appdirs.site_data_dir('liquidctl', 'jonasmalacofilho'),
                                        ids, location)
+        self._data_cache = {}
         LOGGER.debug('data directory for device is %s', self._data_path)
 
     def _load_integer(self, name):
+        if name in self._data_cache:
+            value = self._data_cache[name]
+            LOGGER.debug('loaded %s=%s (from cache)', name, str(value))
+            return value
         try:
             with open(os.path.join(self._data_path, name), mode='r') as f:
                 data = f.read().strip()
                 if len(data) == 0:
                     value = None
-                    LOGGER.debug('load %s=<empty>', name)
                 else:
                     value = int(data)
-                    LOGGER.debug('load %s=%i', name, value)
-                return value
+                LOGGER.debug('loaded %s=%s', name, str(value))
         except OSError:
-            return None
+            LOGGER.debug('no data (file) found for %s', name)
+            value = None
+        finally:
+            self._data_cache[name] = value
+            return value
 
     def _store_integer(self, name, value):
         try:
@@ -350,10 +357,11 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             pass
         with open(os.path.join(self._data_path, name), mode='w') as f:
             if value is None:
-                LOGGER.debug('store %s=<empty>', name)
+                f.write('')
             else:
-                LOGGER.debug('store %s=%i', name, value)
                 f.write(str(value))
+            self._data_cache[name] = value
+            LOGGER.debug('stored %s=%s', name, str(value))
 
     def _set_all_fixed_speeds(self):
         self._begin_transaction()
