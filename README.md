@@ -175,7 +175,7 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 # liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
-Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will print as much information as possible to help identify its cause; be sure to include it when opening a new issue.
+Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag, possibly in combination with [setting `PYSUB_DEBUG=debug`](https://github.com/pyusb/pyusb/blob/2a434a7c722af65f3c81af2e70721669ed79c284/docs/tutorial.rst#whats-wrong), will make liquidctl output as much information as possible to help identify its cause; be sure to use these features when opening a new issue.
 
 
 ## Automation and running at boot

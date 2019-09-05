@@ -197,10 +197,6 @@ def main():
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        import usb  # now to set up the 'usb' logger, otherwise setLevel bellow wont work
-        logging.getLogger('usb').setLevel(logging.DEBUG)
-        import usb._debug
-        usb._debug.enable_tracing(True)
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
