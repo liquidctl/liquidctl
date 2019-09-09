@@ -71,11 +71,6 @@ _READ_TIMEOUT = 2000
 _WRITE_ENDPOINT = 0x2
 _WRITE_TIMEOUT = 2000
 
-_LEGACY_FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'fan':  (0x12, 0, 100),
-    'pump':  (0x13, 50, 100),
-}
-
 # USBXpress specific control parameters; from the USBXpress SDK
 # (Customization/CP21xx_Customization/AN721SW_Linux/silabs_usb.h)
 _USBXPRESS_REQUEST = 0x02
@@ -281,12 +276,8 @@ class AsetekDriver(CommonAsetekDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         if channel == 'fan':
-            # While devices seem to recognize a specific channel for fixed fan
-            # speeds (mtype == 0x12), its use can later conflict with custom
-            # profiles.
-            # Note for a future self: the conflict can be cleared with
-            # *another* call to initialize(), i.e.  with another
-            # configuration command.
+            # using the specific 0x12 mtype for setting a fixed fan speed will prevent variable
+            # profiles from correctly loading until the device is re-initialized
             LOGGER.info('using a flat profile to set %s to a fixed duty', channel)
             self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
             return
@@ -363,27 +354,42 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             self._data_cache[name] = value
             LOGGER.debug('stored %s=%s', name, str(value))
 
-    def _set_all_fixed_speeds(self):
+    def _set_all_speeds(self):
         self._begin_transaction()
-        for channel in ['pump', 'fan']:
-            mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-            duty = _clamp(self._load_integer('{}_duty'.format(channel)), dmin, dmax, none=dmax)
-            LOGGER.info('setting %s duty to %i%%', channel, duty)
-            self._write([mtype, duty])
+
+        mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS['fan']
+        profile = []
+        for i in range(0, _MAX_PROFILE_POINTS):
+            temp = _clamp(self._load_integer('fan_temp{}'.format(i)), 0, _CRITICAL_TEMPERATURE,
+                          none=_CRITICAL_TEMPERATURE)
+            duty = _clamp(self._load_integer('fan_duty{}'.format(i)), dmin, dmax, none=dmax)
+            LOGGER.info('setting fan PWM point: (%i°C, %i%%), device interpolated',
+                        temp, duty)
+            profile.append((temp, duty))
+        temps, duties = map(list, zip(*profile))
+        self._write([mtype, 0] + temps + duties)
+
+        mtype, dmin, dmax = _FIXED_SPEED_CHANNELS['pump']
+        duty = _clamp(self._load_integer('pump_duty'), dmin, dmax, none=dmax)
+        LOGGER.info('setting pump duty to %i%%', duty)
+        self._write([mtype, duty])
+
         return self._end_transaction_and_read()
 
     def initialize(self, **kwargs):
         super().initialize()
-        self._store_integer('pump_duty', None)
-        self._store_integer('fan_duty', None)
-        self._set_all_fixed_speeds()
+        self._store_integer('pump_duty', 100)
+        for i in range(0, _MAX_PROFILE_POINTS):
+            self._store_integer('fan_temp{}'.format(i), 10 + i*10)
+            self._store_integer('fan_duty{}'.format(i), 25 + i*15)
+        self._set_all_speeds()
 
     def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        msg = self._set_all_fixed_speeds()
+        msg = self._set_all_speeds()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
             ('Liquid temperature', msg[10] + msg[14]/10, '°C'),
@@ -430,14 +436,28 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         else:
             raise KeyError('Unknown lighting mode {}'.format(mode))
         self._end_transaction_and_read()
-        self._set_all_fixed_speeds()
+        self._set_all_speeds()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Set channel to follow a speed duty profile."""
+        mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
+        adjusted = self._prepare_profile(profile, dmin, dmax)
+        for i, (temp, duty) in enumerate(adjusted):
+            self._store_integer('{}_temp{}'.format(channel, i), temp)
+            self._store_integer('{}_duty{}'.format(channel, i), duty)
+        self._set_all_speeds()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
-        mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
+        if channel == 'fan':
+            # assume using the 0x12 mtype still causes issues (see comment in ModernAsetekDriver)
+            LOGGER.info('using a flat profile to set %s to a fixed duty', channel)
+            self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
+            return
+        mtype, dmin, dmax = _FIXED_SPEED_CHANNELS[channel]
         duty = _clamp(duty, dmin, dmax)
         self._store_integer('{}_duty'.format(channel), duty)
-        self._set_all_fixed_speeds()
+        self._set_all_speeds()
 
 
 class CorsairAsetekDriver(LegacyAsetekDriver):

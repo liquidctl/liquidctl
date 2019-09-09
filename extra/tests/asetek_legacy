@@ -18,7 +18,7 @@ liquidctl $DEVICE $EXTRAOPTIONS set pump speed 50
 sleep 2
 liquidctl $DEVICE $EXTRAOPTIONS status
 
-liquidctl $DEVICE $EXTRAOPTIONS set fan speed 50
+liquidctl $DEVICE $EXTRAOPTIONS set fan speed 20 0 40 100
 liquidctl $DEVICE $EXTRAOPTIONS set pump speed 75
 sleep 2
 liquidctl $DEVICE $EXTRAOPTIONS status
