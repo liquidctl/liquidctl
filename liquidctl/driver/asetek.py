@@ -148,6 +148,27 @@ class CommonAsetekDriver(UsbDeviceDriver):
                     + [alert_temp, interval1, interval2, not blackout, fading,
                        blinking, enable_alert, 0x00, 0x01])
 
+    def _prepare_profile(self, profile, min_duty, max_duty):
+        opt = list(profile)
+        size = len(opt)
+        if size < 1:
+            raise ValueError('At least one PWM point required')
+        elif size > _MAX_PROFILE_POINTS:
+            raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
+        for i, (temp, duty) in enumerate(opt):
+            opt[i] = (temp, _clamp(duty, min_duty, max_duty))
+        missing = _MAX_PROFILE_POINTS - size
+        if missing:
+            # Some issues were observed when padding with (0°C, 0%), though
+            # they were hard to reproduce.  So far it *seems* that in some
+            # instances the device will store the last "valid" profile index
+            # somewhere, and would need another call to initialize() to clear
+            # that up.  Padding with (CRIT, 100%) appears to avoid all issues,
+            # at least within the reasonable range of operating temperatures.
+            LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
+            opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
+        return opt
+
     def connect(self, **kwargs):
         """Connect to the device."""
         super().connect()
@@ -256,27 +277,6 @@ class AsetekDriver(CommonAsetekDriver):
         self._begin_transaction()
         self._write([mtype, 0] + temps + duties)
         self._end_transaction_and_read()
-
-    def _prepare_profile(self, profile, min_duty, max_duty):
-        opt = list(profile)
-        size = len(opt)
-        if size < 1:
-            raise ValueError('At least one PWM point required')
-        elif size > _MAX_PROFILE_POINTS:
-            raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
-        for i, (temp, duty) in enumerate(opt):
-            opt[i] = (temp, _clamp(duty, min_duty, max_duty))
-        missing = _MAX_PROFILE_POINTS - size
-        if missing:
-            # Some issues were observed when padding with (0°C, 0%), though
-            # they were hard to reproduce.  So far it *seems* that in some
-            # instances the device will store the last "valid" profile index
-            # somewhere, and would need another call to initialize() to clear
-            # that up.  Padding with (CRIT, 100%) appears to avoid all issues,
-            # at least within the reasonable range of operating temperatures.
-            LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
-            opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
-        return opt
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
