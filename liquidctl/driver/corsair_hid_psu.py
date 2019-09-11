@@ -101,7 +101,6 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        self._write(_OP_WRITE, _REG_OUT_SEL)  # clear any previous output selection
         status = [
             ('Current uptime', timedelta(seconds=self._get_int(_REG_UPTIME, 32)), ''),
             ('Total uptime', timedelta(seconds=self._get_int(_REG_POW_ON, 32)), ''),
@@ -117,7 +116,6 @@ class CorsairHidPsuDriver(UsbHidDriver):
             status.append(('{} voltage'.format(key_prefix), self._get_float(_REG_OUT_VOLT), 'V'))
             status.append(('{} current'.format(key_prefix), self._get_float(_REG_OUT_CURR), 'A'))
             status.append(('{} power'.format(key_prefix), self._get_float(_REG_OUT_POWR), 'W'))
-        # note: we don't clear the output selection
         self.device.release()
         return status
 
