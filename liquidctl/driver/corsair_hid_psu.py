@@ -18,13 +18,13 @@ Supported features
  - [ ] 12V multirail configuration
 
 
-Port of corsairRMi.  Incorporates or uses as reference work by notaz and
-realies, under the terms of the BSD 3-Clause license.
+Port of corsaiRMi: incorporates or uses as reference work by notaz and realies,
+under the terms of the BSD 3-Clause license.
 
 Incorporates or uses as reference work by Sean Nelson, under the terms of the
 GNU General Public License.
 
-corsairRMi
+corsaiRMi
 Copyright (c) notaz, 2016
 
 liquidctl driver for Corsair HID PSUs
