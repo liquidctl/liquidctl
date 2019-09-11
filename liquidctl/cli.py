@@ -63,6 +63,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
+import datetime
 import inspect
 import itertools
 import logging
@@ -92,6 +93,15 @@ _OPTIONS_TO_FORWARD = [
     '--alert-threshold',
     '--alert-color',
 ]
+
+# custom number formats for values of select units
+_VALUE_FORMATS = {
+    '°C' : '.1f',
+    'rpm' : '.0f',
+    'V' : '.2f',
+    'A' : '.2f',
+    'W' : '.2f'
+}
 
 
 DRIVERS = [
@@ -168,7 +178,11 @@ def _device_get_status(dev, num, **kwargs):
     try:
         status = dev.get_status(**kwargs)
         for k, v, u in status:
-            print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
+            if isinstance(v, datetime.timedelta):
+                v = str(v)
+                u = ''
+            valfmt = _VALUE_FORMATS.get(u, '')
+            print('{:<18}    {:>20{valfmt}}  {:<3}'.format(k, v, u, valfmt=valfmt))
     finally:
         dev.disconnect(**kwargs)
     print('')
