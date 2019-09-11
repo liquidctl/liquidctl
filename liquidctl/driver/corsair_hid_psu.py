@@ -152,9 +152,9 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
         [1] Both corsaiRMi and OpenCorsairLink (OCL) implement the convertion
         between this custom format and a double, but with slight differences.
-        The git histories suggests that OCL's implementation was more
-        thoroughly tested and revised, and thus is the basis for this method
-        (see: convert_bytes_double as of OCL commit 99e1d72fa5a0).
+        The git histories suggest that OCL's implementation was more thoroughly
+        tested and revised, and thus that was the basis for this method (see:
+        convert_bytes_double as of OCL commit 99e1d72fa5a0).
         """
         short = self._get_int(register, 16, byteorder='little')
         exp = short >> 11
