@@ -24,7 +24,7 @@ Animation options (devices/modes can support zero or more):
   --speed <value>             Abstract animation speed (device/mode specific)
   --time-per-color <value>    Time to wait on each color (seconds)
   --time-off <value>          Time to wait with the LED turned off (seconds)
-  --alert-threshold <number>  Threadhold temperature for a visual alert
+  --alert-threshold <number>  Threadhold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
