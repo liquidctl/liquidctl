@@ -44,6 +44,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 import os
+import sys
 
 import appdirs
 import usb
@@ -322,11 +323,14 @@ class LegacyAsetekDriver(CommonAsetekDriver):
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
         # compute path where fan/pump settings will be stored
-        # [/usr/local/share/]liquidctl/2433_b200_0100/usb1_12/
+        # [/run]/liquidctl/2433_b200_0100/usb1_12/
         ids = '{:04x}_{:04x}_{:04x}'.format(self.vendor_id, self.product_id, self.release_number)
         location = '{}_{}'.format(self.bus, '.'.join(map(str, self.port)))
-        self._data_path = os.path.join(appdirs.site_data_dir('liquidctl', 'jonasmalacofilho'),
-                                       ids, location)
+        if sys.platform.startswith('linux') and os.path.isdir('/run'):
+            basedir = '/run/liquidctl'
+        else:
+            basedir = appdirs.site_data_dir('liquidctl', 'jonasmalacofilho')
+        self._data_path = os.path.join(basedir, ids, location)
         self._data_cache = {}
         LOGGER.debug('data directory for device is %s', self._data_path)
 
