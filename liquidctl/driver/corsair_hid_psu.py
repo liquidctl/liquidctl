@@ -142,4 +142,4 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
     def _get_float(self, command):
         """Get float value with `command`."""
-        return linear_to_float(self._exec(WriteBit.READ, command), pos=2)
+        return linear_to_float(self._exec(WriteBit.READ, command)[2:])

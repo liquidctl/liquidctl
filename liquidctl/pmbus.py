@@ -70,22 +70,35 @@ class CommandCode(IntEnum):
     MFR_SPECIFIC_30 = 0xee
 
 
-def linear_to_float(bytes, pos=0):
-    """Read PMBus Linear Data Format 2-byte minifloat.
+def linear_to_float(bytes, vout_exp=None):
+    """Read PMBus Linear Data Format values.
 
-    In the Linear Data Format the fraction is stored in the lower 11 bits, in
+    If `vout_exp` is None the value is assumed to be a 2-byte Linear Data
+    Format value.  The fraction is stored in the lower 11 bits, in
     two's-complement, and the exponent is is stored in the upper 5 bits, also
-    in two's-complement.  Per the SMBus specification, the lowest order byte is
-    sent first (endianess is little).
+    in two's-complement.
+
+    Otherwise, the exponent is read from the lower 5 bits of `vout_exp` (which
+    is assumed to be the output from VOUT_MOE) and the fraction is the unsigned
+    2-byte integer in `bytes`.
+
+    Per the SMBus specification, the lowest order byte is sent first (endianess
+    is little).
 
     >>> linear_to_float([0x67, 0xe3])
     54.4375
+    >>> linear_to_float([0x67, 0x03], vout_exp=0x1c)
+    54.4375
     """
-    tmp = int.from_bytes(bytes[pos:pos + 2], byteorder='little')
-    exp = tmp >> 11
-    fra = tmp & 0x7ff
+    tmp = int.from_bytes(bytes[:2], byteorder='little')
+    if vout_exp is None:
+        exp = tmp >> 11
+        fra = tmp & 0x7ff
+        if fra > 1023:
+            fra = fra - 2048
+    else:
+        exp = vout_exp & 0x1f
+        fra = tmp
     if exp > 15:
         exp = exp - 32
-    if fra > 1023:
-        fra = fra - 2048
     return fra * 2**exp
