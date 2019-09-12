@@ -102,12 +102,12 @@ Of course, a virtual environment can always be used instead of installing the pa
 
 Packages for Linux distributions:
 
- - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/)
- - Fedora (28, 29, Rawhide): [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
+ - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/) [python-liquidctl-rc<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-rc/)
+ - Fedora: [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
 
 Pre-built binaries for Windows:
 
- - Releases: check the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
+ - Releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
 ### Additional requirements on Linux
