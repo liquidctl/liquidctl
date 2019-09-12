@@ -53,12 +53,12 @@ Firmware version           4.0.2
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair H80i GTX, H100i GTX, H110i GTX | | <sup>1</sup> |
-| Corsair H80i v2, H100i v2, H115i | | <sup>1</sup> |
-| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255) | |
+| Corsair H80i GTX, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
+| Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
+| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
 | NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | |
-| NZXT Kraken X40, X60 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | <sup>1, 2</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | <sup>2</sup> |
+| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>1, 2</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>2</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
