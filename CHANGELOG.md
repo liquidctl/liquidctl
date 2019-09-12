@@ -4,9 +4,19 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html), using version identifiers translated to [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning)-compatible equivalents.
 
-## [Unreleased]
+## [1.2.0rc2] – 2019-09-12
+### Added
+ - Support the EVGA CLC 360
+ - Add --alert-threshold and --alert-color
+### Changed
+ - Mark Kraken X31, X41, X51 and X61 as no longer experimental
+ - Improve supported devices list and links to documentation
+ - Don't enable PyUSB tracing automatically with --debug
+ - [Legacy Asetek 690LC] Cache values read from or stored on the filesystem
+ - [Legacy Asetek 690LC] Prefer to save driver data in /run when OS is Linux
 ### Fixes
  - Force bundling of 'hid' module in Windows executable
+ - [Legacy Asetek 690LC] Change default fading --time-per-color (see #29)
 
 ## [1.2.0rc1] – 2019-04-14
 ### Added
