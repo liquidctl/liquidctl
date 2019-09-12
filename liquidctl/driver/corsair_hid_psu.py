@@ -124,11 +124,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         return msg
 
     def _exec(self, writebit, command, data=None):
-        if not writebit in WriteBit:
-            raise ValueError('Unknown value bit: {}'.format(writebit))
-        if not command in CMD:
-            raise ValueError('Unknown command code: {}'.format(command))
-        self._write([_SLAVE_ADDRESS | writebit, command] + (data or []))
+        self._write([_SLAVE_ADDRESS | WriteBit(writebit), CMD(command)] + (data or []))
         return self._read()
 
     def _get_float(self, command):
