@@ -83,7 +83,7 @@ The coolers support two more lighting modes: 'fixed' and 'blackout'.  The latter
 
 It is also possible to configure the visual alert for high liquid temperatures.  For that, the following options are available:
 
-`--alert-threshold <number>`: Threshold temperature in Celsius for a visual alert
-`--alert-color <color>`: Color used by the visual high temperature alert
+`--alert-threshold <number>`: threshold temperature in Celsius for a visual alert  
+`--alert-color <color>`: color used by the visual high temperature alert
 
 Note that, regardless of the use of these options, alerts are always enabled (unless suppressed by the 'blackout' mode): the default threshold and color is, respectively, 45°C and red.
