@@ -2,14 +2,14 @@
 
 Several products are available that are based on the same Asetek 690LC base design:
 
- - Current designs: EVGA CLC 120 (CLC12), 240, 280 and 360
+ - Current models: EVGA CLC 120 (CLC12), 240, 280 and 360
  - Legacy designs:
     * NZXT Kraken X40, X60, X31, X41, X51 and X61
     * Corsair H80i GTX, H100i GTX, H110i GTX, H80i v2, H100i v2 and H115i
 
-Coolers using the legacy designs can lack certain features.
+Fan speed profiles and the 'rainbow' lighting mode are currently only supported on the modern EVGA units.
 
-**Note: with the legacy Krakens it is necessary to pass the `--legacy-690lc` flag on all invocations of liquidctl.**
+**Additionally, with legacy Krakens it is necessary to pass the `--legacy-690lc` flag on all invocations of liquidctl.**
 
 ## Initialization
 
@@ -17,7 +17,6 @@ All of these devices must be initialized at every boot.  Only after that it is p
 
 ```
 # liquidctl initialize
-# liquidctl status
 ```
 
 ## Device monitoring
