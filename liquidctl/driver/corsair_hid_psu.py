@@ -105,7 +105,6 @@ class CorsairHidPsuDriver(UsbHidDriver):
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
             key_prefix = '{} output'.format(_RAIL_NAMES[rail])
             self._exec(WriteBit.WRITE, CMD.PAGE, [rail])
-            self._read()
             status.append(('{} voltage'.format(key_prefix), self._get_float(CMD.READ_VOUT), 'V'))
             status.append(('{} current'.format(key_prefix), self._get_float(CMD.READ_IOUT), 'A'))
             status.append(('{} power'.format(key_prefix), self._get_float(CMD.READ_POUT), 'W'))
