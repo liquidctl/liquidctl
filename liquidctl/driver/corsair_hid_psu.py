@@ -103,11 +103,11 @@ class CorsairHidPsuDriver(UsbHidDriver):
             ('Total power', self._get_float(_CORSAIR_READ_INPUT_POWER), 'W')
         ]
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
-            key_prefix = '{} output'.format(_RAIL_NAMES[rail])
+            name = _RAIL_NAMES[rail]
             self._exec(WriteBit.WRITE, CMD.PAGE, [rail])
-            status.append(('{} voltage'.format(key_prefix), self._get_float(CMD.READ_VOUT), 'V'))
-            status.append(('{} current'.format(key_prefix), self._get_float(CMD.READ_IOUT), 'A'))
-            status.append(('{} power'.format(key_prefix), self._get_float(CMD.READ_POUT), 'W'))
+            status.append((f'{name} output voltage', self._get_float(CMD.READ_VOUT), 'V'))
+            status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
+            status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         self.device.release()
         return status
