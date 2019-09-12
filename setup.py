@@ -1,18 +1,22 @@
 import setuptools
 
-repo_url = 'https://github.com/jonasmalacofilho/liquidctl'
+HOME = 'https://github.com/jonasmalacofilho/liquidctl'
 
 with open('liquidctl/version.py', 'r') as fv:
     vals = {}
     exec(fv.read(), vals)
     version = vals['__version__']
 
-doc_url = '{}/blob/v{}/README.md'.format(repo_url, version)
-changes_url = '{}/blob/v{}/CHANGELOG.md'.format(repo_url, version)
+supported_url = '{}/tree/v{}#supported-devices'.format(HOME, version)
+doc_url = '{}/tree/v{}#liquidctl--liquid-cooler-control'.format(HOME, version)
+changes_url = '{}/blob/v{}/CHANGELOG.md'.format(HOME, version)
 
 with open('README.md', 'r', encoding='utf-8') as fh:
+    continuation = ('For which devices are supported, installation instructions, '
+                    'a guide to the CLI and device specific details, check the '
+                    'complete [Documentation]({}).').format(doc_url)
     long_description = (fh.read().split('<!-- stop here for PyPI -->', 1)[0]
-                        + 'Continue reading on the [Documentation]({})...'.format(doc_url))
+                        + continuation)
 
 setuptools.setup(
     name='liquidctl',
@@ -22,7 +26,7 @@ setuptools.setup(
     description='Cross-platform tool and drivers for liquid coolers and other devices',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url=repo_url,
+    url=HOME,
     packages=setuptools.find_packages(),
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -35,6 +39,7 @@ setuptools.setup(
     ],
     keywords='cross-platform driver nzxt kraken smart-device grid',
     project_urls={
+        'Suported devices': supported_url,
         'Documentation': doc_url,
         'Changelog': changes_url,
     },
