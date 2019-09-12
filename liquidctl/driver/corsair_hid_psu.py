@@ -50,27 +50,18 @@ import logging
 from datetime import timedelta
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.pmbus import CommandCode as CMD
+from liquidctl.pmbus import WriteBit, linear_to_float
 
 
 LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
-
-_OP_WRITE = 0x02
-_OP_READ = 0x03
-
-_REG_OUT_SEL = 0x00
-_REG_POW_ON = 0xd1
-_REG_UPTIME = 0xd2
-_REG_TEMP1 = 0x8d
-_REG_TEMP2 = 0x8e
-_REG_FAN_RPM = 0x90
-_REG_INP_VOLT = 0x88
-_REG_INP_POWR = 0xee
-_REG_OUT_VOLT = 0x8b
-_REG_OUT_CURR = 0x8c
-_REG_OUT_POWR = 0x96
+_SLAVE_ADDRESS = 0x02
+_CORSAIR_READ_TOTAL_UPTIME = CMD.MFR_SPECIFIC_01
+_CORSAIR_READ_UPTIME = CMD.MFR_SPECIFIC_02
+_CORSAIR_READ_INPUT_POWER = CMD.MFR_SPECIFIC_30
 
 _RAIL_12V = 0x0
 _RAIL_5V = 0x1
@@ -101,68 +92,54 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         status = [
-            ('Current uptime', timedelta(seconds=self._get_int(_REG_UPTIME, 32)), ''),
-            ('Total uptime', timedelta(seconds=self._get_int(_REG_POW_ON, 32)), ''),
-            ('Temperature 1', self._get_float(_REG_TEMP1), '°C'),
-            ('Temperature 2', self._get_float(_REG_TEMP1), '°C'),
-            ('Fan speed', self._get_float(_REG_FAN_RPM), 'rpm'),
-            ('Input voltage', self._get_float(_REG_INP_VOLT), 'V'),
-            ('Total power', self._get_float(_REG_INP_POWR), 'W')
+            ('Current uptime', timedelta(seconds=self._get_int(_CORSAIR_READ_UPTIME, 32)), ''),
+            ('Total uptime', timedelta(seconds=self._get_int(_CORSAIR_READ_TOTAL_UPTIME, 32)), ''),
+            ('Temperature 1', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
+            ('Temperature 2', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
+            ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
+            ('Input voltage', self._get_float(CMD.READ_VIN), 'V'),
+            ('Total power', self._get_float(_CORSAIR_READ_INPUT_POWER), 'W')
         ]
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
             key_prefix = '{} output'.format(_RAIL_NAMES[rail])
-            self._write(_OP_WRITE, _REG_OUT_SEL, value=rail)
+            self._exec(WriteBit.WRITE, CMD.PAGE, [rail])
             self._read()
-            status.append(('{} voltage'.format(key_prefix), self._get_float(_REG_OUT_VOLT), 'V'))
-            status.append(('{} current'.format(key_prefix), self._get_float(_REG_OUT_CURR), 'A'))
-            status.append(('{} power'.format(key_prefix), self._get_float(_REG_OUT_POWR), 'W'))
+            status.append(('{} voltage'.format(key_prefix), self._get_float(CMD.READ_VOUT), 'V'))
+            status.append(('{} current'.format(key_prefix), self._get_float(CMD.READ_IOUT), 'A'))
+            status.append(('{} power'.format(key_prefix), self._get_float(CMD.READ_POUT), 'W'))
+        self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         self.device.release()
         return status
 
-    def _write(self, opcode, register, value=0):
-        msg = [0x0] * _WRITE_LENGTH
-        msg[0], msg[1], msg[2] = (opcode, register, value)
-        LOGGER.debug('write %s', ' '.join(format(i, '02x') for i in msg))
-        self.device.write(msg)
+    def _write(self, data):
+        padding = [0x0]*(_WRITE_LENGTH - len(data))
+        LOGGER.debug('write %s (and %i padding bytes)',
+                     ' '.join(format(i, '02x') for i in data), len(padding))
+        self.device.write(data + padding)
 
     def _read(self):
         msg = self.device.read(_READ_LENGTH)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         return msg
 
-    def _get_int(self, register, size, byteorder='little'):
-        """Read integer with `size` bits from `register`."""
-        self._write(_OP_READ, register)
-        msg = self._read()
+    def _exec(self, writebit, command, data=None):
+        if not writebit in WriteBit:
+            raise ValueError('Unknown value bit: {}'.format(writebit))
+        if not command in CMD:
+            raise ValueError('Unknown command code: {}'.format(command))
+        self._write([_SLAVE_ADDRESS | writebit, command] + (data or []))
+        return self._read()
+
+    def _get_int(self, command, size):
+        """Get `size`-bit integer value and `command`."""
+        msg = self._exec(WriteBit.WRITE, command)
         if (size >> 3) % 8:
             raise NotImplementedError('Cannot read partial bytes yet')
         ubound = 2 + (size >> 3)
-        return int.from_bytes(msg[2:ubound], byteorder=byteorder)
+        return int.from_bytes(msg[2:ubound], byteorder='little')
 
-    def _get_float(self, register):
-        """Read 2-byte minifloat from `register`.
-
-        A custom format is used by these devices which deviates from the IEEE
-        754 binary16 half float in many ways: the fraction is stored in the
-        lower 11 bits, in two's-complement; the exponent is is stored in the
-        upper 5 bits, also in two's-complement.[1]
-
-             15              11                                           0
-           | E | E | E | E | E | F | F | F | F | F | F | F | F | F | F | F |
-
-        [1] Both corsaiRMi and OpenCorsairLink (OCL) implement the convertion
-        between this custom format and a double, but with slight differences.
-        The git histories suggest that OCL's implementation was more thoroughly
-        tested and revised, and thus that was the basis for this method (see:
-        convert_bytes_double as of OCL commit 99e1d72fa5a0).
-        """
-        short = self._get_int(register, 16, byteorder='little')
-        exp = short >> 11
-        fra = short & 0x7ff
-        if exp > 15:
-            exp = exp - 32
-        if fra > 1023:
-            fra = fra - 2048
-        # note: unlike OpenCorsairLink we don't round the last binary digit
-        return fra * 2**exp
+    def _get_float(self, command):
+        """Get float value with `command`."""
+        return linear_to_float(self._exec(WriteBit.READ, command), pos=2)
