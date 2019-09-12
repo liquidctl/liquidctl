@@ -94,8 +94,8 @@ class CorsairHidPsuDriver(UsbHidDriver):
         """
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         status = [
-            ('Current uptime', timedelta(seconds=self._get_int(_CORSAIR_READ_UPTIME, 32)), ''),
-            ('Total uptime', timedelta(seconds=self._get_int(_CORSAIR_READ_TOTAL_UPTIME, 32)), ''),
+            ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
+            ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
             ('Temperature 1', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
             ('Temperature 2', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
@@ -131,14 +131,11 @@ class CorsairHidPsuDriver(UsbHidDriver):
         self._write([_SLAVE_ADDRESS | writebit, command] + (data or []))
         return self._read()
 
-    def _get_int(self, command, size):
-        """Get `size`-bit integer value and `command`."""
-        msg = self._exec(WriteBit.WRITE, command)
-        if (size >> 3) % 8:
-            raise NotImplementedError('Cannot read partial bytes yet')
-        ubound = 2 + (size >> 3)
-        return int.from_bytes(msg[2:ubound], byteorder='little')
-
     def _get_float(self, command):
         """Get float value with `command`."""
         return linear_to_float(self._exec(WriteBit.READ, command)[2:])
+
+    def _get_timedelta(self, command):
+        """Get timedelta with `command`."""
+        secs = int.from_bytes(self._exec(WriteBit.READ, command)[2:], byteorder='little')
+        return timedelta(seconds=secs)
