@@ -39,6 +39,11 @@ class CommandCode(IntEnum):
 
     PAGE = 0x00
 
+    PAGE_PLUS_WRITE = 0x05
+    PAGE_PLUS_READ = 0x06
+
+    VOUT_MODE = 0x20
+
     READ_EIN = 0x86
     READ_EOUT = 0x87
     READ_VIN = 0x88
@@ -67,7 +72,9 @@ class CommandCode(IntEnum):
 
     MFR_SPECIFIC_01 = 0xd1
     MFR_SPECIFIC_02 = 0xd2
+    MFR_SPECIFIC_12 = 0xdc
     MFR_SPECIFIC_30 = 0xee
+    MFR_SPECIFIC_44 = 0xfc
 
 
 def linear_to_float(bytes, vout_exp=None):
