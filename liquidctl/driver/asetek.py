@@ -180,6 +180,8 @@ class CommonAsetekDriver(UsbDeviceDriver):
             LOGGER.debug(err, exc_info=True)
             self._close()
             self._open()
+        finally:
+            self.device.release()
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -191,6 +193,7 @@ class CommonAsetekDriver(UsbDeviceDriver):
         """Disconnect from the device."""
         self._close()
         super().disconnect()
+        self.device.release()
 
 
 class AsetekDriver(CommonAsetekDriver):
@@ -300,11 +303,7 @@ class AsetekDriver(CommonAsetekDriver):
         LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, effective_duty, level)
         self._begin_transaction()
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
-        try:
-            self._end_transaction_and_read()
-        except usb.core.USBError as err:
-            LOGGER.warning('report: failed to read after setting speed')
-            LOGGER.debug(err, exc_info=True)
+        self._end_transaction_and_read()
 
 
 class LegacyAsetekDriver(CommonAsetekDriver):
