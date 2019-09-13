@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+"""liquiddump – continously dump monitoring data from liquidctl devices.
+
+This is a experimental script that continuously dumps the status of all
+available devices to stdout in newline-delimited JSON.
+
+Usage:
+  liquiddump [options]
+  liquiddump --help
+  liquiddump --version
+
+Options:
+  --interval <seconds>    Update interval in seconds [default: 2]
+  --hid <module>          Override API for USB HIDs: usb, hid or hidraw
+  --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
+  -v, --verbose           Output additional information
+  --version               Display the version number
+  --help                  Show this message
+
+Examples:
+  liquiddump
+  liquiddump --interval 0.5
+  liquiddump > file.jsonl
+  liquiddump | jq -c .
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Copyright (C) 2019  Jonas Malaco
+Copyright (C) 2019  each contribution's author
+
+Incorporates work by leaty, KsenijaS, Alexander Tong, Jens Neumaier, Kristóf
+Jakab, Sean Nelson and Chris Griffith, under the terms of the GNU General
+Public License.  Depending on how it was packaged, this program might also
+bundle copies of docopt, libusb-1.0 and pyusb.
+
+You should have received a copy of all applicable licenses along with this
+program, in a file called LICENSE.txt.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+"""
+
+import itertools
+import json
+import logging
+import signal
+import sys
+import time
+
+from docopt import docopt
+
+import liquidctl.driver.asetek
+import liquidctl.driver.kraken_two
+import liquidctl.driver.nzxt_smart_device
+
+
+DRIVERS = [
+    liquidctl.driver.asetek.AsetekDriver,
+    liquidctl.driver.asetek.CorsairAsetekDriver,
+    liquidctl.driver.asetek.LegacyAsetekDriver,
+    liquidctl.driver.kraken_two.KrakenTwoDriver,
+    liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
+]
+
+LOGGER = logging.getLogger(__name__)
+
+OPTIONS_TO_FORWARD = [
+    '--hid',
+    '--legacy-690lc',
+]
+
+
+def get_options_to_forward(args):
+    def opt_to_field(opt):
+        return opt.replace('--', '').replace('-', '_')
+    return {opt_to_field(i): args[i] for i in OPTIONS_TO_FORWARD if args[i]}
+
+
+if __name__ == '__main__':
+    args = docopt(__doc__, version='0.0.1')
+    frwdargs = get_options_to_forward(args)
+
+    devs = list(itertools.chain(*map(lambda driver: driver.find_supported_devices(**frwdargs), DRIVERS)))
+    update_interval = float(args['--interval'])
+
+    if args['--verbose']:
+        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
+    try:
+        for d in devs:
+            LOGGER.info('Initializing %s', d.description)
+            d.connect()
+            d.initialize()
+        while True:
+            status = {}
+            for d in devs:
+                status[d.description] = d.get_status()
+            print(json.dumps(status), flush=True)
+            time.sleep(update_interval)
+    except KeyboardInterrupt:
+        LOGGER.info('Canceled by user')
+    finally:
+        LOGGER.info('Clearing up before exiting')
+        for d in devs:
+            LOGGER.info('Desconnecting from %s', d.description)
+            d.disconnect()
