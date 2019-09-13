@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""liquiddump – continously dump monitoring data from liquidctl devices.
+"""liquiddump – continuously dump monitoring data from liquidctl devices.
 
 This is a experimental script that continuously dumps the status of all
 available devices to stdout in newline-delimited JSON.
@@ -101,5 +101,8 @@ if __name__ == '__main__':
     finally:
         LOGGER.info('Clearing up before exiting')
         for d in devs:
-            LOGGER.info('Desconnecting from %s', d.description)
-            d.disconnect()
+            try:
+                LOGGER.info('Disconnecting from %s', d.description)
+                d.disconnect()
+            except:
+                LOGGER.exception('failure when disconnecting')
