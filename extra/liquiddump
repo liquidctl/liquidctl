@@ -13,12 +13,21 @@ Options:
   --interval <seconds>    Update interval in seconds [default: 2]
   --hid <module>          Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
-  -v, --verbose           Output additional information
+  --vendor <id>           Filter devices by vendor id
+  --product <id>          Filter devices by product id
+  --release <number>      Filter devices by release number
+  --serial <number>       Filter devices by serial number
+  --bus <bus>             Filter devices by bus
+  --address <address>     Filter devices by address in bus
+  --usb-port <port>       Filter devices by USB port in bus
+  --device <number>       Select device by listing number
+  --verbose               Output additional information
   --version               Display the version number
   --help                  Show this message
 
 Examples:
   liquiddump
+  liquiddump --product 0xb200
   liquiddump --interval 0.5
   liquiddump > file.jsonl
   liquiddump | jq -c .
@@ -39,47 +48,34 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
-import itertools
 import json
 import logging
-import signal
-import sys
 import time
 
 from docopt import docopt
 
-import liquidctl.driver.asetek
-import liquidctl.driver.kraken_two
-import liquidctl.driver.nzxt_smart_device
+import liquidctl.cli as _borrow
 
-
-DRIVERS = [
-    liquidctl.driver.asetek.AsetekDriver,
-    liquidctl.driver.asetek.CorsairAsetekDriver,
-    liquidctl.driver.asetek.LegacyAsetekDriver,
-    liquidctl.driver.kraken_two.KrakenTwoDriver,
-    liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
-]
 
 LOGGER = logging.getLogger(__name__)
 
-OPTIONS_TO_FORWARD = [
+_OPTIONS_TO_FORWARD = [
     '--hid',
     '--legacy-690lc',
 ]
 
 
-def get_options_to_forward(args):
+def _get_options_to_forward(args):
     def opt_to_field(opt):
         return opt.replace('--', '').replace('-', '_')
-    return {opt_to_field(i): args[i] for i in OPTIONS_TO_FORWARD if args[i]}
+    return {opt_to_field(i): args[i] for i in _OPTIONS_TO_FORWARD if args[i]}
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='0.0.1')
-    frwdargs = get_options_to_forward(args)
-
-    devs = list(itertools.chain(*map(lambda driver: driver.find_supported_devices(**frwdargs), DRIVERS)))
+    args = docopt(__doc__, version='0.0.2')
+    frwd = _get_options_to_forward(args)
+    alldevs = list(enumerate(_borrow.find_all_supported_devices(**frwd)))
+    devs = list(zip(*_borrow._filter_devices(alldevs, args)))[1]
     update_interval = float(args['--interval'])
 
     if args['--verbose']:
@@ -98,11 +94,12 @@ if __name__ == '__main__':
             time.sleep(update_interval)
     except KeyboardInterrupt:
         LOGGER.info('Canceled by user')
+    except:
+        LOGGER.exception('Unexpected error')
     finally:
-        LOGGER.info('Clearing up before exiting')
         for d in devs:
             try:
                 LOGGER.info('Disconnecting from %s', d.description)
                 d.disconnect()
             except:
-                LOGGER.exception('failure when disconnecting')
+                LOGGER.exception('Unexpected error when disconnecting')
