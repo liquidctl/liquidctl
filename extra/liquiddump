@@ -50,6 +50,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 import json
 import logging
+import sys
 import time
 
 from docopt import docopt
@@ -96,6 +97,7 @@ if __name__ == '__main__':
         LOGGER.info('Canceled by user')
     except:
         LOGGER.exception('Unexpected error')
+        sys.exit(1)
     finally:
         for d in devs:
             try:
