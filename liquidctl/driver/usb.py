@@ -244,9 +244,16 @@ class PyUsbDevice:
             LOGGER.debug('setting the (first) configuration')
             self.usbdev.set_configuration()
 
+    def claim(self):
+        """Explicitly claim the device from other programs."""
+        # usb.util.dispose_resources(self.usbdev)
+        LOGGER.debug('explicitly claim interface')
+        usb.util.claim_interface(self.usbdev, self._DEFAULT_INTERFACE)
+
     def release(self):
         """Release the device to other programs."""
-        usb.util.dispose_resources(self.usbdev)
+        LOGGER.debug('ensure interface is released')
+        usb.util.release_interface(self.usbdev, self._DEFAULT_INTERFACE)
 
     def close(self):
         """Disconnect from the device.
@@ -361,6 +368,10 @@ class HidapiDevice:
     def open(self):
         """Connect to the device."""
         self.hiddev.open_path(self.hidinfo['path'])
+
+    def claim(self):
+        """NOOP."""
+        pass
 
     def release(self):
         """NOOP."""
