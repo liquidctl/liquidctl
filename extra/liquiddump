@@ -20,8 +20,9 @@ Options:
   --bus <bus>             Filter devices by bus
   --address <address>     Filter devices by address in bus
   --usb-port <port>       Filter devices by USB port in bus
-  --device <number>       Select device by listing number
-  --verbose               Output additional information
+  -d, --device <number>   Select device by listing number
+  -v, --verbose           Output additional information
+  -g, --debug             Show debug information on stderr
   --version               Display the version number
   --help                  Show this message
 
@@ -79,8 +80,14 @@ if __name__ == '__main__':
     devs = list(zip(*_borrow._filter_devices(alldevs, args)))[1]
     update_interval = float(args['--interval'])
 
-    if args['--verbose']:
+    if args['--debug']:
+        args['--verbose'] = True
+        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+    elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        sys.tracebacklimit = 0
 
     try:
         for d in devs:
