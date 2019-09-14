@@ -221,6 +221,8 @@ class PyUsbDevice:
      - OpenUSB
     """
 
+    _DEFAULT_INTERFACE = 0  # FIXME not necessarily the desired interface
+
     def __init__(self, usbdev):
         self.api = usb
         self.usbdev = usbdev
@@ -232,9 +234,10 @@ class PyUsbDevice:
         Replace the kernel driver (Linux only) and set the device configuration
         to the first available one, if none has been set.
         """
-        if sys.platform.startswith('linux') and self.usbdev.is_kernel_driver_active(0):
+        if (sys.platform.startswith('linux') and
+                self.usbdev.is_kernel_driver_active(self._DEFAULT_INTERFACE)):
             LOGGER.debug('replacing stock kernel driver with libusb')
-            self.usbdev.detach_kernel_driver(0)
+            self.usbdev.detach_kernel_driver(self._DEFAULT_INTERFACE)
             self._attached = True
         cfg = self.usbdev.get_active_configuration()
         if cfg is None:
@@ -253,7 +256,7 @@ class PyUsbDevice:
         self.release()
         if self._attached:
             LOGGER.debug('restoring stock kernel driver')
-            self.usbdev.attach_kernel_driver(0)
+            self.usbdev.attach_kernel_driver(_DEFAULT_INTERFACE)
 
     def read(self, endpoint, length, timeout=None):
         """Read from endpoint."""
