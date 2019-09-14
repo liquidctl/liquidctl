@@ -167,6 +167,9 @@ def _device_get_status(dev, num, **kwargs):
         status = dev.get_status(**kwargs)
         for k, v, u in status:
             print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
+    except:
+        LOGGER.exception('Unexpected error')
+        sys.exit(1)
     finally:
         dev.disconnect(**kwargs)
     print('')
@@ -232,6 +235,9 @@ def main():
             _device_set_color(dev, args, **frwd)
         else:
             raise Exception('Not sure what to do')
+    except:
+        LOGGER.exception('Unexpected error')
+        sys.exit(1)
     finally:
         dev.disconnect(**frwd)
 
