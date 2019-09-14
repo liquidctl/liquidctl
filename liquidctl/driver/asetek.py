@@ -120,6 +120,7 @@ class CommonAsetekDriver(UsbDeviceDriver):
     def _begin_transaction(self):
         """Begin a new transaction before writing to the device."""
         LOGGER.debug('begin transaction')
+        self.device.claim()
         self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_FLUSH_BUFFERS)
 
     def _write(self, data):
