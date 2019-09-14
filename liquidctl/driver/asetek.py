@@ -379,7 +379,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         return self._end_transaction_and_read()
 
     def initialize(self, **kwargs):
-        super().initialize()
+        super().initialize(**kwargs)
         self._store_integer('pump_duty', None)
         self._store_integer('fan_duty', None)
         self._set_all_fixed_speeds()
