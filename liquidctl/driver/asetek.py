@@ -109,15 +109,13 @@ def _clamp(val, lo, hi, none=None, desc='value'):
 class CommonAsetekDriver(UsbDeviceDriver):
     """Common fuctions of fifth generation Asetek devices."""
 
-    def _open(self):
-        """Open the USBXpress device."""
-        LOGGER.debug('open device')
-        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
-
-    def _close(self):
-        """Close the USBXpress device."""
-        LOGGER.debug('close device')
-        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_NOT_CLEAR_TO_SEND)
+    def _configure_flow_control(self, clear_to_send):
+        """Set the software Clear to Send flow control policy for device."""
+        LOGGER.debug('set clear to send = %s', clear_to_send)
+        if clear_to_send:
+            self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
+        else:
+            self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_NOT_CLEAR_TO_SEND)
 
     def _begin_transaction(self):
         """Begin a new transaction before writing to the device."""
@@ -171,17 +169,11 @@ class CommonAsetekDriver(UsbDeviceDriver):
         return opt
 
     def connect(self, **kwargs):
-        """Connect to the device."""
-        super().connect()
-        try:
-            self._open()
-        except usb.core.USBError as err:
-            LOGGER.warning('report: failed to open right away, will close first')
-            LOGGER.debug(err, exc_info=True)
-            self._close()
-            self._open()
-        finally:
-            self.device.release()
+        """Connect to the device.
+
+        Enables the device to send data to the host."""
+        super().connect(**kwargs)
+        self._configure_flow_control(clear_to_send=True)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -190,10 +182,19 @@ class CommonAsetekDriver(UsbDeviceDriver):
         self._end_transaction_and_read()
 
     def disconnect(self, **kwargs):
-        """Disconnect from the device."""
-        self._close()
-        super().disconnect()
-        self.device.release()
+        """Disconnect from the device.
+
+        Implementation note: unlike SI_Close is supposed to do,¹ do not send
+        _USBXPRESS_NOT_CLEAR_TO_SEND to the device.  This allows one program to
+        disconnect without sotping reads from another.
+
+        Surrounding device.read() with _USBXPRESS_[NOT_]CLEAR_TO_SEND would
+        make more sense, but there seems to be a yet unknown minimum delay
+        necessary for that to work well.
+
+        ¹ https://github.com/craigshelley/SiUSBXp/blob/master/SiUSBXp.c
+        """
+        super().disconnect(**kwargs)
 
 
 class AsetekDriver(CommonAsetekDriver):
