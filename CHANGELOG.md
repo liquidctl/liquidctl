@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [1.2.0rc3] – 2019-09-15
 ### Added
- - Add experimental extra/liquiddump scrip
+ - Add experimental extra/liquiddump script
 ### Changed
  - Copy documentation for EVGA and Corsair 690LC coolers into the tree
  - [Corsair H115i] Use modern driver with fan profiles (see #41)
