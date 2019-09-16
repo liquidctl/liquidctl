@@ -39,6 +39,8 @@ class CommandCode(IntEnum):
 
     PAGE = 0x00
 
+    CLEAR_FAULTS = 0x03
+
     PAGE_PLUS_WRITE = 0x05
     PAGE_PLUS_READ = 0x06
 

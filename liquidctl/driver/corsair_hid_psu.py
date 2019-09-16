@@ -84,8 +84,16 @@ class CorsairHidPsuDriver(UsbHidDriver):
     ]
 
     def initialize(self, **kwargs):
-        """Initialize the device."""
-        pass
+        """Initialize the device.
+
+        Necessary to receive non-zero value responses from the device.
+
+        Note: replies before calling this function appear to follow the
+        pattern <address> <cte 0xfe> <zero> <zero> <padding...>.
+        """
+        self._write([0xfe, 0x03])  # not well understood
+        self._read()
+        self.device.release()
 
     def get_status(self, **kwargs):
         """Get a status report.

@@ -4,9 +4,7 @@
 
 ## Initialization
 
-These devices should operate and be accessible without any explicit initialization.
-
-However, the driver is still under development and future versions could implement additional features that might depend on device state.  Because of this, it is still recommended to call `initialize` after booting the system.
+It is necessary to initialize the device it has been powered on.
 
 
 ```
