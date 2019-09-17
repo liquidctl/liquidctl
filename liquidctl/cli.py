@@ -224,7 +224,7 @@ def main():
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         sys.tracebacklimit = 0
 
     frwd = _get_options_to_forward(args)
