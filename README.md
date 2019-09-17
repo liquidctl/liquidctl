@@ -32,19 +32,20 @@ Firmware version           4.0.2
 ## Table of contents
 
 1. [Supported devices](#supported-devices)
-2. [Getting liquidctl](#getting-liquidctl)
-    1. [The Pythonic way](#installing-liquictl-the-pythonic-way)
-    2. [Pre-built packages and executables](#pre-built-packages-and-executables)
+2. [Pre-built packages and executables](#pre-built-packages-and-executables)
+3. [Installing from sources](#installing-from-sources)
+    1. [Grabbing releases with pip](#grabbing-releases-with-pip)
+    2. [Testing and developing new features](#testing-and-developing-new-features)
     3. [Additional requirements on Linux](#additional-requirements-on-linux)
     4. [Additional requirements on Windows](#additional-requirements-on-windows)
     5. [Additional requirements on Mac OS](#additional-requirements-on-mac-os)
-3. [The command-line interface](#introducing-the-command-line-interface)
-4. [Automation and running at boot](#automation-and-running-at-boot)
+4. [The command-line interface](#introducing-the-command-line-interface)
+5. [Automation and running at boot](#automation-and-running-at-boot)
     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
     3. [Set up Mac OS using launchd](#set-up-mac-os-using-launchd)
-5. [License](#license)
-6. [Related projects](#related-projects)
+6. [License](#license)
+7. [Related projects](#related-projects)
 
 
 ## Supported devices
@@ -72,33 +73,7 @@ Firmware version           4.0.2
 <sup>2</sup> _Use with `--legacy-690lc` flag._  
 
 
-## Getting liquidctl
-
-liquidctl requires [Python 3](https://www.python.org/).  Along with a couple of more general Python libraries, [PyUSB](https://github.com/pyusb/pyusb) and [(Cython) HIDAPI](https://github.com/trezor/Cython-hidapi) are used to communicate with devices.
-
-Depending on the platform, PyUSB might require the installation of a suitable backend (e.g. libusb) or special kernel drivers.  HIDAPI's dependencies can also vary a lot.  Known platform details and quirks are documented bellow, after the common installation instructions.
-
-### Installing liquictl the Pythonic way
-
-The easiest way to get liquidctl is to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history) with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
-
-```
-# pip install liquidctl
-# pip install liquidctl==<version>
-# pip install git+https://github.com/jonasmalacofilho/liquidctl
-```
-
-Contributors to the project's code or documentation will want to manually clone the repository and install liquidctl in editable mode.
-
-```
-$ git clone https://github.com/jonasmalacofilho/liquidctl
-$ cd liquidctl
-# pip install --editable .
-```
-
-Of course, a virtual environment can always be used instead of installing the package globally.
-
-### Pre-built packages and executables
+## Pre-built packages and executables
 
 Packages for Linux distributions:
 
@@ -110,9 +85,45 @@ Pre-built binaries for Windows:
  - Releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
+_Note: some devices on Windows may require an additional [kernel driver](#additional-requirements-on-windows)._
+
+
+## Installing from sources
+
+liquidctl runs on [Python 3](https://www.python.org/) and uses [libusb](https://github.com/libusb/libusb) and [HIDAPI](https://github.com/libusb/hidapi) to communicate with devices.
+
+The most important Python dependencies are [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/Cython-hidapI), but a few other libraries (e.g. docopt) are used as well; all of them are listed in `setup.py`.
+
+On Windows some devices might require the installation of a special kernel driver.  HIDAPI's dependencies can also vary depending on the platform.  These and other platform details and quirks are documented bellow, after common installation instructions.
+
+### Grabbing releases with pip
+
+*pip* can be used to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history).  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
+
+```
+# pip install liquidctl
+# pip install liquidctl==<version>
+# pip install git+https://github.com/jonasmalacofilho/liquidctl
+```
+
+_Note: a virtual environment can be used to avoid installing the package globally._
+
+### Testing and developing new features
+
+Contributors to the project's code or documentation are encouraged to manually clone the repository.  pip can then be used to install liquidctl in editable/development mode.
+
+
+```
+$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ cd liquidctl
+# pip install --editable .
+```
+
+_Note: a virtual environment can be used to avoid installing the package globally._
+
 ### Additional requirements on Linux
 
-Installing HIDAPI on Linux requires locally building some C extensions (automatically).  Both libusb-1.0 and libudev are needed for this, together with their corresponding development files.  You may also need development files for Python.
+Installing cython-hidapi on Linux can require locally building some C extensions (automatically).  Both libusb-1.0 and libudev are needed for this, together with their corresponding development files.  You may also need development files for Python.
 
 | Linux dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
