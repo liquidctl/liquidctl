@@ -1,0 +1,24 @@
+#!/bin/bash -xe
+
+DEVICE="--vendor 0x2433 --product 0xb200"
+
+liquidctl $DEVICE $EXTRAOPTIONS list --verbose
+liquidctl $DEVICE $EXTRAOPTIONS initialize
+sleep 2
+liquidctl $DEVICE $EXTRAOPTIONS status
+
+
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow
+sleep 4
+
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow --speed 1
+sleep 4
+
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow --speed 6
+sleep 4
+
+liquidctl $DEVICE $EXTRAOPTIONS set logo color rainbow --alert-threshold 0 --alert-color ffff00
+sleep 3
+
+
+liquidctl $DEVICE $EXTRAOPTIONS status
