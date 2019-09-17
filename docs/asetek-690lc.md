@@ -2,14 +2,14 @@
 
 Several products are available that are based on the same Asetek 690LC base design:
 
- - Current models: EVGA CLC 120 (CLC12), 240, 280 and 360
+ - Current models:
+    * EVGA CLC 120 (CLC12), 240, 280 and 360
+    * Corsair H80i v2, H100i v2 and H115i
+    * Corsair H80i GTX, H100i GTX and H110i GTX
  - Legacy designs:
     * NZXT Kraken X40, X60, X31, X41, X51 and X61
-    * Corsair H80i GTX, H100i GTX, H110i GTX, H80i v2, H100i v2 and H115i
 
-Fan speed profiles and the 'rainbow' lighting mode are currently only supported on the modern EVGA units.
-
-**Additionally, with legacy Krakens it is necessary to pass the `--legacy-690lc` flag on all invocations of liquidctl.**
+**Note: when dealing with legacy Krakens the `--legacy-690lc` flag should be supplied on all invocations of liquidctl.**
 
 ## Initialization
 
@@ -41,6 +41,8 @@ Fan speeds can be configured either by fixed duty values or (temperature, duty) 
 # liquidctl set fan speed 20 0 40 100
 ```
 
+*Note: fan speed profiles are only supported on non-legacy models.*
+
 Pump speeds, on the other hand, only accept fixed duty values.
 
 ```
@@ -56,6 +58,8 @@ There's a single lighting channel; no particular name is enforced yet, but I'll 
 # liquidctl set logo color rainbow --speed 1
 # liquidctl set logo color rainbow --speed 6
 ```
+
+*Note: the 'rainbow' lighting mode is currently only supported on EVGA units.*
 
 The 'fading' mode supports specifying the `--time-per-color` in seconds (the defaults are 1 and 5 seconds per color, for modern and legacy coolers respectively).
 

@@ -203,7 +203,6 @@ class AsetekDriver(CommonAsetekDriver):
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
-        (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i (experimental)', {}),
     ]
 
     @classmethod
@@ -434,7 +433,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         elif mode == 'blackout':  # stronger than just 'off', suppresses alerts and rainbow
             self._configure_device(blackout=True, alert_temp=alert_threshold, color3=alert_color)
         else:
-            raise KeyError('Unknown lighting mode {}'.format(mode))
+            raise KeyError('Unsupported lighting mode {}'.format(mode))
         self._end_transaction_and_read()
         self._set_all_fixed_speeds()
 
@@ -446,7 +445,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         self._set_all_fixed_speeds()
 
 
-class CorsairAsetekDriver(LegacyAsetekDriver):
+class CorsairAsetekDriver(AsetekDriver):
     """USB driver for Corsair-branded fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
@@ -455,6 +454,7 @@ class CorsairAsetekDriver(LegacyAsetekDriver):
         (0x1b1c, 0x0c07, None, 'Corsair Hydro H100i GTX (experimental)', {}),
         (0x1b1c, 0x0c08, None, 'Corsair Hydro H80i v2 (experimental)', {}),
         (0x1b1c, 0x0c09, None, 'Corsair Hydro H100i v2 (experimental)', {}),
+        (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i (experimental)', {}),
     ]
 
     @classmethod
@@ -463,3 +463,8 @@ class CorsairAsetekDriver(LegacyAsetekDriver):
         # the legacy driver overrides find_supported_devices and rigs it to
         # depend on --legacy-690lc, so we skip that overriden method
         return super(LegacyAsetekDriver, cls).find_supported_devices(**kwargs)
+
+    def set_color(self, mode, **kwargs):
+        if mode == 'rainbow':
+            raise KeyError('Unsupported lighting mode {}'.format(mode))
+        super().set_color(mode=mode, **kwargs)
