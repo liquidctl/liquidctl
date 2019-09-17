@@ -177,12 +177,20 @@ def _device_get_status(dev, num, **kwargs):
     dev.connect(**kwargs)
     try:
         status = dev.get_status(**kwargs)
+        tmp = []
+        kcols, vcols, ucols = 0, 0, 0
         for k, v, u in status:
             if isinstance(v, datetime.timedelta):
                 v = str(v)
                 u = ''
-            valfmt = _VALUE_FORMATS.get(u, '')
-            print('{:<18}    {:>20{valfmt}}  {:<3}'.format(k, v, u, valfmt=valfmt))
+            else:
+                valfmt = _VALUE_FORMATS.get(u, '')
+                v = '{:{}}'.format(v, valfmt)
+            kcols = max(kcols, len(k))
+            vcols = max(vcols, len(v))
+            tmp.append((k, v, u))
+        for k, v, u in tmp:
+            print('{:<{}}    {:>{}}  {}'.format(k, kcols, v, vcols, u))
     finally:
         dev.disconnect(**kwargs)
     print('')
