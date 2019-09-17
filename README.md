@@ -53,12 +53,12 @@ Firmware version           4.0.2
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair H80i GTX, H100i GTX, H110i GTX | | <sup>1</sup> |
-| Corsair H80i v2, H100i v2, H115i | | <sup>1</sup> |
-| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/16#issuecomment-480663255) | |
+| Corsair H80i GTX, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
+| Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
+| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
 | NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | |
-| NZXT Kraken X40, X60 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | <sup>1, 2</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](https://github.com/jonasmalacofilho/liquidctl/issues/3#issuecomment-480667136) | <sup>2</sup> |
+| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>1, 2</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>2</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
@@ -104,12 +104,12 @@ Of course, a virtual environment can always be used instead of installing the pa
 
 Packages for Linux distributions:
 
- - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/)
- - Fedora (28, 29, Rawhide): [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
+ - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
+ - Fedora: [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
 
 Pre-built binaries for Windows:
 
- - Releases: check the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
+ - Releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
 ### Additional requirements on Linux
@@ -281,7 +281,7 @@ It is important to adjust the location of Python 3 framework in the PATH environ
 
 You can enable and disable the agent with `launchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist`.  Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.
 
-A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/Post_Install/pump_control).
+A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/post_install/pump_control).
 
 
 ## License

@@ -24,7 +24,7 @@ Animation options (devices/modes can support zero or more):
   --speed <value>             Abstract animation speed (device/mode specific)
   --time-per-color <value>    Time to wait on each color (seconds)
   --time-off <value>          Time to wait with the LED turned off (seconds)
-  --alert-threshold <number>  Threadhold temperature for a visual alert
+  --alert-threshold <number>  Threadhold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
@@ -191,6 +191,9 @@ def _device_get_status(dev, num, **kwargs):
             tmp.append((k, v, u))
         for k, v, u in tmp:
             print('{:<{}}    {:>{}}  {}'.format(k, kcols, v, vcols, u))
+    except:
+        LOGGER.exception('Unexpected error')
+        sys.exit(1)
     finally:
         dev.disconnect(**kwargs)
     print('')
@@ -256,6 +259,9 @@ def main():
             _device_set_color(dev, args, **frwd)
         else:
             raise Exception('Not sure what to do')
+    except:
+        LOGGER.exception('Unexpected error')
+        sys.exit(1)
     finally:
         dev.disconnect(**frwd)
 

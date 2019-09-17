@@ -4,9 +4,31 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html), using version identifiers translated to [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning)-compatible equivalents.
 
-## [Unreleased]
+## [1.2.0rc3] – 2019-09-15
+### Added
+ - Add experimental extra/liquiddump script
+### Changed
+ - Copy documentation for EVGA and Corsair 690LC coolers into the tree
+ - [Corsair H115i] Use modern driver with fan profiles (see #41)
+ - [All Asetek 690LC] Claim the interface proactively when starting a transaction (see #42)
+### Fixed
+ - [All Asetek 690LC] Rework USBXPRESS flow control to allow simultaneous reads from multiple processes (see #42)
+ - [Legacy Asetek 690LC] Fix missing argument forwarding
+ - Fix broken link to Mac OS example configuration
+
+## [1.2.0rc2] – 2019-09-12
+### Added
+ - Support the EVGA CLC 360
+ - Add --alert-threshold and --alert-color
+### Changed
+ - Mark Kraken X31, X41, X51 and X61 as no longer experimental
+ - Improve supported devices list and links to documentation
+ - Don't enable PyUSB tracing automatically with --debug
+ - [Legacy Asetek 690LC] Cache values read from or stored on the filesystem
+ - [Legacy Asetek 690LC] Prefer to save driver data in /run when OS is Linux
 ### Fixes
  - Force bundling of 'hid' module in Windows executable
+ - [Legacy Asetek 690LC] Change default fading --time-per-color (see #29)
 
 ## [1.2.0rc1] – 2019-04-14
 ### Added

@@ -44,6 +44,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 import os
+import sys
 
 import appdirs
 import usb
@@ -108,19 +109,18 @@ def _clamp(val, lo, hi, none=None, desc='value'):
 class CommonAsetekDriver(UsbDeviceDriver):
     """Common fuctions of fifth generation Asetek devices."""
 
-    def _open(self):
-        """Open the USBXpress device."""
-        LOGGER.debug('open device')
-        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
-
-    def _close(self):
-        """Close the USBXpress device."""
-        LOGGER.debug('close device')
-        self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_NOT_CLEAR_TO_SEND)
+    def _configure_flow_control(self, clear_to_send):
+        """Set the software Clear to Send flow control policy for device."""
+        LOGGER.debug('set clear to send = %s', clear_to_send)
+        if clear_to_send:
+            self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
+        else:
+            self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_NOT_CLEAR_TO_SEND)
 
     def _begin_transaction(self):
         """Begin a new transaction before writing to the device."""
         LOGGER.debug('begin transaction')
+        self.device.claim()
         self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_FLUSH_BUFFERS)
 
     def _write(self, data):
@@ -170,15 +170,11 @@ class CommonAsetekDriver(UsbDeviceDriver):
         return opt
 
     def connect(self, **kwargs):
-        """Connect to the device."""
-        super().connect()
-        try:
-            self._open()
-        except usb.core.USBError as err:
-            LOGGER.warning('report: failed to open right away, will close first')
-            LOGGER.debug(err, exc_info=True)
-            self._close()
-            self._open()
+        """Connect to the device.
+
+        Enables the device to send data to the host."""
+        super().connect(**kwargs)
+        self._configure_flow_control(clear_to_send=True)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -187,9 +183,19 @@ class CommonAsetekDriver(UsbDeviceDriver):
         self._end_transaction_and_read()
 
     def disconnect(self, **kwargs):
-        """Disconnect from the device."""
-        self._close()
-        super().disconnect()
+        """Disconnect from the device.
+
+        Implementation note: unlike SI_Close is supposed to do,¹ do not send
+        _USBXPRESS_NOT_CLEAR_TO_SEND to the device.  This allows one program to
+        disconnect without sotping reads from another.
+
+        Surrounding device.read() with _USBXPRESS_[NOT_]CLEAR_TO_SEND would
+        make more sense, but there seems to be a yet unknown minimum delay
+        necessary for that to work well.
+
+        ¹ https://github.com/craigshelley/SiUSBXp/blob/master/SiUSBXp.c
+        """
+        super().disconnect(**kwargs)
 
 
 class AsetekDriver(CommonAsetekDriver):
@@ -197,6 +203,7 @@ class AsetekDriver(CommonAsetekDriver):
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
+        (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i (experimental)', {}),
     ]
 
     @classmethod
@@ -298,11 +305,7 @@ class AsetekDriver(CommonAsetekDriver):
         LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, effective_duty, level)
         self._begin_transaction()
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
-        try:
-            self._end_transaction_and_read()
-        except usb.core.USBError as err:
-            LOGGER.warning('report: failed to read after setting speed')
-            LOGGER.debug(err, exc_info=True)
+        self._end_transaction_and_read()
 
 
 class LegacyAsetekDriver(CommonAsetekDriver):
@@ -322,11 +325,14 @@ class LegacyAsetekDriver(CommonAsetekDriver):
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
         # compute path where fan/pump settings will be stored
-        # [/usr/local/share/]liquidctl/2433_b200_0100/usb1_12/
+        # [/run]/liquidctl/2433_b200_0100/usb1_12/
         ids = '{:04x}_{:04x}_{:04x}'.format(self.vendor_id, self.product_id, self.release_number)
         location = '{}_{}'.format(self.bus, '.'.join(map(str, self.port)))
-        self._data_path = os.path.join(appdirs.site_data_dir('liquidctl', 'jonasmalacofilho'),
-                                       ids, location)
+        if sys.platform.startswith('linux') and os.path.isdir('/run'):
+            basedir = '/run/liquidctl'
+        else:
+            basedir = appdirs.site_data_dir('liquidctl', 'jonasmalacofilho')
+        self._data_path = os.path.join(basedir, ids, location)
         self._data_cache = {}
         LOGGER.debug('data directory for device is %s', self._data_path)
 
@@ -373,7 +379,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         return self._end_transaction_and_read()
 
     def initialize(self, **kwargs):
-        super().initialize()
+        super().initialize(**kwargs)
         self._store_integer('pump_duty', None)
         self._store_integer('fan_duty', None)
         self._set_all_fixed_speeds()
@@ -449,7 +455,6 @@ class CorsairAsetekDriver(LegacyAsetekDriver):
         (0x1b1c, 0x0c07, None, 'Corsair Hydro H100i GTX (experimental)', {}),
         (0x1b1c, 0x0c08, None, 'Corsair Hydro H80i v2 (experimental)', {}),
         (0x1b1c, 0x0c09, None, 'Corsair Hydro H100i v2 (experimental)', {}),
-        (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i (experimental)', {}),
     ]
 
     @classmethod

@@ -221,6 +221,8 @@ class PyUsbDevice:
      - OpenUSB
     """
 
+    _DEFAULT_INTERFACE = 0  # FIXME not necessarily the desired interface
+
     def __init__(self, usbdev):
         self.api = usb
         self.usbdev = usbdev
@@ -232,18 +234,26 @@ class PyUsbDevice:
         Replace the kernel driver (Linux only) and set the device configuration
         to the first available one, if none has been set.
         """
-        if sys.platform.startswith('linux') and self.usbdev.is_kernel_driver_active(0):
+        if (sys.platform.startswith('linux') and
+                self.usbdev.is_kernel_driver_active(self._DEFAULT_INTERFACE)):
             LOGGER.debug('replacing stock kernel driver with libusb')
-            self.usbdev.detach_kernel_driver(0)
+            self.usbdev.detach_kernel_driver(self._DEFAULT_INTERFACE)
             self._attached = True
         cfg = self.usbdev.get_active_configuration()
         if cfg is None:
             LOGGER.debug('setting the (first) configuration')
             self.usbdev.set_configuration()
 
+    def claim(self):
+        """Explicitly claim the device from other programs."""
+        # usb.util.dispose_resources(self.usbdev)
+        LOGGER.debug('explicitly claim interface')
+        usb.util.claim_interface(self.usbdev, self._DEFAULT_INTERFACE)
+
     def release(self):
         """Release the device to other programs."""
-        usb.util.dispose_resources(self.usbdev)
+        LOGGER.debug('ensure interface is released')
+        usb.util.release_interface(self.usbdev, self._DEFAULT_INTERFACE)
 
     def close(self):
         """Disconnect from the device.
@@ -253,7 +263,7 @@ class PyUsbDevice:
         self.release()
         if self._attached:
             LOGGER.debug('restoring stock kernel driver')
-            self.usbdev.attach_kernel_driver(0)
+            self.usbdev.attach_kernel_driver(self._DEFAULT_INTERFACE)
 
     def read(self, endpoint, length, timeout=None):
         """Read from endpoint."""
@@ -358,6 +368,10 @@ class HidapiDevice:
     def open(self):
         """Connect to the device."""
         self.hiddev.open_path(self.hidinfo['path'])
+
+    def claim(self):
+        """NOOP."""
+        pass
 
     def release(self):
         """NOOP."""
