@@ -195,16 +195,22 @@ def _get_options_to_forward(args):
 
 
 def _gen_version():
+    extra = None
     try:
         from liquidctl.extraversion import __extraversion__
         if not __extraversion__:
             raise ValueError()
-        localextra = __extraversion__.copy()
-        if len(localextra[0]) == 40:
-            localextra[0] = localextra[0][:12]
-        return 'liquidctl v{} ({})'.format(__version__, ', '.join(localextra))
-    except ValueError:
+        if __extraversion__['editable']:
+            extra = ['editable']
+        elif __extraversion__['dist_name'] and __extraversion__['dist_package']:
+            extra = [__extraversion__['dist_name'], __extraversion__['dist_package']]
+        else:
+            extra = [__extraversion__['commit'][:12]]
+            if __extraversion__['dirty']:
+                extra[0] += '-dirty'
+    except:
         return 'liquidctl v{}'.format(__version__)
+    return 'liquidctl v{} ({})'.format(__version__, '; '.join(extra))
 
 
 def main():

@@ -28,23 +28,23 @@ def get_git_version():
         return None
 
 
-def make_extra_version(editable=False):
-    extra = []
+def make_extraversion(editable=False):
+    extra = {}
+    extra['dist_name'] = os.getenv('DIST_NAME')
+    extra['dist_package'] = os.getenv('DIST_PACKAGE')
+    extra['editable'] = editable
     if get_git_version() and os.path.isdir('.git'):
         rev_parse = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
         describe = subprocess.check_output(['git', 'describe', '--always', '--dirty']).strip().decode()
-        extra.append(rev_parse)
-        if describe.endswith('-dirty'):
-            extra.append('dirty')
-    if editable:
-        extra.append('editable')
+        extra['commit'] = rev_parse
+        extra['dirty'] = describe.endswith('-dirty')
     with open('liquidctl/extraversion.py', 'w') as fv:
         fv.write('__extraversion__ = {!r}'.format(extra))
 
 
 class custom_develop(develop):
     def run(self):
-        make_extra_version(editable=True)
+        make_extraversion(editable=True)
         super().run()
 
 
@@ -54,7 +54,7 @@ SUPPORTED_URL = '{}/tree/v{}#supported-devices'.format(HOME, VERSION)
 DOC_URL = '{}/tree/v{}#liquidctl--liquid-cooler-control'.format(HOME, VERSION)
 CHANGES_URL = '{}/blob/v{}/CHANGELOG.md'.format(HOME, VERSION)
 
-make_extra_version()
+make_extraversion()
 
 setuptools.setup(
     name='liquidctl',
