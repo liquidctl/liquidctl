@@ -100,7 +100,9 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        self._exec(WriteBit.WRITE, CMD.PAGE, [0])
+        ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
+        if ret[1] == 0xfe:
+            LOGGER.warning('Possibly uninitialized device')
         status = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
