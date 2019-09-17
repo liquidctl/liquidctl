@@ -1,10 +1,13 @@
 import os
-import setuptools
 import subprocess
 
+import setuptools
 from setuptools.command.develop import develop
 
 def get_static_version():
+    """Read manually attributed version number.
+
+    Note: the version number only changes when releases are made."""
     with open('liquidctl/version.py', 'r') as fv:
         vals = {}
         exec(fv.read(), vals)
@@ -12,6 +15,7 @@ def get_static_version():
 
 
 def make_pypi_long_description(doc_url):
+    """Generate custom long description for PyPI."""
     with open('README.md', 'r', encoding='utf-8') as fh:
         continuation = ('For which devices are supported, installation instructions, '
                         'a guide to the CLI and device specific details, check the '
@@ -22,6 +26,7 @@ def make_pypi_long_description(doc_url):
 
 
 def get_git_version():
+    """Check that `git` is accessible and return its version."""
     try:
         return subprocess.check_output(['git', '--version']).strip().decode()
     except:
@@ -29,6 +34,13 @@ def get_git_version():
 
 
 def make_extraversion(editable=False):
+    """Compile extra version information for use at runtime.
+
+    Additional information will include:
+     - values of DIST_NAME and DIST_PACKAGE environment variables
+     - whether the installation is running in develop/editable mode
+     - git HEAD commit hash and whether the tree is dirty
+    """
     extra = {}
     extra['dist_name'] = os.getenv('DIST_NAME')
     extra['dist_package'] = os.getenv('DIST_PACKAGE')
