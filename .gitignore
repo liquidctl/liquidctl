@@ -1,8 +1,7 @@
 *.egg-info
+.krakenduty-poc
+.vscode
 __pycache__
 build
 dist
-
-.krakenduty-poc
-.vscode
-
+liquidctl/extraversion.py
