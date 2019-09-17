@@ -458,13 +458,13 @@ class CorsairAsetekDriver(AsetekDriver):
     ]
 
     @classmethod
-    def find_supported_devices(cls, **kwargs):
+    def find_supported_devices(cls, legacy_690lc=None, **kwargs):
         """Find and bind to compatible devices."""
-        # the legacy driver overrides find_supported_devices and rigs it to
-        # depend on --legacy-690lc, so we skip that overriden method
-        return super(LegacyAsetekDriver, cls).find_supported_devices(**kwargs)
+        # the modern driver overrides find_supported_devices and rigs it to
+        # switch on --legacy-690lc, so we override it again
+        return super().find_supported_devices(legacy_690lc=False, **kwargs)
 
-    def set_color(self, mode, **kwargs):
+    def set_color(self, channel, mode, colors, **kwargs):
         if mode == 'rainbow':
             raise KeyError('Unsupported lighting mode {}'.format(mode))
-        super().set_color(mode=mode, **kwargs)
+        super().set_color(channel, mode, colors, **kwargs)
