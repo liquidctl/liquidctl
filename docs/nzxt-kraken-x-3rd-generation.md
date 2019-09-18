@@ -10,9 +10,9 @@ All configuration is done through USB, and persists as long as the device still 
 All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, have not been implemented.  Pump and fan control based on liquid temperature might be supported depending on the firmware version.
 
 
-## Experimental support for the Kraken M22
+## Support for the Kraken M22
 
-This driver also has **experimental** support for the NZXT Kraken M22.  Note that the M22 has no pump or fan control, nor reports liquid temperatures.
+This driver also supports the NZXT Kraken M22, but note that the M22 has no pump or fan control, nor reports liquid temperatures.
 
 
 ## Monitoring
