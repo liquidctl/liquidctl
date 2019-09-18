@@ -13,7 +13,7 @@ Several products are available that are based on the same Asetek 690LC base desi
 
 ## Initialization
 
-All of these devices must be initialized at every boot.  Only after that it is possible to query the device status and perform other operations.
+All 690LC devices must be initialized sometime after the system boots.  Only then it will be possible to query the device status and perform other operations.
 
 ```
 # liquidctl initialize
@@ -21,7 +21,7 @@ All of these devices must be initialized at every boot.  Only after that it is p
 
 ## Device monitoring
 
-The device can report the fan and pump speed, as well as the liquid temperature.
+Similarly to other AIOs, the cooler can report fan and pump speeds as well as the liquid temperature.
 
 ```
 # liquidctl status
@@ -51,7 +51,7 @@ Pump speeds, on the other hand, only accept fixed duty values.
 
 ## Lighting modes
 
-There's a single lighting channel; no particular name is enforced yet, but I'll use 'logo' in these examples.  The first light mode – 'rainbow' – supports an abstract `--speed` parameter, varying from 1 to 6.
+There's a single lighting channel `logo`.  The first light mode – 'rainbow' – supports an abstract `--speed` parameter, varying from 1 to 6.
 
 ```
 # liquidctl set logo color rainbow
@@ -59,9 +59,9 @@ There's a single lighting channel; no particular name is enforced yet, but I'll 
 # liquidctl set logo color rainbow --speed 6
 ```
 
-*Note: the 'rainbow' lighting mode is currently only supported on EVGA units.*
+*Note: the 'rainbow' lighting mode is currently only supported by EVGA units.*
 
-The 'fading' mode supports specifying the `--time-per-color` in seconds (the defaults are 1 and 5 seconds per color, for modern and legacy coolers respectively).
+The 'fading' mode supports specifying the `--time-per-color` in seconds.  The defaults are 1 and 5 seconds per color, for modern and legacy coolers respectively.
 
 ```
 # liquidctl set logo color fading ff8000 00ff80
@@ -84,9 +84,9 @@ The coolers support two more lighting modes: 'fixed' and 'blackout'.  The latter
 # liquidctl set logo color blackout
 ```
 
-It is also possible to configure the visual alert for high liquid temperatures.  For that, the following options are available:
+It is possible to configure the visual alert for high liquid temperatures:
 
-`--alert-threshold <number>`: threshold temperature in Celsius for a visual alert  
-`--alert-color <color>`: color used by the visual high temperature alert
+`--alert-threshold <number>`: set the threshold temperature in Celsius for a visual alert  
+`--alert-color <color>`: set the color used by the visual high temperature alert
 
-Note that, regardless of the use of these options, alerts are always enabled (unless suppressed by the 'blackout' mode): the default threshold and color is, respectively, 45°C and red.
+Note that, regardless of the use of these options, alerts are always enabled (unless suppressed by the 'blackout' mode): the default threshold and color are, respectively, 45°C and red.

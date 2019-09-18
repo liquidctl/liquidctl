@@ -1,13 +1,12 @@
-## NZXT Smart Device
-<!-- move to /doc -->
+# NZXT Smart Device
 
 The Smart Device is a fan and LED controller that ships with the H200i, H400i, H500i and H700i cases.
 
 It provides three independent fan channels with standard 4-pin connectors.  Both PWM and DC control is supported, and the device automatically chooses the appropriate mode.
 
-Additionally, up to four chained HUE+ LED strips, or five chained Aer RGB fans, can be driven from a single RGB channel.  The firmware installed on the device exposes several presets, most of them familiar to other NZXT products.
+Additionally, up to four chained HUE+ LED strips or five chained Aer RGB fans can be driven from a single RGB channel.  The firmware installed on the device exposes several presets, most of them familiar to other NZXT products.
 
-A microphone is also present onboard, for  noise level optimization through CAM and AI.
+A microphone is also present onboard for noise level optimization through CAM and AI.
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The device also reports the state of each fan channel, as well as speed, voltage and current.
 
@@ -16,7 +15,7 @@ All capabilities available at the hardware level are supported, but other featur
 
 ## Experimental support for the Grid+ V3
 
-This driver also has **experimental** support for the NZXT Grid+ V3 fan controller.
+This driver also has **experimental** support for the NZXT Grid+ V3 fan controller, which has six fan speed channels but no LED support.
 
 
 ## Initialization
@@ -73,7 +72,7 @@ Fan speeds can only be set to fixed duty values.
 | fan6 | 0% | 100% | Grid+ V3 only |
 | sync | 0% | 100% | all available channels |
 
-**Always check that the settings are appropriate for the use case, and that they correctly apply and persist.**
+*Always check that the settings are appropriate for the use case, and that they correctly apply and persist.*
 
 
 ## RGB lighting
