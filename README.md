@@ -82,10 +82,10 @@ Packages for Linux distributions:
 
 Pre-built binaries for Windows:
 
- - Releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
+ - Official releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
-_Note: some devices on Windows may require an additional [kernel driver](#additional-requirements-on-windows)._
+_Note: some devices may require an additional kernel driver [on Windows](#additional-requirements-on-windows)._
 
 
 ## Installing from sources
@@ -180,24 +180,26 @@ Fan and pump speeds can be set to fixed values or, if the device supports them, 
 # liquidctl [options] set <channel> speed <percentage>
 ```
 
-Lighting is controlled in a similar fashion and, again, the specific documentation lists the available channels, modes and other details.  The animation speed can be controlled with the `--speed` flag.
+Lighting is controlled in a similar fashion and, again, the specific documentation for each device will list the available channels, modes and additional options.
 
 ```
 # liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
-Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag, possibly in combination with [setting `PYSUB_DEBUG=debug`](https://github.com/pyusb/pyusb/blob/2a434a7c722af65f3c81af2e70721669ed79c284/docs/tutorial.rst#whats-wrong), will make liquidctl output as much information as possible to help identify its cause; be sure to use these features when opening a new issue.
+Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
+
+_Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG` (`=debug`) or/and `LIBUSB_DEBUG` (`=4`) environment variables._
 
 
 ## Automation and running at boot
 
-In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough for, and some specifics about this are given in the following sections.
+In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough, and some specifics about this are given in the following sections.
 
 If you need more control for some really ambitious automation, you can also write a Python program that calls the driver APIs directly.
 
 ### Set up Linux using systemd
 
-On systems running Linux and Systemd, a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, you can edit it to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
+On systems running Linux and Systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
 
 ```
 [Unit]
@@ -221,11 +223,11 @@ The unit can be started manually or set to automatically run during boot using s
 # systemctl enable liquidcfg
 ```
 
-A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), that handles multiple devices and uses the LEDs to convey progress or eventual errors.
+A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which handles multiple devices and uses the LEDs to convey progress and alert of errors.
 
 ### Set up Windows using Task Scheduler
 
-The configuration of devices can be automated by writing a batch file and setting up a new scheduled task for (every) log on.  The batch file can be really simple and just list the various invocations of liquidctl you would otherwise do by hand.
+The configuration of devices can be automated by writing a batch file and setting up a new scheduled task for (every) log on.  The batch file can be really simple and consist of the invocations of liquidctl that would otherwise be done manually.
 
 ```batchfile
 liquidctl set pump speed 90
@@ -234,9 +236,9 @@ liquidctl set ring color fading 350017 ff2608
 liquidctl set logo color spectrum-wave
 ```
 
-Make sure that Python and executables from its packages are available in the context where the batch file will run: in short, `python --version` and `liquidctl --version` should work within a _normal_ Command Prompt window.
+Make sure that liquidctl is available in the context where the batch file will run: in short, `liquidctl --version` should work within a _normal_ Command Prompt window.
 
-If necessary, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH. Alternatively, if you're using Anaconda, try adding the following line to the beginning of the file:
+When not using a pre-built liquidctl executable, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH. Alternatively, if you're using Anaconda, try adding the following line to the beginning of the file:
 
 ```batchfile
 call %homepath%\Anaconda3\Scripts\activate.bat
@@ -337,7 +339,3 @@ Command-line tool to control Corsair all-in-one liquid coolers and other devices
 A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.
 
 _A special thanks to all krakenx contributors; this project would not exist were not for it._
-
-
-<!-- helper links -->
-[newissue]: https://github.com/jonasmalacofilho/liquidctl/issues/new
