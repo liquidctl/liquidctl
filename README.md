@@ -70,7 +70,7 @@ Firmware version           4.0.2
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
 
 <sup>1</sup> _Experimental._  
-<sup>2</sup> _Use with `--legacy-690lc` flag._  
+<sup>2</sup> _Requires the `--legacy-690lc` flag._  
 
 
 ## Pre-built packages and executables
