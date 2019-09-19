@@ -46,6 +46,8 @@ after_build:
 
 test_script:
   - cmd: liquidctl.exe --version
+  - cmd: liquidctl.exe list --verbose
+  - cmd: liquidctl.exe list --hid hid --verbose
 
 artifacts:
   - path: "*.zip"
