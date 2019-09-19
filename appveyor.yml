@@ -9,9 +9,23 @@ image:
 platform: x64
 
 environment:
-  package_name: liquidctl-%APPVEYOR_REPO_COMMIT:~0,12%-bin-windows-x86_64
+  DIST_NAME: AppVeyor
+
+for:
+-
+  branches:
+    only:
+      - /v\d+\.\d+\.\d+.*/
+  environment:
+    is_release: true
 
 install:
+  # conditionally generate DIST_PACKAGE from TAG_NAME or REPO_COMMIT:
+  #  - because of AppVeyor limitation, do this here  and not in environment;
+  #  - don't be sane and use 'else', Windows/Cmd/AppVeyor wont like it
+  - cmd: if [%is_release%]==[true] set DIST_PACKAGE=liquidctl-%APPVEYOR_REPO_TAG_NAME:v=%-bin-windows-x86_64
+  - cmd: if [%is_release%]==[] set DIST_PACKAGE=liquidctl-%APPVEYOR_REPO_COMMIT:~0,12%-bin-windows-x86_64
+  - cmd: echo DIST_NAME=%DIST_NAME%; DIST_PACKAGE=%DIST_PACKAGE%
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
   - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools pyinstaller --ignore-installed
@@ -21,16 +35,17 @@ build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --hidden-import hid --clean -F liquidctl\cli.py --name liquidctl --distpath .
 
 after_build:
-  - cmd: mkdir %package_name%\docs
-  - cmd: copy liquidctl.exe %package_name%\
-  - cmd: copy README.md %package_name%\
-  - cmd: copy docs\*.md %package_name%\docs\
-  - cmd: copy LICENSE.txt %package_name%\
-  - cmd: copy extra\redist-notices.txt %package_name%\COPYRIGHT.txt
-  - cmd: copy CHANGELOG.md %package_name%\
-  - cmd: 7z a %package_name%.zip %package_name%\
+  - cmd: mkdir %DIST_PACKAGE%\docs
+  - cmd: copy liquidctl.exe %DIST_PACKAGE%\
+  - cmd: copy README.md %DIST_PACKAGE%\
+  - cmd: copy docs\*.md %DIST_PACKAGE%\docs\
+  - cmd: copy LICENSE.txt %DIST_PACKAGE%\
+  - cmd: copy extra\redist-notices.txt %DIST_PACKAGE%\COPYRIGHT.txt
+  - cmd: copy CHANGELOG.md %DIST_PACKAGE%\
+  - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
 
-test: off
+test_script:
+  - cmd: liquidctl.exe --version
 
 artifacts:
-  - path: liquidctl*.zip
+  - path: "*.zip"
