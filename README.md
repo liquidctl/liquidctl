@@ -32,19 +32,20 @@ Firmware version           4.0.2
 ## Table of contents
 
 1. [Supported devices](#supported-devices)
-2. [Getting liquidctl](#getting-liquidctl)
-    1. [The Pythonic way](#installing-liquictl-the-pythonic-way)
-    2. [Pre-built packages and executables](#pre-built-packages-and-executables)
+2. [Pre-built packages and executables](#pre-built-packages-and-executables)
+3. [Installing from sources](#installing-from-sources)
+    1. [Grabbing releases with pip](#grabbing-releases-with-pip)
+    2. [Testing and developing new features](#testing-and-developing-new-features)
     3. [Additional requirements on Linux](#additional-requirements-on-linux)
     4. [Additional requirements on Windows](#additional-requirements-on-windows)
     5. [Additional requirements on Mac OS](#additional-requirements-on-mac-os)
-3. [The command-line interface](#introducing-the-command-line-interface)
-4. [Automation and running at boot](#automation-and-running-at-boot)
+4. [The command-line interface](#introducing-the-command-line-interface)
+5. [Automation and running at boot](#automation-and-running-at-boot)
     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
     3. [Set up Mac OS using launchd](#set-up-mac-os-using-launchd)
-5. [License](#license)
-6. [Related projects](#related-projects)
+6. [License](#license)
+7. [Related projects](#related-projects)
 
 
 ## Supported devices
@@ -56,9 +57,9 @@ Firmware version           4.0.2
 | Corsair H80i GTX, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
-| NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#experimental-support-for-the-kraken-m22) | |
-| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>1, 2</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>2</sup> |
+| NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#support-for-the-kraken-m22) | |
+| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>1,2</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>1,2</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
@@ -71,36 +72,10 @@ Firmware version           4.0.2
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
 
 <sup>1</sup> _Experimental._  
-<sup>2</sup> _Use with `--legacy-690lc` flag._  
+<sup>2</sup> _Requires the `--legacy-690lc` flag._  
 
 
-## Getting liquidctl
-
-liquidctl requires [Python 3](https://www.python.org/).  Along with a couple of more general Python libraries, [PyUSB](https://github.com/pyusb/pyusb) and [(Cython) HIDAPI](https://github.com/trezor/Cython-hidapi) are used to communicate with devices.
-
-Depending on the platform, PyUSB might require the installation of a suitable backend (e.g. libusb) or special kernel drivers.  HIDAPI's dependencies can also vary a lot.  Known platform details and quirks are documented bellow, after the common installation instructions.
-
-### Installing liquictl the Pythonic way
-
-The easiest way to get liquidctl is to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history) with *pip*.  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
-
-```
-# pip install liquidctl
-# pip install liquidctl==<version>
-# pip install git+https://github.com/jonasmalacofilho/liquidctl
-```
-
-Contributors to the project's code or documentation will want to manually clone the repository and install liquidctl in editable mode.
-
-```
-$ git clone https://github.com/jonasmalacofilho/liquidctl
-$ cd liquidctl
-# pip install --editable .
-```
-
-Of course, a virtual environment can always be used instead of installing the package globally.
-
-### Pre-built packages and executables
+## Pre-built packages and executables
 
 Packages for Linux distributions:
 
@@ -109,12 +84,48 @@ Packages for Linux distributions:
 
 Pre-built binaries for Windows:
 
- - Releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
+ - Official releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
+
+_Note: some devices may require an additional kernel driver [on Windows](#additional-requirements-on-windows)._
+
+
+## Installing from sources
+
+liquidctl runs on [Python 3](https://www.python.org/) and uses [libusb](https://github.com/libusb/libusb) and [HIDAPI](https://github.com/libusb/hidapi) to communicate with devices.
+
+The most important Python dependencies are [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/Cython-hidapI), but a few other libraries (e.g. docopt) are used as well; all of them are listed in `setup.py`.
+
+On Windows some devices might require the installation of a special kernel driver.  HIDAPI's dependencies can also vary depending on the platform.  These and other platform details and quirks are documented bellow, after common installation instructions.
+
+### Grabbing releases with pip
+
+*pip* can be used to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history).  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
+
+```
+# pip install liquidctl
+# pip install liquidctl==<version>
+# pip install git+https://github.com/jonasmalacofilho/liquidctl
+```
+
+_Note: a virtual environment can be used to avoid installing the package globally._
+
+### Testing and developing new features
+
+Contributors to the project's code or documentation are encouraged to manually clone the repository.  pip can then be used to install liquidctl in editable/development mode.
+
+
+```
+$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ cd liquidctl
+# pip install --editable .
+```
+
+_Note: a virtual environment can be used to avoid installing the package globally._
 
 ### Additional requirements on Linux
 
-Installing HIDAPI on Linux requires locally building some C extensions (automatically).  Both libusb-1.0 and libudev are needed for this, together with their corresponding development files.  You may also need development files for Python.
+Installing cython-hidapi on Linux can require locally building some C extensions (automatically).  Both libusb-1.0 and libudev are needed for this, together with their corresponding development files.  You may also need development files for Python.
 
 | Linux dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
@@ -171,24 +182,26 @@ Fan and pump speeds can be set to fixed values or, if the device supports them, 
 # liquidctl [options] set <channel> speed <percentage>
 ```
 
-Lighting is controlled in a similar fashion and, again, the specific documentation lists the available channels, modes and other details.  The animation speed can be controlled with the `--speed` flag.
+Lighting is controlled in a similar fashion and, again, the specific documentation for each device will list the available channels, modes and additional options.
 
 ```
 # liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
-Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag, possibly in combination with [setting `PYSUB_DEBUG=debug`](https://github.com/pyusb/pyusb/blob/2a434a7c722af65f3c81af2e70721669ed79c284/docs/tutorial.rst#whats-wrong), will make liquidctl output as much information as possible to help identify its cause; be sure to use these features when opening a new issue.
+Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
+
+_Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG` (`=debug`) or/and `LIBUSB_DEBUG` (`=4`) environment variables._
 
 
 ## Automation and running at boot
 
-In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough for, and some specifics about this are given in the following sections.
+In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough, and some specifics about this are given in the following sections.
 
 If you need more control for some really ambitious automation, you can also write a Python program that calls the driver APIs directly.
 
 ### Set up Linux using systemd
 
-On systems running Linux and Systemd, a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, you can edit it to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
+On systems running Linux and Systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
 
 ```
 [Unit]
@@ -212,11 +225,11 @@ The unit can be started manually or set to automatically run during boot using s
 # systemctl enable liquidcfg
 ```
 
-A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), that handles multiple devices and uses the LEDs to convey progress or eventual errors.
+A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which handles multiple devices and uses the LEDs to convey progress and alert of errors.
 
 ### Set up Windows using Task Scheduler
 
-The configuration of devices can be automated by writing a batch file and setting up a new scheduled task for (every) log on.  The batch file can be really simple and just list the various invocations of liquidctl you would otherwise do by hand.
+The configuration of devices can be automated by writing a batch file and setting up a new scheduled task for (every) log on.  The batch file can be really simple and consist of the invocations of liquidctl that would otherwise be done manually.
 
 ```batchfile
 liquidctl set pump speed 90
@@ -225,9 +238,9 @@ liquidctl set ring color fading 350017 ff2608
 liquidctl set logo color spectrum-wave
 ```
 
-Make sure that Python and executables from its packages are available in the context where the batch file will run: in short, `python --version` and `liquidctl --version` should work within a _normal_ Command Prompt window.
+Make sure that liquidctl is available in the context where the batch file will run: in short, `liquidctl --version` should work within a _normal_ Command Prompt window.
 
-If necessary, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH. Alternatively, if you're using Anaconda, try adding the following line to the beginning of the file:
+When not using a pre-built liquidctl executable, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH. Alternatively, if you're using Anaconda, try adding the following line to the beginning of the file:
 
 ```batchfile
 call %homepath%\Anaconda3\Scripts\activate.bat
@@ -328,7 +341,3 @@ Command-line tool to control Corsair all-in-one liquid coolers and other devices
 A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.
 
 _A special thanks to all krakenx contributors; this project would not exist were not for it._
-
-
-<!-- helper links -->
-[newissue]: https://github.com/jonasmalacofilho/liquidctl/issues/new

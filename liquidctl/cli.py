@@ -218,12 +218,36 @@ def _get_options_to_forward(args):
     return {opt_to_field(i): args[i] for i in _OPTIONS_TO_FORWARD if args[i]}
 
 
+def _gen_version():
+    extra = None
+    try:
+        from liquidctl.extraversion import __extraversion__
+        if not __extraversion__:
+            raise ValueError()
+        if __extraversion__['editable']:
+            extra = ['editable']
+        elif __extraversion__['dist_name'] and __extraversion__['dist_package']:
+            extra = [__extraversion__['dist_name'], __extraversion__['dist_package']]
+        else:
+            extra = [__extraversion__['commit'][:12]]
+            if __extraversion__['dirty']:
+                extra[0] += '-dirty'
+    except:
+        return 'liquidctl v{}'.format(__version__)
+    return 'liquidctl v{} ({})'.format(__version__, '; '.join(extra))
+
+
 def main():
-    args = docopt(__doc__, version='liquidctl v{}'.format(__version__))
+    args = docopt(__doc__)
+
+    if args['--version']:
+        print(_gen_version())
+        sys.exit(0)
 
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+        LOGGER.debug(_gen_version())
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:

@@ -1,23 +1,22 @@
 # NZXT Kraken X, 3rd generation
-<!-- move to /doc once there are more devices -->
 
-The Kraken X42, X52, X62 and X72 compose the third generation of liquid coolers by NZXT.  These devices are manufactured by Asetek and house fifth generation Asetek pumps and PCBs, plus secondary PCBs specially designed by NZXT for enhanced control and lighting.
+The Kraken X42, X52, X62 and X72 compose the third generation of liquid coolers by NZXT.  These devices are manufactured by Asetek and house fifth generation Asetek pumps, plus secondary PCBs specially designed by NZXT for enhanced control and lighting.
 
 They incorporate customizable fan and pump speed control with PWM, a liquid temperature probe in the block and addressable RGB lighting.  The coolers are powered directly by the power supply unit.
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The cooler also reports fan and pump speed and liquid temperature via USB; pump speed can also be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
-All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, have not been implemented.  Pump and fan control based on liquid temperature might be supported depending on the firmware version.
+All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, have not been implemented.  Pump and fan control based on liquid temperature is supported on units running firmware versions 4 or above.
 
 
-## Experimental support for the Kraken M22
+## Support for the Kraken M22
 
-This driver also has **experimental** support for the NZXT Kraken M22.  Note that the M22 has no pump or fan control, nor reports liquid temperatures.
+This driver also supports the NZXT Kraken M22.  However, this device has no pump or fan control, nor reports liquid temperatures.
 
 
 ## Monitoring
 
-The device can report the fan and pump speed, as well as the liquid temperature.
+The cooler can report the fan and pump speed, as well as the liquid temperature.
 
 ```
 # liquidctl status

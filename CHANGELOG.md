@@ -2,7 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html), using version identifiers translated to [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning)-compatible equivalents.
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
+
+## [1.2.0rc4] – 2019-09-18
+### Added
+ - Add support for adding git commit and tree cleanliness information to --version
+ - Add support for adding distribution name and package information to --version
+### Changed
+ - [Corsair Asetek 690LC] Enable modern features for all Corsair coolers
+ - Include version information in --debug
+ - Make docs and code consistent on which devices are only experimentally supported
+ - Revert "Mark Kraken X31, X41, X51 and X61 as no longer experimental"
+ - Improve the documentation
 
 ## [1.2.0rc3] – 2019-09-15
 ### Added
@@ -52,6 +63,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - Remove `--dry-run`
 
 ## [1.1.0] – 2018-12-15
+_Support for NZXT Smart Device, Grid+ V3 and Kraken M22_
 ### Added
  - Add proof of concept of software-based speed control
 ### Changed
@@ -89,6 +101,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - Remove unused symbols in `liquidctl.util`
 
 ## [1.0.0] - 2018-08-31
+_Support NZXT Kraken X42, X52, X62 and X72 coolers_
 ### Added
  - [Kraken] Add helper color mode: `off`
  - [Kraken] Add backward variant of `moving-alternating` color mode
