@@ -35,6 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
+import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.pmbus import CommandCode as CMD
@@ -45,6 +46,7 @@ LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
+_MIN_DELAY = 0.0025
 
 _RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
 
@@ -92,7 +94,17 @@ class SeasonicEDriver(UsbHidDriver):
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         return msg
 
+    def _wait(self):
+        """Give the device some time and avoid error responses.
+
+        Not well understood but probably related to the PIC16F1455
+        microcontroller.  It is possible that it isn't just used for a "dumb"
+        PMBus/HID bridge, requiring time to be left for other tasks.
+        """
+        time.sleep(_MIN_DELAY)
+
     def _exec_read(self, cmd, data_len):
+        self._wait()
         self._write([0xad, 0, data_len + 1, 1, 0x60, cmd])
         ret = self._read()
         assert ret[0] == 0xaa
@@ -100,6 +112,7 @@ class SeasonicEDriver(UsbHidDriver):
         return ret[2:(2 + data_len)]
 
     def _exec_page_plus_read(self, page, cmd, data_len):
+        self._wait()
         self._write([0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd])
         ret = self._read()
         assert ret[0] == 0xaa
