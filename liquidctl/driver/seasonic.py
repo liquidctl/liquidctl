@@ -78,7 +78,7 @@ class SeasonicEDriver(UsbHidDriver):
         ]
         for i, name in enumerate(_RAILS):
             status.append((f'{name} output voltage', self._get_vout(i), 'V'))
-            status.append((f'{name} output current', self._get_float(CMD.READ_IOUT, page=i), 'I'))
+            status.append((f'{name} output current', self._get_float(CMD.READ_IOUT, page=i), 'A'))
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT, page=i), 'W'))
         self._get_float(CMD.MFR_SPECIFIC_44) # generate debug info for later analysis
         return status
