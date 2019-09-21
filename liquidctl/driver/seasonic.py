@@ -95,13 +95,16 @@ class SeasonicEDriver(UsbHidDriver):
     def _exec_read(self, cmd, data_len):
         self._write([0xad, 0, data_len + 1, 1, 0x60, cmd])
         ret = self._read()
-        assert ret[0:2] == [0xaa, data_len + 1]
+        assert ret[0] == 0xaa
+        assert ret[1] == data_len + 1
         return ret[2:(2 + data_len)]
 
     def _exec_page_plus_read(self, page, cmd, data_len):
         self._write([0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd])
         ret = self._read()
-        assert ret[0:3] == [0xaa, data_len + 2, data_len]
+        assert ret[0] == 0xaa
+        assert ret[1] == data_len + 2
+        assert ret[2] == data_len
         return ret[3:(3 + data_len)]
 
     def _get_float(self, cmd, page=None):
