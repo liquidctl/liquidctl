@@ -47,6 +47,7 @@ LOGGER = logging.getLogger(__name__)
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MIN_DELAY = 0.0025
+_READ_ATTEMPTS = 3
 
 _RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
 
@@ -103,21 +104,31 @@ class SeasonicEDriver(UsbHidDriver):
         """
         time.sleep(_MIN_DELAY)
 
-    def _exec_read(self, cmd, data_len):
-        self._wait()
-        self._write([0xad, 0, data_len + 1, 1, 0x60, cmd])
-        ret = self._read()
-        assert ret[0] == 0xaa
-        assert ret[1] == data_len + 1
+    def _exec_read(self, cmd, data_len, attempts=_READ_ATTEMPTS):
+        ret = None
+        for i in range(attempts):
+            self._wait()
+            self._write([0xad, 0, data_len + 1, 1, 0x60, cmd])
+            ret = self._read()
+            # see comment in _exec_page_plus_read, but ret[1] == 0xff has not
+            # been seen in the wild yet; TODO check PEC byte as well
+            if ret[0] == 0xaa and ret[1] == data_len + 1:
+                break
+        assert ret, f'invalid response (attemps={attemps})'
         return ret[2:(2 + data_len)]
 
-    def _exec_page_plus_read(self, page, cmd, data_len):
-        self._wait()
-        self._write([0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd])
-        ret = self._read()
-        assert ret[0] == 0xaa
-        assert ret[1] == data_len + 2
-        assert ret[2] == data_len
+    def _exec_page_plus_read(self, page, cmd, data_len, attempts=_READ_ATTEMPTS):
+        ret = None
+        for i in range(attempts):
+            self._wait()
+            self._write([0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd])
+            ret = self._read()
+            # in the captured traffic ret[2] == 0xff appears to signal a
+            # invalid data condition (probably related to the device being
+            # busy; see PMBus spec); TODO check PEC byte as well
+            if ret[0] == 0xaa and ret[1] == data_len + 2 and ret[2] == data_len:
+                break
+        assert ret, f'invalid response (attemps={attemps})'
         return ret[3:(3 + data_len)]
 
     def _get_float(self, cmd, page=None):
