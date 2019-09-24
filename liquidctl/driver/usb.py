@@ -246,7 +246,6 @@ class PyUsbDevice:
 
     def claim(self):
         """Explicitly claim the device from other programs."""
-        # usb.util.dispose_resources(self.usbdev)
         LOGGER.debug('explicitly claim interface')
         usb.util.claim_interface(self.usbdev, self._DEFAULT_INTERFACE)
 
