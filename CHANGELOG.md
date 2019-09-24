@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
 ### Changed
  - Include extended version information in pre-built executables for Windows
+### Fixed
+ - Catch the USBError when there's no active configuration
 
 ## [1.2.0rc4] – 2019-09-18
 ### Added

@@ -239,10 +239,12 @@ class PyUsbDevice:
             LOGGER.debug('replacing stock kernel driver with libusb')
             self.usbdev.detach_kernel_driver(self._DEFAULT_INTERFACE)
             self._attached = True
-        cfg = self.usbdev.get_active_configuration()
-        if cfg is None:
+        try:
+            cfg = self.usbdev.get_active_configuration()
+        except usb.core.USBError:
             LOGGER.debug('setting the (first) configuration')
             self.usbdev.set_configuration()
+            # FIXME device is not ready yet
 
     def claim(self):
         """Explicitly claim the device from other programs."""
