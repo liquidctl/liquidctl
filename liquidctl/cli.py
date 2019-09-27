@@ -63,6 +63,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
+import datetime
 import inspect
 import itertools
 import logging
@@ -73,6 +74,7 @@ from docopt import docopt
 import liquidctl.driver.asetek
 import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
+import liquidctl.driver.corsair_hid_psu
 import liquidctl.driver.usb
 import liquidctl.util
 from liquidctl.util import color_from_str
@@ -92,11 +94,21 @@ _OPTIONS_TO_FORWARD = [
     '--alert-color',
 ]
 
+# custom number formats for values of select units
+_VALUE_FORMATS = {
+    '°C' : '.1f',
+    'rpm' : '.0f',
+    'V' : '.2f',
+    'A' : '.2f',
+    'W' : '.2f'
+}
+
 
 DRIVERS = [
     liquidctl.driver.asetek.AsetekDriver,
     liquidctl.driver.asetek.CorsairAsetekDriver,
     liquidctl.driver.asetek.LegacyAsetekDriver,
+    liquidctl.driver.corsair_hid_psu.CorsairHidPsuDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
     liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
 ]
@@ -165,8 +177,20 @@ def _device_get_status(dev, num, **kwargs):
     dev.connect(**kwargs)
     try:
         status = dev.get_status(**kwargs)
+        tmp = []
+        kcols, vcols, ucols = 0, 0, 0
         for k, v, u in status:
-            print('{:<18}    {:>10}  {:<3}'.format(k, v, u))
+            if isinstance(v, datetime.timedelta):
+                v = str(v)
+                u = ''
+            else:
+                valfmt = _VALUE_FORMATS.get(u, '')
+                v = '{:{}}'.format(v, valfmt)
+            kcols = max(kcols, len(k))
+            vcols = max(vcols, len(v))
+            tmp.append((k, v, u))
+        for k, v, u in tmp:
+            print('{:<{}}    {:>{}}  {}'.format(k, kcols, v, vcols, u))
     except:
         LOGGER.exception('Unexpected error')
         sys.exit(1)
@@ -227,7 +251,7 @@ def main():
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         sys.tracebacklimit = 0
 
     frwd = _get_options_to_forward(args)

@@ -66,6 +66,8 @@ Firmware version           4.0.2
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
+| Corsair HX750i, HX850i, HX1000i, HX1200i | [documentation](docs/corsair-hxi-rmi.md) | <sup>1</sup> |
+| Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | <sup>1</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md#experimental-support-for-the-grid-v3) | <sup>1</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
 
