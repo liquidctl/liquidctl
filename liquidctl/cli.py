@@ -75,6 +75,7 @@ import liquidctl.driver.asetek
 import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.corsair_hid_psu
+import liquidctl.driver.seasonic
 import liquidctl.driver.usb
 import liquidctl.util
 from liquidctl.util import color_from_str
@@ -111,6 +112,7 @@ DRIVERS = [
     liquidctl.driver.corsair_hid_psu.CorsairHidPsuDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
     liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
+    liquidctl.driver.seasonic.SeasonicEDriver,
 ]
 
 
