@@ -4,12 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
-## [Unreleased]
+## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
 ### Changed
  - Include extended version information in pre-built executables for Windows
 ### Fixed
- - Catch the USBError when there's no active configuration
+ - Improve handling of USB devices with no active configuration
 
 ## [1.2.0rc4] – 2019-09-18
 ### Added
@@ -108,7 +108,7 @@ _Support for NZXT Smart Device, Grid+ V3 and Kraken M22_
  - Remove unused symbols in `liquidctl.util`
 
 ## [1.0.0] - 2018-08-31
-_Support NZXT Kraken X42, X52, X62 and X72 coolers_
+_Support for NZXT Kraken X42/X52/X62/X72 coolers_
 ### Added
  - [Kraken] Add helper color mode: `off`
  - [Kraken] Add backward variant of `moving-alternating` color mode
@@ -122,4 +122,3 @@ _Support NZXT Kraken X42, X52, X62 and X72 coolers_
 ## [1.0.0rc1] - 2018-08-26
 ### Added
  - **Add driver for NZXT Kraken X42, X52, X62 and X72 coolers**
-
