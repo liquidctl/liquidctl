@@ -1,0 +1,172 @@
+.TH LIQUIDCTL 8 2019-10-15 "The liquidctl project" "Linux User's Manual"
+
+.SH NAME
+liquidctl \- monitor and control liquid coolers and other devices
+
+.SH SYNOPSIS
+.SY liquidctl
+.RI [ options ]
+.B list
+.SY liquidctl
+.RI [ options ]
+.B initialize
+.SY liquidctl
+.RI [ options ]
+.B status
+.SY liquidctl
+.RI [ options ]
+.B set
+.I channel
+.B speed
+.RI ( temperature
+.IR percentage )
+\&.\|.\|.\&
+.SY liquidctl
+.RI [ options ]
+.B set
+.I channel
+.B speed
+.I percentage
+.SY liquidctl
+.RI [ options ]
+.B set
+.I channel
+.B color
+.I mode
+.RI [ color
+\&.\|.\|.\&]
+.SY liquidctl
+.B \-\-version
+.SY liquidctl
+.B \-\-help
+.YS
+
+.SH DESCRIPTION
+.PP
+\fBliquidctl\fR is a utility for monitoring and controlling some hardware
+monitoring devices not yet supported at the kernel level.
+.PP
+Because \fBliquidctl\fR directly accesses the hardware devices root privileges
+are required in most cases.  This can be mitigate to some extent with udev
+rules.
+.PP
+\fBliquidctl list\fR outputs all compatible devices found on the system.  In
+case more than one device is found, the displayed device number can be used to
+select it in later invocations.
+.PP
+Passing \fI--verbose\fR to \fBlist\fR enables the display of additional
+identifiers and address which can also be used to select specific devices.
+These are preferred for non-interactive invocations as they, unlike device
+numbers, are more stable across reboots and software or hardware updates.
+.PP
+\fBliquidctl initialize\fR should be called for every device after a reboot,
+since many of them require some initialization code before correctly responding
+to other commands.
+.PP
+\fBliquidctl status\fR displays the status of a device or, if no selection
+options have been passed, of all available devices.
+.PP
+\fBliquidctl set \fIchannel\fB speed\fR allows the user to set fan and pump
+speeds.  These, depending on the device, can be set to fixed duty values,
+variable temperature–duty curves, or both.
+.PP
+\fBliquidctl set \fIchannel\fB color\fR allows the user to configure and set
+lighting modes.  Which modes and additional options are supported is device
+dependent.
+
+.SH OPTIONS
+
+.SS Device selection options
+Devices can be selected using one or more values taken from \fBlist --verbose\fP.
+.TP
+.BI \-\-vendor= id
+Filter devices by vendor id
+.TP
+.BI \-\-product= id
+Filter devices by product id
+.TP
+.BI \-\-release= number
+Filter devices by release number
+.TP
+.BI \-\-serial= number
+Filter devices by serial number
+.TP
+.BI \-\-bus= bus
+Filter devices by bus
+.TP
+.BI \-\-address= address
+Filter devices by address in bus
+.TP
+.BI \-\-usb\-port= port
+Filter devices by USB port in bus
+.TP
+.BI \-d\  number\fR,\ \fP \-\-device= number
+Select device by listing number
+
+.SS Animation options
+Some devices and animation modes support additional options.
+.TP
+.BI \-\-speed= value
+Abstract animation speed (device/mode specific)
+.TP
+.BI \-\-time\-per\-color= value
+Time to wait on each color (seconds)
+.TP
+.BI \-\-time\-off= value
+Time to wait with the LED turned off (seconds)
+.TP
+.BI \-\-alert\-threshold= number
+Threshold temperature for a visual alert (degrees Celsius)
+.TP
+.BI \-\-alert\-color= color
+Color used by the visual high temperature alert
+
+.SS Other options
+.TP
+.B \-v\fR, \fP\-\-verbose
+Output additional information
+.TP
+.B \-g\fR, \fB\-\-debug
+Show debug information on stderr
+.TP
+.BI \-\-hid= module
+Override API for USB HIDs: usb, hid or hidraw
+.TP
+.B \-\-legacy\-690lc
+Use Asetek 690LC in legacy mode (old Krakens)
+.TP
+.B \-\-version
+Display the version number
+.TP
+.B \-\-help
+Show the embedded help
+
+.SH EXIT STATUS
+1 if there was an error, 0 otherwise.
+
+.SH FILES
+.TP
+.I /run/liquidctl/*
+Temporary storage required by some drivers.
+
+.SH EXAMPLE
+.SY liquidctl
+.B status
+.SY liquidctl
+.BI set\  pump\  speed\  90
+.SY liquidctl
+.BI set\  fan\  speed
+.I 20 30 30 50 34 80 40 90 50 100
+.SY liquidctl
+.BI set\  ring\  color\  fading
+.I 350017 ff2608
+.SY liquidctl
+.BI set\  logo\  color\  fixed
+.I af5a2f
+.YS
+
+.SH SEE ALSO
+The complete documentation, including device specific details, is available in the project's sources and
+.UR https://github.com/jonasmalacofilho/liquidctl
+homepage
+.UE .

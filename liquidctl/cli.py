@@ -1,4 +1,4 @@
-"""liquidctl – liquid cooler control
+"""liquidctl – monitor and control liquid coolers and other devices
 
 Usage:
   liquidctl [options] status
@@ -24,7 +24,7 @@ Animation options (devices/modes can support zero or more):
   --speed <value>             Abstract animation speed (device/mode specific)
   --time-per-color <value>    Time to wait on each color (seconds)
   --time-off <value>          Time to wait with the LED turned off (seconds)
-  --alert-threshold <number>  Threadhold temperature for a visual alert (°C)
+  --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
@@ -51,9 +51,10 @@ Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2018–2019  each contribution's author
 
 Incorporates work by leaty, KsenijaS, Alexander Tong, Jens Neumaier, Kristóf
-Jakab, Sean Nelson and Chris Griffith, under the terms of the GNU General
-Public License.  Depending on how it was packaged, this program might also
-bundle copies of docopt, libusb-1.0 and pyusb.
+Jakab, Sean Nelson, Chris Griffith, notaz and realies, under the terms of the
+GNU General Public License.  Depending on how it was packaged, this program
+might also bundle copies of hidapi, libusb, cython-hidapi, pyusb, docopt and
+appdirs.
 
 You should have received a copy of all applicable licenses along with this
 program, in a file called LICENSE.txt.
@@ -84,7 +85,7 @@ from liquidctl.version import __version__
 
 # Options that are forwarded to drivers; they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
-#  - or avoid untintential conflicts with target function arguments
+#  - or avoid unintentional conflicts with target function arguments
 _OPTIONS_TO_FORWARD = [
     '--hid',
     '--legacy-690lc',
