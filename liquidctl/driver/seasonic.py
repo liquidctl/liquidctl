@@ -58,7 +58,7 @@ class SeasonicEDriver(UsbHidDriver):
     SUPPORTED_DEVICES = [
         (0x7793, 0x5911, None, 'NZXT E500 (experimental)', {}),
         # (0x7793, ???, None, 'NZXT E650 (experimental)', {}),
-        # (0x7793, ???, None, 'NZXT E850 (experimental)', {}),
+        (0x7793, 0x2500, None, 'NZXT E850 (experimental)', {}),
     ]
 
     def initialize(self, **kwargs):
