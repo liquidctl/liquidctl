@@ -4,7 +4,7 @@
 Supported devices
 -----------------
 
- - NZXT E500 (E650 and E850 missing device ids)
+ - NZXT E500 and E850 (E650 missing device id)
 
 
 Supported features
