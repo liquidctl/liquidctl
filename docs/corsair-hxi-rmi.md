@@ -11,6 +11,8 @@ It is necessary to initialize the device it has been powered on.
 # liquidctl initialize
 ```
 
+By the default the device will be initialized with multi rail +12V OCP.  If single rail +12V OCP is desired, pass `--single-12v-ocp`.
+
 
 ## Monitoring
 
@@ -26,6 +28,7 @@ Temperature 2                            40.8  °C
 Fan speed                                   0  rpm
 Input voltage                          230.00  V
 Total power                            110.00  W
++12V OCP mode                      Multi rail
 +12V output voltage                     12.12  V
 +12V output current                      7.75  A
 +12V output power                       92.00  W

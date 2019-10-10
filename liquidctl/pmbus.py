@@ -74,6 +74,7 @@ class CommandCode(IntEnum):
 
     MFR_SPECIFIC_01 = 0xd1
     MFR_SPECIFIC_02 = 0xd2
+    MFR_SPECIFIC_08 = 0xd8
     MFR_SPECIFIC_12 = 0xdc
     MFR_SPECIFIC_30 = 0xee
     MFR_SPECIFIC_44 = 0xfc

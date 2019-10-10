@@ -28,6 +28,7 @@ Animation options (devices/modes can support zero or more):
   --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
+  --single-12v-ocp            Enable single rail +12V OCP
   -v, --verbose               Output additional information
   -g, --debug                 Show debug information on stderr
   --hid <module>              Override API for USB HIDs: usb, hid or hidraw
@@ -94,6 +95,7 @@ _OPTIONS_TO_FORWARD = [
     '--time-off',
     '--alert-threshold',
     '--alert-color',
+    '--single-12v-ocp',
 ]
 
 # custom number formats for values of select units
