@@ -10,7 +10,7 @@ Supported features
 
  - […] general device monitoring
  - [✓] electrical output monitoring
- - [ ] fan control
+ - [✓] fan control
  - [ ] 12V multirail configuration
 
 ---
@@ -40,7 +40,7 @@ import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.pmbus import CommandCode as CMD
-from liquidctl.pmbus import linear_to_float
+from liquidctl.pmbus import linear_to_float, float_to_linear11, compute_pec
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +51,7 @@ _ATTEMPTS = 3
 
 _SEASONIC_READ_FIRMWARE_VERSION = CMD.MFR_SPECIFIC_FC
 _RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
+_MIN_FAN_DUTY = 0
 
 
 class SeasonicEDriver(UsbHidDriver):
@@ -86,6 +87,20 @@ class SeasonicEDriver(UsbHidDriver):
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT, page=i), 'W'))
         self.device.release()
         return status
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed duty."""
+        duty = max(_MIN_FAN_DUTY, min(duty, 100))
+        LOGGER.info('setting fan PWM duty to %i%%', duty)
+        msg = [0xac, 0x04, 0x60, CMD.FAN_COMMAND_1] + list(float_to_linear11(duty))
+        msg.append(compute_pec([msg[2] << 1] + msg[3:]))
+        for _ in range(_ATTEMPTS):
+            self._write(msg)
+            res = self._read()
+            if res[0] == 0xaa:
+                self.device.release()
+                return
+        assert False, f'invalid response (attempts={_ATTEMPTS})'
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
