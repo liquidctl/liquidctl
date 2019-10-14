@@ -1,4 +1,4 @@
-"""liquidctl drivers for NZXT Smart Device (V1/V2) and Grid+ V3.
+"""liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
 
 
 Smart Device
@@ -153,19 +153,64 @@ _WRITE_LENGTH = 65
 class CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
-    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
+    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
-        self._speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
-                                for i in range(speed_channel_count)}
-        self._color_channels = {'led{}'.format(i + 1): (i)
-                                for i in range(color_channel_count)}
+        self._speed_channels = speed_channels
+        self._color_channels = color_channels
+
+    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
+        """Set the color mode.
+
+        Only available for the Smart Device V1/V2.
+        """
+        if not self._color_channels:
+            raise NotImplementedError()
+        cid = self._color_channels[channel]
+        _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
+        colors = [[g, r, b] for [r, g, b] in colors]
+        if len(colors) < mincolors:
+            raise ValueError('Not enough colors for mode={}, at least {} required'
+                             .format(mode, mincolors))
+        elif maxcolors == 0:
+            if colors:
+                LOGGER.warning('too many colors for mode=%s, none needed', mode)
+            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
+        elif len(colors) > maxcolors:
+            LOGGER.warning('too many colors for mode=%s, dropping to %i',
+                           mode, maxcolors)
+            colors = colors[:maxcolors]
+        sval = _ANIMATION_SPEEDS[speed]
+        self._write_colors(cid, mode, colors, sval)
+        self.device.release()
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed."""
+        if channel == 'sync':
+            selected_channels = self._speed_channels
+        else:
+            selected_channels = {channel: self._speed_channels[channel]}
+        for cname, (cid, smin, smax) in selected_channels.items():
+            if duty < smin:
+                duty = smin
+            elif duty > smax:
+                duty = smax
+            LOGGER.info('setting %s duty to %i%%', cname, duty)
+            self._write_fixed_duty(cid, duty)
+        self.device.release()
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
+
+    def _write_colors(self, cid, mode, colors, sval):
+        raise NotImplementedError()
+
+    def _write_fixed_duty(self, cid, duty):
+        raise NotImplementedError()
+
 
 class SmartDeviceDriver(CommonSmartDeviceDriver):
     """liquidctl driver for the NZXT Smart Device (V1) and Grid+ V3."""
@@ -180,6 +225,14 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
             'color_channel_count': 0
         }),
     ]
+
+    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
+        """Instantiate a driver with a device handle."""
+        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+                          for i in range(speed_channel_count)}
+        color_channels = {'led': (i)
+                          for i in range(color_channel_count)}
+        super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, **kwargs):
         """Initialize the device.
@@ -224,26 +277,8 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         self.device.release()
         return sorted(status)
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
-        """Set the color mode.
-
-        Only available for the Smart Device.
-        """
-        if not self._color_channels:
-            raise NotImplementedError()
-        mval, mod3, mod4, mincolors, maxcolors = _COLOR_MODES[mode]
-        colors = [[g, r, b] for [r, g, b] in colors]
-        if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'
-                             .format(mode, mincolors))
-        elif maxcolors == 0:
-            if colors:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
-            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
-        elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                           mode, maxcolors)
-            colors = colors[:maxcolors]
+    def _write_colors(self, cid, mode, colors, sval):
+        mval, mod3, mod4, _, _ = _COLOR_MODES[mode]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
@@ -251,28 +286,14 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
             steps = [list(itertools.chain(*colors))]
         else:
             steps = [color*40 for color in colors]
-        sval = _ANIMATION_SPEEDS[speed]
         for i, leds in enumerate(steps):
             seq = i << 5
             byte4 = sval | seq | mod4
             self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
             self._write([0x3] + leds[57:])
-        self.device.release()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
-        if channel == 'sync':
-            selected_channels = self._speed_channels
-        else:
-            selected_channels = { channel: self._speed_channels[channel] }
-        for cname, (cid, smin, smax) in selected_channels.items():
-            if duty < smin:
-                duty = smin
-            elif duty > smax:
-                duty = smax
-            LOGGER.info('setting %s duty to %i%%', cname, duty)
-            self._write([0x2, 0x4d, cid, 0, duty])
-        self.device.release()
+    def _write_fixed_duty(self, cid, duty):
+        self._write([0x2, 0x4d, cid, 0, duty])
 
 
 class SmartDeviceDriverV2(CommonSmartDeviceDriver):
@@ -284,6 +305,14 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             'color_channel_count': 2
         }),
     ]
+
+    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
+        """Instantiate a driver with a device handle."""
+        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+                          for i in range(speed_channel_count)}
+        color_channels = {'led{}'.format(i + 0): (i)
+                          for i in range(color_channel_count)}
+        super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, **kwargs):
         """Initialize the device.
@@ -372,47 +401,17 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         self.device.release()
         return sorted(status)
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
-        """Set the color mode.
-
-        Only available for the Smart Device.
-        """
-        if not self._color_channels:
-            raise NotImplementedError()
-        cid = self._color_channels[channel]  # selected channel ID
-        mval, mod3, mod4, mincolors, maxcolors = _COLOR_MODES[mode]
-        colors = [[g, r, b] for [r, g, b] in colors]
-        if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
-        elif maxcolors == 0:
-            if colors:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
-            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
-        elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
-            colors = colors[:maxcolors]
+    def _write_colors(self, cid, mode, colors, sval):
+        mval, mod3, mod4, _, _ = _COLOR_MODES[mode]
         color_count = len(colors)
         channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
         header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, 0x0, [0x00, 0x01][mod3 > 0], color_count, 0x0]
         self._write(header + list(itertools.chain(*colors)))
-        self.device.release()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
-        if channel == 'sync':
-            selected_channels = self._speed_channels
-        else:
-            selected_channels = { channel: self._speed_channels[channel] }
-        for cname, (cid, smin, smax) in selected_channels.items():
-            if duty < smin:
-                duty = smin
-            elif duty > smax:
-                duty = smax
-            msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel is specified in last 3 bits of 3rd byte: 0x01 << cid
-            msg[cid + 3] = duty # duty percent in 4th, 5th, and 6th bytes for Fans 1, 2, 3
-            LOGGER.info('setting %s duty to %i%%', cname, duty)
-            self._write(msg)
-        self.device.release()
+    def _write_fixed_duty(self, cid, duty):
+        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel passed as bitflag in last 3 bits of 3rd byte
+        msg[cid + 3] = duty # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
+        self._write(msg)
 
 
 # backwards compatibility
