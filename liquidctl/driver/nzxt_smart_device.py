@@ -45,30 +45,18 @@ It provides three independent fan channels with standard 4-pin connectors. Both
 PWM and DC control is supported, and the device automatically chooses the appropriate
 mode for each channel.
 
-Additionally, it features two independent daisy chain capable lighting (Addressable
-RGB) channels, unlike the single channel in the original. NZXT Aer RGB 2 fans and 
-HUE 2 lighting devices (HUE 2 LED strip, HUE 2 Unerglow, HUE 2 Cable Comb) can be
+Additionally, it features two independent lighting (Addressable RGB) channels,
+unlike the single channel in the original. NZXT Aer RGB 2 fans and HUE 2 lighting
+accessories (HUE 2 LED strip, HUE 2 Unerglow, HUE 2 Cable Comb) can be
 connected. The firmware installed on the device exposes several color presets, most
 of them common to other NZXT products.
 
-A microphone is also present onboard, for noise level optimization through CAM
+HUE 2 and HUE+ devices (including Aer RGB and Aer RGB 2 fans) are supported, but
+HUE 2 components cannot be mixed with HUE+ components in the same channel. Each
+lighting channel supports up to 6 accessories and a total of 40 LEDs. 
+
+A microphone is also present onboard for noise level optimization through CAM
 and AI. NZXT calls this feature Adaptive Noise Reduction (ANR).
-
-When invoking the liquidctl command line, fan channels are specified as:
-fan1, fan2, fan3
-
-When invoking the liquidctl command line, lighting channels are specified as:
-sync1, sync2
-
-*** IMPORTANT INFORMATION ***
-
-* Always call "liquidctl initialize" first on a cold start of the operating system.
-* If you have multiple compatible devices, use "-d" to specify device index (type "liquidctl list"
-  to show list of compatible devices).
-* It supports "set <channel> speed" as a duty percentage from 0 to 100.
-
-  Example 1: Set fan2 speed to 45%
-     liquidctl set fan1 speed 45
 
 
 Driver
@@ -119,34 +107,33 @@ from liquidctl.driver.usb import UsbHidDriver
 LOGGER = logging.getLogger(__name__)
 
 _COLOR_MODES = {
-    # (byte2/mode, byte3/variant, byte4/size, v2modeflag, min colors, max colors)
-    # v2modeflag is for NZXT SmartDevice V2 only
-    'off':                           (0x00, 0x00, 0x00, 0x00, 0, 0),
-    'fixed':                         (0x00, 0x00, 0x00, 0x00, 1, 1),
-    'super-fixed':                   (0x00, 0x00, 0x00, 0x00, 1, 40),  # independent leds
-    'fading':                        (0x01, 0x00, 0x00, 0x00, 1, 8),
-    'spectrum-wave':                 (0x02, 0x00, 0x00, 0x00, 0, 0),
-    'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0x01, 0, 0),
-    'marquee-3':                     (0x03, 0x00, 0x00, 0x00, 1, 1),
-    'marquee-4':                     (0x03, 0x00, 0x08, 0x00, 1, 1),
-    'marquee-5':                     (0x03, 0x00, 0x10, 0x00, 1, 1),
-    'marquee-6':                     (0x03, 0x00, 0x18, 0x00, 1, 1),
-    'backwards-marquee-3':           (0x03, 0x10, 0x00, 0x01, 1, 1),
-    'backwards-marquee-4':           (0x03, 0x10, 0x08, 0x01, 1, 1),
-    'backwards-marquee-5':           (0x03, 0x10, 0x10, 0x01, 1, 1),
-    'backwards-marquee-6':           (0x03, 0x10, 0x18, 0x01, 1, 1),
-    'covering-marquee':              (0x04, 0x00, 0x00, 0x00, 1, 8),
-    'covering-backwards-marquee':    (0x04, 0x10, 0x00, 0x01, 1, 8),
-    'alternating':                   (0x05, 0x00, 0x00, 0x00, 2, 2),
-    'moving-alternating':            (0x05, 0x08, 0x00, 0x01, 2, 2),
-    'backwards-moving-alternating':  (0x05, 0x18, 0x00, 0x01, 2, 2),
-    'pulse':                         (0x06, 0x00, 0x00, 0x00, 1, 8),
-    'breathing':                     (0x07, 0x00, 0x00, 0x00, 1, 8),   # colors for each step
-    'super-breathing':               (0x07, 0x00, 0x00, 0x00, 1, 40),  # one step, independent leds
-    'candle':                        (0x09, 0x00, 0x00, 0x00, 1, 1),
-    'wings':                         (0x0c, 0x00, 0x00, 0x00, 1, 1),
-    'super-wave':                    (0x0d, 0x00, 0x00, 0x00, 1, 40),  # independent ring leds
-    'backwards-super-wave':          (0x0d, 0x10, 0x00, 0x01, 1, 40),  # independent ring leds
+    # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
+    'off':                           (0x00, 0x00, 0x00, 0, 0),
+    'fixed':                         (0x00, 0x00, 0x00, 1, 1),
+    'super-fixed':                   (0x00, 0x00, 0x00, 1, 40),  # independent leds
+    'fading':                        (0x01, 0x00, 0x00, 1, 8),
+    'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
+    'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
+    'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
+    'marquee-4':                     (0x03, 0x00, 0x08, 1, 1),
+    'marquee-5':                     (0x03, 0x00, 0x10, 1, 1),
+    'marquee-6':                     (0x03, 0x00, 0x18, 1, 1),
+    'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1),
+    'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1),
+    'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1),
+    'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1),
+    'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
+    'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8),
+    'alternating':                   (0x05, 0x00, 0x00, 2, 2),
+    'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
+    'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
+    'pulse':                         (0x06, 0x00, 0x00, 1, 8),
+    'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
+    'super-breathing':               (0x07, 0x00, 0x00, 1, 40),  # one step, independent leds
+    'candle':                        (0x09, 0x00, 0x00, 1, 1),
+    'wings':                         (0x0c, 0x00, 0x00, 1, 1),
+    'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
+    'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 40),  # independent ring leds
 }
 _ANIMATION_SPEEDS = {
     'slowest':  0x0,
@@ -181,19 +168,19 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
             'color_channel_count': 0,
             'device_type': DEVICE_GRID_V3
         }),
-        (0x1e71, 0x2006, None, 'NZXT Smart Device V2 (experimental)', {
+        (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {
             'speed_channel_count': 3,
             'color_channel_count': 2,
             'device_type': DEVICE_SMARTDEV_V2
         }),
     ]
 
-    def __init__(self, device, description, speed_channel_count, color_channel_count, device_type=DEVICE_SMARTDEV_V1,  **kwargs):
+    def __init__(self, device, description, speed_channel_count, color_channel_count, device_type, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                                 for i in range(speed_channel_count)}
-        self._color_channels = {'sync{}'.format(i + 1): (i)
+        self._color_channels = {'led{}'.format(i + 1): (i)
                                 for i in range(color_channel_count)}
         self.device_type = device_type
 
@@ -219,86 +206,75 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         noise = []
         
         if self.device_type == self.DEVICE_SMARTDEV_V2:
-            numValidRepliesReceived = 0
-            msg1101Reply = False
-            msg2103Reply = False
-            msg6702Reply = False
-            msg6704Reply = False
+            num_valid_replies_recvd = 0
+            msg_1101_reply = False
+            msg_2103_reply = False
+            msg_6702_reply = False
+            msg_6704_reply = False
             # Get configuration information from device
             wmsg = [0x10, 0x01, 0x00, 0x00, 0x00, 0x00]
-            LOGGER.info('Issuing command 0x10 0x01 to get firmware info')
+            LOGGER.debug('Issuing command 0x10 0x01 to get firmware info')
             self._write(wmsg)
             wmsg = [0x20, 0x03, 0x00, 0x00, 0x00, 0x00]
-            LOGGER.info('Issuing command 0x20 0x03 to get lighting info')
+            LOGGER.debug('Issuing command 0x20 0x03 to get lighting info')
             self._write(wmsg)
-            #wmsg = [0x60, 0x03, 0x00, 0x00, 0x00, 0x00]
-            #LOGGER.info('Issuing command 0x20 0x03 to get lighting info')
-            #self._write(wmsg)
             # After issuing the above 2 commands, we will get a series of replies that
             # will include everything we want to extract and display to the user.
             # It may take 10 or 12 reply messages before we get all of the expected replies.
-            for x in range(12):     # we may not get reply right away, so try up to 12 times
-                if numValidRepliesReceived == 4:
+            for x in range(12):     
+                if num_valid_replies_recvd == 4:
                     break   
                 msg = self.device.read(_READ_LENGTH_V2)
                 LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-                if msg1101Reply == False and msg[0] == 0x11 and msg[1] == 0x01:  # the correct reply must start with 0x11, 0x01
+                if msg_1101_reply == False and msg[0] == 0x11 and msg[1] == 0x01:  
                     fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
-                    status.append(('Firmware:', fw, ''))
-                    numValidRepliesReceived += 1 
-                    msg1101Reply = True
+                    status.append(('Firmware version', fw, ''))
+                    num_valid_replies_recvd += 1 
+                    msg_1101_reply = True
                     continue
-                if msg2103Reply == False and msg[0] == 0x21 and msg[1] == 0x03:  # the correct reply must start with 0x21, 0x03
-                    ledStripCount = 0
-                    ledUnderglowCount = 0
-                    ledCableCombCount = 0
-                    ledAerFan120Count = 0
-                    ledAerFan140Count = 0
-                    for ledIter in range(15):
-                        ledCode = msg[0x0f + ledIter]
-                        if ledCode == 0x04:
-                            ledStripCount += 1
-                            ledName = '  LED Strip #{}'.format(ledStripCount)
-                        elif ledCode == 0x08:
-                            ledCableCombCount += 1
-                            ledName = ' Cable Comb #{}'.format(ledCableCombCount)
-                        elif ledCode == 0x0a:
-                            ledUnderglowCount += 1
-                            ledName = '  Underglow #{}'.format(ledUnderglowCount)
-                        elif ledCode == 0x0b:
-                            ledAerFan120Count += 1
-                            ledName = 'AER Fan 120 #{}'.format(ledAerFan120Count)
-                        elif ledCode == 0x0c:
-                            ledAerFan140Count += 1
-                            ledName = 'AER Fan 140 #{}'.format(ledAerFan140Count)
-                        if ledCode != 0:
-                            status.append(('    HUE2:', ledName, ''))
-                    numValidRepliesReceived += 1
-                    msg2103Reply = True
+                if msg_2103_reply == False and msg[0] == 0x21 and msg[1] == 0x03:  
+                    num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
+                    accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
+                    light_accessory_index = 15    # offset in msg of info about first light accessory
+                    for light_channel in range(num_light_channels):
+                        for accessory_num in range(accessories_per_channel):
+                            accessory_id = msg[light_accessory_index]
+                            light_accessory_index += 1
+                            if accessory_id == 0x04:
+                                accessory_name = 'HUE 2 LED Strip'
+                            elif accessory_id == 0x08:
+                                accessory_name = 'HUE 2 Cable Comb'
+                            elif accessory_id == 0x0a:
+                                accessory_name = 'HUE 2 Underglow'
+                            elif accessory_id == 0x0b:
+                                accessory_name = 'AER RGB 2 120 mm'
+                            elif accessory_id == 0x0c:
+                                accessory_name = 'AER RGB 2 140 mm'
+                            if accessory_id != 0:
+                                status.append (('LED {} accessory {}'.format(light_channel+1, accessory_num+1), accessory_name, ''))
+                    num_valid_replies_recvd += 1
+                    msg_2103_reply = True
                     continue
-                if msg6702Reply == False and msg[0] == 0x67 and msg[1] == 0x02:
+                if msg_6702_reply == False and msg[0] == 0x67 and msg[1] == 0x02:
                     rpm_offset = 24
                     duty_offset = 40
                     noise_offset = 56
                     for i, _ in enumerate(self._speed_channels):
-                        # LOGGER.debug('Iteration {}'.format(i))
                         if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset+1] != 0x0)): 
-                            status.append(('   Speed: Fan {}'.format(i+1), msg[rpm_offset+1] << 8 | msg[rpm_offset], 'rpm'))
-                            status.append(('    Duty: Fan {}'.format(i+1), msg[duty_offset+i], '%'))
-                        # else:
-                            # status.append(('Speed: Fan {}'.format(i+1), 'not', 'connected'))
+                            status.append(('Fan {} speed'.format(i+1), msg[rpm_offset+1] << 8 | msg[rpm_offset], 'rpm'))
+                            status.append(('Fan {} duty'.format(i+1), msg[duty_offset+i], '%'))
                         rpm_offset += 2
-                    status.append(('   Noise:', msg[noise_offset], 'dB'))
-                    numValidRepliesReceived += 1    
-                    msg6702Reply = True 
+                    status.append(('Noise level', msg[noise_offset], 'dB'))
+                    num_valid_replies_recvd += 1    
+                    msg_6702_reply = True 
                     continue            
-                if msg6704Reply == False and msg[0] == 0x67 and msg[1] == 0x04:
+                if msg_6704_reply == False and msg[0] == 0x67 and msg[1] == 0x04:
+                # PLACE HOLDER FOR FUTURE WORK
+                # Interpretation of this reply is pending
                     #status.append((' Unknown:', 'status', 'pending'))
-                    numValidRepliesReceived += 1
-                    msg6704Reply = True
+                    num_valid_replies_recvd += 1
+                    msg_6704_reply = True
                     continue
-            self.device.release()
-            return status
         else:        
             for i, _ in enumerate(self._speed_channels):
                 msg = self.device.read(_READ_LENGTH)
@@ -333,45 +309,38 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         """
         if not self._color_channels:
             raise NotImplementedError()
-        selected_channels = { channel: self._color_channels[channel] }
-        for cname, (cid) in selected_channels.items():
-            mval, mod3, mod4, v2modeflag, mincolors, maxcolors = _COLOR_MODES[mode]
-            colors = [[g, r, b] for [r, g, b] in colors]
-            if len(colors) < mincolors:
-                raise ValueError('Not enough colors for mode={}, at least {} required'
-                                 .format(mode, mincolors))
-            elif maxcolors == 0:
-                if colors:
-                    LOGGER.warning('too many colors for mode=%s, none needed', mode)
-                colors = [[0, 0, 0]]  # discard the input but ensure at least one step
-            elif len(colors) > maxcolors:
-                LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                               mode, maxcolors)
-                colors = colors[:maxcolors]
-            # generate steps from mode and colors: usually each color set by the user generates
-            # one step, where it is specified to all leds and the device handles the animation;
-            # but in super mode there is a single step and each color directly controls a led
-            if 'super' in mode:
-                steps = [list(itertools.chain(*colors))]
-            else:
-                if self.device_type == self.DEVICE_SMARTDEV_V2:
-                    steps = [color for color in colors]
-                else:
-                    steps = [color*40 for color in colors]
-            sval = _ANIMATION_SPEEDS[speed]
-            if self.device_type == self.DEVICE_SMARTDEV_V2:
-                numColors = len(steps)
-                wmsg = [0x28, 0x03, cid+1, [0x01, 0x20][cid], mval, sval, 0x0, v2modeflag, numColors, 0x0]
-                for i, leds in enumerate(steps):
-                    wmsg += (leds[0:3])
-                #LOGGER.debug('write %s', ' '.join(format(i, '02x') for i in wmsg))
-                self._write(wmsg)
-            else:
-                for i, leds in enumerate(steps):
-                    seq = i << 5
-                    byte4 = sval | seq | mod4
-                    self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
-                    self._write([0x3] + leds[57:])
+
+        cid = self._color_channels[channel]  # selected channel ID
+        mval, mod3, mod4, mincolors, maxcolors = _COLOR_MODES[mode]
+        colors = [[g, r, b] for [r, g, b] in colors]
+        if len(colors) < mincolors:
+            raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
+        elif maxcolors == 0:
+            if colors:
+                LOGGER.warning('too many colors for mode=%s, none needed', mode)
+            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
+        elif len(colors) > maxcolors:
+            LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
+            colors = colors[:maxcolors]
+        # generate steps from mode and colors: usually each color set by the user generates
+        # one step, where it is specified to all leds and the device handles the animation;
+        # but in super mode there is a single step and each color directly controls a led
+        if 'super' in mode:
+            steps = [list(itertools.chain(*colors))]
+        else:
+            steps = [color*40 for color in colors]
+        sval = _ANIMATION_SPEEDS[speed]
+        if self.device_type == self.DEVICE_SMARTDEV_V2:
+            color_count = len(colors)
+            channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
+            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, 0x0, [0x00, 0x01][mod3 > 0], color_count, 0x0]
+            self._write(header + list(itertools.chain(*colors)))
+        else:
+            for i, leds in enumerate(steps):
+                seq = i << 5
+                byte4 = sval | seq | mod4
+                self._write([0x2, 0x4b, mval, mod3, byte4] + leds[0:57])
+                self._write([0x3] + leds[57:])
         self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -386,11 +355,10 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
             elif duty > smax:
                 duty = smax
             if self.device_type == self.DEVICE_SMARTDEV_V2:
-                wmsg = [0x62, 0x01, 0x00, 0x00, 0x00, 0x00]
-                wmsg[2] = 0x01 << cid  # fan channel in last 3 bits of 3rd byte
-                wmsg[cid+3] = duty # duty percent in 4th, 5th, and 6th bytes for Fans 1, 2, 3
+                msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel is specified in last 3 bits of 3rd byte: 0x01 << cid
+                msg[cid + 3] = duty # duty percent in 4th, 5th, and 6th bytes for Fans 1, 2, 3
                 LOGGER.info('setting %s duty to %i%%', cname, duty)
-                self._write(wmsg)
+                self._write(msg)
             else:
                 LOGGER.info('setting %s duty to %i%%', cname, duty)
                 self._write([0x2, 0x4d, cid, 0, duty])
@@ -401,4 +369,3 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
-
