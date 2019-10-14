@@ -228,7 +228,7 @@ class NzxtSmartDeviceDriver(UsbHidDriver):
                 LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
                 if msg_1101_reply == False and msg[0] == 0x11 and msg[1] == 0x01:  
                     fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
-                    status.append(('Firmware:', fw, ''))
+                    status.append(('Firmware version', fw, ''))
                     num_valid_replies_recvd += 1 
                     msg_1101_reply = True
                     continue
