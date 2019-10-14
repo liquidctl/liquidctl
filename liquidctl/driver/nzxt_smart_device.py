@@ -34,7 +34,7 @@ Comparing the two, the Grid+ has more fan channels (six in total), and no
 support for LEDs.
 
 
-Smart Device V2  (added by CaseySJ)
+Smart Device V2
 ---------------
 
 The NZXT Smart Device V2 is a newer model of the original fan and LED controller. It
@@ -53,10 +53,10 @@ of them common to other NZXT products.
 
 HUE 2 and HUE+ devices (including Aer RGB and Aer RGB 2 fans) are supported, but
 HUE 2 components cannot be mixed with HUE+ components in the same channel. Each
-lighting channel supports up to 6 accessories and a total of 40 LEDs. 
+lighting channel supports up to 6 accessories and a total of 40 LEDs.
 
-A microphone is also present onboard for noise level optimization through CAM
-and AI. NZXT calls this feature Adaptive Noise Reduction (ANR).
+A microphone is still present onboard for noise level optimization through CAM
+and AI.
 
 
 Driver
@@ -81,8 +81,9 @@ cause all connected fans and LED accessories to be detected, and enable status
 updates.  It is recommended to initialize the devices at every boot.
 
 
-Copyright (C) 2018  Jonas Malaco
-Copyright (C) 2018  each contribution's author
+Copyright (C) 2018–2019  Jonas Malaco
+Copyright (C) 2019       CaseySJ
+Copyright (C) 2018–2019  each contribution's author
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -146,7 +147,7 @@ _MIN_DUTY = 0
 _MAX_DUTY = 100
 _READ_ENDPOINT = 0x81
 _READ_LENGTH = 21
-_READ_LENGTH_V2 = 60     # for Smart Device V2
+_READ_LENGTH_V2 = 60
 _WRITE_ENDPOINT = 0x1
 _WRITE_LENGTH = 65
 
@@ -344,18 +345,18 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         # After issuing the above 2 commands, we will get a series of replies that
         # will include everything we want to extract and display to the user.
         # It may take 10 or 12 reply messages before we get all of the expected replies.
-        for x in range(12):     
+        for x in range(12):
             if num_valid_replies_recvd == 4:
-                break   
+                break
             msg = self.device.read(_READ_LENGTH_V2)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-            if msg_1101_reply == False and msg[0] == 0x11 and msg[1] == 0x01:  
+            if not msg_1101_reply and msg[0] == 0x11 and msg[1] == 0x01:
                 fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
                 status.append(('Firmware version', fw, ''))
-                num_valid_replies_recvd += 1 
+                num_valid_replies_recvd += 1
                 msg_1101_reply = True
                 continue
-            if msg_2103_reply == False and msg[0] == 0x21 and msg[1] == 0x03:  
+            if not msg_2103_reply and msg[0] == 0x21 and msg[1] == 0x03:
                 num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
                 accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
                 light_accessory_index = 15    # offset in msg of info about first light accessory
@@ -374,24 +375,25 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         elif accessory_id == 0x0c:
                             accessory_name = 'AER RGB 2 140 mm'
                         if accessory_id != 0:
-                            status.append (('LED {} accessory {}'.format(light_channel+1, accessory_num+1), accessory_name, ''))
+                            status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
+                                           accessory_name, ''))
                 num_valid_replies_recvd += 1
                 msg_2103_reply = True
                 continue
-            if msg_6702_reply == False and msg[0] == 0x67 and msg[1] == 0x02:
+            if not msg_6702_reply and msg[0] == 0x67 and msg[1] == 0x02:
                 rpm_offset = 24
                 duty_offset = 40
                 noise_offset = 56
                 for i, _ in enumerate(self._speed_channels):
-                    if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset+1] != 0x0)): 
-                        status.append(('Fan {} speed'.format(i+1), msg[rpm_offset+1] << 8 | msg[rpm_offset], 'rpm'))
-                        status.append(('Fan {} duty'.format(i+1), msg[duty_offset+i], '%'))
+                    if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
+                        status.append(('Fan {} speed'.format(i + 1), msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                        status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
                     rpm_offset += 2
                 status.append(('Noise level', msg[noise_offset], 'dB'))
-                num_valid_replies_recvd += 1    
-                msg_6702_reply = True 
-                continue            
-            if msg_6704_reply == False and msg[0] == 0x67 and msg[1] == 0x04:
+                num_valid_replies_recvd += 1
+                msg_6702_reply = True
+                continue
+            if not msg_6704_reply and msg[0] == 0x67 and msg[1] == 0x04:
             # PLACE HOLDER FOR FUTURE WORK
             # Interpretation of this reply is pending
                 #status.append((' Unknown:', 'status', 'pending'))
