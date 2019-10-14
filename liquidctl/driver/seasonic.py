@@ -4,7 +4,7 @@
 Supported devices
 -----------------
 
- - NZXT E500 and E850 (E650 missing device id)
+ - NZXT E500, E650 and E850
 
 
 Supported features
@@ -57,7 +57,7 @@ class SeasonicEDriver(UsbHidDriver):
 
     SUPPORTED_DEVICES = [
         (0x7793, 0x5911, None, 'NZXT E500 (experimental)', {}),
-        # (0x7793, ???, None, 'NZXT E650 (experimental)', {}),
+        (0x7793, 0x5912, None, 'NZXT E650 (experimental)', {}),
         (0x7793, 0x2500, None, 'NZXT E850 (experimental)', {}),
     ]
 
