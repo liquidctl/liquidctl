@@ -49,6 +49,7 @@ _WRITE_LENGTH = 64
 _MIN_DELAY = 0.0025
 _READ_ATTEMPTS = 3
 
+_SEASONIC_READ_FIRMWARE_VERSION = CMD.MFR_SPECIFIC_44
 _RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
 
 
@@ -73,15 +74,16 @@ class SeasonicEDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        fw_human, fw_cam = self._get_fw_versions()
         status = [
             ('Temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
+            ('Firmware version', f'{fw_human} (V{fw_cam})', ''),
         ]
         for i, name in enumerate(_RAILS):
             status.append((f'{name} output voltage', self._get_vout(i), 'V'))
             status.append((f'{name} output current', self._get_float(CMD.READ_IOUT, page=i), 'A'))
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT, page=i), 'W'))
-        self._get_float(CMD.MFR_SPECIFIC_44) # generate debug info for later analysis
         return status
 
     def _write(self, data):
@@ -142,3 +144,9 @@ class SeasonicEDriver(UsbHidDriver):
         assert mode >> 5 == 0 # assume vout_mode is always ulinear16
         vout = self._exec_page_plus_read(rail, CMD.READ_VOUT, 2)
         return linear_to_float(vout, mode & 0x1f)
+
+    def _get_fw_versions(self):
+        minor, major = self._exec_read(_SEASONIC_READ_FIRMWARE_VERSION, 2)
+        human_ver = f'{bytes([major]).decode()}{minor:03}'
+        ascam_ver = int.from_bytes(bytes.fromhex('A017'), byteorder='big')
+        return (human_ver, ascam_ver)
