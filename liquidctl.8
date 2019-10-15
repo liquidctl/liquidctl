@@ -1,8 +1,8 @@
 .TH LIQUIDCTL 8 2019-10-15 "The liquidctl project" "Linux User's Manual"
-
+.
 .SH NAME
 liquidctl \- monitor and control liquid coolers and other devices
-
+.
 .SH SYNOPSIS
 .SY liquidctl
 .RI [ options ]
@@ -40,7 +40,7 @@ liquidctl \- monitor and control liquid coolers and other devices
 .SY liquidctl
 .B \-\-help
 .YS
-
+.
 .SH DESCRIPTION
 .PP
 \fBliquidctl\fR is a utility for monitoring and controlling some hardware
@@ -73,9 +73,9 @@ variable temperature–duty curves, or both.
 \fBliquidctl set \fIchannel\fB color\fR allows the user to configure and set
 lighting modes.  Which modes and additional options are supported is device
 dependent.
-
+.
 .SH OPTIONS
-
+.
 .SS Device selection options
 Devices can be selected using one or more values taken from \fBlist --verbose\fP.
 .TP
@@ -102,7 +102,7 @@ Filter devices by USB port in bus
 .TP
 .BI \-d\  number\fR,\ \fP \-\-device= number
 Select device by listing number
-
+.
 .SS Animation options
 Some devices and animation modes support additional options.
 .TP
@@ -120,7 +120,7 @@ Threshold temperature for a visual alert (degrees Celsius)
 .TP
 .BI \-\-alert\-color= color
 Color used by the visual high temperature alert
-
+.
 .SS Other options
 .TP
 .B \-v\fR, \fP\-\-verbose
@@ -140,15 +140,15 @@ Display the version number
 .TP
 .B \-\-help
 Show the embedded help
-
+.
 .SH EXIT STATUS
 1 if there was an error, 0 otherwise.
-
+.
 .SH FILES
 .TP
 .I /run/liquidctl/*
 Temporary storage required by some drivers.
-
+.
 .SH EXAMPLE
 .SY liquidctl
 .B status
@@ -164,7 +164,7 @@ Temporary storage required by some drivers.
 .BI set\  logo\  color\  fixed
 .I af5a2f
 .YS
-
+.
 .SH SEE ALSO
 The complete documentation, including device specific details, is available in the project's sources and
 .UR https://github.com/jonasmalacofilho/liquidctl
