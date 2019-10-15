@@ -78,7 +78,7 @@ class SeasonicEDriver(UsbHidDriver):
         status = [
             ('Temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
-            ('Firmware version', f'{fw_human} (V{fw_cam})', ''),
+            ('Firmware version', f'{fw_human}/{fw_cam}', ''),
         ]
         for i, name in enumerate(_RAILS):
             status.append((f'{name} output voltage', self._get_vout(i), 'V'))
