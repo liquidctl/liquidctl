@@ -28,11 +28,11 @@ Animation options (devices/modes can support zero or more):
   --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
-  --single-12v-ocp            Enable single rail +12V OCP
   -v, --verbose               Output additional information
   -g, --debug                 Show debug information on stderr
   --hid <module>              Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
+  --single-12v-ocp            Enable single rail +12V OCP
   --version                   Display the version number
   --help                      Show this message
 
