@@ -1,8 +1,8 @@
 """liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
 
 
-Smart Device
-------------
+Smart Device (V1)
+-----------------
 
 The NZXT Smart Device is a fan and LED controller that ships with the H200i,
 H400i, H500i and H700i cases.
@@ -23,13 +23,13 @@ A microphone is also present onboard, for noise level optimization through CAM
 and AI.  NZXT calls this feature Adaptive Noise Reduction (ANR).
 
 [1] https://forum.level1techs.com/t/nzxt-hue-a-look-inside/104836
-[2] In parallel: 10 kOhm per Hue+ strip, 16 kOhm per Aer RGB fan.
+[2] In parallel: 10 kOhm per HUE+ strip, 16 kOhm per Aer RGB fan.
 
 
 Grid+ V3
 --------
 
-The NZXT Grid+ V3 is a fan controller very similar to the Smart Device.
+The NZXT Grid+ V3 is a fan controller very similar to the Smart Device (V1).
 Comparing the two, the Grid+ has more fan channels (six in total), and no
 support for LEDs.
 
@@ -217,7 +217,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
     """liquidctl driver for the NZXT Smart Device (V1) and Grid+ V3."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x1714, None, 'NZXT Smart Device', {
+        (0x1e71, 0x1714, None, 'NZXT Smart Device (V1)', {
             'speed_channel_count': 3,
             'color_channel_count': 1
         }),
@@ -271,7 +271,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
                 lcount = msg[0x11]
                 status.append(('LED accessories', lcount, ''))
                 if lcount > 0:
-                    ltype, lsize = [('Hue+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
+                    ltype, lsize = [('HUE+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
                     status.append(('LED accessory type', ltype, ''))
                     status.append(('LED count (total)', lcount*lsize, ''))
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
