@@ -148,6 +148,9 @@ Show the embedded help
 .TP
 .I /run/liquidctl/*
 Temporary storage required by some drivers.
+.\" on Linux systems where /run is not available, or on other platforms, the
+.\" temporary storage will be placed elsewhere (see asetek.py and it's use of
+.\" appdirs); package maintainers should update this man page when necessary
 .
 .SH EXAMPLE
 .SY liquidctl
