@@ -311,7 +311,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         """Instantiate a driver with a device handle."""
         speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
-        color_channels = {'led{}'.format(i + 0): (i)
+        color_channels = {'led{}'.format(i + 1): (i)
                           for i in range(color_channel_count)}
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
