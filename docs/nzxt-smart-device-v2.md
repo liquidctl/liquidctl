@@ -85,7 +85,7 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | `spectrum-wave` | None |
 | `backwards-spectrum-wave` | None |
 | *`super-wave` | Up to 40 |
-| `backwards-super-wave` | Up to 40 |
+| *`backwards-super-wave` | Up to 40 |
 | `marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `covering-marquee` | Up to 8, one for each step |
