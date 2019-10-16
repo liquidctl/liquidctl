@@ -151,22 +151,17 @@ Temporary storage required by some drivers.
 .
 .SH EXAMPLE
 .SY liquidctl
-.B list
+.B list \-\-verbose
 .SY liquidctl
+.BI \-\-device\  0
 .B initialize
 .SY liquidctl
-.B status
+.BI \-\-product\  0x170e\  set\  pump\  speed\  90
 .SY liquidctl
-.BI set\  pump\  speed\  90
-.SY liquidctl
-.BI set\  fan\  speed
-.I 20 30 30 50 34 80 40 90 50 100
-.SY liquidctl
-.BI set\  ring\  color\  fading
+.BI \-\-serial\  123ABC789\  set\  led\  color\  fading
 .I 350017 ff2608
 .SY liquidctl
-.BI set\  logo\  color\  fixed
-.I af5a2f
+.B status
 .YS
 .
 .SH SEE ALSO
