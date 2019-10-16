@@ -44,20 +44,17 @@ liquidctl \- monitor and control liquid coolers and other devices
 .SH DESCRIPTION
 .PP
 \fBliquidctl\fR is a utility for monitoring and controlling some hardware
-monitoring devices not yet supported at the kernel level.
-.PP
-Because \fBliquidctl\fR directly accesses the hardware devices root privileges
-are required in most cases.  This can be mitigate to some extent with udev
-rules.
+monitoring devices not yet supported at the kernel level.  Because
+\fBliquidctl\fR directly accesses the hardware devices root privileges are
+generally required, though this can be avoided with appropriate udev rules.
 .PP
 \fBliquidctl list\fR outputs all compatible devices found on the system.  In
 case more than one device is found, the displayed device number can be used to
-select it in later invocations.
-.PP
-Passing \fI\-\-verbose\fR to \fBlist\fR enables the display of additional
-identifiers and address which can also be used to select specific devices.
-These are preferred for non-interactive invocations as they, unlike device
-numbers, are more stable across reboots and software or hardware updates.
+select it in later invocations.  Passing \fI\-\-verbose\fR enables the display
+of additional identifiers and addresses that can also be used to select
+specific devices.  These are preferred for non-interactive invocations as they,
+unlike device numbers, are more stable across reboots and software or hardware
+updates.
 .PP
 \fBliquidctl initialize\fR should be called for every device after a reboot,
 since many of them require some initialization code before correctly responding
@@ -153,6 +150,10 @@ Temporary storage required by some drivers.
 .\" appdirs); package maintainers should update this man page when necessary
 .
 .SH EXAMPLE
+.SY liquidctl
+.B list
+.SY liquidctl
+.B initialize
 .SY liquidctl
 .B status
 .SY liquidctl
