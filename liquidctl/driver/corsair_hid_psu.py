@@ -78,7 +78,7 @@ class OCPMode(Enum):
     MULTI_RAIL = 0x2
 
     def __str__(self):
-        return self.name.capitalize().replace('_', '')
+        return self.name.capitalize().replace('_', ' ')
 
 
 class CorsairHidPsuDriver(UsbHidDriver):
