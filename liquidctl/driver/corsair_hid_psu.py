@@ -106,7 +106,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         self._write([0xfe, 0x03])  # not well understood
         self._read()
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
-        self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, mode.value)
+        self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
         self.device.release()
 
     def get_status(self, **kwargs):
@@ -154,7 +154,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
     def _get_byte(self, command):
         """Get float value with `command`."""
-        return self._exec(WriteBit.READ, command)[2:3]
+        return self._exec(WriteBit.READ, command)[2]
 
     def _get_float(self, command):
         """Get float value with `command`."""
