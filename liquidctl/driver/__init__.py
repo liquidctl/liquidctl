@@ -32,12 +32,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from liquidctl.driver.base import BaseBus, find_all_subclasses
 import liquidctl.driver.asetek
 import liquidctl.driver.corsair_hid_psu
 import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.seasonic
+
+from liquidctl.driver.base import BaseBus, find_all_subclasses
 
 
 def find_liquidctl_devices(device=None, **kwargs):
@@ -64,6 +65,7 @@ def find_liquidctl_devices(device=None, **kwargs):
                 num += 1
             else:
                 yield dev
+
 
 __all__ = [
     'find_liquidctl_devices',
