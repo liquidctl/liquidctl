@@ -134,7 +134,7 @@ Override API for USB HIDs: usb, hid or hidraw.
 Use Asetek 690LC in legacy mode (old Krakens).
 .TP
 .B \-\-single-12v-ocp
-Enable single rail +12V OCP
+Enable single rail +12V OCP.
 .TP
 .B \-\-version
 Display the version number.
@@ -245,6 +245,13 @@ where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
 .
 .SS Corsair HX750i, HX850i, HX1000i, HX1200i
 .SS Corsair RM650i, RM750i, RM850i, RM1000i
+Fan channels: none (feature not supported yet).
+.PP
+Lighting channels: none.
+.PP
+The +12V rails normally function in multiple-rail mode.  Single-rail mode can
+be selected by passing \fB\-\-single\-12v\-ocp\fR to \fBinitialize\fR.
+.
 .SS NZXT E500, E650, E850
 Fan channels: none (feature not supported yet).
 .PP

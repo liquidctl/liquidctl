@@ -11,8 +11,7 @@ It is necessary to initialize the device it has been powered on.
 # liquidctl initialize
 ```
 
-By the default the device will be initialized with multi rail +12V OCP.  If single rail +12V OCP is desired, pass `--single-12v-ocp`.
-
+The +12V rails normally function in multiple-rail mode.  Single-rail mode can be selected by passing `--single-12v-ocp` to `initialize`.
 
 ## Monitoring
 
