@@ -49,7 +49,7 @@ import sys
 import appdirs
 import usb
 
-from liquidctl.driver.usb import UsbDeviceDriver
+from liquidctl.driver.usb import UsbDriver
 from liquidctl.util import color_from_str
 
 
@@ -106,7 +106,7 @@ def _clamp(val, lo, hi, none=None, desc='value'):
         return val
 
 
-class CommonAsetekDriver(UsbDeviceDriver):
+class CommonAsetekDriver(UsbDriver):
     """Common fuctions of fifth generation Asetek devices."""
 
     def _configure_flow_control(self, clear_to_send):
@@ -206,11 +206,10 @@ class AsetekDriver(CommonAsetekDriver):
     ]
 
     @classmethod
-    def find_supported_devices(cls, legacy_690lc=False, **kwargs):
-        """Find and bind to compatible devices."""
+    def probe(cls, handle, legacy_690lc=False, **kwargs):
         if legacy_690lc:
-            return []
-        return super().find_supported_devices(**kwargs)
+            return None
+        return super().probe(handle, **kwargs)
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -315,11 +314,10 @@ class LegacyAsetekDriver(CommonAsetekDriver):
     ]
 
     @classmethod
-    def find_supported_devices(cls, legacy_690lc=False, **kwargs):
-        """Find and bind to compatible devices."""
+    def probe(cls, handle, legacy_690lc=False, **kwargs):
         if not legacy_690lc:
-            return []
-        return super().find_supported_devices(**kwargs)
+            return None
+        return super().probe(handle, **kwargs)
 
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
@@ -458,11 +456,10 @@ class CorsairAsetekDriver(AsetekDriver):
     ]
 
     @classmethod
-    def find_supported_devices(cls, legacy_690lc=None, **kwargs):
-        """Find and bind to compatible devices."""
-        # the modern driver overrides find_supported_devices and rigs it to
-        # switch on --legacy-690lc, so we override it again
-        return super().find_supported_devices(legacy_690lc=False, **kwargs)
+    def probe(cls, handle, legacy_690lc=False, **kwargs):
+        # the modern driver overrides probe and rigs it to switch on
+        # --legacy-690lc, so we override it again
+        return super().probe(handle, legacy_690lc=False, **kwargs)
 
     def set_color(self, channel, mode, colors, **kwargs):
         if mode == 'rainbow':

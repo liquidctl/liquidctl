@@ -73,29 +73,36 @@ import sys
 
 from docopt import docopt
 
-import liquidctl.driver.asetek
-import liquidctl.driver.kraken_two
-import liquidctl.driver.nzxt_smart_device
-import liquidctl.driver.corsair_hid_psu
-import liquidctl.driver.seasonic
-import liquidctl.driver.usb
-import liquidctl.util
+from liquidctl.driver import *
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
 
-# Options that are forwarded to drivers; they must:
+# options that are forwarded to buses and drivers;
+# they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
 #  - or avoid unintentional conflicts with target function arguments
 _OPTIONS_TO_FORWARD = [
-    '--hid',
-    '--legacy-690lc',
-    '--speed',
-    '--time-per-color',
-    '--time-off',
-    '--alert-threshold',
-    '--alert-color',
-    '--single-12v-ocp',
+    ('--vendor', lambda x: int(x, 0)),
+    ('--product', lambda x: int(x, 0)),
+    ('--release', lambda x: int(x, 0)),
+    ('--serial', str),
+    ('--bus', str),
+    ('--address', str),
+    ('--usb-port', lambda x: tuple(map(int, x.split('.')))),
+    ('--device', int),
+
+    ('--speed', str),
+    ('--time-per-color', int),
+    ('--time-off', int),
+    ('--alert-threshold', int),
+    ('--alert-color', color_from_str),
+
+    ('--hid', str),
+    ('--legacy-690lc', bool),
+    ('--single-12v-ocp', bool),
+    ('--verbose', bool),
+    ('--debug', bool),
 ]
 
 # custom number formats for values of select units
@@ -107,55 +114,19 @@ _VALUE_FORMATS = {
     'W' : '.2f'
 }
 
-
-DRIVERS = [
-    liquidctl.driver.asetek.AsetekDriver,
-    liquidctl.driver.asetek.CorsairAsetekDriver,
-    liquidctl.driver.asetek.LegacyAsetekDriver,
-    liquidctl.driver.corsair_hid_psu.CorsairHidPsuDriver,
-    liquidctl.driver.kraken_two.KrakenTwoDriver,
-    liquidctl.driver.nzxt_smart_device.SmartDeviceDriver,
-    liquidctl.driver.nzxt_smart_device.SmartDeviceDriverV2,
-    liquidctl.driver.seasonic.SeasonicEDriver,
-]
-
-
 LOGGER = logging.getLogger(__name__)
 
 
 def find_all_supported_devices(**kwargs):
-    res = map(lambda driver: driver.find_supported_devices(**kwargs), DRIVERS)
-    return itertools.chain(*res)
+    """Deprecated."""
+    LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
+    return find_liquidctl_devices(**kwargs)
 
 
-def _filter_devices(devices, args):
-    if args['--device']:
-        return [devices[int(args['--device'])]]
-    sel = []
-    for i, dev in devices:
-        if args['--vendor'] and dev.vendor_id != int(args['--vendor'], 0):
-            continue
-        if args['--product'] and dev.product_id != int(args['--product'], 0):
-            continue
-        if args['--release'] and dev.release_number != int(args['--release'], 0):
-            continue
-        if args['--serial'] and dev.serial_number != args['--serial']:
-            continue
-        if args['--bus'] and dev.bus != args['--bus']:
-            continue
-        if args['--address'] and dev.address != int(args['--address'], 0):
-            continue
-        if (args['--usb-port'] and
-            dev.port != tuple(map(int, args['--usb-port'].split('.')))):
-            continue
-        sel.append((i, dev))
-    return sel
-
-
-def _list_devices(devices, args):
-    for i, dev in devices:
-        print('Device {}, {}'.format(i, dev.description))
-        if not args['--verbose']:
+def _list_devices(devices, verbose=False, **kwargs):
+    for i, dev in enumerate(devices):
+        print('Result #{}: {}'.format(i, dev.description))
+        if not verbose:
             continue
         print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
         print('  Product ID: {:#06x}'.format(dev.product_id))
@@ -178,8 +149,8 @@ def _list_devices(devices, args):
         print('')
 
 
-def _device_get_status(dev, num, **kwargs):
-    print('Device {}, {}'.format(num, dev.description))
+def _device_get_status(dev, **kwargs):
+    print('{}:'.format(dev.description))
     dev.connect(**kwargs)
     try:
         status = dev.get_status(**kwargs)
@@ -221,7 +192,7 @@ def _device_set_speed(dev, args, **kwargs):
 def _get_options_to_forward(args):
     def opt_to_field(opt):
         return opt.replace('--', '').replace('-', '_')
-    return {opt_to_field(i): args[i] for i in _OPTIONS_TO_FORWARD if args[i]}
+    return {opt_to_field(i): p(args[i]) for i, p in _OPTIONS_TO_FORWARD if args[i]}
 
 
 def _gen_version():
@@ -261,23 +232,21 @@ def main():
         sys.tracebacklimit = 0
 
     frwd = _get_options_to_forward(args)
-
-    all_devices = list(enumerate(find_all_supported_devices(**frwd)))
-    selected = _filter_devices(all_devices, args)
+    selected = list(find_liquidctl_devices(**frwd))
 
     if args['list']:
-        _list_devices(selected, args)
+        _list_devices(selected, **frwd)
         return
     if args['status']:
-        for i,dev in selected:
-            _device_get_status(dev, i, **frwd)
+        for dev in selected:
+            _device_get_status(dev, **frwd)
         return
 
     if len(selected) > 1:
         raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
     elif len(selected) == 0:
         raise SystemExit('No devices matches available drivers and selection criteria')
-    num, dev = selected[0]
+    dev = selected[0]
 
     dev.connect(**frwd)
     try:

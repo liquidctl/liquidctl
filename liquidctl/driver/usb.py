@@ -2,10 +2,10 @@
 
 This modules provides abstractions over several platform and implementation
 differences.  As such, there is a lot of boilerplate here, but callers should
-be able to disregard almost everything and simply work on the UsbDeviceDriver/
+be able to disregard almost everything and simply work on the UsbDriver/
 UsbHidDriver level.
 
-UsbDeviceDriver
+BaseUsbDriver
 └── device: PyUsbDevice
     └── uses module usb (PyUSB)
         ├── libusb-1.0
@@ -13,7 +13,7 @@ UsbDeviceDriver
         └── OpenUSB
 
 UsbHidDriver
-├── extends: UsbDeviceDriver
+├── extends: BaseUsbDriver
 ├── device: PyUsbHid
 │   └── extends PyUsbDevice
 │       └── uses module usb (PyUSB)
@@ -29,9 +29,13 @@ UsbHidDriver
     └── uses module hidraw (hidapi, depends on build options)
         └── hidraw (Linux)
 
-UsbDeviceDriver and UsbHidDriver are meant to be used as base classes to the
-actual device drivers.  The users of those drivers generally do not care about
-read, write or other low level operations; thus, these low level operations are
+UsbDriver
+├── extends: BaseUsbDriver
+└── allows to differentiate between UsbHidDriver and (non Hid) UsbDriver
+
+UsbDriver and UsbHidDriver are meant to be used as base classes to the actual
+device drivers.  The users of those drivers generally do not care about read,
+write or other low level operations; thus, these low level operations are
 placed in <driver>.device.
 
 However, there still are legitimate reasons as to why someone would want to
@@ -39,11 +43,19 @@ directly access the lower layers (device wrapper level, device implementation
 level, or lower).  We do not hide or mark those references as private, but good
 judgement should be exercised when calling anything within <driver>.device.
 
-Finally, when subclassing any drivers, prefer to instantiate them through
-find_supported_devices, rather than directly supplying a compatible device
-wrapper.  The subclass constructor can generally be kept anaware of the
-implementation details of the device parameter, and find_supported_devices
-already accepts keyword arguments and forwards them to the constructor.
+The USB drivers are organized into two buses.  The recommended way to
+initialize and bind drivers is through their respective buses, though
+<driver>.find_supported_devices can also be useful in certain scenarios.
+
+UsbHidBus
+└── drivers: all (recursive) subclasses of UsbHidDriver
+
+UsbBus
+└── drivers: all (recursive) subclasses of UsbDriver
+
+The subclass constructor can generally be kept unaware of the implementation
+details of the device parameter, and find_supported_devices already accepts
+keyword arguments and forwards them to the driver constructor.
 
 Copyright (C) 2019  Jonas Malaco
 Copyright (C) 2019  each contribution's author
@@ -68,12 +80,12 @@ import sys
 
 import usb
 
-from liquidctl.driver.base import BaseDriver
+from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 
 LOGGER = logging.getLogger(__name__)
 
 
-class UsbDeviceDriver(BaseDriver):
+class BaseUsbDriver(BaseDriver):
     """Base driver class for generic USB devices.
 
     Each driver should provide its own list of SUPPORTED_DEVICES, as well as
@@ -89,19 +101,22 @@ class UsbDeviceDriver(BaseDriver):
     SUPPORTED_DEVICES = []
 
     @classmethod
-    def find_supported_devices(cls, **kwargs):
-        """Find and bind to compatible devices."""
-        drivers = []
+    def probe(cls, handle, vendor=None, product=None, release=None, serial=None, **kwargs):
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
+            if (vendor and vendor != vid) or handle.vendor_id != vid:
+                continue
+            if (product and product != pid) or handle.product_id != pid:
+                continue
+            if release and handle.release_number != release:
+                continue
+            if serial and handle.serial_number != serial:
+                continue
             consargs = devargs.copy()
             consargs.update(kwargs)
-            for dev in PyUsbDevice.enumerate(vid, pid):
-                drivers.append(cls(dev, description, **consargs))
-        return drivers
-
-    def __init__(self, device, description, **kwargs):
-        self.device = device
-        self._description = description
+            dev = cls(handle, description, **consargs)
+            LOGGER.debug('instanced driver for %s', description)
+            return dev
+        return None
 
     def connect(self, **kwargs):
         """Connect to the device."""
@@ -159,47 +174,16 @@ class UsbDeviceDriver(BaseDriver):
         return self.device.port
 
 
-class UsbHidDriver(UsbDeviceDriver):
+class UsbHidDriver(BaseUsbDriver):
     """Base driver class for USB Human Interface Devices (HIDs)."""
+
     @classmethod
     def find_supported_devices(cls, hid=None, **kwargs):
-        """Find and bind to compatible devices.
-
-        Both hidapi and PyUSB backends are supported.  On Mac the default is
-        hidapi; on all other platforms it is PyUSB.
-
-        The choice of API for HID can be overiden with `hid`:
-
-         - `hid='usb'`: use PyUSB (libusb-1.0, libusb-0.1 or OpenUSB)
-         - `hid='hid'`: use hidapi (backend depends on hidapi build options)
-         - `hid='hidraw'`: specifically try to use hidraw (Linux; depends on
-           hidapi build options)
-        """
-        if hid == 'hidraw' or hid == 'hid':
-            wrapper = HidapiDevice
-        elif hid == 'usb':
-            wrapper = PyUsbHid
-        elif sys.platform.startswith('darwin'):
-            wrapper = HidapiDevice
-            hid = 'hid'
-        else:
-            wrapper = PyUsbHid
-
-        drivers = []
-        if wrapper == HidapiDevice:
-            api = importlib.import_module(hid)
-            for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
-                consargs = devargs.copy()
-                consargs.update(kwargs)
-                for dev in wrapper.enumerate(api, vid, pid):
-                    drivers.append(cls(dev, description, **consargs))
-        else:
-            for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
-                consargs = devargs.copy()
-                consargs.update(kwargs)
-                for dev in PyUsbHid.enumerate(vid, pid):
-                    drivers.append(cls(dev, description, **consargs))
-        return drivers
+        """Find devices specifically compatible with this driver."""
+        devs = []
+        for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
+            devs += UsbHidBus.find_devices(vendor=vid, product=pid, **kwargs)
+        return devs
 
     def __init__(self, device, description, **kwargs):
         # compatibility with v1.1.0 drivers (all HIDs): they could be directly
@@ -207,7 +191,27 @@ class UsbHidDriver(UsbDeviceDriver):
         if isinstance(device, usb.core.Device):
             LOGGER.warning('deprecated: delegate to find_supported_devices or use an appropriate wrapper')
             device = PyUsbHid(device)
-        super().__init__(device, description, **kwargs)
+        self.device = device
+        self._description = description
+
+
+class UsbDriver(BaseUsbDriver):
+    """Base driver class for regular USB devices.
+
+    Specifically, regular USB devices are *not* Human Interface Devices (HIDs).
+    """
+
+    @classmethod
+    def find_supported_devices(cls, hid=None, **kwargs):
+        """Find devices specifically compatible with this driver."""
+        devs = []
+        for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
+            devs += UsbBus.find_devices(vendor=vid, product=pid, **kwargs)
+        return devs
+
+    def __init__(self, device, description, **kwargs):
+        self.device = device
+        self._description = description
 
 
 class PyUsbDevice:
@@ -282,8 +286,13 @@ class PyUsbDevice:
                                          timeout=timeout)
 
     @classmethod
-    def enumerate(cls, vid, pid):
-        for handle in usb.core.find(idVendor=vid, idProduct=pid, find_all=True):
+    def enumerate(cls, vid=None, pid=None):
+        args = {}
+        if vid:
+            args['idVendor'] = vid
+        if pid:
+            args['idProduct'] = pid
+        for handle in usb.core.find(find_all=True, **args):
             yield cls(handle)
 
     @property
@@ -391,8 +400,8 @@ class HidapiDevice:
         return self.hiddev.write(data)
 
     @classmethod
-    def enumerate(cls, api, vid, pid):
-        for info in api.enumerate(vid, pid):
+    def enumerate(cls, api, vid=None, pid=None):
+        for info in api.enumerate(vid or 0, pid or 0):
             yield cls(api, info)
 
     @property
@@ -423,3 +432,76 @@ class HidapiDevice:
     def port(self):
         return None
 
+
+class UsbHidBus(BaseBus):
+
+    def find_devices(self, vendor=None, product=None, hid=None, bus=None,
+                     address=None, usb_port=None, **kwargs):
+        """Find compatible USB HID devices.
+
+        Both hidapi and PyUSB backends are supported.  On Mac the default is
+        hidapi; on all other platforms it is PyUSB.
+
+        The choice of API for HID can be overiden with `hid`:
+
+         - `hid='usb'`: use PyUSB (libusb-1.0, libusb-0.1 or OpenUSB)
+         - `hid='hid'`: use hidapi (backend depends on hidapi build options)
+         - `hid='hidraw'`: specifically try to use hidraw (Linux; depends on
+           hidapi build options)
+        """
+
+        if hid == 'hidraw' or hid == 'hid':
+            wrapper = HidapiDevice
+        elif hid == 'usb':
+            wrapper = PyUsbHid
+        elif sys.platform.startswith('darwin'):
+            wrapper = HidapiDevice
+            hid = 'hid'
+        else:
+            wrapper = PyUsbHid
+
+        if wrapper == HidapiDevice:
+            api = importlib.import_module(hid)
+            handles = wrapper.enumerate(api, vendor, product)
+        else:
+            handles = wrapper.enumerate(vendor, product)
+            api = usb
+
+        drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
+        LOGGER.debug('searching %s (api=%s, drivers=[%s])', self.__class__.__name__, api.__name__,
+                     ', '.join(map(lambda x: x.__name__, drivers)))
+        for handle in handles:
+            if bus and handle.bus != bus:
+                continue
+            if address and handle.address != address:
+                continue
+            if usb_port and handle.port != usb_port:
+                continue
+            LOGGER.debug('probing drivers for device %s:%s', hex(handle.vendor_id),
+                         hex(handle.product_id))
+            for drv in drivers:
+                dev = drv.probe(handle, vendor=vendor, product=product, **kwargs)
+                if dev:
+                    yield dev
+
+
+class UsbBus(BaseBus):
+    def find_devices(self, vendor=None, product=None, bus=None, address=None,
+                     usb_port=None, **kwargs):
+        """ Find compatible regular USB devices."""
+        drivers = sorted(find_all_subclasses(UsbDriver), key=lambda x: x.__name__)
+        LOGGER.debug('searching %s (drivers=[%s])', self.__class__.__name__,
+                     ', '.join(map(lambda x: x.__name__, drivers)))
+        for handle in PyUsbDevice.enumerate(vendor, product):
+            if bus and handle.bus != bus:
+                continue
+            if address and handle.address != address:
+                continue
+            if usb_port and handle.port != usb_port:
+                continue
+            LOGGER.debug('probing drivers for device %s:%s', hex(handle.vendor_id),
+                         hex(handle.product_id))
+            for drv in drivers:
+                dev = drv.probe(handle, vendor=vendor, product=product, **kwargs)
+                if dev:
+                    yield dev

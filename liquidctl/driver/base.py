@@ -138,3 +138,18 @@ class BaseDriver:
         """
         raise NotImplementedError()
 
+
+class BaseBus:
+    """Base bus API."""
+
+    def find_devices(self, **kwargs):
+        return []
+
+
+def find_all_subclasses(cls):
+    """Recursively find loaded subclasses of `cls`.
+
+    Returns a set of subclasses of `cls`.
+    """
+    sub = set(cls.__subclasses__())
+    return sub.union([s for c in cls.__subclasses__() for s in find_all_subclasses(c)])
