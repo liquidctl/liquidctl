@@ -34,15 +34,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
     'asetek',
-    'base',
     'corsair_hid_psu',
     'kraken_two',
     'nzxt_smart_device',
     'seasonic',
-    'usb',
 
     'find_liquidctl_devices',
 ]
+
+from .base import BaseBus, find_all_subclasses
 
 
 def find_liquidctl_devices(device=None, **kwargs):
@@ -58,7 +58,7 @@ def find_liquidctl_devices(device=None, **kwargs):
     If `device` is passed, only the driver instance for the `(device + 1)`-th
     matched device will be yielded.
     """
-    buses = sorted(base.find_all_subclasses(base.BaseBus), key=lambda x: x.__name__)
+    buses = sorted(find_all_subclasses(BaseBus), key=lambda x: x.__name__)
     num = 0
     for bus_cls in buses:
         for dev in  bus_cls().find_devices(**kwargs):
