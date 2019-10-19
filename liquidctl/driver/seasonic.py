@@ -84,6 +84,7 @@ class SeasonicEDriver(UsbHidDriver):
             status.append((f'{name} output voltage', self._get_vout(i), 'V'))
             status.append((f'{name} output current', self._get_float(CMD.READ_IOUT, page=i), 'A'))
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT, page=i), 'W'))
+        self.device.release()
         return status
 
     def _write(self, data):
