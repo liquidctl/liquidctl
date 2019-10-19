@@ -162,7 +162,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         LOGGER.info('ensuring fan control is in software mode')
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
         LOGGER.info('setting fan PWM duty to %i%%', duty)
-        self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, list(float_to_linear11(duty)))
+        self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
         self.device.release()
 
     def _write(self, data):
