@@ -139,11 +139,15 @@ def float_to_linear11(float):
 
     >>> float_to_linear11(3.3).hex()
     '4dc3'
+    >>> float_to_linear11(0.0).hex()
+    '0000'
     >>> linear_to_float(float_to_linear11(2812))
     2812
     >>> linear_to_float(float_to_linear11(-2812))
     -2812
     """
+    if float == 0:
+        return b'\x00\x00'
     max_y = 1023
     n = math.ceil(math.log(math.fabs(float)/max_y, 2))
     y = round(float * 2**(-n))
