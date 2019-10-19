@@ -15,7 +15,7 @@ Supported features
  - [✓] electrical input monitoring
  - [✓] electrical output monitoring
  - [ ] fan control
- - [ ] 12V multirail configuration
+ - [✓] +12V single or multi rail OCP
 
 
 Port of corsaiRMi: incorporates or uses as reference work by notaz and realies,
@@ -48,6 +48,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 
 from datetime import timedelta
+from enum import Enum
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.pmbus import CommandCode as CMD
@@ -62,11 +63,22 @@ _SLAVE_ADDRESS = 0x02
 _CORSAIR_READ_TOTAL_UPTIME = CMD.MFR_SPECIFIC_01
 _CORSAIR_READ_UPTIME = CMD.MFR_SPECIFIC_02
 _CORSAIR_READ_INPUT_POWER = CMD.MFR_SPECIFIC_30
+_CORSAIR_12V_OCP_MODE = CMD.MFR_SPECIFIC_08
 
 _RAIL_12V = 0x0
 _RAIL_5V = 0x1
 _RAIL_3P3V = 0x2
 _RAIL_NAMES = {_RAIL_12V : '+12V', _RAIL_5V : '+5V', _RAIL_3P3V : '+3.3V'}
+
+
+class OCPMode(Enum):
+    """Overcurrent protection mode."""
+
+    SINGLE_RAIL = 0x1
+    MULTI_RAIL = 0x2
+
+    def __str__(self):
+        return self.name.capitalize().replace('_', ' ')
 
 
 class CorsairHidPsuDriver(UsbHidDriver):
@@ -83,7 +95,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         (0x1b1c, 0x1c0d, None, 'Corsair RM1000i (experimental)', {}),
     ]
 
-    def initialize(self, **kwargs):
+    def initialize(self, single_12v_ocp=False, **kwargs):
         """Initialize the device.
 
         Necessary to receive non-zero value responses from the device.
@@ -93,6 +105,11 @@ class CorsairHidPsuDriver(UsbHidDriver):
         """
         self._write([0xfe, 0x03])  # not well understood
         self._read()
+        mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
+        if mode != self._get_12v_ocp_mode():
+            # TODO replace log level with info once this has been confimed to work
+            LOGGER.warning('(experimental feature) changing +12V OCP mode to %s', mode)
+            self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
         self.device.release()
 
     def get_status(self, **kwargs):
@@ -102,7 +119,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         """
         ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         if ret[1] == 0xfe:
-            LOGGER.warning('Possibly uninitialized device')
+            LOGGER.warning('possibly uninitialized device')
         status = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
@@ -110,7 +127,8 @@ class CorsairHidPsuDriver(UsbHidDriver):
             ('Temperature 2', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
             ('Input voltage', self._get_float(CMD.READ_VIN), 'V'),
-            ('Total power', self._get_float(_CORSAIR_READ_INPUT_POWER), 'W')
+            ('Total power', self._get_float(_CORSAIR_READ_INPUT_POWER), 'W'),
+            ('+12V OCP mode', self._get_12v_ocp_mode(), ''),
         ]
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
             name = _RAIL_NAMES[rail]
@@ -120,6 +138,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         self.device.release()
+        LOGGER.warning('reading the +12V OCP mode is an experimental feature')
         return status
 
     def _write(self, data):
@@ -136,6 +155,10 @@ class CorsairHidPsuDriver(UsbHidDriver):
     def _exec(self, writebit, command, data=None):
         self._write([_SLAVE_ADDRESS | WriteBit(writebit), CMD(command)] + (data or []))
         return self._read()
+
+    def _get_12v_ocp_mode(self):
+        """Get +12V single/multi-rail OCP mode."""
+        return OCPMode(self._exec(WriteBit.READ, _CORSAIR_12V_OCP_MODE)[2])
 
     def _get_float(self, command):
         """Get float value with `command`."""

@@ -32,6 +32,7 @@ Other options:
   -g, --debug                 Show debug information on stderr
   --hid <module>              Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
+  --single-12v-ocp            Enable single rail +12V OCP
   --version                   Display the version number
   --help                      Show this message
 
@@ -94,6 +95,7 @@ _OPTIONS_TO_FORWARD = [
     '--time-off',
     '--alert-threshold',
     '--alert-color',
+    '--single-12v-ocp',
 ]
 
 # custom number formats for values of select units
