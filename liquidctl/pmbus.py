@@ -2,11 +2,14 @@
 
 References:
 
-White, Robert V; 2010.  Power Systems Management Protocol Specification.  Part
-II – Command Language.  Revision 1.2.
+Power Systems Management Protocol Specification.  Part II – Command Language.
+Revision 1.3.1, 2015.  Available uppon request, check the PMBus website.
+
+Power Systems Management Protocol Specification.  Part II – Command Language.
+Revision 1.2, 2010.  Available on the PMBus website.
 http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_II_Rev_1-2_20100906.pdf
 
-White, Robert V; 2005.  Using the PMBus Protocol.
+White, Robert V.  Using the PMBus Protocol.  2005.
 http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
 Copyright (C) 2019  Jonas Malaco
@@ -25,6 +28,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+import math
 
 from enum import IntEnum, IntFlag, unique
 
@@ -45,6 +50,13 @@ class CommandCode(IntEnum):
     PAGE_PLUS_READ = 0x06
 
     VOUT_MODE = 0x20
+
+    FAN_CONFIG_1_2 = 0x3a
+    FAN_COMMAND_1 = 0x3b
+    FAN_COMMAND_2 = 0x3c
+    FAN_CONFIG_3_4 = 0x3d
+    FAN_COMMAND_3 = 0x3e
+    FAN_COMMAND_4 = 0x3f
 
     READ_EIN = 0x86
     READ_EOUT = 0x87
@@ -79,25 +91,27 @@ class CommandCode(IntEnum):
     MFR_SPECIFIC_30 = 0xee
     MFR_SPECIFIC_44 = 0xfc
 
+    MFR_SPECIFIC_F0 = 0xf0
+
 
 def linear_to_float(bytes, vout_exp=None):
-    """Read PMBus Linear Data Format values.
+    """Read PMBus LINEAR11 and ULINEAR16 numeric values.
 
-    If `vout_exp` is None the value is assumed to be a 2-byte Linear Data
-    Format value.  The fraction is stored in the lower 11 bits, in
-    two's-complement, and the exponent is is stored in the upper 5 bits, also
-    in two's-complement.
+    If `vout_exp` is None the value is interpreted as a 2 byte LINEAR11 value.
+    The mantissa is stored in the lower 11 bits, in two's-complement, and the
+    exponent is is stored in the upper 5 bits, also in two's-complement.
 
-    Otherwise, the exponent is read from the lower 5 bits of `vout_exp` (which
-    is assumed to be the output from VOUT_MOE) and the fraction is the unsigned
-    2-byte integer in `bytes`.
+    Otherwise the value is assumed to be encoded in ULINEAR16, where the
+    exponent is read from the lower 5 bits of `vout_exp` (which is assumed to
+    be the output from VOUT_MOE) and the mantissa is the unsigned 2 byte
+    integer in `bytes`.
 
     Per the SMBus specification, the lowest order byte is sent first (endianess
     is little).
 
-    >>> linear_to_float([0x67, 0xe3])
+    >>> linear_to_float(bytes.fromhex('67e3'))
     54.4375
-    >>> linear_to_float([0x67, 0x03], vout_exp=0x1c)
+    >>> linear_to_float(bytes.fromhex('6703'), vout_exp=0x1c)
     54.4375
     """
     tmp = int.from_bytes(bytes[:2], byteorder='little')
@@ -112,3 +126,29 @@ def linear_to_float(bytes, vout_exp=None):
     if exp > 15:
         exp = exp - 32
     return fra * 2**exp
+
+
+def float_to_linear11(float):
+    """Encode float in PMBus LINEAR11 format.
+
+    A LINEAR11 number is a 2 byte value with an 11 bit two's complement
+    mantissa and a 5 bit two's complement exponent.
+
+    Per the SMBus specification, the lowest order byte is sent first (endianess
+    is little).
+
+    >>> float_to_linear11(3.3).hex()
+    '4dc3'
+    >>> linear_to_float(float_to_linear11(2812))
+    2812
+    >>> linear_to_float(float_to_linear11(-2812))
+    -2812
+    """
+    max_y = 1023
+    n = math.ceil(math.log(math.fabs(float)/max_y, 2))
+    y = round(float * 2**(-n))
+    if n < 0:
+        n = n + 32
+    if y < 0:
+        y = y + 2048
+    return int.to_bytes((n << 11) | y, length=2, byteorder='little')

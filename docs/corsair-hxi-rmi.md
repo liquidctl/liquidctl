@@ -26,6 +26,7 @@ Current uptime                        3:43:54
 Total uptime                 9 days, 11:43:54
 Temperature 1                            50.0  °C
 Temperature 2                            40.8  °C
+Fan control mode                     Hardware
 Fan speed                                   0  rpm
 Input voltage                          230.00  V
 Total power                            110.00  W
@@ -40,3 +41,15 @@ Total power                            110.00  W
 +3.3V output current                     1.56  A
 +3.3V output power                       5.00  W
 ```
+
+## Fan speed
+
+The fan speed is normally controlled automatically by the PSU.
+
+It is possible to override this and set it to a fixed duty value using the `fan` channel.
+
+```
+# liquidctl set fan speed 90
+```
+
+This changes the fan mode to software control.  To revert back to hardware control, re-`initialize` the device.
