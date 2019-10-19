@@ -107,35 +107,6 @@ from liquidctl.driver.usb import UsbHidDriver
 
 LOGGER = logging.getLogger(__name__)
 
-_COLOR_MODES = {
-    # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
-    'off':                           (0x00, 0x00, 0x00, 0, 0),
-    'fixed':                         (0x00, 0x00, 0x00, 1, 1),
-    'super-fixed':                   (0x00, 0x00, 0x00, 1, 40),  # independent leds
-    'fading':                        (0x01, 0x00, 0x00, 1, 8),
-    'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
-    'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
-    'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
-    'marquee-4':                     (0x03, 0x00, 0x08, 1, 1),
-    'marquee-5':                     (0x03, 0x00, 0x10, 1, 1),
-    'marquee-6':                     (0x03, 0x00, 0x18, 1, 1),
-    'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1),
-    'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1),
-    'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1),
-    'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1),
-    'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
-    'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8),
-    'alternating':                   (0x05, 0x00, 0x00, 2, 2),
-    'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
-    'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
-    'pulse':                         (0x06, 0x00, 0x00, 1, 8),
-    'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
-    'super-breathing':               (0x07, 0x00, 0x00, 1, 40),  # one step, independent leds
-    'candle':                        (0x09, 0x00, 0x00, 1, 1),
-    'wings':                         (0x0c, 0x00, 0x00, 1, 1),
-    'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
-    'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 40),  # independent ring leds
-}
 _ANIMATION_SPEEDS = {
     'slowest':  0x0,
     'slower':   0x1,
@@ -168,7 +139,7 @@ class CommonSmartDeviceDriver(UsbHidDriver):
         if not self._color_channels:
             raise NotImplementedError()
         cid = self._color_channels[channel]
-        _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
+        _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
             raise ValueError('Not enough colors for mode={}, at least {} required'
@@ -226,6 +197,36 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
             'color_channel_count': 0
         }),
     ]
+    
+    _COLOR_MODES = {
+        # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
+        'off':                           (0x00, 0x00, 0x00, 0, 0),
+        'fixed':                         (0x00, 0x00, 0x00, 1, 1),
+        'super-fixed':                   (0x00, 0x00, 0x00, 1, 40),  # independent leds
+        'fading':                        (0x01, 0x00, 0x00, 1, 8),
+        'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
+        'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
+        'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
+        'marquee-4':                     (0x03, 0x00, 0x08, 1, 1),
+        'marquee-5':                     (0x03, 0x00, 0x10, 1, 1),
+        'marquee-6':                     (0x03, 0x00, 0x18, 1, 1),
+        'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1),
+        'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1),
+        'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1),
+        'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1),
+        'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
+        'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8),
+        'alternating':                   (0x05, 0x00, 0x00, 2, 2),
+        'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
+        'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
+        'pulse':                         (0x06, 0x00, 0x00, 1, 8),
+        'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
+        'super-breathing':               (0x07, 0x00, 0x00, 1, 40),  # one step, independent leds
+        'candle':                        (0x09, 0x00, 0x00, 1, 1),
+        'wings':                         (0x0c, 0x00, 0x00, 1, 1),
+        'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
+        'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 40),  # independent ring leds
+    }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
@@ -279,7 +280,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         return sorted(status)
 
     def _write_colors(self, cid, mode, colors, sval):
-        mval, mod3, mod4, _, _ = _COLOR_MODES[mode]
+        mval, mod3, mod4, _, _ = self._COLOR_MODES[mode]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
@@ -306,6 +307,39 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             'color_channel_count': 2
         }),
     ]
+
+    _COLOR_MODES = {
+        # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
+        'off':                           (0x00, 0x00, 0x00, 0, 0),
+        'fixed':                         (0x00, 0x00, 0x00, 1, 1),
+        'super-fixed':                   (0x01, 0x00, 0x00, 1, 40),  # independent leds
+        'fading':                        (0x01, 0x00, 0x00, 1, 8),
+        'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
+        'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
+        'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
+        'marquee-4':                     (0x03, 0x00, 0x08, 1, 1),
+        'marquee-5':                     (0x03, 0x00, 0x10, 1, 1),
+        'marquee-6':                     (0x03, 0x00, 0x18, 1, 1),
+        'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1),
+        'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1),
+        'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1),
+        'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1),
+        'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
+        'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8),
+        'alternating':                   (0x05, 0x00, 0x00, 2, 2),
+        'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
+        'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
+        'pulse':                         (0x06, 0x00, 0x00, 1, 8),
+        'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
+        'super-breathing':               (0x03, 0x19, 0x00, 1, 40),  # independent leds
+        'starry-night':                  (0x09, 0x00, 0x00, 1, 1),
+        'rainbow-flow':                  (0x0b, 0x00, 0x00, 0, 0),
+        'super-rainbow':                 (0x0c, 0x00, 0x00, 0, 0),   
+        'rainbow-pulse':                 (0x0d, 0x00, 0x00, 0, 0),
+        'backwards-rainbow-flow':        (0x0b, 0x01, 0x00, 0, 0),
+        'backwards-super-rainbow':       (0x0c, 0x01, 0x00, 0, 0),   
+        'backwards-rainbow-pulse':       (0x0d, 0x01, 0x00, 0, 0),
+    }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
@@ -335,13 +369,18 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         msg_2103_reply = False
         msg_6702_reply = False
         msg_6704_reply = False
+        accessory_name_dict = {
+            0x04: "HUE 2 LED Strip",
+            0x08: "HUE 2 Cable Comb", 
+            0x0a: "HUE 2 Underglow 200mm",
+            0x0b: "AER RGB 2 120mm", 
+            0x0c: "AER RGB 2 140mm"
+        }
         # Get configuration information from device
-        wmsg = [0x10, 0x01, 0x00, 0x00, 0x00, 0x00]
         LOGGER.debug('Issuing command 0x10 0x01 to get firmware info')
-        self._write(wmsg)
-        wmsg = [0x20, 0x03, 0x00, 0x00, 0x00, 0x00]
+        self._write([0x10, 0x01, 0x00, 0x00, 0x00, 0x00])
         LOGGER.debug('Issuing command 0x20 0x03 to get lighting info')
-        self._write(wmsg)
+        self._write([0x20, 0x03, 0x00, 0x00, 0x00, 0x00])
         # After issuing the above 2 commands, we will get a series of replies that
         # will include everything we want to extract and display to the user.
         # It may take 10 or 12 reply messages before we get all of the expected replies.
@@ -364,19 +403,9 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                     for accessory_num in range(accessories_per_channel):
                         accessory_id = msg[light_accessory_index]
                         light_accessory_index += 1
-                        if accessory_id == 0x04:
-                            accessory_name = 'HUE 2 LED Strip'
-                        elif accessory_id == 0x08:
-                            accessory_name = 'HUE 2 Cable Comb'
-                        elif accessory_id == 0x0a:
-                            accessory_name = 'HUE 2 Underglow'
-                        elif accessory_id == 0x0b:
-                            accessory_name = 'AER RGB 2 120 mm'
-                        elif accessory_id == 0x0c:
-                            accessory_name = 'AER RGB 2 140 mm'
-                        if accessory_id != 0:
+                        if accessory_id in accessory_name_dict:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                           accessory_name, ''))
+                                   accessory_name_dict.get(accessory_id), ''))
                 num_valid_replies_recvd += 1
                 msg_2103_reply = True
                 continue
@@ -404,11 +433,21 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         return sorted(status)
 
     def _write_colors(self, cid, mode, colors, sval):
-        mval, mod3, mod4, _, _ = _COLOR_MODES[mode]
+        mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
         color_count = len(colors)
-        channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
-        header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, 0x0, [0x00, 0x01][mod3 > 0], color_count, 0x0]
-        self._write(header + list(itertools.chain(*colors)))
+        if maxcolors == 40:
+            channel_mod = [0x1E, 0x20][cid] # the purpose of this is unknown, but is based on cmd issued by CAM software
+            led_padding = [0xFF, 0xFF, 0xFF]*(maxcolors-color_count)  # set all remaining LEDs to White
+            leds = list(itertools.chain(*colors)) + led_padding
+            self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
+            self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining 12 colors to device
+            msg=self.device.read(_READ_LENGTH_V2) # wait for one reply before issuing command to specify color mode
+            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
+            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00, 0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
+        else:        
+            channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
+            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, 0x0, [0x00, 0x01][mod3 > 0], color_count, 0x0]
+            self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
         msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel passed as bitflag in last 3 bits of 3rd byte
