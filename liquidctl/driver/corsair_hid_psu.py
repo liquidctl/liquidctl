@@ -190,7 +190,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
     def _set_fan_control_mode(self, mode):
         """Set hardware/software fan control mode."""
-        return self._exec(WriteBit.WRITE, _CORSAIR_FAN_CONTROL_MODE, [mode])
+        return self._exec(WriteBit.WRITE, _CORSAIR_FAN_CONTROL_MODE, [mode.value])
 
     def _get_float(self, command):
         """Get float value with `command`."""
