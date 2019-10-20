@@ -52,7 +52,7 @@ from enum import Enum
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.pmbus import CommandCode as CMD
-from liquidctl.pmbus import WriteBit, linear_to_float, float_to_linear11
+from liquidctl.pmbus import WriteBit, linear_to_float
 
 
 LOGGER = logging.getLogger(__name__)
