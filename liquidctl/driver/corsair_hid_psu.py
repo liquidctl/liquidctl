@@ -11,11 +11,11 @@ Supported devices
 Supported features
 ------------------
 
- - [✓] general device monitoring
- - [✓] electrical input monitoring
- - [✓] electrical output monitoring
- - [ ] fan control
- - [✓] +12V single or multi rail OCP
+ - general device monitoring
+ - electrical input monitoring
+ - electrical output monitoring
+ - fan control
+ - +12V single or multi rail OCP
 
 
 Port of corsaiRMi: incorporates or uses as reference work by notaz and realies,
@@ -52,7 +52,7 @@ from enum import Enum
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.pmbus import CommandCode as CMD
-from liquidctl.pmbus import WriteBit, linear_to_float
+from liquidctl.pmbus import WriteBit, linear_to_float, float_to_linear11
 
 
 LOGGER = logging.getLogger(__name__)
@@ -64,11 +64,13 @@ _CORSAIR_READ_TOTAL_UPTIME = CMD.MFR_SPECIFIC_01
 _CORSAIR_READ_UPTIME = CMD.MFR_SPECIFIC_02
 _CORSAIR_READ_INPUT_POWER = CMD.MFR_SPECIFIC_30
 _CORSAIR_12V_OCP_MODE = CMD.MFR_SPECIFIC_08
+_CORSAIR_FAN_CONTROL_MODE = CMD.MFR_SPECIFIC_F0
 
 _RAIL_12V = 0x0
 _RAIL_5V = 0x1
 _RAIL_3P3V = 0x2
 _RAIL_NAMES = {_RAIL_12V : '+12V', _RAIL_5V : '+5V', _RAIL_3P3V : '+3.3V'}
+_MIN_FAN_DUTY = 0
 
 
 class OCPMode(Enum):
@@ -79,6 +81,15 @@ class OCPMode(Enum):
 
     def __str__(self):
         return self.name.capitalize().replace('_', ' ')
+
+class FanControlMode(Enum):
+    """Fan control mode."""
+
+    HARDWARE = 0x0
+    SOFTWARE = 0x1
+
+    def __str__(self):
+        return self.name.capitalize()
 
 
 class CorsairHidPsuDriver(UsbHidDriver):
@@ -110,6 +121,9 @@ class CorsairHidPsuDriver(UsbHidDriver):
             # TODO replace log level with info once this has been confimed to work
             LOGGER.warning('(experimental feature) changing +12V OCP mode to %s', mode)
             self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
+        if self._get_fan_control_mode() != FanControlMode.HARDWARE:
+            LOGGER.info('resetting fan control to hardware mode')
+            self._set_fan_control_mode(FanControlMode.HARDWARE)
         self.device.release()
 
     def get_status(self, **kwargs):
@@ -125,6 +139,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
             ('Temperature 1', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
             ('Temperature 2', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
+            ('Fan control mode', self._get_fan_control_mode(), ''),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
             ('Input voltage', self._get_float(CMD.READ_VIN), 'V'),
             ('Total power', self._get_float(_CORSAIR_READ_INPUT_POWER), 'W'),
@@ -140,6 +155,15 @@ class CorsairHidPsuDriver(UsbHidDriver):
         self.device.release()
         LOGGER.warning('reading the +12V OCP mode is an experimental feature')
         return status
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed duty."""
+        duty = max(_MIN_FAN_DUTY, min(duty, 100))
+        LOGGER.info('ensuring fan control is in software mode')
+        self._set_fan_control_mode(FanControlMode.SOFTWARE)
+        LOGGER.info('setting fan PWM duty to %i%%', duty)
+        self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
+        self.device.release()
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
@@ -159,6 +183,14 @@ class CorsairHidPsuDriver(UsbHidDriver):
     def _get_12v_ocp_mode(self):
         """Get +12V single/multi-rail OCP mode."""
         return OCPMode(self._exec(WriteBit.READ, _CORSAIR_12V_OCP_MODE)[2])
+
+    def _get_fan_control_mode(self):
+        """Get hardware/software fan control mode."""
+        return FanControlMode(self._exec(WriteBit.READ, _CORSAIR_FAN_CONTROL_MODE)[2])
+
+    def _set_fan_control_mode(self, mode):
+        """Set hardware/software fan control mode."""
+        return self._exec(WriteBit.WRITE, _CORSAIR_FAN_CONTROL_MODE, [mode.value])
 
     def _get_float(self, command):
         """Get float value with `command`."""

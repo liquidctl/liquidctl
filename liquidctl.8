@@ -245,13 +245,17 @@ where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
 .
 .SS Corsair HX750i, HX850i, HX1000i, HX1200i
 .SS Corsair RM650i, RM750i, RM850i, RM1000i
-Fan channels: none (feature not supported yet).
+Fan channels: \fIfan\fR.
 .PP
 Lighting channels: none.
 .PP
+Setting a fixed fan speed changes the fan mode to software control.  To revert
+back to hardware control, run \fBinitialize\fR again.
+.PP
 (Experimental feature) The +12V rails normally function in multiple-rail mode.
 Single-rail mode can be selected by passing \fB\-\-single\-12v\-ocp\fR to
-\fBinitialize\fR.
+\fBinitialize\fR.  To revert back to multitple-rail mode, run \fBinitialize\fR
+again without that flag.
 .
 .SS NZXT E500, E650, E850
 Fan channels: none (feature not supported yet).
