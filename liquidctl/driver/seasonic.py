@@ -116,7 +116,7 @@ class SeasonicEDriver(UsbHidDriver):
             # been seen in the wild yet; TODO check PEC byte as well
             if ret[0] == 0xaa and ret[1] == data_len + 1:
                 break
-        assert ret, f'invalid response (attemps={attemps})'
+        assert ret, f'invalid response (attempts={attempts})'
         return ret[2:(2 + data_len)]
 
     def _exec_page_plus_read(self, page, cmd, data_len, attempts=_READ_ATTEMPTS):
@@ -130,7 +130,7 @@ class SeasonicEDriver(UsbHidDriver):
             # busy; see PMBus spec); TODO check PEC byte as well
             if ret[0] == 0xaa and ret[1] == data_len + 2 and ret[2] == data_len:
                 break
-        assert ret, f'invalid response (attemps={attemps})'
+        assert ret, f'invalid response (attempts={attempts})'
         return ret[3:(3 + data_len)]
 
     def _get_float(self, cmd, page=None):
