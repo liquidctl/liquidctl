@@ -267,7 +267,7 @@ Fan channels: \fIfan[1\(en6]\fR.
 .PP
 Lighting channels: none.
 .
-.SS NZXT Smart Device
+.SS NZXT Smart Device (V1)
 Fan channels: \fIfan[1\(en3]\fR.
 .PP
 Lighting channel: \fIled\fR.
@@ -291,6 +291,38 @@ Mode	#colors
 \fIpulse\fR	1\(en8
 \fIcandle\fR	1
 \fIwings\fR	1
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
+\fIfast\fR, \fIfastest\fR.
+.
+.SS NZXT Smart Device V2
+Fan channels: \fIfan[1\(en3]\fR.
+.PP
+Lighting channels: \fIled[1\(en2]\fR.
+.TS
+l c
+--
+l c .
+Mode	#colors
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIsuper\-fixed\fR	1\(en40
+\fIfading\fR	2\(en8
+\fI(backwards\-)?spectrum\-wave\fR	0
+\fI(backwards\-)?marquee\-[3\-6]\fR	1	
+\fIcovering\-(backwards\-)?marquee\fR	1\(en8
+\fIalternating\fR	2
+\fI(backwards\-)?moving\-alternating\fR	2
+\fIpulse\fR	1\(en8
+\fIbreathing\fR	1\(en8
+\fIsuper\-breathing\fR	1\(en40
+\fIstarry\-night\fR	1
+\fI(backwards\-)?rainbow\-flow\fR	0
+\fI(backwards\-)?super\-rainbow\fR	0
+\fI(backwards\-)?rainbow\-pulse\fR	0
 .TE
 .PP
 When applicable the animation speed can be set with
