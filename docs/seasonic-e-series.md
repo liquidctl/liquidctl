@@ -4,13 +4,13 @@
 
 ## Initialization
 
-It is necessary to initialize the device it has been powered on.
+It is necessary to initialize the device once it has been powered on.
 
 ```
 # liquidctl initialize
 ```
 
-_Note: at the moment initialize is a no-op, but this is likely to change  once more features are added to the driver._
+_Note: at the moment initialize is a no-op, but this is likely to change once more features are added to the driver._
 
 
 
