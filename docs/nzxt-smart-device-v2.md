@@ -65,7 +65,7 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
-The device features two lighting channels, `led1` and `led2`, that support up to 6 lighting accessories each. Color modes can be set independently for each lighting channel. The specified color mode will then apply to all devices daisy chained on that channel.
+The device features two lighting channels: `led1` and `led2`.  Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.
 
 ```
 # liquidctl set led1 color fixed af5a2f
