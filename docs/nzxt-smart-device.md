@@ -1,4 +1,4 @@
-# NZXT Smart Device
+# NZXT Smart Device (V1) and Grid+ V3
 
 The Smart Device is a fan and LED controller that ships with the H200i, H400i, H500i and H700i cases.
 
@@ -33,7 +33,7 @@ The device can report fan information for each channel, the noise level at the o
 
 ```
 # liquidctl status
-Device 0, NZXT Smart Device
+Device 0, NZXT Smart Device (V1)
 Fan 1                        PWM     
 Fan 1 current               0.03  A  
 Fan 1 speed                 1634  rpm
@@ -48,7 +48,7 @@ Fan 3 speed                 1732  rpm
 Fan 3 voltage              11.91  V  
 Firmware version           1.0.7     
 LED accessories                2     
-LED accessory type    Hue+ Strip     
+LED accessory type    HUE+ Strip     
 LED count (total)             20     
 Noise level                   61  dB 
 ```
