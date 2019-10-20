@@ -11,11 +11,11 @@ Supported devices
 Supported features
 ------------------
 
- - [✓] general device monitoring
- - [✓] electrical input monitoring
- - [✓] electrical output monitoring
- - [ ] fan control
- - [✓] +12V single or multi rail OCP
+ - general device monitoring
+ - electrical input monitoring
+ - electrical output monitoring
+ - fan control
+ - +12V single or multi rail OCP
 
 
 Port of corsaiRMi: incorporates or uses as reference work by notaz and realies,
