@@ -114,13 +114,12 @@ _ANIMATION_SPEEDS = {
     'faster':   0x3,
     'fastest':  0x4,
 }
+
 _MIN_DUTY = 0
 _MAX_DUTY = 100
 _READ_ENDPOINT = 0x81
-_READ_LENGTH = 21
-_READ_LENGTH_V2 = 60
 _WRITE_ENDPOINT = 0x1
-_WRITE_LENGTH = 65
+
 
 class CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
@@ -172,7 +171,7 @@ class CommonSmartDeviceDriver(UsbHidDriver):
         self.device.release()
 
     def _write(self, data):
-        padding = [0x0]*(_WRITE_LENGTH - len(data))
+        padding = [0x0]*(self._WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
@@ -198,6 +197,9 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         }),
     ]
     
+    _READ_LENGTH = 21
+    _WRITE_LENGTH = 65
+        
     _COLOR_MODES = {
         # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
         'off':                           (0x00, 0x00, 0x00, 0, 0),
@@ -254,7 +256,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         status = []
         noise = []
         for i, _ in enumerate(self._speed_channels):
-            msg = self.device.read(_READ_LENGTH)
+            msg = self.device.read(self._READ_LENGTH)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
@@ -307,6 +309,9 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             'color_channel_count': 2
         }),
     ]
+    
+    _READ_LENGTH = 60
+    _WRITE_LENGTH = 64
 
     _COLOR_MODES = {
         # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
@@ -340,6 +345,14 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'backwards-super-rainbow':       (0x0c, 0x01, 0x00, 0, 0),   
         'backwards-rainbow-pulse':       (0x0d, 0x01, 0x00, 0, 0),
     }
+    
+    _ACCESSORY_NAMES = {
+        0x04: "HUE 2 LED Strip",
+        0x08: "HUE 2 Cable Comb", 
+        0x0a: "HUE 2 Underglow 200mm",
+        0x0b: "AER RGB 2 120mm", 
+        0x0c: "AER RGB 2 140mm"
+    }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
@@ -369,25 +382,17 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         msg_2103_reply = False
         msg_6702_reply = False
         msg_6704_reply = False
-        accessory_name_dict = {
-            0x04: "HUE 2 LED Strip",
-            0x08: "HUE 2 Cable Comb", 
-            0x0a: "HUE 2 Underglow 200mm",
-            0x0b: "AER RGB 2 120mm", 
-            0x0c: "AER RGB 2 140mm"
-        }
+
         # Get configuration information from device
-        LOGGER.debug('Issuing command 0x10 0x01 to get firmware info')
-        self._write([0x10, 0x01, 0x00, 0x00, 0x00, 0x00])
-        LOGGER.debug('Issuing command 0x20 0x03 to get lighting info')
-        self._write([0x20, 0x03, 0x00, 0x00, 0x00, 0x00])
+        self._write([0x10, 0x01])  # get firmware info
+        self._write([0x20, 0x03])  # get lighting info
         # After issuing the above 2 commands, we will get a series of replies that
         # will include everything we want to extract and display to the user.
         # It may take 10 or 12 reply messages before we get all of the expected replies.
         for x in range(12):
             if num_valid_replies_recvd == 4:
                 break
-            msg = self.device.read(_READ_LENGTH_V2)
+            msg = self.device.read(self._READ_LENGTH)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             if not msg_1101_reply and msg[0] == 0x11 and msg[1] == 0x01:
                 fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
@@ -403,9 +408,9 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                     for accessory_num in range(accessories_per_channel):
                         accessory_id = msg[light_accessory_index]
                         light_accessory_index += 1
-                        if accessory_id in accessory_name_dict:
+                        if accessory_id in self._ACCESSORY_NAMES:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                   accessory_name_dict.get(accessory_id), ''))
+                                   self._ACCESSORY_NAMES.get(accessory_id), ''))
                 num_valid_replies_recvd += 1
                 msg_2103_reply = True
                 continue
@@ -437,11 +442,11 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         color_count = len(colors)
         if maxcolors == 40:
             channel_mod = [0x1E, 0x20][cid] # the purpose of this is unknown, but is based on cmd issued by CAM software
-            led_padding = [0xFF, 0xFF, 0xFF]*(maxcolors-color_count)  # set all remaining LEDs to White
+            led_padding = [0xFF, 0xFF, 0xFF]*(maxcolors - color_count)  # set all remaining LEDs to White
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining 12 colors to device
-            msg=self.device.read(_READ_LENGTH_V2) # wait for one reply before issuing command to specify color mode
+            msg = self.device.read(self._READ_LENGTH) # wait for one reply before issuing command to specify color mode
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00, 0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         else:        
