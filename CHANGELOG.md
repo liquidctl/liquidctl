@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
+## [Unreleased]
+_Support for Corsair and NZXT power supplies_
+### Added
+ - **Add experimental support for Corsair HX750i, HX850i, HX1000i and HX1200i power supplies**
+ - **Add experimental support for Corsair RM650i, RM750i, RM850i and RM1000i power supplies**
+ - **Add experimental support for NZXT E500, E650 and E850 power supplies**
+ - Add liquidctl(8) man page
+
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
 ### Changed
