@@ -45,13 +45,11 @@ It provides three independent fan channels with standard 4-pin connectors. Both
 PWM and DC control is supported, and the device automatically chooses the appropriate
 mode for each channel.
 
-Additionally, it features two lighting (Addressable RGB) channels, `led1` and `led2`.
-Color modes can be set independently for each lighting channel, but the specified 
-color mode will then apply to all devices daisy chained on that channel.
-
-NZXT Aer RGB 2 fans and HUE 2 lighting accessories (HUE 2 LED strip, HUE 2 Unerglow,
-HUE 2 Cable Comb) can be connected. The firmware installed on the device exposes
-several color presets, most of them common to other NZXT products.
+Additionally, it features two independent lighting (Addressable RGB) channels,
+unlike the single channel in the original. NZXT Aer RGB 2 fans and HUE 2 lighting
+accessories (HUE 2 LED strip, HUE 2 Unerglow, HUE 2 Cable Comb) can be
+connected. The firmware installed on the device exposes several color presets, most
+of them common to other NZXT products.
 
 HUE 2 and HUE+ devices (including Aer RGB and Aer RGB 2 fans) are supported, but
 HUE 2 components cannot be mixed with HUE+ components in the same channel. Each
@@ -423,7 +421,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         light_accessory_index += 1
                         if accessory_id != 0:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                           self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+                                   self._ACCESSORY_NAMES.get(accessory_id), ''))
                 num_valid_replies_recvd += 1
                 msg_2103_reply = True
                 continue
