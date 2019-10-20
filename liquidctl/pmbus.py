@@ -84,14 +84,13 @@ class CommandCode(IntEnum):
     MFR_DATE = 0x9d
     MFR_SERIAL = 0x9e
 
-    MFR_SPECIFIC_01 = 0xd1
-    MFR_SPECIFIC_02 = 0xd2
-    MFR_SPECIFIC_08 = 0xd8
-    MFR_SPECIFIC_12 = 0xdc
-    MFR_SPECIFIC_30 = 0xee
-    MFR_SPECIFIC_44 = 0xfc
-
+    MFR_SPECIFIC_D1 = 0xd1
+    MFR_SPECIFIC_D2 = 0xd2
+    MFR_SPECIFIC_D8 = 0xd8
+    MFR_SPECIFIC_DC = 0xdc
+    MFR_SPECIFIC_EE = 0xee
     MFR_SPECIFIC_F0 = 0xf0
+    MFR_SPECIFIC_FC = 0xfc
 
 
 def linear_to_float(bytes, vout_exp=None):
