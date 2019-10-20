@@ -410,7 +410,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                     for accessory_num in range(accessories_per_channel):
                         accessory_id = msg[light_accessory_index]
                         light_accessory_index += 1
-                        if accessory_id in self._ACCESSORY_NAMES:
+                        if accessory_id != 0:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
                                            self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
                 num_valid_replies_recvd += 1
@@ -447,7 +447,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             led_padding = [0xFF, 0xFF, 0xFF]*(maxcolors - color_count)  # set all remaining LEDs to White
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
-            self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining 12 colors to device
+            self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
             msg = self.device.read(self._READ_LENGTH) # wait for one reply before issuing command to specify color mode
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00, 0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
