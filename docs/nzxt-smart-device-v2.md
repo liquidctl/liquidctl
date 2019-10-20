@@ -30,18 +30,18 @@ The device can report fan information for each channel, the noise level at the o
 
 ```
 # liquidctl status
-Device 1, NZXT Smart Device V2 (Experimental)
-Fan 2 duty                         40  %
-Fan 2 speed                       873  rpm
-Firmware version                1.5.0  
-LED 1 accessory 1     HUE 2 LED Strip  
-LED 1 accessory 2     HUE 2 Underglow  
-LED 1 accessory 3     HUE 2 Underglow  
-LED 2 accessory 1    AER RGB 2 140 mm  
-LED 2 accessory 2    AER RGB 2 140 mm  
-LED 2 accessory 3    AER RGB 2 140 mm  
-LED 2 accessory 4    AER RGB 2 120 mm  
-Noise level                        64  dB
+Device 1, NZXT Smart Device V2 (experimental)
+Fan 2 duty                              42  %
+Fan 2 speed                            934  rpm
+Firmware version                     1.5.0  
+LED 1 accessory 1          HUE 2 LED Strip  
+LED 1 accessory 2    HUE 2 Underglow 200mm  
+LED 1 accessory 3    HUE 2 Underglow 200mm  
+LED 2 accessory 1          AER RGB 2 140mm  
+LED 2 accessory 2          AER RGB 2 140mm  
+LED 2 accessory 3          AER RGB 2 140mm  
+LED 2 accessory 4          AER RGB 2 120mm  
+Noise level                             62  dB
 ```
 
 
@@ -80,12 +80,10 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | --- | --- | --- |
 | `off` | None |
 | `fixed` | One |
-| *`super-fixed` | Up to 40, one for each LED |
+| `super-fixed` | Up to 40, one for each LED |
 | `fading` | Between 2 and 8, one for each step |
 | `spectrum-wave` | None |
 | `backwards-spectrum-wave` | None |
-| *`super-wave` | Up to 40 |
-| *`backwards-super-wave` | Up to 40 |
 | `marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `covering-marquee` | Up to 8, one for each step |
@@ -93,10 +91,13 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | `alternating` | Two |
 | `moving-alternating` | Two |
 | `backwards-moving-alternating` | Two |
-| `breathing` | Up to 8, one for each step |
-| *`super-breathing` | Up to 40, one for each LED | Only one step |
 | `pulse` | Up to 8, one for each pulse |
-| `candle` | One |
-| `wings` | One |
-
-Modes marked with asterisk `*` are not supported at this time.
+| `breathing` | Up to 8, one for each step |
+| `super-breathing` | Up to 40, one for each LED | Only one step |
+| `starry-night` | One |
+| `rainbow-flow` | None |
+| `backwards-rainbow-flow` | None |
+| `super-rainbow` | None |
+| `backwards-super-rainbow` | None |
+| `rainbow-pulse` | None |
+| `backwards-rainbow-pulse` | None |
