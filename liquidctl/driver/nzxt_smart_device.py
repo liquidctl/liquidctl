@@ -322,30 +322,31 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'super-fixed':                   (0x01, 0x00, 0x00, 1, 40),  # independent leds
         'fading':                        (0x01, 0x00, 0x00, 1, 8),
         'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
-        'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
+        'backwards-spectrum-wave':       (0x02, 0x00, 0x01, 0, 0),
         'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
-        'marquee-4':                     (0x03, 0x00, 0x08, 1, 1),
-        'marquee-5':                     (0x03, 0x00, 0x10, 1, 1),
-        'marquee-6':                     (0x03, 0x00, 0x18, 1, 1),
-        'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1),
-        'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1),
-        'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1),
-        'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1),
+        'marquee-4':                     (0x03, 0x01, 0x00, 1, 1),
+        'marquee-5':                     (0x03, 0x02, 0x00, 1, 1),
+        'marquee-6':                     (0x03, 0x03, 0x00, 1, 1),
+        'backwards-marquee-3':           (0x03, 0x00, 0x01, 1, 1),
+        'backwards-marquee-4':           (0x03, 0x01, 0x01, 1, 1),
+        'backwards-marquee-5':           (0x03, 0x02, 0x01, 1, 1),
+        'backwards-marquee-6':           (0x03, 0x03, 0x01, 1, 1),
         'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
-        'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8),
+        'covering-backwards-marquee':    (0x04, 0x00, 0x01, 1, 8),
         'alternating':                   (0x05, 0x00, 0x00, 2, 2),
-        'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
-        'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
+        'moving-alternating':            (0x05, 0x01, 0x00, 2, 2),
+        'backwards-moving-alternating':  (0x05, 0x01, 0x01, 2, 2),
         'pulse':                         (0x06, 0x00, 0x00, 1, 8),
         'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':               (0x03, 0x19, 0x00, 1, 40),  # independent leds
-        'starry-night':                  (0x09, 0x00, 0x00, 1, 1),
+        'candle':                        (0x08, 0x00, 0x00, 1, 1),
         'rainbow-flow':                  (0x0b, 0x00, 0x00, 0, 0),
         'super-rainbow':                 (0x0c, 0x00, 0x00, 0, 0),   
         'rainbow-pulse':                 (0x0d, 0x00, 0x00, 0, 0),
-        'backwards-rainbow-flow':        (0x0b, 0x01, 0x00, 0, 0),
-        'backwards-super-rainbow':       (0x0c, 0x01, 0x00, 0, 0),   
-        'backwards-rainbow-pulse':       (0x0d, 0x01, 0x00, 0, 0),
+        'backwards-rainbow-flow':        (0x0b, 0x00, 0x01, 0, 0),
+        'backwards-super-rainbow':       (0x0c, 0x00, 0x01, 0, 0),   
+        'backwards-rainbow-pulse':       (0x0d, 0x00, 0x01, 0, 0),
+        'wings':                         (0xff, 0x00, 0x01, 1, 1),   # wings requires special handling
     }
     
     _ACCESSORY_NAMES = {
@@ -451,9 +452,43 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             msg = self.device.read(self._READ_LENGTH) # wait for one reply before issuing command to specify color mode
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00, 0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
-        else:        
+        elif mval == 0xff:  # wings requires special handling
+            for [g, r, b] in colors:
+                self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
+                self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
+                color_list = [g, r, b] * 8
+                r2 = (int)(r // 2.5)
+                g2 = (int)(g // 2.5)
+                b2 = (int)(b // 2.5)
+                color_list2 = [g2, r2, b2] * 8
+                r3 = (int)(r2 // 4)
+                g3 = (int)(g2 // 4)
+                b3 = (int)(b2 // 4)
+                color_list3 = [g3, r3, b3] * 8
+                for i in range(8):   #  send color scheme first, before enabling wings mode
+                    if i == 3 or i == 7:
+                        mod = 0x05
+                    else:
+                        mod = 0x01
+                    msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
+                            0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00])
+                    if i == 0 or i == 4:
+                        self._write(msg + color_list)
+                    elif i == 1 or i == 5:
+                        self._write(msg + color_list2)
+                    elif i == 2 or i == 6:
+                        self._write(msg + color_list3)
+                    else:
+                        self._write(msg)
+                self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
+        else:
             channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
-            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, 0x0, [0x00, 0x01][mod3 > 0], color_count, 0x0]
+            if mval == 0x03:  # for marquee-3|4|5|6 and backwards-marquee-3|4|5|6 we have to put led count in color_count
+                color_count = mod3
+                mod3 = 0
+            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, mod3, mod4, color_count, 0x0]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
