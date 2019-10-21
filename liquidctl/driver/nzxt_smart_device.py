@@ -340,6 +340,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':               (0x03, 0x19, 0x00, 1, 40),  # independent leds
         'candle':                        (0x08, 0x00, 0x00, 1, 1),
+        'starry-night':                  (0x09, 0x00, 0x00, 1, 1),
         'rainbow-flow':                  (0x0b, 0x00, 0x00, 0, 0),
         'super-rainbow':                 (0x0c, 0x00, 0x00, 0, 0),   
         'rainbow-pulse':                 (0x0d, 0x00, 0x00, 0, 0),
