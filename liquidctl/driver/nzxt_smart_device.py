@@ -455,7 +455,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         color_count = len(colors)
         if maxcolors == 40:
             channel_mod = [0x1E, 0x20][cid] # the purpose of this is unknown, but is based on cmd issued by CAM software
-            led_padding = [0xFF, 0xFF, 0xFF]*(maxcolors - color_count)  # set all remaining LEDs to White
+            led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # set all remaining LEDs to Black (we might change this in the future)
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
