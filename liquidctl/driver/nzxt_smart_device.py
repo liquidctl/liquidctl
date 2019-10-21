@@ -337,14 +337,14 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
         'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
         'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),    
-        'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0010 = moving
-        'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0010 = moving
-        'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0010 = moving
-        'moving-alternating-6':             (0x05, 0x03, 0x10, 2, 2),   # byte4: 0010 = moving
-        'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0011 = moving + backwards
-        'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0011 = moving + backwards
-        'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0011 = moving + backwards
-        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0011 = moving + backwards        
+        'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-6':             (0x05, 0x03, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
+        'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
+        'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
+        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards        
         'pulse':                            (0x06, 0x00, 0x00, 1, 8),
         'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
@@ -356,7 +356,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
         'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),   
         'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
-        'wings':                            (0xff, 0x00, 0x01, 1, 1),   # wings requires special handling
+        'wings':                            (0xff, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
     
     _ACCESSORY_NAMES = {
@@ -459,8 +459,6 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
-            msg = self.device.read(self._READ_LENGTH) # wait for one reply before issuing command to specify color mode
-            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
@@ -468,14 +466,8 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                 self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
                 color_list = [g, r, b] * 8
-                r2 = (int)(r // 2.5)
-                g2 = (int)(g // 2.5)
-                b2 = (int)(b // 2.5)
-                color_list2 = [g2, r2, b2] * 8
-                r3 = (int)(r2 // 4)
-                g3 = (int)(g2 // 4)
-                b3 = (int)(b2 // 4)
-                color_list3 = [g3, r3, b3] * 8
+                color_list2 = [int(x // 2.5) for x in color_list]
+                color_list3 = [int(x // 4) for x in color_list2]
                 for i in range(8):   #  send color scheme first, before enabling wings mode
                     if i == 3 or i == 7:
                         mod = 0x05
@@ -496,17 +488,20 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                 self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
         else:
             channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
+            byte7 = mod3
+            byte8 = mod4
+            byte9 = color_count
             byte10 = 0x00
-            if mval == 0x03:  # for marquee-3|4|5|6 and backwards-marquee-3|4|5|6 we have to put led count in color_count
-                color_count = mod3
-                mod3 = 0
+            if mval == 0x03:  # for marquee-3|4|5|6 and backwards-marquee-3|4|5|6 we have to put led count in byte9
+                byte9 = mod3
+                byte7 = 0x00
             elif mval == 0x05:  # for all of the alternating, moving-alternating, and backwards-alternating modes
-                byte10 = mod3   # this is LED count (3 LEDs = 0, 4 LEDs = 1, 5 LEDs = 2, 6 LEDs = 3)
-                mod3 = 0x00
+                byte7 = 0x00
                 if (mod4 & 0x10) != 0:  # if 'moving' is chosen, set mod3 to 1
-                    mod3 = 0x01
-                mod4 = mod4 & 0x01  # mod4 represents 'backwards' -- need to strip off leading 1s
-            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, mod3, mod4, color_count, byte10]
+                    byte7 = 0x01
+                byte8 = mod4 & 0x01  # mod4 represents 'backwards' -- need to strip off leading 1s
+                byte10 = mod3   # this is LED count (3 LEDs = 0, 4 LEDs = 1, 5 LEDs = 2, 6 LEDs = 3)
+            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
