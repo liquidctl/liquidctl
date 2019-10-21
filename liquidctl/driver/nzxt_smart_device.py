@@ -452,8 +452,9 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
             msg = self.device.read(self._READ_LENGTH) # wait for one reply before issuing command to specify color mode
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00, 0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
-        elif mval == 0xff:  # wings requires special handling
+            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00,
+                         0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
+        elif mode == 'wings':  # wings requires special handling
             for [g, r, b] in colors:
                 self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
