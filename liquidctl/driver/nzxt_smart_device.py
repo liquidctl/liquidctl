@@ -317,37 +317,46 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
 
     _COLOR_MODES = {
         # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
-        'off':                           (0x00, 0x00, 0x00, 0, 0),
-        'fixed':                         (0x00, 0x00, 0x00, 1, 1),
-        'super-fixed':                   (0x01, 0x00, 0x00, 1, 40),  # independent leds
-        'fading':                        (0x01, 0x00, 0x00, 1, 8),
-        'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
-        'backwards-spectrum-wave':       (0x02, 0x00, 0x01, 0, 0),
-        'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
-        'marquee-4':                     (0x03, 0x01, 0x00, 1, 1),
-        'marquee-5':                     (0x03, 0x02, 0x00, 1, 1),
-        'marquee-6':                     (0x03, 0x03, 0x00, 1, 1),
-        'backwards-marquee-3':           (0x03, 0x00, 0x01, 1, 1),
-        'backwards-marquee-4':           (0x03, 0x01, 0x01, 1, 1),
-        'backwards-marquee-5':           (0x03, 0x02, 0x01, 1, 1),
-        'backwards-marquee-6':           (0x03, 0x03, 0x01, 1, 1),
-        'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
-        'covering-backwards-marquee':    (0x04, 0x00, 0x01, 1, 8),
-        'alternating':                   (0x05, 0x00, 0x00, 2, 2),
-        'moving-alternating':            (0x05, 0x01, 0x00, 2, 2),
-        'backwards-moving-alternating':  (0x05, 0x01, 0x01, 2, 2),
-        'pulse':                         (0x06, 0x00, 0x00, 1, 8),
-        'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
-        'super-breathing':               (0x03, 0x19, 0x00, 1, 40),  # independent leds
-        'candle':                        (0x08, 0x00, 0x00, 1, 1),
-        'starry-night':                  (0x09, 0x00, 0x00, 1, 1),
-        'rainbow-flow':                  (0x0b, 0x00, 0x00, 0, 0),
-        'super-rainbow':                 (0x0c, 0x00, 0x00, 0, 0),   
-        'rainbow-pulse':                 (0x0d, 0x00, 0x00, 0, 0),
-        'backwards-rainbow-flow':        (0x0b, 0x00, 0x01, 0, 0),
-        'backwards-super-rainbow':       (0x0c, 0x00, 0x01, 0, 0),   
-        'backwards-rainbow-pulse':       (0x0d, 0x00, 0x01, 0, 0),
-        'wings':                         (0xff, 0x00, 0x01, 1, 1),   # wings requires special handling
+        'off':                              (0x00, 0x00, 0x00, 0, 0),
+        'fixed':                            (0x00, 0x00, 0x00, 1, 1),
+        'super-fixed':                      (0x01, 0x00, 0x00, 1, 40),  # independent leds
+        'fading':                           (0x01, 0x00, 0x00, 1, 8),
+        'spectrum-wave':                    (0x02, 0x00, 0x00, 0, 0),
+        'backwards-spectrum-wave':          (0x02, 0x00, 0x01, 0, 0),
+        'marquee-3':                        (0x03, 0x00, 0x00, 1, 1),
+        'marquee-4':                        (0x03, 0x01, 0x00, 1, 1),
+        'marquee-5':                        (0x03, 0x02, 0x00, 1, 1),
+        'marquee-6':                        (0x03, 0x03, 0x00, 1, 1),
+        'backwards-marquee-3':              (0x03, 0x00, 0x01, 1, 1),
+        'backwards-marquee-4':              (0x03, 0x01, 0x01, 1, 1),
+        'backwards-marquee-5':              (0x03, 0x02, 0x01, 1, 1),
+        'backwards-marquee-6':              (0x03, 0x03, 0x01, 1, 1),
+        'covering-marquee':                 (0x04, 0x00, 0x00, 1, 8),
+        'covering-backwards-marquee':       (0x04, 0x00, 0x01, 1, 8),
+        'alternating-3':                    (0x05, 0x00, 0x00, 2, 2),
+        'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
+        'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
+        'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),    
+        'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0010 = moving
+        'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0010 = moving
+        'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0010 = moving
+        'moving-alternating-6':             (0x05, 0x03, 0x10, 2, 2),   # byte4: 0010 = moving
+        'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0011 = moving + backwards
+        'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0011 = moving + backwards
+        'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0011 = moving + backwards
+        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0011 = moving + backwards        
+        'pulse':                            (0x06, 0x00, 0x00, 1, 8),
+        'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
+        'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
+        'candle':                           (0x08, 0x00, 0x00, 1, 1),
+        'starry-night':                     (0x09, 0x00, 0x00, 1, 1),
+        'rainbow-flow':                     (0x0b, 0x00, 0x00, 0, 0),
+        'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),   
+        'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
+        'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
+        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),   
+        'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
+        'wings':                            (0xff, 0x00, 0x01, 1, 1),   # wings requires special handling
     }
     
     _ACCESSORY_NAMES = {
@@ -487,10 +496,17 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                 self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
         else:
             channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
+            byte10 = 0x00
             if mval == 0x03:  # for marquee-3|4|5|6 and backwards-marquee-3|4|5|6 we have to put led count in color_count
                 color_count = mod3
                 mod3 = 0
-            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, mod3, mod4, color_count, 0x0]
+            elif mval == 0x05:  # for all of the alternating, moving-alternating, and backwards-alternating modes
+                byte10 = mod3   # this is LED count (3 LEDs = 0, 4 LEDs = 1, 5 LEDs = 2, 6 LEDs = 3)
+                mod3 = 0x00
+                if (mod4 & 0x10) != 0:  # if 'moving' is chosen, set mod3 to 1
+                    mod3 = 0x01
+                mod4 = mod4 & 0x01  # mod4 represents 'backwards' -- need to strip off leading 1s
+            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, mod3, mod4, color_count, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
