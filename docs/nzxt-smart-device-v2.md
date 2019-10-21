@@ -65,7 +65,7 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
-The device features two lighting channels, `led1` and `led2`, that support up to 6 lighting accessories each. Compatible Aer RGB 2 and Aer RGB fans must be on their own channel, separate from other lighting accessories. Color modes can be set independently for each lighting channel. The specified color mode will then apply to all devices daisy chained on that channel.
+The device features two lighting channels, `led1` and `led2`, that support up to 6 lighting accessories each. Color modes can be set independently for each lighting channel. The specified color mode will then apply to all devices daisy chained on that channel.
 
 ```
 # liquidctl set led1 color fixed af5a2f
@@ -88,12 +88,13 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `covering-marquee` | Up to 8, one for each step |
 | `covering-backwards-marquee` | Up to 8, one for each step |
-| `alternating` | Two |
-| `moving-alternating` | Two |
-| `backwards-moving-alternating` | Two |
+| `alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
+| `moving-alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
+| `backwards-moving-alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
 | `pulse` | Up to 8, one for each pulse |
 | `breathing` | Up to 8, one for each step |
 | `super-breathing` | Up to 40, one for each LED | Only one step |
+| `candle` | One |
 | `starry-night` | One |
 | `rainbow-flow` | None |
 | `backwards-rainbow-flow` | None |
@@ -101,3 +102,4 @@ Colors are set in hexadecimal RGB, and each animation mode supports different nu
 | `backwards-super-rainbow` | None |
 | `rainbow-pulse` | None |
 | `backwards-rainbow-pulse` | None |
+| `wings` | One |
