@@ -316,7 +316,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
     _WRITE_LENGTH = 64
 
     _COLOR_MODES = {
-        # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
+        # (mode, size/variant, moving/backwards, min colors, max colors)
         'off':                              (0x00, 0x00, 0x00, 0, 0),
         'fixed':                            (0x00, 0x00, 0x00, 1, 1),
         'super-fixed':                      (0x01, 0x00, 0x00, 1, 40),  # independent leds
@@ -356,7 +356,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
         'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),   
         'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
-        'wings':                            (0xff, 0x00, 0x00, 1, 1),   # wings requires special handling
+        'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
     
     _ACCESSORY_NAMES = {
@@ -454,12 +454,11 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
         color_count = len(colors)
         if maxcolors == 40:
-            channel_mod = [0x1E, 0x20][cid] # the purpose of this is unknown, but is based on cmd issued by CAM software
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # set all remaining LEDs to Black (we might change this in the future)
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
-            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, channel_mod, 0x00,
+            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, 0x00, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             for [g, r, b] in colors:
@@ -487,21 +486,11 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         self._write(msg)
                 self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
         else:
-            channel_mod = [0x01, 0x20][cid]  # the purpose of this is unknown, but is based on cmd issued by CAM software
-            byte7 = mod3
-            byte8 = mod4
-            byte9 = color_count
-            byte10 = 0x00
-            if mval == 0x03:  # for marquee-3|4|5|6 and backwards-marquee-3|4|5|6 we have to put led count in byte9
-                byte9 = mod3
-                byte7 = 0x00
-            elif mval == 0x05:  # for all of the alternating, moving-alternating, and backwards-alternating modes
-                byte7 = 0x00
-                if (mod4 & 0x10) != 0:  # if 'moving' is chosen, set mod3 to 1
-                    byte7 = 0x01
-                byte8 = mod4 & 0x01  # mod4 represents 'backwards' -- need to strip off leading 1s
-                byte10 = mod3   # this is LED count (3 LEDs = 0, 4 LEDs = 1, 5 LEDs = 2, 6 LEDs = 3)
-            header = [0x28, 0x03, cid + 1, channel_mod, mval, sval, byte7, byte8, byte9, byte10]
+            byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
+            byte8 = mod4 & 0x01  # sets 'backwards' flag
+            byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
+            byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
+            header = [0x28, 0x03, cid + 1, 0x00, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
