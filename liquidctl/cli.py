@@ -114,7 +114,8 @@ DRIVERS = [
     liquidctl.driver.asetek.LegacyAsetekDriver,
     liquidctl.driver.corsair_hid_psu.CorsairHidPsuDriver,
     liquidctl.driver.kraken_two.KrakenTwoDriver,
-    liquidctl.driver.nzxt_smart_device.NzxtSmartDeviceDriver,
+    liquidctl.driver.nzxt_smart_device.SmartDeviceDriver,
+    liquidctl.driver.nzxt_smart_device.SmartDeviceDriverV2,
     liquidctl.driver.seasonic.SeasonicEDriver,
 ]
 
