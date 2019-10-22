@@ -1,6 +1,7 @@
 """liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
 
 
+
 Smart Device (V1)
 -----------------
 
@@ -45,13 +46,11 @@ It provides three independent fan channels with standard 4-pin connectors. Both
 PWM and DC control is supported, and the device automatically chooses the appropriate
 mode for each channel.
 
-Additionally, it features two lighting (Addressable RGB) channels, `led1` and `led2`.
-Color modes can be set independently for each lighting channel, but the specified 
-color mode will then apply to all devices daisy chained on that channel.
-
-NZXT Aer RGB 2 fans and HUE 2 lighting accessories (HUE 2 LED strip, HUE 2 Unerglow,
-HUE 2 Cable Comb) can be connected. The firmware installed on the device exposes
-several color presets, most of them common to other NZXT products.
+Additionally, it features two independent lighting (Addressable RGB) channels,
+unlike the single channel in the original. NZXT Aer RGB 2 fans and HUE 2 lighting
+accessories (HUE 2 LED strip, HUE 2 Unerglow, HUE 2 Cable Comb) can be
+connected. The firmware installed on the device exposes several color presets, most
+of them common to other NZXT products.
 
 HUE 2 and HUE+ devices (including Aer RGB and Aer RGB 2 fans) are supported, but
 HUE 2 components cannot be mixed with HUE+ components in the same channel. Each
@@ -74,7 +73,7 @@ This driver implements all features available at the hardware level:
  - reporting of LED accessory count and type
  - monitoring of noise level (from the onboard microphone)
  - reporting of firmware version
-
+ 
 Software based features offered by CAM, like ANR, have not been implemented.
 
 After powering on from Mechanical Off, or if there have been hardware changes,
@@ -84,7 +83,7 @@ updates.  It is recommended to initialize the devices at every boot.
 
 
 Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2019       CaseySJ
+Copyright (C) 2019–2019  CaseySJ
 Copyright (C) 2018–2019  each contribution's author
 
 This program is free software: you can redistribute it and/or modify
@@ -134,7 +133,6 @@ class CommonSmartDeviceDriver(UsbHidDriver):
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode.
-
         Only available for the Smart Device V1/V2.
         """
         if not self._color_channels:
@@ -198,10 +196,10 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
             'color_channel_count': 0
         }),
     ]
-    
+
     _READ_LENGTH = 21
     _WRITE_LENGTH = 65
-        
+
     _COLOR_MODES = {
         # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
         'off':                           (0x00, 0x00, 0x00, 0, 0),
@@ -242,7 +240,6 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
 
     def initialize(self, **kwargs):
         """Initialize the device.
-
         Detects all connected fans and LED accessories, and allows subsequent
         calls to get_status.
         """
@@ -252,7 +249,6 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
 
     def get_status(self, **kwargs):
         """Get a status report.
-
         Returns a list of (key, value, unit) tuples.
         """
         status = []
@@ -311,7 +307,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             'color_channel_count': 2
         }),
     ]
-    
+
     _READ_LENGTH = 60
     _WRITE_LENGTH = 64
 
@@ -336,7 +332,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'alternating-3':                    (0x05, 0x00, 0x00, 2, 2),
         'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
         'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
-        'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),    
+        'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),
         'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0x10 = moving
         'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0x10 = moving
         'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0x10 = moving
@@ -344,26 +340,26 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
         'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
         'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards        
+        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
         'pulse':                            (0x06, 0x00, 0x00, 1, 8),
         'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
         'candle':                           (0x08, 0x00, 0x00, 1, 1),
         'starry-night':                     (0x09, 0x00, 0x00, 1, 1),
         'rainbow-flow':                     (0x0b, 0x00, 0x00, 0, 0),
-        'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),   
+        'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),
         'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
         'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
-        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),   
+        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),
         'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
-    
+
     _ACCESSORY_NAMES = {
         0x04: "HUE 2 LED Strip",
-        0x08: "HUE 2 Cable Comb", 
+        0x08: "HUE 2 Cable Comb",
         0x0a: "HUE 2 Underglow 200mm",
-        0x0b: "AER RGB 2 120mm", 
+        0x0b: "AER RGB 2 120mm",
         0x0c: "AER RGB 2 140mm"
     }
 
@@ -377,7 +373,6 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
 
     def initialize(self, **kwargs):
         """Initialize the device.
-
         Detects all connected fans and LED accessories, and allows subsequent
         calls to get_status.
         """
@@ -386,7 +381,6 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
 
     def get_status(self, **kwargs):
         """Get a status report.
-
         Returns a list of (key, value, unit) tuples.
         """
         status = []
@@ -423,7 +417,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         light_accessory_index += 1
                         if accessory_id != 0:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                           self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+                                           self._ACCESSORY_NAMES.get(accessory_id), ''))
                 num_valid_replies_recvd += 1
                 msg_2103_reply = True
                 continue
@@ -454,7 +448,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
         color_count = len(colors)
         if maxcolors == 40:
-            led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # set all remaining LEDs to Black (we might change this in the future)
+            led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
@@ -464,23 +458,17 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             for [g, r, b] in colors:
                 self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
-                color_list = [g, r, b] * 8
-                color_list2 = [int(x // 2.5) for x in color_list]
-                color_list3 = [int(x // 4) for x in color_list2]
+                color_lists[0] = [g, r, b] * 8
+                color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
+                color_lists[2] = [int(x // 4) for x in color_lists[1]]
+                color_lists[3] = []
                 for i in range(8):   #  send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
                     msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
                             0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00])
-                    if i == 0 or i == 4:
-                        self._write(msg + color_list)
-                    elif i == 1 or i == 5:
-                        self._write(msg + color_list2)
-                    elif i == 2 or i == 6:
-                        self._write(msg + color_list3)
-                    else:
-                        self._write(msg)
+                    self._write(msg + color_lists[i % 4])
                 self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
         else:
             byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
