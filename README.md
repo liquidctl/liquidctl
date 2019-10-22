@@ -70,6 +70,7 @@ Firmware version           4.0.2
 | NZXT E500, E850 | [documentation](docs/seasonic-e-series.md) | <sup>1</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md#experimentalgsupport-for-the-grid-v3) | <sup>1</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device.md) | <sup>1</sup> |
 
 <sup>1</sup> _Experimental._  
 <sup>2</sup> _Requires the `--legacy-690lc` flag._  
