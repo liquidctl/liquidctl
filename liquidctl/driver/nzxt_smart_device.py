@@ -421,7 +421,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         light_accessory_index += 1
                         if accessory_id != 0:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                           self._ACCESSORY_NAMES.get(accessory_id), ''))
+                                           self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
                 num_valid_replies_recvd += 1
                 msg_2103_reply = True
                 continue
