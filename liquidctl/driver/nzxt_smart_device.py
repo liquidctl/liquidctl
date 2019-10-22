@@ -468,10 +468,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                 color_list2 = [int(x // 2.5) for x in color_list]
                 color_list3 = [int(x // 4) for x in color_list2]
                 for i in range(8):   #  send color scheme first, before enabling wings mode
-                    if i == 3 or i == 7:
-                        mod = 0x05
-                    else:
-                        mod = 0x01
+                    mod = 0x05 if i in [3, 7] else 0x01
                     msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
                             0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
