@@ -78,31 +78,43 @@ from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
 
-# options that are forwarded to buses and drivers;
-# they must:
+# convertion from CLI arg to internal option; as options as forwarded to bused
+# and drivers, they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
-#  - or avoid unintentional conflicts with target function arguments
-_OPTIONS_TO_FORWARD = [
-    ('--vendor', lambda x: int(x, 0)),
-    ('--product', lambda x: int(x, 0)),
-    ('--release', lambda x: int(x, 0)),
-    ('--serial', str),
-    ('--bus', str),
-    ('--address', str),
-    ('--usb-port', lambda x: tuple(map(int, x.split('.')))),
-    ('--device', int),
+#  - and avoid unintentional conflicts with target function arguments
+_PARSE_ARG = {
+    '--vendor': lambda x: int(x, 0),
+    '--product': lambda x: int(x, 0),
+    '--release': lambda x: int(x, 0),
+    '--serial': str,
+    '--bus': str,
+    '--address': str,
+    '--usb-port': lambda x: tuple(map(int, x.split('.'))),
+    '--device': int,
 
-    ('--speed', str),
-    ('--time-per-color', int),
-    ('--time-off', int),
-    ('--alert-threshold', int),
-    ('--alert-color', color_from_str),
+    '--speed': str,
+    '--time-per-color': int,
+    '--time-off': int,
+    '--alert-threshold': int,
+    '--alert-color': color_from_str,
 
-    ('--hid', str),
-    ('--legacy-690lc', bool),
-    ('--single-12v-ocp', bool),
-    ('--verbose', bool),
-    ('--debug', bool),
+    '--hid': str,
+    '--legacy-690lc': bool,
+    '--single-12v-ocp': bool,
+    '--verbose': bool,
+    '--debug': bool,
+}
+
+# options that cause liquidctl.driver.find_liquidctl_devices to ommit devices
+_FILTER_OPTIONS = [
+    'vendor',
+    'product',
+    'release',
+    'serial',
+    'bus',
+    'address',
+    'usb-port',
+    'device'
 ]
 
 # custom number formats for values of select units
@@ -117,15 +129,12 @@ _VALUE_FORMATS = {
 LOGGER = logging.getLogger(__name__)
 
 
-def find_all_supported_devices(**kwargs):
-    """Deprecated."""
-    LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
-    return find_liquidctl_devices(**kwargs)
-
-
-def _list_devices(devices, verbose=False, **kwargs):
+def _list_devices(devices, verbose=False, filtred=False, **opts):
     for i, dev in enumerate(devices):
-        print('Result #{}: {}'.format(i, dev.description))
+        if not filtred:
+            print('Device {}: {}'.format(i, dev.description))
+        else:
+            print('{}'.format(dev.description))
         if not verbose:
             continue
         print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
@@ -149,11 +158,11 @@ def _list_devices(devices, verbose=False, **kwargs):
         print('')
 
 
-def _device_get_status(dev, **kwargs):
+def _device_get_status(dev, **opts):
     print('{}:'.format(dev.description))
-    dev.connect(**kwargs)
+    dev.connect(**opts)
     try:
-        status = dev.get_status(**kwargs)
+        status = dev.get_status(**opts)
         tmp = []
         kcols, vcols, ucols = 0, 0, 0
         for k, v, u in status:
@@ -172,27 +181,30 @@ def _device_get_status(dev, **kwargs):
         LOGGER.exception('Unexpected error')
         sys.exit(1)
     finally:
-        dev.disconnect(**kwargs)
+        dev.disconnect(**opts)
     print('')
 
 
-def _device_set_color(dev, args, **kwargs):
+def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, **kwargs)
+    dev.set_color(args['<channel>'], args['<mode>'], color, **opts)
 
 
-def _device_set_speed(dev, args, **kwargs):
+def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile, **kwargs)
+        dev.set_speed_profile(args['<channel>'], profile, **opts)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **kwargs)
+        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **opts)
 
 
-def _get_options_to_forward(args):
-    def opt_to_field(opt):
-        return opt.replace('--', '').replace('-', '_')
-    return {opt_to_field(i): p(args[i]) for i, p in _OPTIONS_TO_FORWARD if args[i]}
+def _make_opts(args):
+    opts = {}
+    for arg, val in args.items():
+        if not val is None and arg in _PARSE_ARG:
+            opt = arg.replace('--', '').replace('-', '_')
+            opts[opt] = _PARSE_ARG[arg](val)
+    return opts
 
 
 def _gen_version():
@@ -231,15 +243,22 @@ def main():
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         sys.tracebacklimit = 0
 
-    frwd = _get_options_to_forward(args)
-    selected = list(find_liquidctl_devices(**frwd))
+    opts = _make_opts(args)
+
+    if 'device' in opts:
+        no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
+        compat = list(find_liquidctl_devices(**no_filters))
+        selected = [compat[opts['device']]]
+    else:
+        selected = list(find_liquidctl_devices(**opts))
 
     if args['list']:
-        _list_devices(selected, **frwd)
+        filtred = sum(1 for opt in opts if opt in _FILTER_OPTIONS) > 0
+        _list_devices(selected, filtred=filtred, **opts)
         return
     if args['status']:
         for dev in selected:
-            _device_get_status(dev, **frwd)
+            _device_get_status(dev, **opts)
         return
 
     if len(selected) > 1:
@@ -248,21 +267,27 @@ def main():
         raise SystemExit('No devices matches available drivers and selection criteria')
     dev = selected[0]
 
-    dev.connect(**frwd)
+    dev.connect(**opts)
     try:
         if args['initialize']:
-            dev.initialize(**frwd)
+            dev.initialize(**opts)
         elif args['set'] and args['speed']:
-            _device_set_speed(dev, args, **frwd)
+            _device_set_speed(dev, args, **opts)
         elif args['set'] and args['color']:
-            _device_set_color(dev, args, **frwd)
+            _device_set_color(dev, args, **opts)
         else:
             raise Exception('Not sure what to do')
     except:
         LOGGER.exception('Unexpected error')
         sys.exit(1)
     finally:
-        dev.disconnect(**frwd)
+        dev.disconnect(**opts)
+
+
+def find_all_supported_devices(**opts):
+    """Deprecated."""
+    LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
+    return find_liquidctl_devices(**opts)
 
 
 if __name__ == '__main__':
