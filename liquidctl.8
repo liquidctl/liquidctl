@@ -49,11 +49,11 @@ monitoring devices not yet supported at the kernel level.  Because
 generally required, though this can be avoided with appropriate udev rules.
 .PP
 \fBliquidctl list\fR outputs all compatible devices found on the system.  In
-case more than one device is found, the displayed device number can be used to
+case more than one device is found, the device ID can be used to
 select it in later invocations.  Passing \fI\-\-verbose\fR enables the display
 of additional identifiers and addresses that can also be used to select
 specific devices.  These are preferred for non-interactive invocations as they,
-unlike device numbers, are more stable across reboots and software or hardware
+unlike device IDs, are more stable across reboots and software or hardware
 updates.
 .PP
 \fBliquidctl initialize\fR should be called for every device after a reboot,
@@ -98,8 +98,11 @@ Filter devices by address in bus.
 .BI \-\-usb\-port= port
 Filter devices by USB port in bus.
 .TP
-.BI \-d\  number\fR,\ \fP \-\-device= number
-Select device by listing number.
+.BI \-\-pick= number
+Pick among many results for a given filter.
+.TP
+.BI \-d\  id\fR,\ \fP \-\-device= id
+Select device by listing ID.
 .
 .SS Animation options
 Some devices and animation modes support additional options.

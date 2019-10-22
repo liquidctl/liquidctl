@@ -18,7 +18,8 @@ Device selection options (see: list -v):
   --bus <bus>                 Filter devices by bus
   --address <address>         Filter devices by address in bus
   --usb-port <port>           Filter devices by USB port in bus
-  -d, --device <number>       Select device by listing number
+  --pick <number>             Pick among many results for a given filter
+  -d, --device <id>           Select device by listing id
 
 Animation options (devices/modes can support zero or more):
   --speed <value>             Abstract animation speed (device/mode specific)
@@ -90,6 +91,7 @@ _PARSE_ARG = {
     '--bus': str,
     '--address': str,
     '--usb-port': lambda x: tuple(map(int, x.split('.'))),
+    '--pick': int,
     '--device': int,
 
     '--speed': str,
@@ -114,6 +116,7 @@ _FILTER_OPTIONS = [
     'bus',
     'address',
     'usb-port',
+    'pick',
     'device'
 ]
 
@@ -132,9 +135,9 @@ LOGGER = logging.getLogger(__name__)
 def _list_devices(devices, verbose=False, filtred=False, **opts):
     for i, dev in enumerate(devices):
         if not filtred:
-            print('Device {}: {}'.format(i, dev.description))
+            print('Device ID {}: {}'.format(i, dev.description))
         else:
-            print('{}'.format(dev.description))
+            print('Result #{}: {}'.format(i + 1, dev.description))
         if not verbose:
             continue
         print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
@@ -245,12 +248,12 @@ def main():
 
     opts = _make_opts(args)
 
-    if 'device' in opts:
+    if not 'device' in opts:
+        selected = list(find_liquidctl_devices(**opts))
+    else:
         no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
         compat = list(find_liquidctl_devices(**no_filters))
         selected = [compat[opts['device']]]
-    else:
-        selected = list(find_liquidctl_devices(**opts))
 
     if args['list']:
         filtred = sum(1 for opt in opts if opt in _FILTER_OPTIONS) > 0

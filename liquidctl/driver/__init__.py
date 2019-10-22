@@ -41,7 +41,7 @@ import liquidctl.driver.seasonic
 from liquidctl.driver.base import BaseBus, find_all_subclasses
 
 
-def find_liquidctl_devices(device=None, **kwargs):
+def find_liquidctl_devices(pick=None, **kwargs):
     """Find devices and instantiate corresponding liquidctl drivers.
 
     Probes all buses and drivers that have been loaded by the time of the call
@@ -51,18 +51,18 @@ def find_liquidctl_devices(device=None, **kwargs):
     `**kwargs`.  A driver instance will be yielded for each compatible device
     that matches the supplied filter conditions.
 
-    If `device` is passed, only the driver instance for the `(device + 1)`-th
+    If `pick` is passed, only the driver instance for the `pick`-th
     matched device will be yielded.
     """
     buses = sorted(find_all_subclasses(BaseBus), key=lambda x: x.__name__)
     num = 0
     for bus_cls in buses:
         for dev in  bus_cls().find_devices(**kwargs):
-            if not device is None:
-                if num == device:
+            if not pick is None:
+                num += 1
+                if num == pick:
                     yield dev
                     return
-                num += 1
             else:
                 yield dev
 
