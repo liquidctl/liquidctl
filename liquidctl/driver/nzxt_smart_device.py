@@ -82,7 +82,7 @@ updates.  It is recommended to initialize the devices at every boot.
 
 
 Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2019       CaseySJ
+Copyright (C) 2019–2019  CaseySJ
 Copyright (C) 2018–2019  each contribution's author
 
 This program is free software: you can redistribute it and/or modify
