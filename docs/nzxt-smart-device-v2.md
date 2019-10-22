@@ -1,12 +1,12 @@
-# Experimental support for the NZXT Smart Device V2
+# NZXT Smart Device V2
 
-The NZXT Smart Device V2 is a newer model of the original fan and LED controller. It ships with NZXT's cases released in mid-2019 including the H510 Elite, H510i, H710i, and H210i.
+The NZXT Smart Device V2 is a newer model of the original Smart Device fan and LED controller. It ships with NZXT's cases released in mid-2019 including the H510 Elite, H510i, H710i, and H210i.
 
 It provides three independent fan channels with standard 4-pin connectors. Both PWM and DC control is supported, and the device automatically chooses the appropriate mode for each channel.
 
-Additionally, it features two independent lighting (Addressable RGB) channels, unlike the single channel in the original. NZXT Aer RGB 2 fans and HUE 2 lighting accessories (HUE 2 LED strip, HUE 2 Unerglow, HUE 2 Cable Comb) can be connected. The firmware installed on the device exposes several color presets, most of them common to other NZXT products.
+Additionally, it features two independent addressable RGB HUE 2 lighting channels, unlike the single HUE+ channel in the original. NZXT Aer RGB 2 fans and HUE 2 lighting accessories (HUE 2 LED strip, HUE 2 Underglow, HUE 2 Cable Comb) can be freely mixed on either channel.  HUE+ devices, including the original Aer RGB fans, are also supported, but HUE 2 components cannot be mixed with HUE+ components in the same channel.
 
-HUE 2 and HUE+ devices (including Aer RGB and Aer RGB 2 fans) are supported, but HUE 2 components cannot be mixed with HUE+ components in the same channel. Each lighting channel supports up to 6 accessories and a total of 40 LEDs.
+Each lighting channel supports up to 6 accessories and a total of 40 LEDs.  The firmware installed on the device exposes several color presets, most of them common to other NZXT products.
 
 A microphone is still present onboard for noise level optimization through CAM and AI.
 
@@ -65,7 +65,7 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
-The device features two lighting channels, `led1` and `led2`, that support up to 6 lighting accessories each. Color modes can be set independently for each lighting channel. The specified color mode will then apply to all devices daisy chained on that channel.
+The device features two lighting channels: `led1` and `led2`.  Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.
 
 ```
 # liquidctl set led1 color fixed af5a2f
