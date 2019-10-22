@@ -196,10 +196,10 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
             'color_channel_count': 0
         }),
     ]
-    
+
     _READ_LENGTH = 21
     _WRITE_LENGTH = 65
-        
+
     _COLOR_MODES = {
         # (byte2/mode, byte3/variant, byte4/size, min colors, max colors)
         'off':                           (0x00, 0x00, 0x00, 0, 0),
@@ -309,7 +309,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             'color_channel_count': 2
         }),
     ]
-    
+
     _READ_LENGTH = 60
     _WRITE_LENGTH = 64
 
@@ -334,7 +334,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'alternating-3':                    (0x05, 0x00, 0x00, 2, 2),
         'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
         'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
-        'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),    
+        'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),
         'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0x10 = moving
         'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0x10 = moving
         'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0x10 = moving
@@ -342,26 +342,26 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
         'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
         'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards        
+        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
         'pulse':                            (0x06, 0x00, 0x00, 1, 8),
         'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
         'candle':                           (0x08, 0x00, 0x00, 1, 1),
         'starry-night':                     (0x09, 0x00, 0x00, 1, 1),
         'rainbow-flow':                     (0x0b, 0x00, 0x00, 0, 0),
-        'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),   
+        'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),
         'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
         'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
-        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),   
+        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),
         'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
-    
+
     _ACCESSORY_NAMES = {
         0x04: "HUE 2 LED Strip",
-        0x08: "HUE 2 Cable Comb", 
+        0x08: "HUE 2 Cable Comb",
         0x0a: "HUE 2 Underglow 200mm",
-        0x0b: "AER RGB 2 120mm", 
+        0x0b: "AER RGB 2 120mm",
         0x0c: "AER RGB 2 140mm"
     }
 
@@ -452,7 +452,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
         color_count = len(colors)
         if maxcolors == 40:
-            led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # set all remaining LEDs to Black (we might change this in the future)
+            led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
