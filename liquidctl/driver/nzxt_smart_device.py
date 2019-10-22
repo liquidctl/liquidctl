@@ -462,23 +462,17 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             for [g, r, b] in colors:
                 self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
-                color_list = [g, r, b] * 8
-                color_list2 = [int(x // 2.5) for x in color_list]
-                color_list3 = [int(x // 4) for x in color_list2]
+                color_lists[0] = [g, r, b] * 8
+                color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
+                color_lists[2] = [int(x // 4) for x in color_lists[1]]
+                color_lists[3] = []
                 for i in range(8):   #  send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
                     msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
                             0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00])
-                    if i == 0 or i == 4:
-                        self._write(msg + color_list)
-                    elif i == 1 or i == 5:
-                        self._write(msg + color_list2)
-                    elif i == 2 or i == 6:
-                        self._write(msg + color_list3)
-                    else:
-                        self._write(msg)
+                    self._write(msg + color_lists[i % 4])
                 self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
         else:
             byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
