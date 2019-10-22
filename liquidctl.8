@@ -267,39 +267,64 @@ Fan channels: \fIfan[1\(en6]\fR.
 .PP
 Lighting channels: none.
 .
-.SS NZXT Smart Device
+.SS NZXT Smart Device (V1)
+Fan channels: \fIfan[1\(en3]\fR.
+.PP
+Lighting channels: \fIled\fR.
+.TS
+l c
+----
+l c .
+Mode	#colors
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIsuper\-fixed\fR	1\(en40
+\fIfading\fR	2\(en8
+\fI(backwards\-)?spectrum\-wave\fR	0
+\fI(backwards\-)?super\-wave\fR	1\(en40
+\fI(backwards\-)?marquee\-[3\-6]\fR	1
+\fIcovering\-(backwards\-)?marquee\fR	1\(en8
+\fIalternating\fR	2
+\fI(backwards\-)?moving\-alternating\fR	2
+\fIbreathing\fR	1\(en8
+\fIsuper\-breathing\fR	1\(en40
+\fIpulse\fR	1\(en8
+\fIcandle\fR	1
+\fIwings\fR	1
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
+\fIfast\fR, \fIfastest\fR.
+.
 .SS NZXT Smart Device V2
 Fan channels: \fIfan[1\(en3]\fR.
 .PP
-Lighting channels (V1): \fIled\fR.
-.PP
-Lighting channels (V2): \fIled[1\(en2]\fR.
+Lighting channels: \fIled[1\(en2]\fR.
 .TS
-l c c c
+l c
 ----
-l c c c .
-Mode	V1	V2	#colors
-\fIoff\fR	yes	yes	0
-\fIfixed\fR	yes	yes	1
-\fIsuper\-fixed\fR	yes	yes	1\(en40
-\fIfading\fR	yes	yes	2\(en8
-\fI(backwards\-)?spectrum\-wave\fR	yes	yes	0
-\fI(backwards\-)?marquee\-[3\-6]\fR	yes	yes	1
-\fIcovering\-(backwards\-)?marquee\fR	yes	yes	1\(en8
-\fIalternating\fR	yes	no	2
-\fI(backwards\-)?moving\-alternating\fR	yes	no	2
-\fIalternating\-[3\-6]\fR	no	yes	2
-\fI(backwards\-)?moving\-alternating\-[3\-6]\fR	no	yes	2
-\fIbreathing\fR	yes	yes	1\(en8
-\fIsuper\-breathing\fR	yes	yes	1\(en40
-\fIpulse\fR	yes	yes	1\(en8
-\fI(backwards\-)?super\-wave\fR	yes	no	1\(en40
-\fIcandle\fR	yes	no	1
-\fIwings\fR	yes	no	1
-\fIstarry\-night\fR	no	yes	1
-\fI(backwards\-)?rainbow\-flow\fR	no	yes	0
-\fI(backwards\-)?super\-rainbow\fR	no	yes	0
-\fI(backwards\-)?rainbow\-pulse\fR	no	yes	0
+l c .
+Mode	#colors
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIsuper\-fixed\fR	1\(en40
+\fIfading\fR	2\(en8
+\fI(backwards\-)?spectrum\-wave\fR	0
+\fI(backwards\-)?marquee\-[3\-6]\fR	1
+\fIcovering\-(backwards\-)?marquee\fR	1\(en8
+\fIalternating\-[3\-6]\fR	2
+\fI(backwards\-)?moving\-alternating\-[3\-6]\fR	2
+\fIpulse\fR	1\(en8
+\fIbreathing\fR	1\(en8
+\fIsuper\-breathing\fR	1\(en40
+\fIcandle\fR	1
+\fIstarry\-night\fR	1
+\fI(backwards\-)?rainbow\-flow\fR	0
+\fI(backwards\-)?super\-rainbow\fR	0
+\fI(backwards\-)?rainbow\-pulse\fR	0
+\fIwings\fR	1
 .TE
 .PP
 When applicable the animation speed can be set with
