@@ -323,6 +323,9 @@ class PyUsbDevice:
     def port(self):
         return self.usbdev.port_numbers
 
+    def __eq__(self, other):
+        return type(self) == type(other) and self.bus == other.bus and self.address == other.address
+
 
 class PyUsbHid(PyUsbDevice):
     """A PyUSB backed HID device.
@@ -431,6 +434,9 @@ class HidapiDevice:
     @property
     def port(self):
         return None
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.bus == other.bus and self.address == other.address
 
 
 class UsbHidBus(BaseBus):
