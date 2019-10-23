@@ -27,11 +27,11 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
 
 ## [1.2.0rc4] – 2019-09-18
 ### Added
- - Add support for adding git commit and tree cleanliness information to --version
- - Add support for adding distribution name and package information to --version
+ - Add support for adding git commit and tree cleanliness information to `--version`
+ - Add support for adding distribution name and package information to `--version`
 ### Changed
  - [Corsair Asetek 690LC] Enable modern features for all Corsair coolers
- - Include version information in --debug
+ - Include version information in `--debug`
  - Make docs and code consistent on which devices are only experimentally supported
  - Revert "Mark Kraken X31, X41, X51 and X61 as no longer experimental"
  - Improve the documentation
@@ -51,16 +51,16 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
 ## [1.2.0rc2] – 2019-09-12
 ### Added
  - Support the EVGA CLC 360
- - Add --alert-threshold and --alert-color
+ - Add `--alert-threshold` and `--alert-color`
 ### Changed
  - Mark Kraken X31, X41, X51 and X61 as no longer experimental
  - Improve supported devices list and links to documentation
- - Don't enable PyUSB tracing automatically with --debug
+ - Don't enable PyUSB tracing automatically with `--debug`
  - [Legacy Asetek 690LC] Cache values read from or stored on the filesystem
  - [Legacy Asetek 690LC] Prefer to save driver data in /run when OS is Linux
 ### Fixes
  - Force bundling of 'hid' module in Windows executable
- - [Legacy Asetek 690LC] Change default fading --time-per-color (see #29)
+ - [Legacy Asetek 690LC] Change default fading `--time-per-color` (see #29)
 
 ## [1.2.0rc1] – 2019-04-14
 ### Added
