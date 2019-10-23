@@ -132,54 +132,58 @@ _VALUE_FORMATS = {
 LOGGER = logging.getLogger(__name__)
 
 
-def _list_devices(devices, verbose=False, filtred=False, **opts):
+def _list_devices(devices, filtred=False, verbose=False, debug=False, **opts):
     for i, dev in enumerate(devices):
         if not filtred:
-            print('Device ID {}: {}'.format(i, dev.description))
+            print(f'Device ID {i}: {dev.description}')
+        elif 'device' in opts:
+            print(f'Device ID {opts["device"]}: {dev.description}')
         else:
-            print('Result #{}: {}'.format(i + 1, dev.description))
+            print(f'Result #{i}: {dev.description}')
         if not verbose:
             continue
-        print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
-        print('  Product ID: {:#06x}'.format(dev.product_id))
 
-        if dev.release_number:
-            print('  Release number: {:#06x}'.format(dev.release_number))
+        print(f'├── Vendor ID: {dev.vendor_id:#06x}')
+        print(f'├── Product ID: {dev.product_id:#06x}')
+        print(f'├── Release number: {dev.release_number:#06x}')
         if dev.serial_number:
-            print('  Serial number: {}'.format(dev.serial_number))
+            print(f'├── Serial number: {dev.serial_number}'.format(dev.serial_number))
         if dev.bus:
-            print('  Bus: {}'.format(dev.bus))
+            print(f'├── Bus: {dev.bus}'.format(dev.bus))
         if dev.address:
-            print('  Address: {}'.format(dev.address))
+            print(f'├── Address: {dev.address}'.format(dev.address))
         if dev.port:
-            print('  Port: {}'.format('.'.join(map(str, dev.port))))
-
-        driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-        # only applicable to devices built on top of liqudictl.drivers.usb:
-        dev_hier = '{}={}'.format(type(dev.device).__name__, dev.device.api.__name__)
-        print('  Hierarchy: {}; {}'.format(', '.join(driver_hier), dev_hier))
+            port = '.'.join(map(str, dev.port))
+            print(f'├── Port: {port}')
+        print(f'└── Driver: {type(dev).__name__} using module {dev.device.api.__name__}')
+        if debug:
+            driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+            LOGGER.debug('hierarchy: %s; %s', ', '.join(driver_hier[1:]), type(dev.device).__name__)
         print('')
+    assert not 'device' in opts or len(devices) == 1, 'too many results listed with --device'
 
 
 def _device_get_status(dev, **opts):
-    print('{}:'.format(dev.description))
+    print(dev.description)
     dev.connect(**opts)
     try:
         status = dev.get_status(**opts)
         tmp = []
-        kcols, vcols, ucols = 0, 0, 0
+        kcols, vcols = 0, 0
         for k, v, u in status:
             if isinstance(v, datetime.timedelta):
                 v = str(v)
                 u = ''
             else:
                 valfmt = _VALUE_FORMATS.get(u, '')
-                v = '{:{}}'.format(v, valfmt)
+                v = f'{v:{valfmt}}'
             kcols = max(kcols, len(k))
             vcols = max(vcols, len(v))
             tmp.append((k, v, u))
-        for k, v, u in tmp:
-            print('{:<{}}    {:>{}}  {}'.format(k, kcols, v, vcols, u))
+        for k, v, u in tmp[:-1]:
+            print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
+        k, v, u = tmp[-1]
+        print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
     except:
         LOGGER.exception('Unexpected error')
         sys.exit(1)

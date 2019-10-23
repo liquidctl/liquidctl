@@ -51,7 +51,7 @@ def find_liquidctl_devices(pick=None, **kwargs):
     `**kwargs`.  A driver instance will be yielded for each compatible device
     that matches the supplied filter conditions.
 
-    If `pick` is passed, only the driver instance for the `pick`-th
+    If `pick` is passed, only the driver instance for the `(pick + 1)`-th
     matched device will be yielded.
     """
     buses = sorted(find_all_subclasses(BaseBus), key=lambda x: x.__name__)
@@ -59,10 +59,10 @@ def find_liquidctl_devices(pick=None, **kwargs):
     for bus_cls in buses:
         for dev in  bus_cls().find_devices(**kwargs):
             if not pick is None:
-                num += 1
                 if num == pick:
                     yield dev
                     return
+                num += 1
             else:
                 yield dev
 
