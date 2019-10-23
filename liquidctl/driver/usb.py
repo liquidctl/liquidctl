@@ -426,7 +426,7 @@ class HidapiDevice:
 
     @property
     def address(self):
-        return None
+        return self.hidinfo['path'].decode()
 
     @property
     def port(self):
