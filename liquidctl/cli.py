@@ -79,7 +79,7 @@ from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
 
-# convertion from CLI arg to internal option; as options as forwarded to bused
+# conversion from CLI arg to internal option; as options as forwarded to bused
 # and drivers, they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
 #  - and avoid unintentional conflicts with target function arguments
@@ -92,7 +92,6 @@ _PARSE_ARG = {
     '--address': str,
     '--usb-port': lambda x: tuple(map(int, x.split('.'))),
     '--pick': int,
-    '--device': int,
 
     '--speed': str,
     '--time-per-color': int,
@@ -117,7 +116,7 @@ _FILTER_OPTIONS = [
     'address',
     'usb-port',
     'pick',
-    'device'
+    # --device generates no option
 ]
 
 # custom number formats for values of select units
@@ -132,12 +131,12 @@ _VALUE_FORMATS = {
 LOGGER = logging.getLogger(__name__)
 
 
-def _list_devices(devices, filtred=False, verbose=False, debug=False, **opts):
+def _list_devices(devices, using_filters=False, device_id=None, verbose=False, debug=False, **opts):
     for i, dev in enumerate(devices):
-        if not filtred:
+        if not using_filters:
             print(f'Device ID {i}: {dev.description}')
-        elif 'device' in opts:
-            print(f'Device ID {opts["device"]}: {dev.description}')
+        elif device_id is not None:
+            print(f'Device ID {device_id}: {dev.description}')
         else:
             print(f'Result #{i}: {dev.description}')
         if not verbose:
@@ -150,7 +149,7 @@ def _list_devices(devices, filtred=False, verbose=False, debug=False, **opts):
             print(f'├── Serial number: {dev.serial_number}'.format(dev.serial_number))
         if dev.bus:
             print(f'├── Bus: {dev.bus}'.format(dev.bus))
-        if dev.address:
+        if dev.address is not None: # could be int zero (libusb)
             print(f'├── Address: {dev.address}'.format(dev.address))
         if dev.port:
             port = '.'.join(map(str, dev.port))
@@ -160,7 +159,7 @@ def _list_devices(devices, filtred=False, verbose=False, debug=False, **opts):
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
             LOGGER.debug('hierarchy: %s; %s', ', '.join(driver_hier[1:]), type(dev.device).__name__)
         print('')
-    assert not 'device' in opts or len(devices) == 1, 'too many results listed with --device'
+    assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
 
 
 def _device_get_status(dev, **opts):
@@ -208,7 +207,7 @@ def _device_set_speed(dev, args, **opts):
 def _make_opts(args):
     opts = {}
     for arg, val in args.items():
-        if not val is None and arg in _PARSE_ARG:
+        if val is not None and arg in _PARSE_ARG:
             opt = arg.replace('--', '').replace('-', '_')
             opts[opt] = _PARSE_ARG[arg](val)
     return opts
@@ -251,17 +250,28 @@ def main():
         sys.tracebacklimit = 0
 
     opts = _make_opts(args)
+    filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
+    device_id = None
 
-    if not 'device' in opts:
+    if not args['--device']:
         selected = list(find_liquidctl_devices(**opts))
     else:
+        device_id = int(args['--device'])
         no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
         compat = list(find_liquidctl_devices(**no_filters))
-        selected = [compat[opts['device']]]
+        if device_id < 0 or device_id >= len(compat):
+            raise IndexError('Device ID out of bounds')
+        if filter_count:
+            # check that --device matches other filter criteria
+            matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
+            if compat[device_id].device not in matched_devs:
+                raise IndexError('Device ID does not match remaining selection criteria')
+            LOGGER.warning('Mixing --device <id> with other filters is not recommended;'
+                           'to disambiguate between results use --pick <result>')
+        selected = [compat[device_id]]
 
     if args['list']:
-        filtred = sum(1 for opt in opts if opt in _FILTER_OPTIONS) > 0
-        _list_devices(selected, filtred=filtred, **opts)
+        _list_devices(selected, using_filters=bool(filter_count), device_id=device_id, **opts)
         return
     if args['status']:
         for dev in selected:
