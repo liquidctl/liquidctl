@@ -117,8 +117,6 @@ _ANIMATION_SPEEDS = {
 
 _MIN_DUTY = 0
 _MAX_DUTY = 100
-_READ_ENDPOINT = 0x81
-_WRITE_ENDPOINT = 0x1
 
 
 class CommonSmartDeviceDriver(UsbHidDriver):
@@ -310,7 +308,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         }),
     ]
 
-    _READ_LENGTH = 60
+    _READ_LENGTH = 64
     _WRITE_LENGTH = 64
 
     _COLOR_MODES = {
