@@ -109,9 +109,10 @@ class SeasonicEDriver(UsbHidDriver):
 
     def _exec_read(self, cmd, data_len, attempts=_READ_ATTEMPTS):
         ret = None
-        for i in range(attempts):
+        msg = [0xad, 0, data_len + 1, 1, 0x60, cmd]
+        for _ in range(attempts):
             self._wait()
-            self._write([0xad, 0, data_len + 1, 1, 0x60, cmd])
+            self._write(msg)
             ret = self._read()
             # see comment in _exec_page_plus_read, but ret[1] == 0xff has not
             # been seen in the wild yet; TODO check PEC byte as well
@@ -122,9 +123,10 @@ class SeasonicEDriver(UsbHidDriver):
 
     def _exec_page_plus_read(self, page, cmd, data_len, attempts=_READ_ATTEMPTS):
         ret = None
-        for i in range(attempts):
+        msg = [0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd]
+        for _ in range(attempts):
             self._wait()
-            self._write([0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd])
+            self._write(msg)
             ret = self._read()
             # in the captured traffic ret[2] == 0xff appears to signal a
             # invalid data condition (probably related to the device being
