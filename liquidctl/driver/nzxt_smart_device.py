@@ -378,6 +378,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
         calls to get_status.
         """
         self._write([0x60, 0x02, 0x01, 0xE8, 0x03, 0x01, 0xE8, 0x03])
+        self._write([0x60, 0x03])
         self.device.release()
 
     def get_status(self, **kwargs):
