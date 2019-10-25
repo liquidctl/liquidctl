@@ -1,17 +1,40 @@
 """Constants and methods for interfacing with PMBus compliant devices.
 
-References:
+Specifications:
 
-Power Systems Management Protocol Specification.  Part II – Command Language.
-Revision 1.3.1, 2015.  Available uppon request, check the PMBus website.
+Power Systems Management Protocol Specification.  Revision 1.3.1, 2015.
+Available uppon request, check the PMBus website.
 
-Power Systems Management Protocol Specification.  Part II – Command Language.
-Revision 1.2, 2010.  Available on the PMBus website.
+Power Systems Management Protocol Specification.  Revision 1.2, 2010.
+Available on the PMBus website.
+http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_I_Rev_1-2_20100906.pdf
 http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_II_Rev_1-2_20100906.pdf
+
+System Management Bus (SMBus) Specification.  Version 3.1, 2018.
+Available on the SMBus website.
+http://smbus.org/specs/SMBus_3_1_20180319.pdf
+
+Additional references:
+
+Milios, John.  CRC-8 firmware implementations for SMBus.  1999.
+http://sbs-forum.org/marcom/dc2/20_crc-8_firmware_implementations.pdf
+
+Pircher, Thomas.  pycrc -- parameterisable CRC calculation utility and C source
+code generator: CRC algorithms implemented in Python.
+https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py
 
 White, Robert V.  Using the PMBus Protocol.  2005.
 http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
+---
+
+Includes a CRC-8 implementation adapted from work by Thomas Pircher in pycrc,
+under the terms of the MIT license.
+
+pycrc -- parameterisable CRC calculation utility and C source code generator
+Copyright (c) 2006-2017  Thomas Pircher  <tehpeh-web@tty1.net>
+
+Constants and methods for interfacing with PMBus compliant devices.
 Copyright (C) 2019  Jonas Malaco
 Copyright (C) 2019  each contribution's author
 
@@ -155,3 +178,57 @@ def float_to_linear11(float):
     if y < 0:
         y = y + 2048
     return int.to_bytes((n << 11) | y, length=2, byteorder='little')
+
+
+def compute_pec(bytes):
+    """
+    Compute a 8-bit Packet Error Code (PEC) for `bytes`.
+
+    According to the SMBus specification, the PEC is computed using a 8-bit
+    cyclic rendundancy check (CRC-8) with the polynominal x⁸ + x² + x¹ + x⁰.
+
+    The computation uses a 256-byte lookup table.
+
+    Based on https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py.
+
+    >>> hex(compute_pec(bytes('123456789', 'ascii')))
+    '0xf4'
+    >>> hex(compute_pec(bytes.fromhex('5c')))
+    '0x93'
+    >>> hex(compute_pec(bytes.fromhex('5c93')))
+    '0x0'
+    """
+    tbl = _gen_pec_table()
+    reg = 0
+    for octet in bytes:
+        idx = reg ^ octet
+        reg = tbl[idx]
+    return reg
+
+def _gen_pec_table():
+    """Generate the lookup table for compute_pec.
+
+    Once a table is generated it is reused for all subsequent calls.
+    """
+    global _PEC_TBL
+    if _PEC_TBL:
+        return _PEC_TBL
+    tbl = [0 for i in range(_PEC_TBL_LEN)]
+    for i in range(_PEC_TBL_LEN):
+        reg = i
+        for _ in range(8):
+            if reg & _PEC_MSB_MASK != 0:
+                reg = (reg << 1) ^ _PEC_POLY
+            else:
+                reg = (reg << 1)
+        tbl[i] = reg & _PEC_MASK
+    _PEC_TBL = tbl
+    return tbl
+
+
+_PEC_WIDTH = 8
+_PEC_MSB_MASK = 1 << (_PEC_WIDTH - 1)
+_PEC_MASK = (_PEC_MSB_MASK << 1) - 1
+_PEC_POLY = (0b100000111 & _PEC_MASK)
+_PEC_TBL_LEN = 256
+_PEC_TBL = None
