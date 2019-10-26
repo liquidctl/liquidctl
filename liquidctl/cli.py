@@ -155,7 +155,7 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             msg = 'could not read the serial number'
             if sys.platform.startswith('linux') and os.geteuid:
                 msg += ' (requires root privileges)'
-            elif 'win' in sys.platform and 'Hid' not in dev.device.__name__:
+            elif 'win' in sys.platform and 'Hid' not in type(dev.device).__name__:
                 msg += ' (device possibly requires a kernel driver)'
             if debug:
                 LOGGER.exception(msg.capitalize())
