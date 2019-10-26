@@ -47,10 +47,10 @@ The USB drivers are organized into two buses.  The recommended way to
 initialize and bind drivers is through their respective buses, though
 <driver>.find_supported_devices can also be useful in certain scenarios.
 
-UsbHidBus
+GenericHidBus
 └── drivers: all (recursive) subclasses of UsbHidDriver
 
-UsbBus
+PyUsbBus
 └── drivers: all (recursive) subclasses of UsbDriver
 
 The subclass constructor can generally be kept unaware of the implementation
