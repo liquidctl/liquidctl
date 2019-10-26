@@ -12,7 +12,12 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
  - **Add experimental support for NZXT E500, E650 and E850 power supplies**
  - **Add experimental support for the NZXT Smart Device V2**
  - Add liquidctl(8) man page
- - Add --single-12v-ocp option
+ - Add `--single-12v-ocp` option
+ - Add `--pick <result>` option
+### Changed
+ - Reduce the number of libusb and hidapi calls during device discovery
+ - Improve the visual hierarchy of the output `list` and `status`
+ - Allow `list --verbose` to run without root privileges (Linux) or special drivers (Windows)
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
@@ -23,11 +28,11 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
 
 ## [1.2.0rc4] – 2019-09-18
 ### Added
- - Add support for adding git commit and tree cleanliness information to --version
- - Add support for adding distribution name and package information to --version
+ - Add support for adding git commit and tree cleanliness information to `--version`
+ - Add support for adding distribution name and package information to `--version`
 ### Changed
  - [Corsair Asetek 690LC] Enable modern features for all Corsair coolers
- - Include version information in --debug
+ - Include version information in `--debug`
  - Make docs and code consistent on which devices are only experimentally supported
  - Revert "Mark Kraken X31, X41, X51 and X61 as no longer experimental"
  - Improve the documentation
@@ -47,16 +52,16 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
 ## [1.2.0rc2] – 2019-09-12
 ### Added
  - Support the EVGA CLC 360
- - Add --alert-threshold and --alert-color
+ - Add `--alert-threshold` and `--alert-color`
 ### Changed
  - Mark Kraken X31, X41, X51 and X61 as no longer experimental
  - Improve supported devices list and links to documentation
- - Don't enable PyUSB tracing automatically with --debug
+ - Don't enable PyUSB tracing automatically with `--debug`
  - [Legacy Asetek 690LC] Cache values read from or stored on the filesystem
  - [Legacy Asetek 690LC] Prefer to save driver data in /run when OS is Linux
 ### Fixes
  - Force bundling of 'hid' module in Windows executable
- - [Legacy Asetek 690LC] Change default fading --time-per-color (see #29)
+ - [Legacy Asetek 690LC] Change default fading `--time-per-color` (see #29)
 
 ## [1.2.0rc1] – 2019-04-14
 ### Added

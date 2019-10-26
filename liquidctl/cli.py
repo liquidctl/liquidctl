@@ -18,7 +18,8 @@ Device selection options (see: list -v):
   --bus <bus>                 Filter devices by bus
   --address <address>         Filter devices by address in bus
   --usb-port <port>           Filter devices by USB port in bus
-  -d, --device <number>       Select device by listing number
+  --pick <number>             Pick among many results for a given filter
+  -d, --device <id>           Select device by listing id
 
 Animation options (devices/modes can support zero or more):
   --speed <value>             Abstract animation speed (device/mode specific)
@@ -69,33 +70,54 @@ import datetime
 import inspect
 import itertools
 import logging
+import os
 import sys
 
 from docopt import docopt
 
-import liquidctl.driver.asetek
-import liquidctl.driver.kraken_two
-import liquidctl.driver.nzxt_smart_device
-import liquidctl.driver.corsair_hid_psu
-import liquidctl.driver.seasonic
-import liquidctl.driver.usb
-import liquidctl.util
+from liquidctl.driver import *
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
 
-# Options that are forwarded to drivers; they must:
+# conversion from CLI arg to internal option; as options as forwarded to bused
+# and drivers, they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
-#  - or avoid unintentional conflicts with target function arguments
-_OPTIONS_TO_FORWARD = [
-    '--hid',
-    '--legacy-690lc',
-    '--speed',
-    '--time-per-color',
-    '--time-off',
-    '--alert-threshold',
-    '--alert-color',
-    '--single-12v-ocp',
+#  - and avoid unintentional conflicts with target function arguments
+_PARSE_ARG = {
+    '--vendor': lambda x: int(x, 0),
+    '--product': lambda x: int(x, 0),
+    '--release': lambda x: int(x, 0),
+    '--serial': str,
+    '--bus': str,
+    '--address': str,
+    '--usb-port': lambda x: tuple(map(int, x.split('.'))),
+    '--pick': int,
+
+    '--speed': str,
+    '--time-per-color': int,
+    '--time-off': int,
+    '--alert-threshold': int,
+    '--alert-color': color_from_str,
+
+    '--hid': str,
+    '--legacy-690lc': bool,
+    '--single-12v-ocp': bool,
+    '--verbose': bool,
+    '--debug': bool,
+}
+
+# options that cause liquidctl.driver.find_liquidctl_devices to ommit devices
+_FILTER_OPTIONS = [
+    'vendor',
+    'product',
+    'release',
+    'serial',
+    'bus',
+    'address',
+    'usb-port',
+    'pick',
+    # --device generates no option
 ]
 
 # custom number formats for values of select units
@@ -107,121 +129,106 @@ _VALUE_FORMATS = {
     'W' : '.2f'
 }
 
-
-DRIVERS = [
-    liquidctl.driver.asetek.AsetekDriver,
-    liquidctl.driver.asetek.CorsairAsetekDriver,
-    liquidctl.driver.asetek.LegacyAsetekDriver,
-    liquidctl.driver.corsair_hid_psu.CorsairHidPsuDriver,
-    liquidctl.driver.kraken_two.KrakenTwoDriver,
-    liquidctl.driver.nzxt_smart_device.SmartDeviceDriver,
-    liquidctl.driver.nzxt_smart_device.SmartDeviceDriverV2,
-    liquidctl.driver.seasonic.SeasonicEDriver,
-]
-
-
 LOGGER = logging.getLogger(__name__)
 
 
-def find_all_supported_devices(**kwargs):
-    res = map(lambda driver: driver.find_supported_devices(**kwargs), DRIVERS)
-    return itertools.chain(*res)
+def _list_devices(devices, using_filters=False, device_id=None, verbose=False, debug=False, **opts):
+    for i, dev in enumerate(devices):
+        warnings = []
 
+        if not using_filters:
+            print(f'Device ID {i}: {dev.description}')
+        elif device_id is not None:
+            print(f'Device ID {device_id}: {dev.description}')
+        else:
+            print(f'Result #{i}: {dev.description}')
+        if not verbose:
+            continue
 
-def _filter_devices(devices, args):
-    if args['--device']:
-        return [devices[int(args['--device'])]]
-    sel = []
-    for i, dev in devices:
-        if args['--vendor'] and dev.vendor_id != int(args['--vendor'], 0):
-            continue
-        if args['--product'] and dev.product_id != int(args['--product'], 0):
-            continue
-        if args['--release'] and dev.release_number != int(args['--release'], 0):
-            continue
-        if args['--serial'] and dev.serial_number != args['--serial']:
-            continue
-        if args['--bus'] and dev.bus != args['--bus']:
-            continue
-        if args['--address'] and dev.address != int(args['--address'], 0):
-            continue
-        if (args['--usb-port'] and
-            dev.port != tuple(map(int, args['--usb-port'].split('.')))):
-            continue
-        sel.append((i, dev))
-    return sel
+        print(f'├── Vendor ID: {dev.vendor_id:#06x}')
+        print(f'├── Product ID: {dev.product_id:#06x}')
+        print(f'├── Release number: {dev.release_number:#06x}')
+        try:
+            if dev.serial_number:
+                print(f'├── Serial number: {dev.serial_number}'.format(dev.serial_number))
+        except:
+            msg = 'could not read the serial number'
+            if sys.platform.startswith('linux') and os.geteuid:
+                msg += ' (requires root privileges)'
+            elif sys.platform in ['win32', 'cygwin'] and 'Hid' not in type(dev.device).__name__:
+                msg += ' (device possibly requires a kernel driver)'
+            if debug:
+                LOGGER.exception(msg.capitalize())
+            else:
+                warnings.append(msg)
 
-
-def _list_devices(devices, args):
-    for i, dev in devices:
-        print('Device {}, {}'.format(i, dev.description))
-        if not args['--verbose']:
-            continue
-        print('  Vendor ID: {:#06x}'.format(dev.vendor_id))
-        print('  Product ID: {:#06x}'.format(dev.product_id))
-
-        if dev.release_number:
-            print('  Release number: {:#06x}'.format(dev.release_number))
-        if dev.serial_number:
-            print('  Serial number: {}'.format(dev.serial_number))
-        if dev.bus:
-            print('  Bus: {}'.format(dev.bus))
-        if dev.address:
-            print('  Address: {}'.format(dev.address))
+        print(f'├── Bus: {dev.bus}'.format(dev.bus))
+        print(f'├── Address: {dev.address}'.format(dev.address))
         if dev.port:
-            print('  Port: {}'.format('.'.join(map(str, dev.port))))
+            port = '.'.join(map(str, dev.port))
+            print(f'├── Port: {port}')
 
-        driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-        # only applicable to devices built on top of liqudictl.drivers.usb:
-        dev_hier = '{}={}'.format(type(dev.device).__name__, dev.device.api.__name__)
-        print('  Hierarchy: {}; {}'.format(', '.join(driver_hier), dev_hier))
+        print(f'└── Driver: {type(dev).__name__} using module {dev.device.api.__name__}')
+        if debug:
+            driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
+            LOGGER.debug('hierarchy: %s; %s', ', '.join(driver_hier[1:]), type(dev.device).__name__)
+
+        for msg in warnings:
+            LOGGER.warning(msg)
         print('')
 
+    assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
 
-def _device_get_status(dev, num, **kwargs):
-    print('Device {}, {}'.format(num, dev.description))
-    dev.connect(**kwargs)
+
+def _device_get_status(dev, **opts):
+    print(dev.description)
+    dev.connect(**opts)
     try:
-        status = dev.get_status(**kwargs)
+        status = dev.get_status(**opts)
         tmp = []
-        kcols, vcols, ucols = 0, 0, 0
+        kcols, vcols = 0, 0
         for k, v, u in status:
             if isinstance(v, datetime.timedelta):
                 v = str(v)
                 u = ''
             else:
                 valfmt = _VALUE_FORMATS.get(u, '')
-                v = '{:{}}'.format(v, valfmt)
+                v = f'{v:{valfmt}}'
             kcols = max(kcols, len(k))
             vcols = max(vcols, len(v))
             tmp.append((k, v, u))
-        for k, v, u in tmp:
-            print('{:<{}}    {:>{}}  {}'.format(k, kcols, v, vcols, u))
+        for k, v, u in tmp[:-1]:
+            print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
+        k, v, u = tmp[-1]
+        print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
     except:
         LOGGER.exception('Unexpected error')
         sys.exit(1)
     finally:
-        dev.disconnect(**kwargs)
+        dev.disconnect(**opts)
     print('')
 
 
-def _device_set_color(dev, args, **kwargs):
+def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, **kwargs)
+    dev.set_color(args['<channel>'], args['<mode>'], color, **opts)
 
 
-def _device_set_speed(dev, args, **kwargs):
+def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile, **kwargs)
+        dev.set_speed_profile(args['<channel>'], profile, **opts)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **kwargs)
+        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **opts)
 
 
-def _get_options_to_forward(args):
-    def opt_to_field(opt):
-        return opt.replace('--', '').replace('-', '_')
-    return {opt_to_field(i): args[i] for i in _OPTIONS_TO_FORWARD if args[i]}
+def _make_opts(args):
+    opts = {}
+    for arg, val in args.items():
+        if val is not None and arg in _PARSE_ARG:
+            opt = arg.replace('--', '').replace('-', '_')
+            opts[opt] = _PARSE_ARG[arg](val)
+    return opts
 
 
 def _gen_version():
@@ -260,40 +267,62 @@ def main():
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         sys.tracebacklimit = 0
 
-    frwd = _get_options_to_forward(args)
+    opts = _make_opts(args)
+    filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
+    device_id = None
 
-    all_devices = list(enumerate(find_all_supported_devices(**frwd)))
-    selected = _filter_devices(all_devices, args)
+    if not args['--device']:
+        selected = list(find_liquidctl_devices(**opts))
+    else:
+        device_id = int(args['--device'])
+        no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
+        compat = list(find_liquidctl_devices(**no_filters))
+        if device_id < 0 or device_id >= len(compat):
+            raise IndexError('Device ID out of bounds')
+        if filter_count:
+            # check that --device matches other filter criteria
+            matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
+            if compat[device_id].device not in matched_devs:
+                raise IndexError('Device ID does not match remaining selection criteria')
+            LOGGER.warning('mixing --device <id> with other filters is not recommended;'
+                           'to disambiguate between results use --pick <result>')
+        selected = [compat[device_id]]
 
     if args['list']:
-        _list_devices(selected, args)
+        _list_devices(selected, using_filters=bool(filter_count), device_id=device_id, **opts)
         return
     if args['status']:
-        for i,dev in selected:
-            _device_get_status(dev, i, **frwd)
+        for dev in selected:
+            _device_get_status(dev, **opts)
         return
 
     if len(selected) > 1:
         raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
     elif len(selected) == 0:
         raise SystemExit('No devices matches available drivers and selection criteria')
-    num, dev = selected[0]
+    dev = selected[0]
 
-    dev.connect(**frwd)
+    dev.connect(**opts)
     try:
         if args['initialize']:
-            dev.initialize(**frwd)
+            dev.initialize(**opts)
         elif args['set'] and args['speed']:
-            _device_set_speed(dev, args, **frwd)
+            _device_set_speed(dev, args, **opts)
         elif args['set'] and args['color']:
-            _device_set_color(dev, args, **frwd)
+            _device_set_color(dev, args, **opts)
         else:
             raise Exception('Not sure what to do')
     except:
         LOGGER.exception('Unexpected error')
         sys.exit(1)
     finally:
-        dev.disconnect(**frwd)
+        dev.disconnect(**opts)
+
+
+def find_all_supported_devices(**opts):
+    """Deprecated."""
+    LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
+    return find_liquidctl_devices(**opts)
 
 
 if __name__ == '__main__':
