@@ -284,8 +284,8 @@ def main():
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
                 raise IndexError('Device ID does not match remaining selection criteria')
-            LOGGER.warning('mixing --device <id> with other filters is not recommended;'
-                           'to disambiguate between results use --pick <result>')
+            LOGGER.warning('mixing --device <id> with other filters is not recommended; '
+                           'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
 
     if args['list']:
