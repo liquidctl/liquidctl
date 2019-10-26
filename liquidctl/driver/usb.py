@@ -443,7 +443,7 @@ class HidapiDevice:
         return type(self) == type(other) and self.bus == other.bus and self.address == other.address
 
 
-class UsbHidBus(BaseBus):
+class GenericHidBus(BaseBus):
 
     def find_devices(self, vendor=None, product=None, hid=None, bus=None,
                      address=None, usb_port=None, **kwargs):
@@ -490,7 +490,7 @@ class UsbHidBus(BaseBus):
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
 
 
-class UsbBus(BaseBus):
+class PyUsbBus(BaseBus):
     def find_devices(self, vendor=None, product=None, bus=None, address=None,
                      usb_port=None, **kwargs):
         """ Find compatible regular USB devices."""
