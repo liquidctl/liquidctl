@@ -150,7 +150,7 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         print(f'├── Release number: {dev.release_number:#06x}')
         try:
             if dev.serial_number:
-                print(f'├── Serial number: {dev.serial_number}'.format(dev.serial_number))
+                print(f'├── Serial number: {dev.serial_number}')
         except:
             msg = 'could not read the serial number'
             if sys.platform.startswith('linux') and os.geteuid:
@@ -162,8 +162,8 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             else:
                 warnings.append(msg)
 
-        print(f'├── Bus: {dev.bus}'.format(dev.bus))
-        print(f'├── Address: {dev.address}'.format(dev.address))
+        print(f'├── Bus: {dev.bus}')
+        print(f'├── Address: {dev.address}')
         if dev.port:
             port = '.'.join(map(str, dev.port))
             print(f'├── Port: {port}')
