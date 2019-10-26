@@ -70,6 +70,7 @@ import datetime
 import inspect
 import itertools
 import logging
+import os
 import sys
 
 from docopt import docopt
@@ -133,6 +134,8 @@ LOGGER = logging.getLogger(__name__)
 
 def _list_devices(devices, using_filters=False, device_id=None, verbose=False, debug=False, **opts):
     for i, dev in enumerate(devices):
+        warnings = []
+
         if not using_filters:
             print(f'Device ID {i}: {dev.description}')
         elif device_id is not None:
@@ -145,20 +148,35 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         print(f'├── Vendor ID: {dev.vendor_id:#06x}')
         print(f'├── Product ID: {dev.product_id:#06x}')
         print(f'├── Release number: {dev.release_number:#06x}')
-        if dev.serial_number:
-            print(f'├── Serial number: {dev.serial_number}'.format(dev.serial_number))
-        if dev.bus:
-            print(f'├── Bus: {dev.bus}'.format(dev.bus))
-        if dev.address is not None: # could be int zero (libusb)
-            print(f'├── Address: {dev.address}'.format(dev.address))
+        try:
+            if dev.serial_number:
+                print(f'├── Serial number: {dev.serial_number}'.format(dev.serial_number))
+        except:
+            msg = 'could not read the serial number'
+            if sys.platform.startswith('linux') and os.geteuid:
+                msg += ' (requires root privileges)'
+            elif 'win' in sys.platform and 'Hid' not in dev.device.__name__:
+                msg += ' (device possibly requires a kernel driver)'
+            if debug:
+                LOGGER.exception(msg.capitalize())
+            else:
+                warnings.append(msg)
+
+        print(f'├── Bus: {dev.bus}'.format(dev.bus))
+        print(f'├── Address: {dev.address}'.format(dev.address))
         if dev.port:
             port = '.'.join(map(str, dev.port))
             print(f'├── Port: {port}')
+
         print(f'└── Driver: {type(dev).__name__} using module {dev.device.api.__name__}')
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
             LOGGER.debug('hierarchy: %s; %s', ', '.join(driver_hier[1:]), type(dev.device).__name__)
+
+        for msg in warnings:
+            LOGGER.warning(msg)
         print('')
+
     assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
 
 
@@ -266,7 +284,7 @@ def main():
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
                 raise IndexError('Device ID does not match remaining selection criteria')
-            LOGGER.warning('Mixing --device <id> with other filters is not recommended;'
+            LOGGER.warning('mixing --device <id> with other filters is not recommended;'
                            'to disambiguate between results use --pick <result>')
         selected = [compat[device_id]]
 
