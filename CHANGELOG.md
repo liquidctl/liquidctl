@@ -15,8 +15,9 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
  - Add `--single-12v-ocp` option
  - Add `--pick <result>` option
 ### Changed
- - Improve the output of the `list` and `status` commands
  - Reduce the number of libusb and hidapi calls during device discovery
+ - Improve the visual hierarchy of the output `list` and `status`
+ - Allow `list --verbose` to run without root privileges (Linux) or special drivers (Windows)
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
