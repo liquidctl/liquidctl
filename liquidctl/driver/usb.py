@@ -79,6 +79,11 @@ import logging
 import sys
 
 import usb
+import hid
+try:
+    import hidraw
+except:
+    hidraw = hid
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 
@@ -445,8 +450,8 @@ class UsbHidBus(BaseBus):
                      address=None, usb_port=None, **kwargs):
         """Find compatible USB HID devices.
 
-        Both hidapi and PyUSB backends are supported.  On Mac the default is
-        hidapi; on all other platforms it is PyUSB.
+        Both hidapi and PyUSB backends are supported.  On Mac and Linux the
+        default is to use hidapi; on all other platforms it is PyUSB.
 
         The choice of API for HID can be overiden with `hid`:
 
@@ -456,22 +461,19 @@ class UsbHidBus(BaseBus):
            hidapi build options)
         """
 
-        if hid == 'hidraw' or hid == 'hid':
-            wrapper = HidapiDevice
-        elif hid == 'usb':
-            wrapper = PyUsbHid
-        elif sys.platform.startswith('darwin'):
-            wrapper = HidapiDevice
-            hid = 'hid'
-        else:
-            wrapper = PyUsbHid
+        if not hid:
+            if sys.platform.startswith('linux'):
+                hid = 'hidraw'
+            elif sys.platform.startswith('darwin'):
+                hid = 'hid'
+            else:
+                hid = 'usb'
 
-        if wrapper == HidapiDevice:
-            api = importlib.import_module(hid)
-            handles = wrapper.enumerate(api, vendor, product)
+        api = globals()[hid]
+        if hid.startswith('hid'):
+            handles = HidapiDevice.enumerate(api, vendor, product)
         else:
-            handles = wrapper.enumerate(vendor, product)
-            api = usb
+            handles = PyUsbHid.enumerate(vendor, product)
 
         drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
         LOGGER.debug('searching %s (api=%s, drivers=[%s])', self.__class__.__name__, api.__name__,
