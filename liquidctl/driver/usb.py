@@ -120,8 +120,7 @@ class BaseUsbDriver(BaseDriver):
             consargs.update(kwargs)
             dev = cls(handle, description, **consargs)
             LOGGER.debug('instanced driver for %s', description)
-            return dev
-        return None
+            yield dev
 
     def connect(self, **kwargs):
         """Connect to the device."""
@@ -488,9 +487,7 @@ class UsbHidBus(BaseBus):
             LOGGER.debug('probing drivers for device %s:%s', hex(handle.vendor_id),
                          hex(handle.product_id))
             for drv in drivers:
-                dev = drv.probe(handle, vendor=vendor, product=product, **kwargs)
-                if dev:
-                    yield dev
+                yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
 
 
 class UsbBus(BaseBus):
@@ -510,6 +507,4 @@ class UsbBus(BaseBus):
             LOGGER.debug('probing drivers for device %s:%s', hex(handle.vendor_id),
                          hex(handle.product_id))
             for drv in drivers:
-                dev = drv.probe(handle, vendor=vendor, product=product, **kwargs)
-                if dev:
-                    yield dev
+                yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
