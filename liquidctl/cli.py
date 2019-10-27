@@ -68,7 +68,6 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 import datetime
 import inspect
-import itertools
 import logging
 import os
 import sys
