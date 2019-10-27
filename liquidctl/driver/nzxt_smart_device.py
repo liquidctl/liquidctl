@@ -458,10 +458,12 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
             for [g, r, b] in colors:
                 self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
-                color_lists[0] = [g, r, b] * 8
-                color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
-                color_lists[2] = [int(x // 4) for x in color_lists[1]]
-                color_lists[3] = []
+                color_lists = [
+                    [g, r, b] * 8,
+                    [int(x // 2.5) for x in color_lists[0]],
+                    [int(x // 4) for x in color_lists[1]],
+                    []
+                ]
                 for i in range(8):   #  send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
                     msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
