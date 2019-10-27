@@ -393,7 +393,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             if time_off is None:
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
-                                   interval1=_lamp(time_off, 1, 255),
+                                   interval1=clamp(time_off, 1, 255),
                                    interval2=clamp(time_per_color, 1, 255),
                                    alert_temp=clamp(alert_threshold, 0, 100), color3=alert_color)
         elif mode == 'fixed':

@@ -158,7 +158,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
-        duty = clamp(duty, MIN_FAN_DUTY, 100)
+        duty = clamp(duty, _MIN_FAN_DUTY, 100)
         LOGGER.info('ensuring fan control is in software mode')
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
         LOGGER.info('setting fan PWM duty to %i%%', duty)
