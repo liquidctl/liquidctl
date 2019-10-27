@@ -211,9 +211,10 @@ class UsbDriver(BaseUsbDriver):
     def find_supported_devices(cls, hid=None, **kwargs):
         """Find devices specifically compatible with this driver."""
         devs = []
-        for dev in PyUsbBus().find_devices(vendor=vid, product=pid, **kwargs):
-            if type(dev) == cls:
-                devs.append(dev)
+        for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
+            for dev in PyUsbBus().find_devices(vendor=vid, product=pid, **kwargs):
+                if type(dev) == cls:
+                    devs.append(dev)
         return devs
 
     def __init__(self, device, description, **kwargs):
