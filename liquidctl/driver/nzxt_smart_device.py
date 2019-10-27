@@ -103,7 +103,7 @@ import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-
+from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -159,11 +159,8 @@ class CommonSmartDeviceDriver(UsbHidDriver):
             selected_channels = self._speed_channels
         else:
             selected_channels = {channel: self._speed_channels[channel]}
-        for cname, (cid, smin, smax) in selected_channels.items():
-            if duty < smin:
-                duty = smin
-            elif duty > smax:
-                duty = smax
+        for cname, (cid, dmin, dmax) in selected_channels.items():
+            duty = clamp(duty, dmin, dmax)
             LOGGER.info('setting %s duty to %i%%', cname, duty)
             self._write_fixed_duty(cid, duty)
         self.device.release()

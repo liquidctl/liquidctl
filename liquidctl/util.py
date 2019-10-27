@@ -18,7 +18,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import itertools
+import logging
 import sys
+
+LOGGER = logging.getLogger(__name__)
+
+
+def clamp(value, clampmin, clampmax):
+    """Clamp numeric `value` to interval [`clampmin`, `clampmax`]."""
+    clamped = max(clampmin, min(clampmax, value))
+    if clamped != value:
+        LOGGER.debug('clamped %s to interval [%s, %s]', value, clampmin, clampmax)
+    return clamped
 
 
 def delta(profile):

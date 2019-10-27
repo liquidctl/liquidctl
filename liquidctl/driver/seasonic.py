@@ -41,7 +41,6 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.pmbus import CommandCode as CMD
 from liquidctl.pmbus import linear_to_float
 
-
 LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64

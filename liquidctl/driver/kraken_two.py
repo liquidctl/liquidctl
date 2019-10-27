@@ -39,9 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import itertools
 import logging
 
-import liquidctl.util
 from liquidctl.driver.usb import UsbHidDriver
-
+from liquidctl.util import clamp, normalize_profile, interpolate_profile
 
 LOGGER = logging.getLogger(__name__)
 
@@ -213,13 +212,10 @@ class KrakenTwoDriver(UsbHidDriver):
         # ideally we could just call normalize_profile (optionally followed by autofill_profile),
         # but Kraken devices currently require the same set of temperatures on both channels
         stdtemps = range(20, 62, 2)
-        tmp = liquidctl.util.normalize_profile(profile, _CRITICAL_TEMPERATURE)
-        norm = [(t, liquidctl.util.interpolate_profile(tmp, t)) for t in stdtemps]
+        tmp = normalize_profile(profile, _CRITICAL_TEMPERATURE)
+        norm = [(t, interpolate_profile(tmp, t)) for t in stdtemps]
         for i, (temp, duty) in enumerate(norm):
-            if duty < dmin:
-                duty = dmin
-            elif duty > dmax:
-                duty = dmax
+            duty = clamp(duty, dmin, dmax)
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
@@ -238,11 +234,8 @@ class KrakenTwoDriver(UsbHidDriver):
         """Set channel to speed, but do not ensure persistence."""
         if not self.supports_cooling:
             raise NotImplementedError()
-        cbase, smin, smax = _SPEED_CHANNELS[channel]
-        if duty < smin:
-            duty = smin
-        elif duty > smax:
-            duty = smax
+        cbase, dmin, dmax = _SPEED_CHANNELS[channel]
+        duty = clamp(duty, dmin, dmax)
         LOGGER.info('setting %s PWM duty to %i%%', channel, duty)
         self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
         self.device.release()

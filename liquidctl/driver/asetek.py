@@ -50,7 +50,7 @@ import appdirs
 import usb
 
 from liquidctl.driver.usb import UsbDriver
-
+from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,19 +90,6 @@ _UNKNOWN_OPEN_VALUE = 0xFFFF
 
 # Control request type
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
-
-
-def _clamp(val, lo, hi, none=None, desc='value'):
-    if val is None:
-        return none
-    elif val < lo:
-        LOGGER.info('%s %s clamped to lo=%s, hi=%s', desc, val, lo, hi)
-        return lo
-    elif val > hi:
-        LOGGER.info('%s %s clamped to lo=%s, hi=%s', desc, val, lo, hi)
-        return hi
-    else:
-        return val
 
 
 class CommonAsetekDriver(UsbDriver):
@@ -155,7 +142,7 @@ class CommonAsetekDriver(UsbDriver):
         elif size > _MAX_PROFILE_POINTS:
             raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
         for i, (temp, duty) in enumerate(opt):
-            opt[i] = (temp, _clamp(duty, min_duty, max_duty))
+            opt[i] = (temp, clamp(duty, min_duty, max_duty))
         missing = _MAX_PROFILE_POINTS - size
         if missing:
             # Some issues were observed when padding with (0°C, 0%), though
@@ -236,28 +223,28 @@ class AsetekDriver(CommonAsetekDriver):
         if mode == 'rainbow':
             if isinstance(speed, str):
                 speed = int(speed)
-            self._write([0x23, _clamp(speed, 1, 6, 'rainbow speed')])
+            self._write([0x23, clamp(speed, 1, 6)])
             # make sure to clear blinking or... chaos
-            self._configure_device(alert_temp=_clamp(alert_threshold, 0, 100), color3=alert_color)
+            self._configure_device(alert_temp=clamp(alert_threshold, 0, 100), color3=alert_color)
         elif mode == 'fading':
             self._configure_device(fading=True, color1=colors[0], color2=colors[1],
-                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'),
-                                   alert_temp=_clamp(alert_threshold, 0, 100), color3=alert_color)
+                                   interval1=clamp(time_per_color, 1, 255),
+                                   alert_temp=clamp(alert_threshold, 0, 100), color3=alert_color)
             self._write([0x23, 0])
         elif mode == 'blinking':
             if time_off is None:
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
-                                   interval1=_clamp(time_off, 1, 255, 'time off'),
-                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'),
-                                   alert_temp=_clamp(alert_threshold, 0, 100), color3=alert_color)
+                                   interval1=clamp(time_off, 1, 255),
+                                   interval2=clamp(time_per_color, 1, 255),
+                                   alert_temp=clamp(alert_threshold, 0, 100), color3=alert_color)
             self._write([0x23, 0])
         elif mode == 'fixed':
-            self._configure_device(color1=colors[0], alert_temp=_clamp(alert_threshold, 0, 100),
+            self._configure_device(color1=colors[0], alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
             self._write([0x23, 0])
         elif mode == 'blackout':  # stronger than just 'off', suppresses alerts and rainbow
-            self._configure_device(blackout=True, alert_temp=_clamp(alert_threshold, 0, 100),
+            self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
             raise KeyError('Unknown lighting mode {}'.format(mode))
@@ -288,7 +275,7 @@ class AsetekDriver(CommonAsetekDriver):
             self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
             return
         mtype, dmin, dmax = _FIXED_SPEED_CHANNELS[channel]
-        duty = _clamp(duty, dmin, dmax)
+        duty = clamp(duty, dmin, dmax)
         total_levels = _MAX_PUMP_SPEED_CODE - _MIN_PUMP_SPEED_CODE + 1
         level = round((duty - dmin)/(dmax - dmin)*total_levels)
         effective_duty = round(dmin + level*(dmax - dmin)/total_levels)
@@ -325,11 +312,11 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         self._data_cache = {}
         LOGGER.debug('data directory for device is %s', self._data_path)
 
-    def _load_integer(self, name):
+    def _load_integer(self, name, default=None):
         if name in self._data_cache:
             value = self._data_cache[name]
             LOGGER.debug('loaded %s=%s (from cache)', name, str(value))
-            return value
+            return value if value is not None else default
         try:
             with open(os.path.join(self._data_path, name), mode='r') as f:
                 data = f.read().strip()
@@ -343,7 +330,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             value = None
         finally:
             self._data_cache[name] = value
-            return value
+            return value if value is not None else default
 
     def _store_integer(self, name, value):
         try:
@@ -362,7 +349,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         self._begin_transaction()
         for channel in ['pump', 'fan']:
             mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-            duty = _clamp(self._load_integer('{}_duty'.format(channel)), dmin, dmax, none=dmax)
+            duty = clamp(self._load_integer('{}_duty'.format(channel), default=dmax), dmin, dmax)
             LOGGER.info('setting %s duty to %i%%', channel, duty)
             self._write([mtype, duty])
         return self._end_transaction_and_read()
@@ -398,22 +385,22 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             if time_per_color is None:
                 time_per_color = 5
             self._configure_device(fading=True, color1=colors[0], color2=colors[1],
-                                   interval1=_clamp(time_per_color, 1, 255, 'time per color'),
-                                   alert_temp=_clamp(alert_threshold, 0, 100), color3=alert_color)
+                                   interval1=clamp(time_per_color, 1, 255),
+                                   alert_temp=clamp(alert_threshold, 0, 100), color3=alert_color)
         elif mode == 'blinking':
             if time_per_color is None:
                 time_per_color = 1
             if time_off is None:
                 time_off = time_per_color
             self._configure_device(blinking=True, color1=colors[0],
-                                   interval1=_clamp(time_off, 1, 255, 'time off'),
-                                   interval2=_clamp(time_per_color, 1, 255, 'time per color'),
-                                   alert_temp=_clamp(alert_threshold, 0, 100), color3=alert_color)
+                                   interval1=_lamp(time_off, 1, 255),
+                                   interval2=clamp(time_per_color, 1, 255),
+                                   alert_temp=clamp(alert_threshold, 0, 100), color3=alert_color)
         elif mode == 'fixed':
-            self._configure_device(color1=colors[0], alert_temp=_clamp(alert_threshold, 0, 100),
+            self._configure_device(color1=colors[0], alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         elif mode == 'blackout':  # stronger than just 'off', suppresses alerts and rainbow
-            self._configure_device(blackout=True, alert_temp=_clamp(alert_threshold, 0, 100),
+            self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
             raise KeyError('Unsupported lighting mode {}'.format(mode))
@@ -423,7 +410,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-        duty = _clamp(duty, dmin, dmax)
+        duty = clamp(duty, dmin, dmax)
         self._store_integer('{}_duty'.format(channel), duty)
         self._set_all_fixed_speeds()
 
