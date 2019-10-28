@@ -93,7 +93,7 @@ _Note: some devices may require an additional kernel driver [on Windows](#additi
 
 ## Installing from sources
 
-liquidctl runs on [Python 3](https://www.python.org/) and uses [libusb](https://github.com/libusb/libusb) and [HIDAPI](https://github.com/libusb/hidapi) to communicate with devices.
+liquidctl runs on [Python](https://www.python.org/) 3.6 or later and uses [libusb](https://github.com/libusb/libusb) and [HIDAPI](https://github.com/libusb/hidapi) to communicate with devices.
 
 The most important Python dependencies are [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/Cython-hidapI), but a few other libraries (e.g. docopt) are used as well; all of them are listed in `setup.py`.
 

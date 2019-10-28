@@ -86,7 +86,8 @@ setuptools.setup(
         'Topic :: System :: Hardware :: Hardware Drivers',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     keywords='cross-platform driver nzxt kraken smart-device grid',
     project_urls={
@@ -95,7 +96,7 @@ setuptools.setup(
         'Changelog': CHANGES_URL,
     },
     install_requires=['docopt', 'pyusb', 'hidapi', 'appdirs'],
-    python_requires='>=3',
+    python_requires='>=3.6',
     entry_points={
         'console_scripts': [
             'liquidctl=liquidctl.cli:main',
