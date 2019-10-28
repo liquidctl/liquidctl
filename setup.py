@@ -89,7 +89,8 @@ setuptools.setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    keywords='cross-platform driver nzxt kraken smart-device grid',
+    keywords='cross-platform cli driver corsair evga nzxt liquid-cooler fan-controller '
+             'power-supply led-controller kraken smart-device',
     project_urls={
         'Suported devices': SUPPORTED_URL,
         'Documentation': DOC_URL,
