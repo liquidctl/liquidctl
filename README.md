@@ -7,22 +7,34 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 
 ```
 # liquidctl list
-Device 0, NZXT Kraken X (X42, X52, X62 or X72)
+Device ID 0: NZXT Smart Device (V1)
+Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
 
-# liquidctl initialize
+# liquidctl initialize all
+# liquidctl --device 0 set fan1 speed 50
+# liquidctl --device 0 set led color fading 350017 ff2608
+# liquidctl --device 1 set fan speed  20 30  30 50  34 80  40 90  50 100
+# liquidctl --device 1 set sync color spectrum-wave
 
 # liquidctl status
-Device 0, NZXT Kraken X (X42, X52, X62 or X72)
-Liquid temperature          29.4  °C
-Fan speed                    639  rpm
-Pump speed                  1910  rpm
-Firmware version           4.0.2
+NZXT Smart Device (V1)
+├── Fan 1                        PWM  
+├── Fan 1 current               0.04  A
+├── Fan 1 speed                 1035  rpm
+├── Fan 1 voltage              11.91  V
+├── Fan 2                          —  
+├── Fan 3                          —  
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+├── LED count (total)             20  
+└── Noise level                   60  dB
 
-# liquidctl set pump speed 90
-# liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-
-# liquidctl set ring color fading 350017 ff2608
-# liquidctl set logo color spectrum-wave
+NZXT Kraken X (X42, X52, X62 or X72)
+├── Liquid temperature     28.1  °C
+├── Fan speed               851  rpm
+├── Pump speed             1953  rpm
+└── Firmware version      6.0.2  
 ```
 
 <!-- stop here for PyPI -->

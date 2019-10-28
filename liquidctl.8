@@ -11,6 +11,7 @@ liquidctl \- monitor and control liquid coolers and other devices
 .SY liquidctl
 .RI [ options ]
 .B initialize
+.RB [ all ]
 .SY liquidctl
 .RI [ options ]
 .B status
@@ -58,7 +59,8 @@ updates.
 .PP
 \fBliquidctl initialize\fR should be called for every device after a reboot,
 since many of them require some initialization code before correctly responding
-to other commands.
+to other commands.  \fBliquidctl initialize all\fR simplifies that and attempts
+to initialize all devices at once.
 .PP
 \fBliquidctl status\fR displays the status of a device or, if no selection
 options have been passed, of all available devices.
@@ -160,8 +162,7 @@ Temporary storage required by some drivers.
 .SY liquidctl
 .B list \-\-verbose
 .SY liquidctl
-.BI \-\-device\  0
-.B initialize
+.B initialize all
 .SY liquidctl
 .BI \-\-product\  0x170e\  set\  pump\  speed\  90
 .SY liquidctl

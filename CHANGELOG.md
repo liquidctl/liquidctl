@@ -12,12 +12,14 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
  - **Add experimental support for NZXT E500, E650 and E850 power supplies**
  - **Add experimental support for the NZXT Smart Device V2**
  - Add liquidctl(8) man page
- - Add `--single-12v-ocp` option
- - Add `--pick <result>` option
+ - Add `--single-12v-ocp` option to `initialize` (Corsair HXi/RMi PSUs)
+ - Add `--pick <result>` device selection option
+ - Add `initialize all` variant/helper
 ### Changed
  - Reduce the number of libusb and hidapi calls during device discovery
  - Improve the visual hierarchy of the output `list` and `status`
  - Allow `list --verbose` to run without root privileges (Linux) or special drivers (Windows)
+ - Change the default API for HIDs on Linux to hidraw
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_

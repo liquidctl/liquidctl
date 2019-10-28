@@ -1,12 +1,12 @@
 """liquidctl – monitor and control liquid coolers and other devices.
 
 Usage:
+  liquidctl [options] list [--verbose]
+  liquidctl [options] initialize [all]
   liquidctl [options] status
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
-  liquidctl [options] initialize
-  liquidctl [options] list
   liquidctl --help
   liquidctl --version
 
@@ -38,11 +38,11 @@ Other options:
   --help                      Show this message
 
 Examples:
+  liquidctl list --verbose
+  liquidctl initialize all
+  liquidctl --product 0x170e set pump speed 90
+  liquidctl --serial 123ABC789 set led color fading 350017 ff2608
   liquidctl status
-  liquidctl set pump speed 90
-  liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-  liquidctl set ring color fading 350017 ff2608
-  liquidctl set logo color fixed af5a2f
 
 ---
 
@@ -266,7 +266,7 @@ def main():
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        LOGGER.debug(_gen_version())
+        LOGGER.debug('running %s', _gen_version())
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
@@ -297,32 +297,31 @@ def main():
     if args['list']:
         _list_devices(selected, using_filters=bool(filter_count), device_id=device_id, **opts)
         return
-    if args['status']:
-        for dev in selected:
-            _device_get_status(dev, **opts)
-        return
 
-    if len(selected) > 1:
+    if len(selected) > 1 and not (args['status'] or args['all']):
         raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
     elif len(selected) == 0:
         raise SystemExit('No devices matches available drivers and selection criteria')
-    dev = selected[0]
 
-    dev.connect(**opts)
-    try:
-        if args['initialize']:
-            dev.initialize(**opts)
-        elif args['set'] and args['speed']:
-            _device_set_speed(dev, args, **opts)
-        elif args['set'] and args['color']:
-            _device_set_color(dev, args, **opts)
-        else:
-            raise Exception('Not sure what to do')
-    except:
-        LOGGER.exception('Unexpected error')
-        sys.exit(1)
-    finally:
-        dev.disconnect(**opts)
+    for dev in selected:
+        LOGGER.debug('device: %s', dev.description)
+        dev.connect(**opts)
+        try:
+            if args['initialize']:
+                dev.initialize(**opts)
+            elif args['status']:
+                _device_get_status(dev, **opts)
+            elif args['set'] and args['speed']:
+                _device_set_speed(dev, args, **opts)
+            elif args['set'] and args['color']:
+                _device_set_color(dev, args, **opts)
+            else:
+                raise Exception('Not sure what to do')
+        except:
+            LOGGER.exception('Unexpected error with %s', dev.description)
+            sys.exit(1)
+        finally:
+            dev.disconnect(**opts)
 
 
 def find_all_supported_devices(**opts):
@@ -333,4 +332,3 @@ def find_all_supported_devices(**opts):
 
 if __name__ == '__main__':
     main()
-
