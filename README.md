@@ -329,19 +329,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Related projects
 
+### [jonasmalacofilho/liquidctl-device-data](https://github.com/jonasmalacofilho/liquidctl-device-data)
+
+Device information for developing and maintaining liquidctl, including USB descriptions, traffic captures and protocol analyses.
+
 ### [jonasmalacofilho/liquidctl-linux-drivers](https://github.com/jonasmalacofilho/liquidctl-linux-drivers)
 
-Ongoing work on Linux kernel drivers that implement standard hwmon sysfs
-interfaces for the devices supported by liquidctl and allow the use of standard
-monitoring tools (e.g. lm-sensors).
-
-### [jaksi/leviathan](https://github.com/jaksi/leviathan) and [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
-
-Linux kernel USB drivers for second and third generation NZXT Kraken X coolers.
+Ongoing work on Linux kernel _hwmon_ device drivers for devices supported by liquidctl, allowing the use of standard monitoring tools (e.g. lm-sensors).
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
 Command-line tool to control Corsair all-in-one liquid coolers and other devices.
+
+### [jaksi/leviathan](https://github.com/jaksi/leviathan) and [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
+
+Linux kernel device drivers for second and third generation NZXT Kraken X coolers.
 
 ### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
 
