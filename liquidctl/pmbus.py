@@ -28,22 +28,21 @@ http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
 ---
 
-Includes a CRC-8 implementation adapted from work by Thomas Pircher in pycrc,
-under the terms of the MIT license.
+Constants and methods for interfacing with PMBus compliant devices.
+Copyright (C) 2019–2019  Jonas Malaco
+Copyright (C) 2019–2019  each contribution's author
 
-pycrc -- parameterisable CRC calculation utility and C source code generator
+Includes a CRC-8 implementation adapted from pycrc by Thomas Pircher.
 Copyright (c) 2006-2017  Thomas Pircher  <tehpeh-web@tty1.net>
 
-Constants and methods for interfacing with PMBus compliant devices.
-Copyright (C) 2019  Jonas Malaco
-Copyright (C) 2019  each contribution's author
+This file is part of liquidctl.
 
-This program is free software: you can redistribute it and/or modify
+liquidctl is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+liquidctl is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -56,10 +55,12 @@ import math
 
 from enum import IntEnum, IntFlag, unique
 
+
 @unique
 class WriteBit(IntFlag):
     WRITE = 0x00
     READ = 0x01
+
 
 @unique
 class CommandCode(IntEnum):
@@ -204,6 +205,7 @@ def compute_pec(bytes):
         idx = reg ^ octet
         reg = tbl[idx]
     return reg
+
 
 def _gen_pec_table():
     """Generate the lookup table for compute_pec.

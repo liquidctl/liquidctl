@@ -1,4 +1,4 @@
-"""liquidctl – monitor and control liquid coolers and other devices
+"""liquidctl – monitor and control liquid coolers and other devices.
 
 Usage:
   liquidctl [options] status
@@ -44,26 +44,33 @@ Examples:
   liquidctl set ring color fading 350017 ff2608
   liquidctl set logo color fixed af5a2f
 
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
+---
 
+liquidctl – monitor and control liquid coolers and other devices.
 Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2018–2019  each contribution's author
 
-Incorporates work by leaty, KsenijaS, Alexander Tong, Jens Neumaier, Kristóf
-Jakab, Sean Nelson, Chris Griffith, notaz and realies, under the terms of the
-GNU General Public License.  Depending on how it was packaged, this program
-might also bundle copies of hidapi, libusb, cython-hidapi, pyusb, docopt and
-appdirs.
+liquidctl includes contributions by CaseySJ and other authors.
 
-You should have received a copy of all applicable licenses along with this
-program, in a file called LICENSE.txt.
+liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
+Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
+and Thomas Pircher.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+Depending on how it is packaged, it might also bundle copies of
+python, hidapi, libusb, cython-hidapi, pyusb, docopt and appdirs.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import datetime

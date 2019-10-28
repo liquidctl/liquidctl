@@ -1,12 +1,10 @@
 """liquidctl driver for Corsair HID PSUs.
 
-
 Supported devices
 -----------------
 
  - Corsair HXi (HX750i, HX850i, HX1000i and HX1200i)
  - Corsair RMi (RM650i, RM750i, RM850i and RM1000i)
-
 
 Supported features
 ------------------
@@ -17,26 +15,25 @@ Supported features
  - fan control
  - +12V single or multi rail OCP
 
+---
 
-Port of corsaiRMi: incorporates or uses as reference work by notaz and realies,
-under the terms of the BSD 3-Clause license.
+liquidctl driver for Corsair HID PSUs.
+Copyright (C) 2019–2019  Jonas Malaco
+Copyright (C) 2019–2019  each contribution's author
 
-Incorporates or uses as reference work by Sean Nelson, under the terms of the
-GNU General Public License.
-
-corsaiRMi
+Port of corsaiRMi by notaz and realies.
 Copyright (c) notaz, 2016
 
-liquidctl driver for Corsair HID PSUs
-Copyright (C) 2019  Jonas Malaco
-Copyright (C) 2019  each contribution's author
+Incorporates or uses as reference work by Sean Nelson.
 
-This program is free software: you can redistribute it and/or modify
+This file is part of liquidctl.
+
+liquidctl is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+liquidctl is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.

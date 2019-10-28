@@ -1,6 +1,5 @@
 """liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
 
-
 Smart Device (V1)
 -----------------
 
@@ -25,14 +24,12 @@ and AI.  NZXT calls this feature Adaptive Noise Reduction (ANR).
 [1] https://forum.level1techs.com/t/nzxt-hue-a-look-inside/104836
 [2] In parallel: 10 kOhm per HUE+ strip, 16 kOhm per Aer RGB fan.
 
-
 Grid+ V3
 --------
 
 The NZXT Grid+ V3 is a fan controller very similar to the Smart Device (V1).
 Comparing the two, the Grid+ has more fan channels (six in total), and no
 support for LEDs.
-
 
 Smart Device V2
 ---------------
@@ -58,7 +55,6 @@ lighting channel supports up to 6 accessories and a total of 40 LEDs.
 A microphone is still present onboard for noise level optimization through CAM
 and AI.
 
-
 Driver
 ------
 
@@ -80,17 +76,21 @@ the devices must be manually initialized by calling `initialize()`.  This will
 cause all connected fans and LED accessories to be detected, and enable status
 updates.  It is recommended to initialize the devices at every boot.
 
+---
 
+liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
 Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2019–2019  CaseySJ
 Copyright (C) 2018–2019  each contribution's author
 
-This program is free software: you can redistribute it and/or modify
+This file is part of liquidctl.
+
+liquidctl is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+liquidctl is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.

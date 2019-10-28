@@ -1,12 +1,10 @@
-"""USB driver for third generation NZXT Kraken X and M liquid coolers.
-
+"""liquidctl driver for third generation NZXT Kraken X and M liquid coolers.
 
 Kraken X (X42, X52, X62 and X72)
 --------------------------------
 
 These coolers house 5-th generation Asetek pumps with additional PCBs for
 advanced control and RGB capabilites.
-
 
 Kraken M22
 ----------
@@ -15,19 +13,22 @@ The Kraken M22 shares similar RGB funcionality to the X models of the same
 generation, but has no liquid temperature sensor and no hability to report or
 set fan or pump speeds.
 
+---
 
-Copyright (C) 2018  Jonas Malaco
-Copyright (C) 2018  each contribution's author
+liquidctl driver for third generation NZXT Kraken X and M liquid coolers.
+Copyright (C) 2018–2019  Jonas Malaco
+Copyright (C) 2018–2019  each contribution's author
 
-Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier, under
-the terms of the GNU General Public License.
+Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier.
 
-This program is free software: you can redistribute it and/or modify
+This file is part of liquidctl.
+
+liquidctl is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+liquidctl is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.

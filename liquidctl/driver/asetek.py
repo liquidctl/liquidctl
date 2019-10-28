@@ -1,5 +1,4 @@
-"""USB drivers for fifth generation Asetek AIO liquid coolers.
-
+"""liquidctl drivers for fifth generation Asetek AIO liquid coolers.
 
 Supported devices
 -----------------
@@ -9,7 +8,6 @@ Supported devices
  - NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
  - Corsair H80i GTX, H100i GTX or H110i GTX/experimental
  - Corsair H80i v2, H100i v2 or H115i/experimental
-
 
 Supported features
 ------------------
@@ -21,19 +19,23 @@ Supported features
  - control of pump and fan speeds
  - control of lighting modes and colors
 
+---
 
+liquidctl drivers for fifth generation Asetek AIO liquid coolers.
 Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2018–2019  each contribution's author
 
-Incorporates or uses as reference work by Kristóf Jakab, Sean Nelson and Chris
-Griffith, under the terms of the GNU General Public License.
+Incorporates or uses as reference work by Kristóf Jakab, Sean Nelson
+and Chris Griffith.
 
-This program is free software: you can redistribute it and/or modify
+This file is part of liquidctl.
+
+liquidctl is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+liquidctl is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.

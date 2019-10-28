@@ -300,22 +300,28 @@ A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.co
 
 ## License
 
+liquidctl – monitor and control liquid coolers and other devices.  
 Copyright (C) 2018–2019  Jonas Malaco  
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2019  each contribution's author  
 
-Incorporates or uses as reference work by leaty, KsenijaS, Alexander Tong, Jens
-Neumaier, Kristóf Jakab, Sean Nelson and Chris Griffith, under the terms of the
-GNU General Public License.
+liquidctl includes contributions by CaseySJ and other authors.
+
+liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
+Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
+and Thomas Pircher.
+
+Depending on how it is packaged, it might also bundle copies of
+python, hidapi, libusb, cython-hidapi, pyusb, docopt and appdirs.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-**This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+This program is distributed in the hope that it will be useful,
+but without any warranty; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.**
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
