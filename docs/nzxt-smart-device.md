@@ -74,6 +74,8 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
+_Only NZXT Smart Device (V1)_
+
 For lighting, the user can control up to 40 LEDs, if all four strips or five fans are connected.  They are chained in a single channel: `led`.
 
 ```

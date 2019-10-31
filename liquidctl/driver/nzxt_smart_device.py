@@ -1,4 +1,4 @@
-"""liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
+"""liquidctl drivers for NZXT Smart Device V1/V2, Grid+ V3 and HUE 2.
 
 Smart Device (V1)
 -----------------
@@ -54,6 +54,15 @@ lighting channel supports up to 6 accessories and a total of 40 LEDs.
 
 A microphone is still present onboard for noise level optimization through CAM
 and AI.
+
+HUE 2
+-----
+
+The NZXT HUE 2 is an LED controller from the same generation of the Smart
+Device V2.
+
+The presets and limitations of the four LED channels are the same as in the
+Smart Device V2.
 
 Driver
 ------
@@ -296,7 +305,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
 
 
 class SmartDeviceV2Driver(CommonSmartDeviceDriver):
-    """liquidctl driver for the NZXT Smart Device V2."""
+    """liquidctl driver for the NZXT Smart Device V2 and NZXT HUE 2."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2006, None, 'NZXT Smart Device V2 (experimental)', {
