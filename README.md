@@ -345,9 +345,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Device information for developing and maintaining liquidctl, including USB descriptions, traffic captures and protocol analyses.
 
-### [jonasmalacofilho/liquidctl-linux-drivers](https://github.com/jonasmalacofilho/liquidctl-linux-drivers)
+### [jonasmalacofilho/liquidtux](https://github.com/jonasmalacofilho/liquidtux)
 
-Ongoing work on Linux kernel _hwmon_ device drivers for devices supported by liquidctl, allowing the use of standard monitoring tools (e.g. lm-sensors).
+Ongoing work on Linux kernel _hwmon_ drivers for some of the devices supported by liquidctl.  This allows standard monitoring tools (e.g. lm-sensors or tools built on top of it) to read the sensors in these devices.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
