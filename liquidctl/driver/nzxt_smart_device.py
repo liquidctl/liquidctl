@@ -186,7 +186,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
             'speed_channel_count': 3,
             'color_channel_count': 1
         }),
-        (0x1e71, 0x1711, None, 'NZXT Grid+ V3 (experimental)', {
+        (0x1e71, 0x1711, None, 'NZXT Grid+ V3', {
             'speed_channel_count': 6,
             'color_channel_count': 0
         }),
