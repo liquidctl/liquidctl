@@ -281,6 +281,7 @@ class PyUsbDevice:
         if self._attached:
             LOGGER.debug('restoring stock kernel driver')
             self.usbdev.attach_kernel_driver(self._DEFAULT_INTERFACE)
+            self._attached = False
 
     def read(self, endpoint, length, timeout=None):
         """Read from endpoint."""
