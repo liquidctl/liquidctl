@@ -383,31 +383,27 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
-        status = []
-        num_valid_replies_recvd = 0
-        msg_1101_reply = False
-        msg_2103_reply = False
-        msg_6702_reply = False
-        msg_6704_reply = False
+        expected_prefixes = set([b'\x11\x01', b'\x21\x03'])
+        if self._speed_channels:
+            expected_prefixes.add(b'\x67\x02')
+            # unused msg: prefix == b'\x67\x04'
 
-        # Get configuration information from device
-        self._write([0x10, 0x01])  # get firmware info
-        self._write([0x20, 0x03])  # get lighting info
-        # After issuing the above 2 commands, we will get a series of replies that
-        # will include everything we want to extract and display to the user.
-        # It may take 10 or 12 reply messages before we get all of the expected replies.
-        for x in range(12):
-            if num_valid_replies_recvd == 4:
-                break
+        self._write([0x10, 0x01])  # request firmware info
+        self._write([0x20, 0x03])  # request lighting info
+
+        status = []
+        for _ in range(12):
             msg = self.device.read(self._READ_LENGTH)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-            if not msg_1101_reply and msg[0] == 0x11 and msg[1] == 0x01:
+
+            prefix = bytes(msg[0:2])
+            if prefix not in expected_prefixes:
+                continue
+
+            if prefix == b'\x11\x01':
                 fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
                 status.append(('Firmware version', fw, ''))
-                num_valid_replies_recvd += 1
-                msg_1101_reply = True
-                continue
-            if not msg_2103_reply and msg[0] == 0x21 and msg[1] == 0x03:
+            elif prefix == b'\x21\x03':
                 num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
                 accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
                 light_accessory_index = 15    # offset in msg of info about first light accessory
@@ -418,10 +414,7 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         if accessory_id != 0:
                             status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
                                            self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
-                num_valid_replies_recvd += 1
-                msg_2103_reply = True
-                continue
-            if not msg_6702_reply and msg[0] == 0x67 and msg[1] == 0x02:
+            elif prefix == b'\x67\x02':
                 rpm_offset = 24
                 duty_offset = 40
                 noise_offset = 56
@@ -431,16 +424,10 @@ class SmartDeviceDriverV2(CommonSmartDeviceDriver):
                         status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
                     rpm_offset += 2
                 status.append(('Noise level', msg[noise_offset], 'dB'))
-                num_valid_replies_recvd += 1
-                msg_6702_reply = True
-                continue
-            if not msg_6704_reply and msg[0] == 0x67 and msg[1] == 0x04:
-            # PLACE HOLDER FOR FUTURE WORK
-            # Interpretation of this reply is pending
-                #status.append((' Unknown:', 'status', 'pending'))
-                num_valid_replies_recvd += 1
-                msg_6704_reply = True
-                continue
+            expected_prefixes.remove(prefix)
+            if not expected_prefixes:
+                break
+
         self.device.release()
         return sorted(status)
 
