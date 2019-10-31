@@ -312,7 +312,10 @@ class LegacyAsetekDriver(CommonAsetekDriver):
             basedir = appdirs.site_data_dir('liquidctl', 'jonasmalacofilho')
         self._data_path = os.path.join(basedir, ids, location)
         self._data_cache = {}
+
+    def connect(self, **kwargs):
         LOGGER.debug('data directory for device is %s', self._data_path)
+        super().connect(**kwargs)
 
     def _load_integer(self, name, default=None):
         if name in self._data_cache:
