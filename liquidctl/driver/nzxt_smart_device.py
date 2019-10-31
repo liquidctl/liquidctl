@@ -303,6 +303,10 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
+        (0x1e71, 0x2001, None, 'NZXT HUE 2 (experimental)', {
+            'speed_channel_count': 0,
+            'color_channel_count': 4
+        }),
     ]
 
     _READ_LENGTH = 64
