@@ -188,30 +188,23 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
 
 def _device_get_status(dev, **opts):
     print(dev.description)
-    dev.connect(**opts)
-    try:
-        status = dev.get_status(**opts)
-        tmp = []
-        kcols, vcols = 0, 0
-        for k, v, u in status:
-            if isinstance(v, datetime.timedelta):
-                v = str(v)
-                u = ''
-            else:
-                valfmt = _VALUE_FORMATS.get(u, '')
-                v = f'{v:{valfmt}}'
-            kcols = max(kcols, len(k))
-            vcols = max(vcols, len(v))
-            tmp.append((k, v, u))
-        for k, v, u in tmp[:-1]:
-            print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
-        k, v, u = tmp[-1]
-        print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
-    except:
-        LOGGER.exception('Unexpected error')
-        sys.exit(1)
-    finally:
-        dev.disconnect(**opts)
+    status = dev.get_status(**opts)
+    tmp = []
+    kcols, vcols = 0, 0
+    for k, v, u in status:
+        if isinstance(v, datetime.timedelta):
+            v = str(v)
+            u = ''
+        else:
+            valfmt = _VALUE_FORMATS.get(u, '')
+            v = f'{v:{valfmt}}'
+        kcols = max(kcols, len(k))
+        vcols = max(vcols, len(v))
+        tmp.append((k, v, u))
+    for k, v, u in tmp[:-1]:
+        print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
+    k, v, u = tmp[-1]
+    print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
     print('')
 
 
