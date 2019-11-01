@@ -100,8 +100,7 @@ Pre-built binaries for Windows:
 
  - Official releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
-
-_Note: some devices may require an additional kernel driver [on Windows](#additional-requirements-on-windows)._
+ - _Some devices may require an [additional kernel driver](#additional-requirements-on-windows)_
 
 Homebrew formula for Mac OS:
 
