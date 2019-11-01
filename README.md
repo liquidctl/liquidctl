@@ -94,6 +94,7 @@ Packages for Linux distributions:
 
  - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
  - Fedora: [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
+ - Linuxbrew: tap [`jonasmalacofilho/liquidctl`](https://github.com/jonasmalacofilho/homebrew-liquidctl)
 
 Pre-built binaries for Windows:
 
@@ -101,6 +102,10 @@ Pre-built binaries for Windows:
  - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
 
 _Note: some devices may require an additional kernel driver [on Windows](#additional-requirements-on-windows)._
+
+Homebrew formula for Mac OS:
+
+ - Homebrew: tap [`jonasmalacofilho/liquidctl`](https://github.com/jonasmalacofilho/homebrew-liquidctl)
 
 
 ## Installing from sources
@@ -157,11 +162,16 @@ Pre-build liquidctl executables for Windows already include libusb and HIDAPI, b
 
 ### Additional requirements on Mac OS
 
-Apple revamped its USB stack in 10.11, with a heavy reliance on ACPI.  Their kernel also communicates with Human Interface Devices (HIDs) in exclusive mode, unlike Windows, which can operate in shared mode, and Linux, which can seamlessly switch between drivers.
+A formula is provided for Homebrew, and installing liquidctl using it is straightforward.
 
-Because of this, liquidctl will default to HIDAPI when dealing with HIDs on Mac OS, as it does not require unloading the kernel HID driver.  Pip or setuptools should be able to build it automatically, when installing liquidctl.
+```
+$ brew tap jonasmalacofilho/liquidctl
+$ brew install liquidctl
+```
 
-Libusb is still required though, as it might be used to probe and interact with non HID coolers and other products.  It can easily be installed through homebrew: `brew install libusb`.
+The formula can be used to install both the stable version or, by passing `--HEAD`, the latest snapshot from this repository.  All dependencies are be automatically resolved.
+
+If a different installation method is required, libsub must be installed first; the recommended way is with `brew install libusb`.
 
 
 ## Introducing the command-line interface
