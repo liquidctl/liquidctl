@@ -417,7 +417,10 @@ class HidapiDevice:
 
     @classmethod
     def enumerate(cls, api, vid=None, pid=None):
-        for info in api.enumerate(vid or 0, pid or 0):
+        infos = api.enumerate(vid or 0, pid or 0)
+        if sys.platform == 'darwin':
+            infos = sorted(infos, key=lambda info: info['path'])
+        for info in infos:
             yield cls(api, info)
 
     @property
