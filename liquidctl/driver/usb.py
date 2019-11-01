@@ -475,7 +475,7 @@ class GenericHidBus(BaseBus):
         if not hid:
             if sys.platform.startswith('linux'):
                 hid = 'hidraw'
-            elif sys.platform.startswith('darwin'):
+            elif sys.platform == 'darwin':
                 hid = 'hid'
             else:
                 hid = 'usb'
