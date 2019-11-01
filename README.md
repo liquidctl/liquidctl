@@ -94,7 +94,7 @@ Packages for Linux distributions:
 
  - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
  - Fedora: [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
- - Linuxbrew: tap [`jonasmalacofilho/liquidctl`](https://github.com/jonasmalacofilho/homebrew-liquidctl)
+ - Linuxbrew: tap [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
 
 Pre-built binaries for Windows:
 
@@ -104,7 +104,7 @@ Pre-built binaries for Windows:
 
 Homebrew formula for Mac OS:
 
- - Homebrew: tap [`jonasmalacofilho/liquidctl`](https://github.com/jonasmalacofilho/homebrew-liquidctl)
+ - Homebrew: tap [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
 
 
 ## Installing from sources
