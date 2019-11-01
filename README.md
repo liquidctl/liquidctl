@@ -161,7 +161,7 @@ Pre-build liquidctl executables for Windows already include libusb and HIDAPI, b
 
 ### Additional requirements on Mac OS
 
-A formula is provided for Homebrew, and installing liquidctl using it is straightforward.
+A [homebrew tap](https://github.com/jonasmalacofilho/homebrew-liquidctl) is provided, and installing liquidctl using it is straightforward.
 
 ```
 $ brew tap jonasmalacofilho/liquidctl
