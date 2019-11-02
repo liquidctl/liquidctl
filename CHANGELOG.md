@@ -24,6 +24,8 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
 ### Fixed
  - [Corsair H80i GT] Fixed device name throughout
  - [Corsair H110i GT] Fixed device name in listing
+### Deprecated
+ - [API] Use `liquidctl.driver.find_liquidctl_devices` instead of `liquidctl.cli.find_all_supported_devices`
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
