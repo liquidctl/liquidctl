@@ -6,7 +6,7 @@ Supported devices
  - EVGA CLC (120 CL12, 240, 280 or 360); modern generic Asetek 690LC
  - NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
  - NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
- - Corsair H80i GTX, H100i GTX or H110i GTX/experimental
+ - Corsair H80i GT, H100i GTX or H110i GTX/experimental
  - Corsair H80i v2, H100i v2 or H115i/experimental
 
 Supported features
@@ -424,7 +424,7 @@ class CorsairAsetekDriver(AsetekDriver):
     """USB driver for Corsair-branded fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GTX (experimental)', {}),
+        (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),
         (0x1b1c, 0x0c03, None, 'Corsair Hydro H100i GTX (experimental)', {}),
         (0x1b1c, 0x0c07, None, 'Corsair Hydro H100i GTX (experimental)', {}),
         (0x1b1c, 0x0c08, None, 'Corsair Hydro H80i v2', {}),

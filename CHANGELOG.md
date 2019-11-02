@@ -21,6 +21,8 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
  - Allow `list --verbose` to run without root privileges (Linux) or special drivers (Windows)
  - Change the default API for HIDs on Linux to hidraw
  - Consider stable: Corsair H80i v2, H100i v2, H115i; NZXT Kraken X31, X41, X61; NZXT Grid+ V3
+### Fixed
+ - [Corsair H80i GT] Fixed device name throughout
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
@@ -80,7 +82,7 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
  - Add `--legacy-690lc` option for Asetek 690LC devices
  - **Add experimental legacy driver for NZXT Kraken X31, X41 and X61 coolers**
  - **Add experimental support of Corsair H80i v2, H100i v2 and H115i**
- - **Add experimental support of Corsair H80i GTX, H100i GTX and H110i GTX**
+ - **Add experimental support of Corsair H80i GT, H100i GTX and H110i GTX**
  - Document possible support of NZXT Kraken X40 and X60 coolers
 ### Changed
  - [internal] Revamp driver and device model in `base.py` and `usb.py`

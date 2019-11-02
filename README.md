@@ -65,7 +65,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair H80i GTX, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
+| Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
 | NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#support-for-the-kraken-m22) | |
