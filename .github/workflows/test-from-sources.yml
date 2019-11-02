@@ -1,4 +1,4 @@
-name: Build from sources and run tests
+name: tests
 
 on: [push, pull_request]
 
