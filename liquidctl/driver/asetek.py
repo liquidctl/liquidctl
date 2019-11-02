@@ -426,7 +426,7 @@ class CorsairAsetekDriver(AsetekDriver):
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),
         (0x1b1c, 0x0c03, None, 'Corsair Hydro H100i GTX (experimental)', {}),
-        (0x1b1c, 0x0c07, None, 'Corsair Hydro H100i GTX (experimental)', {}),
+        (0x1b1c, 0x0c07, None, 'Corsair Hydro H110i GTX (experimental)', {}),
         (0x1b1c, 0x0c08, None, 'Corsair Hydro H80i v2', {}),
         (0x1b1c, 0x0c09, None, 'Corsair Hydro H100i v2', {}),
         (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i', {}),

@@ -23,6 +23,7 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
  - Consider stable: Corsair H80i v2, H100i v2, H115i; NZXT Kraken X31, X41, X61; NZXT Grid+ V3
 ### Fixed
  - [Corsair H80i GT] Fixed device name throughout
+ - [Corsair H110i GT] Fixed device name in listing
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
