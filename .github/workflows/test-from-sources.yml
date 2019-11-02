@@ -18,7 +18,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install system dependencies (Linux)
+    - name: Run the doctests
+      shell: bash
+      run: |
+        python -m doctest liquidctl/{pmbus,util}.py
+    - name: Install additional system dependencies (Linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
