@@ -22,6 +22,7 @@ _Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart 
  - Change the default API for HIDs on Linux to hidraw
  - Consider stable: Corsair H80i v2, H100i v2, H115i; NZXT Kraken X31, X41, X61; NZXT Grid+ V3
 ### Fixed
+ - Don't try to reattach the kernel driver more than once
  - [Corsair H80i GT] Fixed device name throughout
  - [Corsair H110i GT] Fixed device name in listing
 ### Deprecated
