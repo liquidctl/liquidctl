@@ -295,7 +295,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         self._write([0x2, 0x4d, cid, 0, duty])
 
 
-class SmartDeviceDriverV2(CommonSmartDeviceDriver):
+class SmartDeviceV2Driver(CommonSmartDeviceDriver):
     """liquidctl driver for the NZXT Smart Device V2."""
 
     SUPPORTED_DEVICES = [
