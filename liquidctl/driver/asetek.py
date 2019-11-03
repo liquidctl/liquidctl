@@ -187,7 +187,7 @@ class CommonAsetekDriver(UsbDriver):
 
 
 class AsetekDriver(CommonAsetekDriver):
-    """USB driver for modern fifth generation Asetek coolers."""
+    """liquidctl driver for modern fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
@@ -288,7 +288,7 @@ class AsetekDriver(CommonAsetekDriver):
 
 
 class LegacyAsetekDriver(CommonAsetekDriver):
-    """USB driver for legacy fifth generation Asetek coolers."""
+    """liquidctl driver for legacy fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X)', {}),
@@ -421,7 +421,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
 
 
 class CorsairAsetekDriver(AsetekDriver):
-    """USB driver for Corsair-branded fifth generation Asetek coolers."""
+    """liquidctl driver for Corsair-branded fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),

@@ -100,7 +100,7 @@ _WRITE_LENGTH = 65
 
 
 class KrakenTwoDriver(UsbHidDriver):
-    """USB driver for third generation NZXT Kraken X and M liquid coolers."""
+    """liquidctl driver for third generation NZXT Kraken X and M liquid coolers."""
 
     DEVICE_KRAKENX = 'Kraken X'
     DEVICE_KRAKENM = 'Kraken M'
