@@ -27,6 +27,13 @@ _Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and improv
  - [Corsair H110i GT] Fixed device name in listing
 ### Deprecated
  - [API] Use `liquidctl.driver.find_liquidctl_devices` instead of `liquidctl.cli.find_all_supported_devices`
+### Checksums
+```
+$ sha256sum liquidctl-1.3.0rc1*
+7a16a511baf5090c34cd3dfc5c21068a298515f31315be63e9b991ea17654671  liquidctl-1.3.0rc1-bin-windows-x86_64.zip
+1ef517ba33e366167f9a225c6a6afcc4899d01cbd7853bd5852ac15ae81d5005  liquidctl-1.3.0rc1-py3-none-any.whl
+15583d6ebecad722e1562164cef7097a358d6a57aa33a1a5e25741690548dbfa  liquidctl-1.3.0rc1.tar.gz
+```
 
 ## [1.2.0] – 2019-09-27
 _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
