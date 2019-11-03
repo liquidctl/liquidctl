@@ -48,7 +48,7 @@ from liquidctl.driver.base import BaseBus, find_all_subclasses
 def find_liquidctl_devices(pick=None, **kwargs):
     """Find devices and instantiate corresponding liquidctl drivers.
 
-    Probes all buses and drivers that have been loaded by the time of the call
+    Probes all buses and drivers that have been loaded at the time of the call
     and yields driver instances.
 
     Filter conditions can be passed through to the buses and drivers via
@@ -62,7 +62,7 @@ def find_liquidctl_devices(pick=None, **kwargs):
     num = 0
     for bus_cls in buses:
         for dev in  bus_cls().find_devices(**kwargs):
-            if not pick is None:
+            if pick is not None:
                 if num == pick:
                     yield dev
                     return

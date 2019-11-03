@@ -29,10 +29,12 @@ class BaseDriver:
 
         for dev in <Driver>.find_supported_devices():
             dev.connect()
-            print(dev.get_status())
-            if dev.serial_number == '49385027ZP':
-                dev.set_fixed_speed("fan3", 42)
-            dev.disconnect()
+            try:
+                print(dev.get_status())
+                if dev.serial_number == '49385027ZP':
+                    dev.set_fixed_speed("fan3", 42)
+            finally:
+                dev.disconnect()
 
     """
 
@@ -145,7 +147,8 @@ class BaseBus:
     """Base bus API."""
 
     def find_devices(self, **kwargs):
-        return []
+        """Find compatible devices and yield corresponding driver instances."""
+        return
 
 
 def find_all_subclasses(cls):

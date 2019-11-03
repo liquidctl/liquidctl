@@ -111,6 +111,7 @@ class BaseUsbDriver(BaseDriver):
 
     @classmethod
     def probe(cls, handle, vendor=None, product=None, release=None, serial=None, **kwargs):
+        """Probe `handle` and yield corresponding driver instances."""
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
