@@ -16,7 +16,7 @@ Is also possible to find devices compatible with a specific driver.
 
 ---
 
-__init__.py file of the drivers and buses package for liquidctl
+Initialization of the drivers and buses package.
 Copyright (C) 2018–2019  Jonas Malaco
 Copyright (C) 2018–2019  each contribution's author
 
