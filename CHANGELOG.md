@@ -4,8 +4,8 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
-## [Unreleased]
-_Man page and support for power supplies (Corsair RXi/HXi and NZXT E) and Smart Device V2_
+## [1.3.0rc1] – 2019-11-03
+_Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and improved device discovery_
 ### Added
  - **Add experimental support for Corsair HX750i, HX850i, HX1000i and HX1200i power supplies**
  - **Add experimental support for Corsair RM650i, RM750i, RM850i and RM1000i power supplies**
