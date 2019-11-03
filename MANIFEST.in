@@ -1,3 +1,4 @@
 include CHANGELOG.md
 include LICENSE.txt
+include liquidctl.8
 recursive-include docs *
