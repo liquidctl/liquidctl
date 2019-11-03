@@ -2,7 +2,7 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
-[![Status of the tests](https://github.com/jonasmalacofilho/liquidctl/workflows/tests/badge.svg)](https://github.com/jonasmalacofilho/liquidctl/actions?query=workflow%3A%22tests%22)
+![Status of the tests](https://github.com/jonasmalacofilho/liquidctl/workflows/tests/badge.svg)
 [![Status of the build for Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/master?svg=true&passingText=windows%20exe&failingText=windows%20failed&pendingText=windows%20wip)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/master)
 
 
