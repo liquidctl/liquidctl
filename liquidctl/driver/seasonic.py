@@ -47,7 +47,7 @@ LOGGER = logging.getLogger(__name__)
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MIN_DELAY = 0.0025
-_READ_ATTEMPTS = 3
+_ATTEMPTS = 3
 
 _SEASONIC_READ_FIRMWARE_VERSION = CMD.MFR_SPECIFIC_FC
 _RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
@@ -94,9 +94,9 @@ class SeasonicEDriver(UsbHidDriver):
         self.device.write(data + padding)
 
     def _read(self):
-        msg = self.device.read(_READ_LENGTH)
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-        return msg
+        data = self.device.read(_READ_LENGTH)
+        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
+        return data
 
     def _wait(self):
         """Give the device some time and avoid error responses.
@@ -107,34 +107,37 @@ class SeasonicEDriver(UsbHidDriver):
         """
         time.sleep(_MIN_DELAY)
 
-    def _exec_read(self, cmd, data_len, attempts=_READ_ATTEMPTS):
-        ret = None
+    def _exec_read(self, cmd, data_len):
+        data = None
         msg = [0xad, 0, data_len + 1, 1, 0x60, cmd]
-        for _ in range(attempts):
+        for _ in range(_ATTEMPTS):
             self._wait()
             self._write(msg)
-            ret = self._read()
-            # see comment in _exec_page_plus_read, but ret[1] == 0xff has not
-            # been seen in the wild yet; TODO check PEC byte as well
-            if ret[0] == 0xaa and ret[1] == data_len + 1:
+            res = self._read()
+            # see comment in _exec_page_plus_read, but res[1] == 0xff has not
+            # been seen in the wild yet
+            # TODO replace with PEC byte check
+            if res[0] == 0xaa and res[1] == data_len + 1:
+                data = res
                 break
-        assert ret, f'invalid response (attempts={attempts})'
-        return ret[2:(2 + data_len)]
+        assert data, f'invalid response (attempts={_ATTEMPTS})'
+        return data[2:(2 + data_len)]
 
-    def _exec_page_plus_read(self, page, cmd, data_len, attempts=_READ_ATTEMPTS):
-        ret = None
+    def _exec_page_plus_read(self, page, cmd, data_len):
+        data = None
         msg = [0xad, 0, data_len + 2, 4, 0x60, CMD.PAGE_PLUS_READ, 2, page, cmd]
-        for _ in range(attempts):
+        for _ in range(_ATTEMPTS):
             self._wait()
             self._write(msg)
-            ret = self._read()
-            # in the captured traffic ret[2] == 0xff appears to signal a
-            # invalid data condition (probably related to the device being
-            # busy; see PMBus spec); TODO check PEC byte as well
-            if ret[0] == 0xaa and ret[1] == data_len + 2 and ret[2] == data_len:
+            res = self._read()
+            # in captured traffic res[2] == 0xff appears to signal invalid data
+            # (possibly due to the device being busy, see PMBus spec)
+            # TODO replace with PEC byte check
+            if res[0] == 0xaa and res[1] == data_len + 2 and res[2] == data_len:
+                data = res
                 break
-        assert ret, f'invalid response (attempts={attempts})'
-        return ret[3:(3 + data_len)]
+        assert data, f'invalid response (attempts={_ATTEMPTS})'
+        return data[3:(3 + data_len)]
 
     def _get_float(self, cmd, page=None):
         if page is None:
