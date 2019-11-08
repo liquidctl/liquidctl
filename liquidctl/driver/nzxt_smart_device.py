@@ -305,6 +305,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         }),
     ]
 
+    _MAX_READ_ATTEMPTS = 12
     _READ_LENGTH = 64
     _WRITE_LENGTH = 64
 
@@ -371,65 +372,74 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
     def initialize(self, **kwargs):
         """Initialize the device.
 
-        Detects all connected fans and LED accessories, and allows subsequent
-        calls to get_status.
+        Detects and reports all connected fans and LED accessories, and allows
+        subsequent calls to get_status.
+
+        Returns a list of (key, value, unit) tuples.
         """
+        # initialize
         self._write([0x60, 0x02, 0x01, 0xE8, 0x03, 0x01, 0xE8, 0x03])
         self._write([0x60, 0x03])
+        # request static infos
+        self._write([0x10, 0x01])  # firmware info
+        self._write([0x20, 0x03])  # lighting info
+        status = []
+
+        def parse_firm_info(msg):
+            fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
+            status.append(('Firmware version', fw, ''))
+
+        def parse_led_info(msg):
+            num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
+            accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
+            light_accessory_index = 15    # offset in msg of info about first light accessory
+            for light_channel in range(num_light_channels):
+                for accessory_num in range(accessories_per_channel):
+                    accessory_id = msg[light_accessory_index]
+                    light_accessory_index += 1
+                    if accessory_id != 0:
+                        status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
+                                       self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+
+        self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()
+        return sorted(status)
 
     def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
         """
-        expected_prefixes = set([b'\x11\x01', b'\x21\x03'])
-        if self._speed_channels:
-            expected_prefixes.add(b'\x67\x02')
-            # unused msg: prefix == b'\x67\x04'
-
-        self._write([0x10, 0x01])  # request firmware info
-        self._write([0x20, 0x03])  # request lighting info
-
+        if not self._speed_channels:
+            return []
         status = []
-        for _ in range(12):
-            msg = self.device.read(self._READ_LENGTH)
-            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
 
-            prefix = bytes(msg[0:2])
-            if prefix not in expected_prefixes:
-                continue
+        def parse_fan_info(msg):
+            rpm_offset = 24
+            duty_offset = 40
+            noise_offset = 56
+            for i, _ in enumerate(self._speed_channels):
+                if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
+                    status.append(('Fan {} speed'.format(i + 1), msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                    status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
+                rpm_offset += 2
+            status.append(('Noise level', msg[noise_offset], 'dB'))
 
-            if prefix == b'\x11\x01':
-                fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
-                status.append(('Firmware version', fw, ''))
-            elif prefix == b'\x21\x03':
-                num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
-                accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
-                light_accessory_index = 15    # offset in msg of info about first light accessory
-                for light_channel in range(num_light_channels):
-                    for accessory_num in range(accessories_per_channel):
-                        accessory_id = msg[light_accessory_index]
-                        light_accessory_index += 1
-                        if accessory_id != 0:
-                            status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                           self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
-            elif prefix == b'\x67\x02':
-                rpm_offset = 24
-                duty_offset = 40
-                noise_offset = 56
-                for i, _ in enumerate(self._speed_channels):
-                    if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
-                        status.append(('Fan {} speed'.format(i + 1), msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                        status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
-                    rpm_offset += 2
-                status.append(('Noise level', msg[noise_offset], 'dB'))
-            expected_prefixes.remove(prefix)
-            if not expected_prefixes:
-                break
-
+        self._read_until({b'\x67\x04': parse_fan_info})
         self.device.release()
         return sorted(status)
+
+    def _read_until(self, parsers):
+        for _ in range(self._MAX_READ_ATTEMPTS):
+            msg = self.device.read(self._READ_LENGTH)
+            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
+            prefix = bytes(msg[0:2])
+            func = parsers.pop(prefix, None)
+            if func:
+                func(msg)
+            if not parsers:
+                return
+        assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
     def _write_colors(self, cid, mode, colors, sval):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
