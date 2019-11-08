@@ -58,8 +58,11 @@ class BaseDriver:
         """Initialize the device.
 
         Apart from `connect()`, some devices might require a onetime
-        intialization procedure after powering on, or to detect hardware
+        initialization procedure after powering on, or to detect hardware
         changes.  This should be called *after* connecting to the device.
+
+        This function can optionally return a list of `(property, value, unit)`
+        tuples, similarly to `get_status`.
         """
         raise NotImplementedError()
 

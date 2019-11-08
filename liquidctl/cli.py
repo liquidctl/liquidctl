@@ -186,9 +186,10 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
     assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
 
 
-def _device_get_status(dev, **opts):
-    print(dev.description)
-    status = dev.get_status(**opts)
+def _print_dev_status(dev, status):
+    if not status:
+        return
+    print(f'{dev.description}')
     tmp = []
     kcols, vcols = 0, 0
     for k, v, u in status:
@@ -301,9 +302,9 @@ def main():
         dev.connect(**opts)
         try:
             if args['initialize']:
-                dev.initialize(**opts)
+                _print_dev_status(dev, dev.initialize(**opts))
             elif args['status']:
-                _device_get_status(dev, **opts)
+                _print_dev_status(dev, dev.get_status(**opts))
             elif args['set'] and args['speed']:
                 _device_set_speed(dev, args, **opts)
             elif args['set'] and args['color']:
