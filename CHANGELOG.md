@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased]
 ### Added
  - Enable **experimental support for the NZXT HUE 2** with the Smart Device V2 driver
+ - Enable **experimental support for the NZXT HUE 2 Ambient** with the Smart Device V2 driver
 ### Changed
  - [API] Allow initialize methods to optionally return status tuples
 ### Fixes
