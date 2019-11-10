@@ -316,6 +316,11 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
             'speed_channel_count': 0,
             'color_channel_count': 4
         }),
+        (0x1e71, 0x2002, None, 'NZXT HUE 2 Ambient (experimental)', {
+            'speed_channel_count': 0,
+            'color_channel_count': 2
+        }),
+
     ]
 
     _MAX_READ_ATTEMPTS = 12
