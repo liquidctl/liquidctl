@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - [NZXT E] Release the device once done with status
  - [NZXT E] Fix assertion of valid responses in retry loops
  - [Smart Device V2] Fix LED blinking during `status`
+ - Add missing identifier for 250 mm HUE 2 LED strips
 
 ## [1.3.0rc1] – 2019-11-03
 _Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and improved device discovery_

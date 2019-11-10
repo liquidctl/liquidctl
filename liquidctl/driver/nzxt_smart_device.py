@@ -377,11 +377,12 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
     }
 
     _ACCESSORY_NAMES = {
-        0x04: "HUE 2 LED Strip",
+        0x04: "HUE 2 LED Strip 300 mm",
+        0x05: "HUE 2 LED Strip 250 mm",
         0x08: "HUE 2 Cable Comb",
-        0x0a: "HUE 2 Underglow 200mm",
-        0x0b: "AER RGB 2 120mm",
-        0x0c: "AER RGB 2 140mm"
+        0x0a: "HUE 2 Underglow 200 mm",
+        0x0b: "AER RGB 2 120 mm",
+        0x0c: "AER RGB 2 140 mm"
     }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
