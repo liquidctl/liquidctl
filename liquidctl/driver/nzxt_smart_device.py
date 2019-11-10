@@ -1,4 +1,4 @@
-"""liquidctl drivers for NZXT Smart Device V1/V2, Grid+ V3 and HUE 2.
+"""liquidctl drivers for NZXT Smart Device V1/V2, Grid+ V3, HUE 2 and HUE 2 Ambient.
 
 Smart Device (V1)
 -----------------
@@ -63,6 +63,11 @@ Device V2.
 
 The presets and limitations of the four LED channels are the same as in the
 Smart Device V2.
+
+HUE 2 Ambient
+-----
+
+HUE 2 Ambient is a variant of HUE 2 featuring 2 LED control channels.
 
 Driver
 ------
@@ -305,7 +310,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
 
 
 class SmartDeviceV2Driver(CommonSmartDeviceDriver):
-    """liquidctl driver for the NZXT Smart Device V2 and NZXT HUE 2."""
+    """liquidctl driver for the NZXT Smart Device V2, NZXT HUE 2 and NZXT HUE 2 Ambient."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2006, None, 'NZXT Smart Device V2 (experimental)', {

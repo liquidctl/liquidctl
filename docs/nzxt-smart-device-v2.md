@@ -1,4 +1,4 @@
-# NZXT Smart Device V2 and HUE 2
+# NZXT Smart Device V2, HUE 2 and HUE 2 Ambient
 
 The NZXT Smart Device V2 is a newer model of the original Smart Device fan and LED controller. It ships with NZXT's cases released in mid-2019 including the H510 Elite, H510i, H710i, and H210i.
 
@@ -15,10 +15,9 @@ All configuration is done through USB, and persists as long as the device still 
 Most capabilities available at the hardware level are supported, but other features offered by CAM, like noise level optimization and presets based on CPU/GPU temperatures, have not been implemented.
 
 
-## Experimental support for the HUE 2
+## Experimental support for the HUE 2 and HUE 2 Ambient kit
 
-This driver also has **experimental** support for the NZXT HUE 2 LED controller, which has four LED channels (but no fan speed channels).
-
+This driver also has **experimental** support for the NZXT HUE 2 LED controller, which has four LED channels (but no fan speed channels). HUE 2 Ambient kit is a variant of HUE 2 which has two LED channels and no fan speed channels.
 
 ## Initialization
 
@@ -72,7 +71,7 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
-The Smart Device V2 features two lighting channels, while the HUE features four, and they are numbered sequentially: `led1`, `led2`, (only HUE 2: `led3`, `led4`).  Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.
+The Smart Device V2 features two lighting channels, while the HUE features four, and they are numbered sequentially: `led1`, `led2`, (only HUE 2: `led3`, `led4`). HUE 2 Ambient has only `led1` and `led2` channels. Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.
 
 ```
 # liquidctl set led1 color fixed af5a2f
