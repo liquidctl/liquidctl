@@ -82,6 +82,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | <sup>1</sup> |
 | NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>1</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
+| NZXT HUE 2 | [documentation](docs/nzxt-smart-device-v2.md#experimental-support-for-the-hue-2) | <sup>1</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>1</sup> |
 

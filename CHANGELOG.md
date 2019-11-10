@@ -11,6 +11,7 @@ _Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and improv
  - **Add experimental support for Corsair RM650i, RM750i, RM850i and RM1000i power supplies**
  - **Add experimental support for NZXT E500, E650 and E850 power supplies**
  - **Add experimental support for the NZXT Smart Device V2**
+ - **Add experimental support for the NZXT HUE 2**
  - Add liquidctl(8) man page
  - Add `--single-12v-ocp` option to `initialize` (Corsair HXi/RMi PSUs)
  - Add `--pick <result>` device selection option
