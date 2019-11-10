@@ -82,10 +82,10 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | <sup>1</sup> |
 | NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>1</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT HUE 2 | [documentation](docs/nzxt-smart-device-v2.md#experimental-support-for-the-hue-2-and-hue-2-ambient-kit) | <sup>1</sup> |
-| NZXT HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md#experimental-support-for-the-hue-2-and-hue-2-ambient-kit) | <sup>1</sup> |
+| NZXT HUE 2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-hue-2) | <sup>1</sup> |
+| NZXT HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md#nzxt-hue-2-ambient) | <sup>1</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>1</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-smart-device-v2) | <sup>1</sup> |
 
 <sup>1</sup> _Experimental._  
 <sup>2</sup> _Requires the `--legacy-690lc` flag._  

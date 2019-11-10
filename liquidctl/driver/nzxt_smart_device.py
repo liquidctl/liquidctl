@@ -65,7 +65,7 @@ The presets and limitations of the four LED channels are the same as in the
 Smart Device V2.
 
 HUE 2 Ambient
------
+-------------
 
 HUE 2 Ambient is a variant of HUE 2 featuring 2 LED control channels.
 
@@ -325,7 +325,6 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
             'speed_channel_count': 0,
             'color_channel_count': 2
         }),
-
     ]
 
     _MAX_READ_ATTEMPTS = 12
