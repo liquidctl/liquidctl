@@ -44,35 +44,35 @@ liquidctl \- monitor and control liquid coolers and other devices
 .YS
 .
 .SH DESCRIPTION
-\fBliquidctl\fR is a utility for monitoring and controlling some hardware
+\fBliquidctl\fR is a utility for overseeing and controlling some hardware
 monitoring devices not yet supported at the kernel level.  Because
-\fBliquidctl\fR directly accesses the hardware devices root privileges are
+\fBliquidctl\fR directly accesses the hardware devices, root privileges are
 generally required, though this can be avoided with appropriate udev rules.
+\" udev is Linux specific
 .PP
 \fBliquidctl list\fR outputs all compatible devices found on the system.  In
-case more than one device is found, the device ID can be used to
-select it in later invocations.  Passing \fI\-\-verbose\fR enables the display
-of additional identifiers and addresses that can also be used to select
-specific devices.  These are preferred for non-interactive invocations as they,
-unlike device IDs, are more stable across reboots and software or hardware
-updates.
+case more than one device is found, the device ID can be used to select one in
+later invocations.  Passing \fI\-\-verbose\fR enables the display of additional
+identifiers and addresses that can also be used to select specific devices.
+These are preferred for non-interactive invocations as they, unlike device IDs,
+are more stable across reboots, software updates and hardware changes.
 .PP
-\fBliquidctl initialize\fR should be called for every device after a reboot,
-since many of them require some initialization code before correctly responding
-to other commands.  \fBliquidctl initialize all\fR simplifies that and attempts
-to initialize all devices at once.
+\fBliquidctl initialize\fR prepares a device for later commands.  Most devices
+must be initialized after every boot.  Unless finer control is required, all
+devices can be initialized at once with \fBliquidctl initialize all\fR.  Some
+devices may output some information at this stage.
 .PP
-\fBliquidctl status\fR displays the status of a device or, if no selection
-options have been passed, of all available devices.
+\fBliquidctl status\fR displays the status of all devices that match the
+provided filtering options.
 .PP
 \fBliquidctl set \fIchannel\fB speed\fR allows the user to set fan and pump
 speeds.  These, depending on the device, can be set to fixed duty values,
-variable temperature–duty curves, or both.
+variable temperature\–duty curves, or both.
 .PP
 \fBliquidctl set \fIchannel\fB color\fR allows the user to configure and set
 lighting modes.  Each color is specified in hexadecimal RGB, without prefixes
-(e.g. \fIff2608\fR).  Which modes and additional options are supported is
-device dependent.
+(e.g. \fIff2608\fR).  Supported modes and additional options vary by device and
+are listed in later sections of this manual.
 .
 .SH OPTIONS
 .
@@ -258,7 +258,7 @@ back to hardware control, run \fBinitialize\fR again.
 .PP
 (Experimental feature) The +12V rails normally function in multiple-rail mode.
 Single-rail mode can be selected by passing \fB\-\-single\-12v\-ocp\fR to
-\fBinitialize\fR.  To revert back to multitple-rail mode, run \fBinitialize\fR
+\fBinitialize\fR.  To revert back to multiple-rail mode, run \fBinitialize\fR
 again without that flag.
 .
 .SS NZXT E500, E650, E850
@@ -341,7 +341,7 @@ where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
 \fIfast\fR, \fIfastest\fR.
 .
 .SH SEE ALSO
-The complete documentation, including device specific details, is available in
+The complete documentation is available in
 the project's sources and
 .UR https://github.com/jonasmalacofilho/liquidctl
 homepage
