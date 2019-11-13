@@ -1,4 +1,5 @@
 '\" t
+.nr is_macos 0
 .TH LIQUIDCTL 8 2019\-11\-03 "liquidctl" "System Manager's Manual"
 .
 .SH NAME
@@ -45,10 +46,11 @@ liquidctl \- monitor and control liquid coolers and other devices
 .
 .SH DESCRIPTION
 \fBliquidctl\fR is a utility for overseeing and controlling some hardware
-monitoring devices not yet supported at the kernel level.  Because
-\fBliquidctl\fR directly accesses the hardware devices, root privileges are
-generally required, though this can be avoided with appropriate udev rules.
-\" udev is Linux specific
+monitoring devices not yet supported at the kernel level.
+.if !\n[is_macos]\{  Because \fBliquidctl\fR directly accesses the hardware devices, root
+privileges are generally required, though this can be avoided with
+appropriate udev rules.
+.\}
 .PP
 \fBliquidctl list\fR outputs all compatible devices found on the system.  In
 case more than one device is found, the device ID can be used to select one in
@@ -152,11 +154,12 @@ Show the embedded help.
 .
 .SH FILES
 .TP
-.I /run/liquidctl/*
-Temporary storage required by some drivers.
-.\" on Linux systems where /run is not available, or on other platforms, the
-.\" temporary storage will be placed elsewhere (see asetek.py and it's use of
-.\" appdirs); package maintainers should update this man page when necessary
+.ie \n[is_macos]
+.I /Library/Application Support/liquidctl/*
+.el
+.IR $XDG_RUNTIME_DIR/liquidctl/* ,\  /var/run/liquidctl/*
+Internal data used by some drivers.
+.\" e.g. LegacyAsetekDriver
 .
 .SH EXAMPLE
 .SY liquidctl
