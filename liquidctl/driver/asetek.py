@@ -6,8 +6,8 @@ Supported devices
  - EVGA CLC (120 CL12, 240, 280 or 360); modern generic Asetek 690LC
  - NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
  - NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
- - Corsair H80i GT, H100i GTX or H110i GTX/experimental
- - Corsair H80i v2, H100i v2 or H115i/experimental
+ - Corsair H80i GT, H100i GTX or H110i GTX
+ - Corsair H80i v2, H100i v2 or H115i
 
 Supported features
 ------------------
@@ -291,7 +291,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
     """liquidctl driver for legacy fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X)', {}),
+        (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X) (experimental)', {}),
     ]
 
     @classmethod
