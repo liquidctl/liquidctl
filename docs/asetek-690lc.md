@@ -27,11 +27,11 @@ Similarly to other AIOs, the cooler can report fan and pump speeds as well as th
 
 ```
 # liquidctl status
-Device 0, Asetek 690LC (assuming EVGA CLC)
-Liquid temperature          29.3  °C
-Fan speed                    480  rpm
-Pump speed                  1860  rpm
-Firmware version        2.10.0.0
+Asetek 690LC (assuming EVGA CLC)
+├── Liquid temperature        28.7  °C
+├── Fan speed                  480  rpm
+├── Pump speed                1890  rpm
+└── Firmware version      2.10.0.0  
 ```
 
 ## Fan and pump speed control

@@ -30,24 +30,24 @@ The device can report fan information for each channel, the noise level at the o
 
 ```
 # liquidctl status
-Device 0, NZXT Smart Device (V1)
-Fan 1                        PWM     
-Fan 1 current               0.03  A  
-Fan 1 speed                 1634  rpm
-Fan 1 voltage              11.91  V  
-Fan 2                        PWM     
-Fan 2 current               0.07  A  
-Fan 2 speed                 1618  rpm
-Fan 2 voltage              11.91  V  
-Fan 3                        PWM     
-Fan 3 current               0.03  A  
-Fan 3 speed                 1732  rpm
-Fan 3 voltage              11.91  V  
-Firmware version           1.0.7     
-LED accessories                2     
-LED accessory type    HUE+ Strip     
-LED count (total)             20     
-Noise level                   61  dB 
+NZXT Smart Device (V1)
+├── Fan 1                        PWM  
+├── Fan 1 current               0.04  A
+├── Fan 1 speed                 1064  rpm
+├── Fan 1 voltage              11.91  V
+├── Fan 2                        PWM  
+├── Fan 2 current               0.01  A
+├── Fan 2 speed                 1051  rpm
+├── Fan 2 voltage              11.77  V
+├── Fan 3                        PWM  
+├── Fan 3 current               0.09  A
+├── Fan 3 speed                 1581  rpm
+├── Fan 3 voltage              11.77  V
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+├── LED count (total)             20  
+└── Noise level                   62  dB
 ```
 
 

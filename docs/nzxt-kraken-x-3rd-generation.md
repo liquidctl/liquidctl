@@ -20,11 +20,11 @@ The cooler can report the fan and pump speed, as well as the liquid temperature.
 
 ```
 # liquidctl status
-Device 0, NZXT Kraken X (X42, X52, X62 or X72)
-Liquid temperature          26.3  °C 
-Fan speed                    844  rpm
-Pump speed                  1992  rpm
-Firmware version           4.0.2     
+NZXT Kraken X (X42, X52, X62 or X72)
+├── Liquid temperature     29.9  °C
+├── Fan speed               853  rpm
+├── Pump speed             1948  rpm
+└── Firmware version      6.0.2  
 ```
 
 
