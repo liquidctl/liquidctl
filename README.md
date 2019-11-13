@@ -70,8 +70,8 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
 | NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#support-for-the-kraken-m22) | |
-| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_EL_</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_EL_</sup> |
+| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_E, L_</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L_</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
