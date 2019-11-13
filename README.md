@@ -156,9 +156,11 @@ Installing cython-hidapi on Linux can require locally building some C extensions
 
 ### Additional requirements on Windows
 
-Products which are not Human Interface Devices (HIDs) – i.e. that cannot use the generic Microsoft HID Driver – require a kernel driver that is compatible with libusb.  In most cases Microsoft's WinUSB driver is recommended, which can be easily configured for a device with [Zadig](https://zadig.akeo.ie/).  See [How to use libusb under Windows?](https://github.com/libusb/libusb/wiki/FAQ#how-to-use-libusb-under-windows) for more information.
+Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb.  In most cases Microsoft's WinUSB driver is recommended, which can be easily configured for a device with [Zadig](https://zadig.akeo.ie/).¹
 
-Pre-build liquidctl executables for Windows already include libusb and HIDAPI, but when installing from PyPI or the sources you will need to manually set up the libusb runtime libraries.  On Windows libusb v1.0.21 is prefered over later versions, because of a [known issue in PyUSB](https://github.com/pyusb/pyusb/pull/227) that causes errors when the devices are released.  Download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+Pre-build liquidctl executables for Windows already include libusb and HIDAPI, but when installing from PyPI or the sources you will need to manually set up the libusb runtime libraries.  Note that on Windows libusb v1.0.21 is prefered over later versions, because of a [known issue in PyUSB](https://github.com/pyusb/pyusb/pull/227) that causes errors when the devices are released; download the package from [libusb/releases](https://github.com/libusb/libusb/releases/tag/v1.0.21) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+
+_¹ See [How to use libusb under Windows](https://github.com/libusb/libusb/wiki/FAQ#how-to-use-libusb-under-windows) for more information._
 
 ### Additional requirements on Mac OS
 
