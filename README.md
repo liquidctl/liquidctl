@@ -66,29 +66,29 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>1</sup> |
+| Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E_</sup> |
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
 | NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#support-for-the-kraken-m22) | |
-| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>1,2</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>1,2</sup> |
+| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_EL_</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_EL_</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair HX750i, HX850i, HX1000i, HX1200i | [documentation](docs/corsair-hxi-rmi.md) | <sup>1</sup> |
-| Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | <sup>1</sup> |
-| NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>1</sup> |
+| Corsair HX750i, HX850i, HX1000i, HX1200i | [documentation](docs/corsair-hxi-rmi.md) | <sup>_E_</sup> |
+| Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | <sup>_E_</sup> |
+| NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT HUE 2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-hue-2) | <sup>1</sup> |
-| NZXT HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md#nzxt-hue-2-ambient) | <sup>1</sup> |
+| NZXT HUE 2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-hue-2) | <sup>_E_</sup> |
+| NZXT HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md#nzxt-hue-2-ambient) | <sup>_E_</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-smart-device-v2) | <sup>1</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-smart-device-v2) | <sup>E</sup> |
 
-<sup>1</sup> _Experimental._  
-<sup>2</sup> _Requires the `--legacy-690lc` flag._  
+<sup>_E_</sup> _Experimental._  
+<sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 
 
 ## Pre-built packages and executables
