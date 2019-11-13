@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - [API] Allow initialize methods to optionally return status tuples
  - Improve the documentation
 ### Fixes
- - [NZXT E] Release the device once done with status
+ - [NZXT E] Release the device once done
  - [NZXT E] Fix assertion of valid responses in retry loops
  - [HUE 2] Fix LED blinking during `status`
  - [HUE 2] Add missing identifier for 250 mm HUE 2 LED strips
