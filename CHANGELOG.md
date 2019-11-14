@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - Enable **experimental support for the NZXT HUE 2 Ambient** with the Smart Device V2 driver
 ### Changed
  - [API] Allow initialize methods to optionally return status tuples
+ - [Legacy 690LC] Conform to XDG basedir spec and prefer XDG_RUNTIME_DIR
+ - [Legacy 690LC] Improve directory names for internal data
  - Improve the documentation
 ### Fixes
  - [NZXT E] Release the device once done
