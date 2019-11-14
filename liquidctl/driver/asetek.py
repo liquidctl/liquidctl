@@ -45,13 +45,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
-import os
-import sys
 
-import appdirs
 import usb
 
 from liquidctl.driver.usb import UsbDriver
+from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
@@ -302,67 +300,29 @@ class LegacyAsetekDriver(CommonAsetekDriver):
 
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
-        # compute path where fan/pump settings will be stored
-        # [/run]/liquidctl/2433_b200_0100/usb1_12/
-        ids = '{:04x}_{:04x}_{:04x}'.format(self.vendor_id, self.product_id, self.release_number)
-        location = '{}_{}'.format(self.bus, '.'.join(map(str, self.port)))
-        if sys.platform.startswith('linux') and os.path.isdir('/run'):
-            basedir = '/run/liquidctl'
-        else:
-            basedir = appdirs.site_data_dir('liquidctl', 'jonasmalacofilho')
-        self._data_path = os.path.join(basedir, ids, location)
-        self._data_cache = {}
+        # --device causes drivers to be instantiated even if they are later
+        # discarded; defer instantiating the data storage until to connect()
+        self._data = None
 
     def connect(self, **kwargs):
-        LOGGER.debug('data directory for device is %s', self._data_path)
         super().connect(**kwargs)
-
-    def _load_integer(self, name, default=None):
-        if name in self._data_cache:
-            value = self._data_cache[name]
-            LOGGER.debug('loaded %s=%s (from cache)', name, str(value))
-            return value if value is not None else default
-        try:
-            with open(os.path.join(self._data_path, name), mode='r') as f:
-                data = f.read().strip()
-                if len(data) == 0:
-                    value = None
-                else:
-                    value = int(data)
-                LOGGER.debug('loaded %s=%s', name, str(value))
-        except OSError:
-            LOGGER.debug('no data (file) found for %s', name)
-            value = None
-        finally:
-            self._data_cache[name] = value
-            return value if value is not None else default
-
-    def _store_integer(self, name, value):
-        try:
-            os.makedirs(self._data_path, mode=0o755)
-        except FileExistsError:
-            pass
-        with open(os.path.join(self._data_path, name), mode='w') as f:
-            if value is None:
-                f.write('')
-            else:
-                f.write(str(value))
-            self._data_cache[name] = value
-            LOGGER.debug('stored %s=%s', name, str(value))
+        ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
+        loc = '{}_{}'.format(self.bus, '.'.join(map(str, self.port)))
+        self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
 
     def _set_all_fixed_speeds(self):
         self._begin_transaction()
         for channel in ['pump', 'fan']:
             mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-            duty = clamp(self._load_integer('{}_duty'.format(channel), default=dmax), dmin, dmax)
+            duty = clamp(self._data.load_int('{}_duty'.format(channel), default=dmax), dmin, dmax)
             LOGGER.info('setting %s duty to %i%%', channel, duty)
             self._write([mtype, duty])
         return self._end_transaction_and_read()
 
     def initialize(self, **kwargs):
         super().initialize(**kwargs)
-        self._store_integer('pump_duty', None)
-        self._store_integer('fan_duty', None)
+        self._data.store_int('pump_duty', None)
+        self._data.store_int('fan_duty', None)
         self._set_all_fixed_speeds()
 
     def get_status(self, **kwargs):
@@ -416,7 +376,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         """Set channel to a fixed speed duty."""
         mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        self._store_integer('{}_duty'.format(channel), duty)
+        self._data.store_int('{}_duty'.format(channel), duty)
         self._set_all_fixed_speeds()
 
 
