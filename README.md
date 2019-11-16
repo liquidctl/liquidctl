@@ -184,9 +184,11 @@ The complete list of commands and options can be seen with `liquidctl --help`, b
 # liquidctl list
 ```
 
-In case more than one supported device is found, `--vendor`, `--product`, `--release`, `--serial`, `--bus`, `--address` and `--usb-port` can be used to select a particular product (see `liquidctl --help`).  If a filter produces multiple results, `--pick` can be used to further select one among them.
+In case more than one supported device is found, the desired one can be selected with `--match <substring>`, where `<substring>` matches part of the desired device's description using a case insensitive comparison.
 
-The device IDs shown by `list` with no filters can also be used for device selection with `--device <id>`.  However, these numbers are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal enumeration order variance.
+More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of these can also be used to select a particular product.  See `liquidctl --help` or the man page for more information.
+
+Finally, devices can also be selected with `--device <ID>`, but these are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal enumeration order variance.
 
 Devices will usually need to be initialized before they can be used, though each device has its own requirements and limitations.  This and other information specific to a particular device will appear on the documentation linked in the [supported devices](#supported-devices) section.
 

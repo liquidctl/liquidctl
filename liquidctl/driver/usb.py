@@ -110,7 +110,8 @@ class BaseUsbDriver(BaseDriver):
     SUPPORTED_DEVICES = []
 
     @classmethod
-    def probe(cls, handle, vendor=None, product=None, release=None, serial=None, **kwargs):
+    def probe(cls, handle, vendor=None, product=None, release=None,
+              serial=None, match=None, **kwargs):
         """Probe `handle` and yield corresponding driver instances."""
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
@@ -120,6 +121,8 @@ class BaseUsbDriver(BaseDriver):
             if release and handle.release_number != release:
                 continue
             if serial and handle.serial_number != serial:
+                continue
+            if match and match.lower() not in description.lower():
                 continue
             consargs = devargs.copy()
             consargs.update(kwargs)

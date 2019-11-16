@@ -18,7 +18,8 @@ Device selection options (see: list -v):
   --bus <bus>                 Filter devices by bus
   --address <address>         Filter devices by address in bus
   --usb-port <port>           Filter devices by USB port in bus
-  --pick <number>             Pick among many results for a given filter
+  -m, --match <substring>     Filter devices by description substring
+  -n, --pick <number>         Pick among many results for a given filter
   -d, --device <id>           Select device by listing id
 
 Animation options (devices/modes can support zero or more):
@@ -98,6 +99,7 @@ _PARSE_ARG = {
     '--bus': str,
     '--address': str,
     '--usb-port': lambda x: tuple(map(int, x.split('.'))),
+    '--match': str,
     '--pick': int,
 
     '--speed': str,

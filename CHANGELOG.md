@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Added
  - Enable **experimental support for the NZXT HUE 2** with the Smart Device V2 driver
  - Enable **experimental support for the NZXT HUE 2 Ambient** with the Smart Device V2 driver
+ - Add `-m, --match <substring>` to allow filtering devices by description
+ - Add `-n` short alias for `--pick`
 ### Changed
  - [API] Allow initialize methods to optionally return status tuples
  - [Legacy 690LC] Conform to XDG basedir spec and prefer XDG_RUNTIME_DIR

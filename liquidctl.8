@@ -53,11 +53,14 @@ appropriate udev rules.
 .\}
 .PP
 \fBliquidctl list\fR outputs all compatible devices found on the system.  In
-case more than one device is found, the device ID can be used to select one in
-later invocations.  Passing \fI\-\-verbose\fR enables the display of additional
+case more than one device is found, the desired one can be selected for later
+invocations with \fB--match=\fIsubstring\fR, where \fIsubstring\fR matches part
+of the desired device's description using a case insensitive comparison.
+.PP
+\fBliquidctl list \fI\-\-verbose\fR enables the display of additional
 identifiers and addresses that can also be used to select specific devices.
-These are preferred for non-interactive invocations as they, unlike device IDs,
-are more stable across reboots, software updates and hardware changes.
+These can be better suited for certain use cases, such as non-interactive
+scripts.
 .PP
 \fBliquidctl initialize\fR prepares a device for later commands.  Most devices
 must be initialized after every boot.  Unless finer control is required, all
@@ -102,7 +105,10 @@ Filter devices by address in bus.
 .BI \-\-usb\-port= port
 Filter devices by USB port in bus.
 .TP
-.BI \-\-pick= number
+.BI \-m\  substring\fR,\ \fP \-\-match= substring
+Filter devices by case insensitive substring of device description.
+.TP
+.BI \-n\  number\fR,\ \fP \-\-pick= number
 Pick among many results for a given filter.
 .TP
 .BI \-d\  id\fR,\ \fP \-\-device= id
