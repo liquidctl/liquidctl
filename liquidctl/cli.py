@@ -11,6 +11,8 @@ Usage:
   liquidctl --version
 
 Device selection options (see: list -v):
+  -m, --match <substring>     Filter devices by description substring
+  -n, --pick <number>         Pick among many results for a given filter
   --vendor <id>               Filter devices by vendor id
   --product <id>              Filter devices by product id
   --release <number>          Filter devices by release number
@@ -18,8 +20,6 @@ Device selection options (see: list -v):
   --bus <bus>                 Filter devices by bus
   --address <address>         Filter devices by address in bus
   --usb-port <port>           Filter devices by USB port in bus
-  -m, --match <substring>     Filter devices by description substring
-  -n, --pick <number>         Pick among many results for a given filter
   -d, --device <id>           Select device by listing id
 
 Animation options (devices/modes can support zero or more):
@@ -41,8 +41,8 @@ Other options:
 Examples:
   liquidctl list --verbose
   liquidctl initialize all
-  liquidctl --product 0x170e set pump speed 90
-  liquidctl --serial 123ABC789 set led color fading 350017 ff2608
+  liquidctl --match kraken set pump speed 90
+  liquidctl --product 0x170e set led color fading 350017 ff2608
   liquidctl status
 
 ---

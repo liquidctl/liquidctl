@@ -12,10 +12,10 @@ Device ID 0: NZXT Smart Device (V1)
 Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
-# liquidctl --device 0 set fan1 speed 50
-# liquidctl --device 0 set led color fading 350017 ff2608
-# liquidctl --device 1 set fan speed  20 30  30 50  34 80  40 90  50 100
-# liquidctl --device 1 set sync color spectrum-wave
+# liquidctl --match smart set fan1 speed 50
+# liquidctl --match smart set led color fading 350017 ff2608
+# liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+# liquidctl --match kraken set sync color spectrum-wave
 
 # liquidctl status
 NZXT Smart Device (V1)

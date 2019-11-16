@@ -84,6 +84,12 @@ are listed in later sections of this manual.
 .SS Device selection options
 Devices can be selected using one or more values taken from \fBlist \fI\-\-verbose\fP.
 .TP
+.BI \-m\  substring\fR,\ \fP \-\-match= substring
+Filter devices by case insensitive substring of device description.
+.TP
+.BI \-n\  number\fR,\ \fP \-\-pick= number
+Pick among many results for a given filter.
+.TP
 .BI \-\-vendor= id
 Filter devices by vendor id.
 .TP
@@ -104,12 +110,6 @@ Filter devices by address in bus.
 .TP
 .BI \-\-usb\-port= port
 Filter devices by USB port in bus.
-.TP
-.BI \-m\  substring\fR,\ \fP \-\-match= substring
-Filter devices by case insensitive substring of device description.
-.TP
-.BI \-n\  number\fR,\ \fP \-\-pick= number
-Pick among many results for a given filter.
 .TP
 .BI \-d\  id\fR,\ \fP \-\-device= id
 Select device by listing ID.
@@ -173,9 +173,9 @@ Internal data used by some drivers.
 .SY liquidctl
 .B initialize all
 .SY liquidctl
-.BI \-\-product\  0x170e\  set\  pump\  speed\  90
+.BI \-\-match\  kraken\  set\  pump\  speed\  90
 .SY liquidctl
-.BI \-\-serial\  123ABC789\  set\  led\  color\  fading
+.BI \-\-product\  0x170e\  set\  led\  color\  fading
 .I 350017 ff2608
 .SY liquidctl
 .B status
