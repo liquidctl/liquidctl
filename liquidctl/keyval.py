@@ -23,8 +23,6 @@ import logging
 import os
 import sys
 
-import appdirs
-
 LOGGER = logging.getLogger(__name__)
 XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR')
 
@@ -35,7 +33,7 @@ def get_runtime_dirs(appname='liquidctl'):
     Directories are returned in order of preference.
     """
     if sys.platform == 'win32':
-        dirs = [appdirs.site_data_dir(appname, appauthor=False)]
+        dirs = [os.path.join(os.getenv('ProgramData'), appname)]
     elif sys.platform == 'darwin':
         dirs = [os.path.join('/Library/Application Support', appname)]
     else:
