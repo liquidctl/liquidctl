@@ -15,12 +15,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
  - [Legacy 690LC] Conform to XDG basedir spec and prefer XDG_RUNTIME_DIR
  - [Legacy 690LC] Improve directory names for internal data
  - Improve the documentation
-### Fixes
+### Fixed
  - [NZXT E] Release the device once done
  - [NZXT E] Fix assertion of valid responses in retry loops
  - [HUE 2] Fix LED blinking during `status`
  - [HUE 2] Add missing identifier for 250 mm HUE 2 LED strips
  - Restore experimental tag for the NZXT Kraken X31/X41/X61 family
+### Removed
+ - Remove dependency on appdirs
 
 ## [1.3.0rc1] – 2019-11-03
 _Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and improved device discovery_
