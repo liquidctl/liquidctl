@@ -96,7 +96,7 @@ setuptools.setup(
         'Documentation': DOC_URL,
         'Changelog': CHANGES_URL,
     },
-    install_requires=['docopt', 'pyusb', 'hidapi', 'appdirs'],
+    install_requires=['docopt', 'pyusb', 'hidapi'],
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
