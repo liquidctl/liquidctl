@@ -25,9 +25,13 @@ _Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and HUE 2 
  - Restore experimental tag for the NZXT Kraken X31/X41/X61 family
 ### Removed
  - Remove dependency on appdirs
+### Checksums
+```
+ff935fd3d57dead4d5218e02f834a825893bc6716f96fc9566a8e3989a7c19fe  liquidctl-1.3.0-bin-windows-x86_64.zip
+ce0483b0a7f9cf2618cb30bdf3ff4195e20d9df6c615f69afe127f54956e42ce  liquidctl-1.3.0.tar.gz
+```
 
 ## [1.3.0rc1] – 2019-11-03
-_Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and improved device discovery_
 ### Added
  - **Add experimental support for Corsair HX750i, HX850i, HX1000i and HX1200i power supplies**
  - **Add experimental support for Corsair RM650i, RM750i, RM850i and RM1000i power supplies**
