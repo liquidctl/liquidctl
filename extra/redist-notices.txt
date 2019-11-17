@@ -3,7 +3,10 @@ liquidctl executables for Windows bundle the following projects:
  - liquidctl
  - python
  - docopt
- - pyusb
+ - pyusb (patched)
+    - base tag: v1.0.2
+    - patch: 8041ec11b2c4 ("Fix #203: libusb sometimes cleaned up too early.")
+             (related: pyusb/pyusb#227, pyusb/pyusb#203)
  - libusb-1.0
  - cython-hidapi
  - hidapi

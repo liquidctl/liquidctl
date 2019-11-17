@@ -26,10 +26,17 @@ install:
   - cmd: if [%is_release%]==[true] set DIST_PACKAGE=liquidctl-%APPVEYOR_REPO_TAG_NAME:v=%-bin-windows-x86_64
   - cmd: if [%is_release%]==[] set DIST_PACKAGE=liquidctl-%APPVEYOR_REPO_COMMIT:~0,12%-bin-windows-x86_64
   - cmd: echo DIST_NAME=%DIST_NAME%; DIST_PACKAGE=%DIST_PACKAGE%
-  - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.7z -FileName libusb.7z
+  # libusb
+  - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
+  # python build and package tools
   - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools pyinstaller --ignore-installed
-  - cmd: C:\Python36-x64\python -m pip install pyusb==1.0.2
+  # specific pyusb version and patch
+  - cmd: git clone --branch v1.0.2 --depth 1 https://github.com/pyusb/pyusb
+  # (patch dual licensed under BSD3, see https://github.com/pyusb/pyusb/pull/227#issuecomment-554752137)
+  - cmd: appveyor DownloadFile https://github.com/pyusb/pyusb/commit/8041ec11b2c432632814fbadf8af2417a15dfa69.patch -FileName 8041ec11b2c4.patch
+  - cmd: cd pyusb && git apply ../8041ec11b2c4.patch && C:\Python36-x64\python -m pip install . && cd ..
+  # remaining dependencies
   - cmd: C:\Python36-x64\python setup.py install
 
 build_script:

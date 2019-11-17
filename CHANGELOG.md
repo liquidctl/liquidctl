@@ -15,6 +15,7 @@ _Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and HUE 2 
  - [API] Allow initialize methods to optionally return status tuples
  - [Legacy 690LC] Conform to XDG basedir spec and prefer XDG_RUNTIME_DIR
  - [Legacy 690LC] Improve directory names for internal data
+ - [Windows] Ship patched PyUSB and libusb 1.0.22
  - Improve the documentation
 ### Fixed
  - [NZXT E] Release the device once done
