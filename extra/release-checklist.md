@@ -7,6 +7,7 @@
 ## Prepare repository
 
  - [ ] Update liquidctl/version.py
+ - [ ] Update the man page last update date
  - [ ] Make sure the CHANGELOG is up to date
  - [ ] Commit "Prepare for release v<version>"
 
