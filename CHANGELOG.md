@@ -5,7 +5,8 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
 ## [1.3.0] – 2019-11-17
-_Man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and HUE 2 family, improved device discovery and selection_
+_Summary for the 1.3.0 release: man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and HUE 2 family, improved device discovery and selection._  
+Changelog since 1.3.0rc1:
 ### Added
  - Enable **experimental support for the NZXT HUE 2** with the Smart Device V2 driver
  - Enable **experimental support for the NZXT HUE 2 Ambient** with the Smart Device V2 driver
@@ -32,6 +33,7 @@ ce0483b0a7f9cf2618cb30bdf3ff4195e20d9df6c615f69afe127f54956e42ce  liquidctl-1.3.
 ```
 
 ## [1.3.0rc1] – 2019-11-03
+Changelog since 1.2.0:
 ### Added
  - **Add experimental support for Corsair HX750i, HX850i, HX1000i and HX1200i power supplies**
  - **Add experimental support for Corsair RM650i, RM750i, RM850i and RM1000i power supplies**
@@ -62,13 +64,15 @@ $ sha256sum liquidctl-1.3.0rc1*
 ```
 
 ## [1.2.0] – 2019-09-27
-_Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_
+_Summary for the 1.2.0 release: : support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac OS_  
+Changelog since 1.2.0rc4:
 ### Changed
  - Include extended version information in pre-built executables for Windows
 ### Fixed
  - Improve handling of USB devices with no active configuration
 
 ## [1.2.0rc4] – 2019-09-18
+Changelog since 1.2.0rc3:
 ### Added
  - Add support for adding git commit and tree cleanliness information to `--version`
  - Add support for adding distribution name and package information to `--version`
@@ -80,6 +84,7 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
  - Improve the documentation
 
 ## [1.2.0rc3] – 2019-09-15
+Changelog since 1.2.0rc2:
 ### Added
  - Add experimental extra/liquiddump script
 ### Changed
@@ -92,6 +97,7 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
  - Fix broken link to Mac OS example configuration
 
 ## [1.2.0rc2] – 2019-09-12
+Changelog since 1.2.0rc1:
 ### Added
  - Support the EVGA CLC 360
  - Add `--alert-threshold` and `--alert-color`
@@ -106,6 +112,7 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
  - [Legacy Asetek 690LC] Change default fading `--time-per-color` (see #29)
 
 ## [1.2.0rc1] – 2019-04-14
+Changelog since 1.1.0:
 ### Added
  - Make automatic bundled builds for Windows with AppVeyor
  - [Smart Device/Grid+ V3] Add option to set all fans at once with virtual 'sync' channel
@@ -127,7 +134,8 @@ _Support for Asetek "5-th gen." 690LC coolers and improvements for HIDs and Mac 
  - Remove `--dry-run`
 
 ## [1.1.0] – 2018-12-15
-_Support for NZXT Smart Device, Grid+ V3 and Kraken M22_
+_Summary for the 1.1.0 release: support for NZXT Smart Device, Grid+ V3 and Kraken M22_  
+Changelog since 1.1.0rc1:
 ### Added
  - Add proof of concept of software-based speed control
 ### Changed
@@ -138,6 +146,7 @@ _Support for NZXT Smart Device, Grid+ V3 and Kraken M22_
  - Fix: use correct exception (NotImplementedError)
 
 ## [1.1.0rc1] - 2018-11-14
+Changelog since 1.0.0:
 ### Added
  - [Kraken] Add `super-breathing`, `super-wave` and `backwards-super-wave`
  - **Add driver for the NZXT Smart Device**
@@ -165,7 +174,8 @@ _Support for NZXT Smart Device, Grid+ V3 and Kraken M22_
  - Remove unused symbols in `liquidctl.util`
 
 ## [1.0.0] - 2018-08-31
-_Support for NZXT Kraken X42/X52/X62/X72 coolers_
+_Summary for the 1.0.0 release: support for NZXT Kraken X42/X52/X62/X72 coolers_  
+Changelog since 1.0.0rc1:
 ### Added
  - [Kraken] Add helper color mode: `off`
  - [Kraken] Add backward variant of `moving-alternating` color mode
