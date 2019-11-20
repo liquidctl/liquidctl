@@ -1,7 +1,7 @@
 """liquidctl – monitor and control liquid coolers and other devices.
 
 Usage:
-  liquidctl [options] list [--verbose]
+  liquidctl [options] list
   liquidctl [options] initialize [all]
   liquidctl [options] status
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
