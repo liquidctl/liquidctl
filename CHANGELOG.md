@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
 
+## [1.3.1] – Unreleased
+
+Changelog since 1.3.0:
+### Fixed
+ - Fix parsing of `--verbose` in commands other than `list`
+
+
 ## [1.3.0] – 2019-11-17
 _Summary for the 1.3.0 release: man page, Corsair RXi/HXi and NZXT E power supplies, Smart Device V2 and HUE 2 family, improved device discovery and selection._
 
