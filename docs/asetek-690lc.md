@@ -1,4 +1,4 @@
-# Asetek 690LC liquid coolers from Corsair, EVGA and NZXT
+# Asetek 690LC liquid coolers
 
 Several products are available that are based on the same Asetek 690LC base design:
 

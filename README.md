@@ -69,7 +69,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E_</sup> |
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
-| NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md#support-for-the-kraken-m22) | |
+| NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 | NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_E, L_</sup> |
 | NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L_</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
@@ -84,7 +84,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md#nzxt-smart-device-v2) | <sup>E</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>E</sup> |
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  

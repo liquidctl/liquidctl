@@ -1,4 +1,6 @@
-# NZXT Kraken X, 3rd generation
+# Third generation NZXT coolers
+
+## NZXT Kraken X42, X52, X62, X72
 
 The Kraken X42, X52, X62 and X72 compose the third generation of liquid coolers by NZXT.  These devices are manufactured by Asetek and house fifth generation Asetek pumps, plus secondary PCBs specially designed by NZXT for enhanced control and lighting.
 
@@ -9,7 +11,7 @@ All configuration is done through USB, and persists as long as the device still 
 All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, have not been implemented.  Pump and fan control based on liquid temperature is supported on units running firmware versions 4 or above.
 
 
-## Support for the Kraken M22
+## NZXT Kraken M22
 
 This driver also supports the NZXT Kraken M22.  However, this device has no pump or fan control, nor reports liquid temperatures.
 

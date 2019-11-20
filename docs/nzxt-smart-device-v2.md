@@ -1,6 +1,6 @@
-# NZXT HUE 2, HUE 2 Ambient and Smart Device V2
+# HUE 2, HUE 2 Ambient and Smart Device V2
 
-The HUE 2 lighting system is a refresh of the original HUE+ system.  The main improvement is the ability to mix NZXT Aer RGB 2 fans and HUE 2 lighting accessories (e.g. HUE 2 LED strip, HUE 2 Underglow, HUE 2 Cable Comb) in a channel.  HUE+ devices, including the original Aer RGB fans, are also supported, but HUE 2 components cannot be mixed with HUE+ components in the same channel.
+The NZXT HUE 2 lighting system is a refresh of the original HUE+.  The main improvement is the ability to mix Aer RGB 2 fans and HUE 2 lighting accessories (e.g. HUE 2 LED strip, HUE 2 Underglow, HUE 2 Cable Comb) in a channel.  HUE+ devices, including the original Aer RGB fans, are also supported, but HUE 2 components cannot be mixed with HUE+ components in the same channel.
 
 Each channel supports up to 6 accessories and a total of 40 LEDs, and the firmware exposes several color presets, most of them common to other NZXT products.
 
