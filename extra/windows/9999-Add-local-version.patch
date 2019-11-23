@@ -1,0 +1,13 @@
+diff --git a/usb/__init__.py b/usb/__init__.py
+index d83be87..6ecd412 100644
+--- a/usb/__init__.py
++++ b/usb/__init__.py
+@@ -47,7 +47,7 @@ __author__ = 'Wander Lairson Costa'
+ 
+ # Use Semantic Versioning, http://semver.org/
+ version_info = (1, 0, 2)
+-__version__ = '%d.%d.%d' % version_info
++__version__ = '%d.%d.%d+liquidctl.1' % version_info
+ 
+ __all__ = ['legacy', 'control', 'core', 'backend', 'util', 'libloader']
+ 

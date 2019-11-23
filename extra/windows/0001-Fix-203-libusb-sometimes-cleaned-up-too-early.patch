@@ -1,0 +1,54 @@
+From 8041ec11b2c432632814fbadf8af2417a15dfa69 Mon Sep 17 00:00:00 2001
+From: Andy Clark <ajc97@cantab.net>
+Date: Sun, 23 Dec 2018 21:42:47 +0000
+Subject: [PATCH] Fix #203: libusb sometimes cleaned up too early.
+
+Each call to libusb1's get_backend returns a new _LibUSB object.
+When each  _LibUSB object falls out of scope, it calls ends up
+calling libusb_exit() which deinitializes libusb, even if there are still
+references in scope.
+
+Practically speaking, pyusb seems to assume there's only one
+context active, so returning the same _LibUSB object on
+subsequent calls to get_backend should prevent there from being
+more than one call to libusb_exit() when backend objects go
+out of scope.
+
+This should fix errors where the libusb library was being used after
+libusb_exit() had been called.
+---
+ usb/backend/libusb1.py | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/usb/backend/libusb1.py b/usb/backend/libusb1.py
+index de30c25..968d5b4 100644
+--- a/usb/backend/libusb1.py
++++ b/usb/backend/libusb1.py
+@@ -256,6 +256,7 @@ def _get_iso_packet_list(transfer):
+     return list_type.from_address(addressof(transfer.iso_packet_desc))
+ 
+ _lib = None
++_lib_object = None
+ 
+ def _load_library(find_library=None):
+     # Windows backend uses stdcall calling convention
+@@ -936,12 +937,14 @@ class _LibUSB(usb.backend.IBackend):
+         return transferred.value
+ 
+ def get_backend(find_library=None):
+-    global _lib
++    global _lib, _lib_object
+     try:
+         if _lib is None:
+             _lib = _load_library(find_library=find_library)
+             _setup_prototypes(_lib)
+-        return _LibUSB(_lib)
++        if _lib_object is None:
++            _lib_object = _LibUSB(_lib)
++        return _lib_object
+     except usb.libloader.LibraryException:
+         # exception already logged (if any)
+         _logger.error('Error loading libusb 1.0 backend', exc_info=False)
+-- 
+2.24.0
+

@@ -30,14 +30,19 @@ install:
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
   # python build and package tools
-  - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools pyinstaller --ignore-installed
+  - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools --ignore-installed
   # specific pyusb version and patch
-  - cmd: git clone --branch v1.0.2 --depth 1 https://github.com/pyusb/pyusb
   # (patch dual licensed under BSD3, see https://github.com/pyusb/pyusb/pull/227#issuecomment-554752137)
-  - cmd: appveyor DownloadFile https://github.com/pyusb/pyusb/commit/8041ec11b2c432632814fbadf8af2417a15dfa69.patch -FileName 8041ec11b2c4.patch
-  - cmd: cd pyusb && git apply ../8041ec11b2c4.patch && C:\Python36-x64\python -m pip install . && cd ..
+  - cmd: git clone --branch v1.0.2 --depth 1 https://github.com/pyusb/pyusb && cd pyusb
+  - cmd: git apply ..\extra\windows\0001-Fix-203-libusb-sometimes-cleaned-up-too-early.patch
+  - cmd: git apply ..\extra\windows\9999-Add-local-version.patch
+  - cmd: C:\Python36-x64\python -m pip install . && cd .. && rmdir /q /s pyusb
   # remaining dependencies
   - cmd: C:\Python36-x64\python setup.py install
+  # generate list of packages that will be included
+  - cmd: C:\Python36-x64\python -m pip freeze > extra\windows\included.txt
+  # install pyinstaller last to not pollute included.txt
+  - cmd: C:\Python36-x64\python -m pip install pyinstaller
 
 build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --hidden-import hid --clean -F liquidctl\cli.py --name liquidctl --distpath .
@@ -48,9 +53,9 @@ after_build:
   - cmd: copy README.md %DIST_PACKAGE%\
   - cmd: copy docs\*.md %DIST_PACKAGE%\docs\
   - cmd: copy LICENSE.txt %DIST_PACKAGE%\
-  - cmd: copy extra\redist-notices.txt %DIST_PACKAGE%\COPYRIGHT.txt
+  - cmd: copy extra\windows\redist-notices.txt %DIST_PACKAGE%\COPYRIGHT.txt
+  - cmd: copy extra\windows\included.txt %DIST_PACKAGE%\included.txt
   - cmd: copy CHANGELOG.md %DIST_PACKAGE%\
-  - cmd: C:\Python36-x64\python -m pip freeze > %DIST_PACKAGE%\included.txt
   - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
 
 test_script:
