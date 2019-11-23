@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 
 ## [1.3.1] – 2019-11-23
+_Summary for the 1.3.1 release: fix parsing of `--verbose` and documentation improvements._
 
 Changelog since 1.3.0:
 ### Changed
@@ -13,6 +14,11 @@ Changelog since 1.3.0:
  - Improve the documentation
 ### Fixed
  - Fix parsing of `--verbose` in commands other than `list`
+### Checksums
+```
+de272dad305dc6651265640a280bedb21bc680a62117e625004c6aad2104da63  liquidctl-1.3.1-bin-windows-x86_64.zip
+6092a6fae477908c80adc825b290e39f0b26e604593884da23d40e892e553309  liquidctl-1.3.1.tar.gz
+```
 
 
 ## [1.3.0] – 2019-11-17
