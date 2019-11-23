@@ -47,7 +47,7 @@ install:
   - cmd: C:\Python36-x64\python --version >> extra\windows\included.txt
 
 build_script:
-  - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --hidden-import hid --clean -F liquidctl\cli.py --name liquidctl --distpath .
+  - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
 
 after_build:
   - cmd: mkdir %DIST_PACKAGE%\docs
