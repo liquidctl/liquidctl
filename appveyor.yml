@@ -40,7 +40,7 @@ install:
   # remaining dependencies
   - cmd: C:\Python36-x64\python setup.py install
   # generate list of packages that will be included
-  - cmd: C:\Python36-x64\python -m pip freeze > extra\windows\included.txt
+  - cmd: C:\Python36-x64\python -m pip freeze | find /V "virtualenv" > extra\windows\included.txt
   # install pyinstaller last to not pollute included.txt with its dependencies
   - cmd: C:\Python36-x64\python -m pip install pyinstaller
   - cmd: C:\Python36-x64\python -m pip freeze | find "PyInstaller" >> extra\windows\included.txt
