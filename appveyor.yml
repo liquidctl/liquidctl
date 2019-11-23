@@ -41,8 +41,10 @@ install:
   - cmd: C:\Python36-x64\python setup.py install
   # generate list of packages that will be included
   - cmd: C:\Python36-x64\python -m pip freeze > extra\windows\included.txt
-  # install pyinstaller last to not pollute included.txt
+  # install pyinstaller last to not pollute included.txt with its dependencies
   - cmd: C:\Python36-x64\python -m pip install pyinstaller
+  - cmd: C:\Python36-x64\python -m pip freeze | find "PyInstaller" >> extra\windows\included.txt
+  - cmd: C:\Python36-x64\python --version >> extra\windows\included.txt
 
 build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --hidden-import hid --clean -F liquidctl\cli.py --name liquidctl --distpath .
