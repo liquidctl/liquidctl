@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [1.3.1] – Unreleased
 
 Changelog since 1.3.0:
+### Changed
+ - List included dependencies and versions in Windows' bundle
+ - Improve the documentation
 ### Fixed
  - Fix parsing of `--verbose` in commands other than `list`
 
