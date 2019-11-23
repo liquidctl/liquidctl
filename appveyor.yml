@@ -45,7 +45,7 @@ install:
   # install pyinstaller last to not pollute included.txt with its dependencies
   - cmd: C:\Python36-x64\python -m pip install pyinstaller
   - cmd: C:\Python36-x64\python -m pip freeze | find "PyInstaller" >> extra\windows\included.txt
-  - cmd: echo "libusb %LIBUSB_VERSION%" >> extra\windows\included.txt
+  - cmd: echo libusb %LIBUSB_VERSION% >> extra\windows\included.txt
   - cmd: C:\Python36-x64\python --version >> extra\windows\included.txt
 
 build_script:
