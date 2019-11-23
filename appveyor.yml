@@ -50,6 +50,7 @@ after_build:
   - cmd: copy LICENSE.txt %DIST_PACKAGE%\
   - cmd: copy extra\redist-notices.txt %DIST_PACKAGE%\COPYRIGHT.txt
   - cmd: copy CHANGELOG.md %DIST_PACKAGE%\
+  - cmd: C:\Python36-x64\python -m pip freeze > %DIST_PACKAGE%\included.txt
   - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
 
 test_script:
