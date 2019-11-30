@@ -209,13 +209,14 @@ class KrakenTwoDriver(UsbHidDriver):
         """Set channel to use a speed profile."""
         if not self.supports_cooling_profiles:
             raise NotImplementedError()
+        norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
+        # due to a firmware limitation the same set of temperatures must be
+        # used on both channels; we reduce the number of writes by trimming the
+        # interval and/or resolution to the most useful range
+        stdtemps = list(range(20, 50)) + list(range(50, 60, 2)) + [60]
+        interp = [(t, interpolate_profile(norm, t)) for t in stdtemps]
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
-        # ideally we could just call normalize_profile (optionally followed by autofill_profile),
-        # but Kraken devices currently require the same set of temperatures on both channels
-        stdtemps = range(20, 62, 2)
-        tmp = normalize_profile(profile, _CRITICAL_TEMPERATURE)
-        norm = [(t, interpolate_profile(tmp, t)) for t in stdtemps]
-        for i, (temp, duty) in enumerate(norm):
+        for i, (temp, duty) in enumerate(interp):
             duty = clamp(duty, dmin, dmax)
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
