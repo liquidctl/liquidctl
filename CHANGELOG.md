@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
 
+## [Unreleased]
+
+Changelog since 1.3.1:
+### Fixed
+ - [Smart Device V2] Parse fan info from correct status message
+
+
 ## [1.3.1] – 2019-11-23
 _Summary for the 1.3.1 release: fix parsing of `--verbose` and documentation improvements._
 
