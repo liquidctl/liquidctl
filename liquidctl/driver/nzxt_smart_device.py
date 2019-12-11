@@ -448,7 +448,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
                 rpm_offset += 2
             status.append(('Noise level', msg[noise_offset], 'dB'))
 
-        self._read_until({b'\x67\x04': parse_fan_info})
+        self._read_until({b'\x67\x02': parse_fan_info})
         self.device.release()
         return sorted(status)
 

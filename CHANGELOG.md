@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased]
 
 Changelog since 1.3.1:
+### Fixed
+ - [Smart Device V2] Parse fan info from correct status message
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
 
