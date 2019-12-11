@@ -7,11 +7,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
-Changelog since 1.3.1:
-### Fixed
- - [Smart Device V2] Parse fan info from correct status message
+Changelog since 1.3.2:
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
+
+
+## [1.3.2] – 2019-12-11
+_Summary for the 1.3.2 release: fix fan status reporting from Smart Device V2._
+
+Changelog since 1.3.1:
+### Fixed
+ - [Smart Device V2] Parse fan info from correct status message### Checksums
+### Checksums
+```
+acf44a491567703c109c03f446c3c0761e5f9b97098613f8ecb4366a1d2afd50  liquidctl-1.3.2-bin-windows-x86_64.zip
+bb742947c15f4a3987685641c0dd73184c4a40add5ad818ced68e5ace3631b6b  liquidctl-1.3.2.tar.gz
+```
 
 
 ## [1.3.1] – 2019-11-23
