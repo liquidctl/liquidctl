@@ -5,7 +5,8 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
 
-## [Unreleased]
+## [1.3.2] – 2019-12-11
+_Summary for the 1.3.2 release: fix fan status reporting from Smart Device V2._
 
 Changelog since 1.3.1:
 ### Fixed
