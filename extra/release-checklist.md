@@ -9,6 +9,7 @@
  - [ ] Update liquidctl/version.py
  - [ ] Update the man page last update date
  - [ ] Make sure the CHANGELOG is up to date
+ - [ ] Update the link in the README to the stable executable for Windows
  - [ ] Commit "Prepare for release v<version>"
 
 ## Test
