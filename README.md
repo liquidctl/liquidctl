@@ -44,20 +44,16 @@ NZXT Kraken X (X42, X52, X62 or X72)
 ## Table of contents
 
 1. [Supported devices](#supported-devices)
-2. [Pre-built packages and executables](#pre-built-packages-and-executables)
-3. [Installing from sources](#installing-from-sources)
-    1. [Grabbing releases with pip](#grabbing-releases-with-pip)
-    2. [Testing and developing new features](#testing-and-developing-new-features)
-    3. [Additional requirements on Linux](#additional-requirements-on-linux)
-    4. [Additional requirements on Windows](#additional-requirements-on-windows)
-    5. [Additional requirements on Mac OS](#additional-requirements-on-mac-os)
-4. [The command-line interface](#introducing-the-command-line-interface)
-5. [Automation and running at boot](#automation-and-running-at-boot)
+2. [Installing on Linux](#installing-on-linux)
+3. [Installing on Windows](#installing-on-windows)
+4. [Installing on macOS](#installing-on-macos)
+5. [The command-line interface](#introducing-the-command-line-interface)
+6. [Automation and running at boot](#automation-and-running-at-boot)
     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
-    3. [Set up Mac OS using launchd](#set-up-mac-os-using-launchd)
-6. [License](#license)
-7. [Related projects](#related-projects)
+    3. [Set up macOS using launchd](#set-up-macos-using-launchd)
+7. [License](#license)
+8. [Related projects](#related-projects)
 
 
 ## Supported devices
@@ -90,89 +86,105 @@ NZXT Kraken X (X42, X52, X62 or X72)
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 
 
-## Pre-built packages and executables
+## Installing on Linux
 
-Packages for Linux distributions:
+Packages are available for certain Linux distributions and package managers:
 
- - ArchLinux: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
- - Fedora: [liquidctl, python3-liquidctl](https://pkgs.org/download/liquidctl)
- - Linuxbrew tap: [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
+ - ArchLinux/Manjaro: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
+ - Fedora: [liquidctl](https://apps.fedoraproject.org/packages/liquidctl)
+ - Debian/Ubuntu: work in progress (issue #62), continue reading for manual installation instructions
+ - Linuxbrew: tap [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
 
-Pre-built binaries for Windows:
+Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following dependencies are necessary:
 
- - Official releases: check the assets in the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab
- - Development builds: select from the [last builds](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history) on AppVeyor and check the artifacts tab
- - _Some devices may require an [additional kernel driver](#additional-requirements-on-windows)_
+| Dependency | Arch Linux | Fedora | Ubuntu |
+| --- | --- | --- | --- |
+| Python 3.6+ | python | python3 | python3 |
+| libusb-1.0 | libusb-1.0 | libusbx | libusb-1.0-0 |
+| pkg_resources | python-setuptools | python3-setuptools | python3-pkg-resources |
+| docopt | python-docopt | python3-docopt | python3-docopt |
+| PyUSB | python-pyusb | python3-pyusb | python3-usb |
+| cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
 
-Homebrew formula for Mac OS:
+If cython-hidapi is to be installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
 
- - Homebrew tap: [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
-
-
-## Installing from sources
-
-liquidctl runs on [Python](https://www.python.org/) 3.6 or later and uses [libusb](https://github.com/libusb/libusb) and [HIDAPI](https://github.com/libusb/hidapi) to communicate with devices.
-
-The most important Python dependencies are [PyUSB](https://github.com/pyusb/pyusb) and [cython-hidapi](https://github.com/trezor/Cython-hidapI), but a few other libraries (e.g. docopt) are used as well; all of them are listed in `setup.py`.
-
-On Windows some devices might require the installation of a special kernel driver.  HIDAPI's dependencies can also vary depending on the platform.  These and other platform details and quirks are documented bellow, after common installation instructions.
-
-### Grabbing releases with pip
-
-*pip* can be used to grab a [release from PyPI](https://pypi.org/project/liquidctl/#history).  For currently under development features, pip can also be used to install the latest snapshot of the official repository.
+To install any release from PyPI, *pip* should be used:
 
 ```
 # pip install liquidctl
 # pip install liquidctl==<version>
-# pip install git+https://github.com/jonasmalacofilho/liquidctl
 ```
 
-_Note: a virtual environment can be used to avoid installing the package globally._
-
-### Testing and developing new features
-
-Contributors to the project's code or documentation are encouraged to manually clone the repository.  pip can then be used to install liquidctl in editable/development mode.
-
+For the latest changes and to contribute back to the project, it is best to clone the source code repository and install liquidctl from your local copy:
 
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
 $ cd liquidctl
-# pip install --editable .
+# python setup.py install
 ```
 
-_Note: a virtual environment can be used to avoid installing the package globally._
+_Note: in systems that default to Python 2, replace `pip` and `python` by `pip3` and `python3`._  
 
-### Additional requirements on Linux
 
-Installing cython-hidapi on Linux can require locally building some C extensions (automatically).  Both libusb-1.0 and libudev are needed for this, together with their corresponding development files.  You may also need development files for Python.
+## Installing on Windows
 
-| Linux dependency | Arch Linux | Fedora | Ubuntu |
-| --- | --- | --- | --- |
-| python3 (dev) | python | python3-devel | python3-dev |
-| build tools | base-devel | "Development Tools" | build-essential |
-| libusb-1.0 (dev) | libusb-1.0 | libusbx-devel | libusb-1.0-0-dev |
-| libudev (dev) | (installed) | (installed) | libudev-dev |
+A pre-built executable for the last stable version is available in [liquidctl-1.3.2-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.3.2/liquidctl-1.3.2-bin-windows-x86_64.zip).
 
-### Additional requirements on Windows
+Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
-Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb.  In most cases Microsoft's WinUSB driver is recommended, which can be easily configured for a device with [Zadig](https://zadig.akeo.ie/).¹
+Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb.  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/).¹
 
-Pre-build liquidctl executables for Windows already include libusb and HIDAPI, but when installing from PyPI or the sources you will need to manually set up the libusb runtime libraries.  You can get the DLLs from [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and extract the appropriate (e.g. MS64) `.dll` and `.lib` files to your system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).  Note that there is a [known issue in PyUSB](https://github.com/pyusb/pyusb/pull/227) that causes errors when the devices are released; the solution is to either manually patch PyUSB or stick to libusb 1.0.21.
+Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  Pre-build liquidctl executables for Windows already include libusb, but when installing from PyPI or the sources this will need to be manually set up.
+
+The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64) `.dll` and `.lib` files should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).  Note that there is a [known issue in PyUSB](https://github.com/pyusb/pyusb/pull/227) that causes errors when the devices are released; the solution is to either manually patch PyUSB or stick to libusb 1.0.21.
+
+To install any release from PyPI, *pip* should be used:
+
+```
+> pip install liquidctl
+> pip install liquidctl==<version>
+```
+
+For the latest changes and to contribute back to the project, it is best to clone the source code repository and install liquidctl from your local copy:
+
+```
+> git clone https://github.com/jonasmalacofilho/liquidctl
+> cd liquidctl
+> python setup.py install
+```
 
 _¹ See [How to use libusb under Windows](https://github.com/libusb/libusb/wiki/FAQ#how-to-use-libusb-under-windows) for more information._
 
-### Additional requirements on Mac OS
 
-A [homebrew tap](https://github.com/jonasmalacofilho/homebrew-liquidctl) is provided, and installing liquidctl using it is straightforward.
+## Installing on macOS
+
+liquidctl is available on Homebrew, and installing liquidctl using it is straightforward.
 
 ```
-$ brew tap jonasmalacofilho/liquidctl
 $ brew install liquidctl
+$ brew install liquidctl --HEAD
 ```
 
-The formula can be used to install both the stable version or, by passing `--HEAD`, the latest snapshot from this repository.  All dependencies are be automatically resolved.
+By default the last stable version will be installed, but by passing `--HEAD` this can be changed to the last snapshot from this repository.  All dependencies are automatically resolved.
 
-If a different installation method is required, libsub must be installed first; the recommended way is with `brew install libusb`.
+A [custom tap](https://github.com/jonasmalacofilho/homebrew-liquidctl) is also available, which can sometimes be slightly ahead of the official formula, as well as allows testing release candidates (i.e. devel versions).
+
+It is also possible to install liquidctl from PyPI or directly from the source code repository.  In these cases, Python 3 and libsub must be installed first; the recommended way is with `brew install libusb`.  To install any release from PyPI, *pip* should be used:
+
+```
+$ pip3 install liquidctl
+$ pip3 install liquidctl==<version>
+```
+
+To contribute back to the project, it is best to clone the source code repository and install liquidctl from your local copy:
+
+```
+$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ cd liquidctl
+$ python3 setup.py install
+```
+
+_Note: installation into a virtual environment is recommended to avoid conflicts with Python modules instalelled with Homebrew.  The use of virtual environments is outside the scope of this document.  Their use will also restrict the availability of the liquidctl command to that virtual environment._
 
 
 ## Introducing the command-line interface
@@ -276,7 +288,7 @@ A slightly more complex example can be seen in [issue #14](https://github.com/jo
 
 Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) goes into a lot more detail and is a good read.
 
-### Set up Mac OS using launchd
+### Set up macOS using launchd
 
 You can use a shell script and launchd to automatically configure your devices upon logging in.
 
