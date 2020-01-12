@@ -9,7 +9,7 @@ Several products are available that are based on the same Asetek 690LC base desi
  - Legacy designs:
     * NZXT Kraken X40, X60, X31, X41, X51 and X61
 
-**Note: a different kernel driver is necessary on Windows (see: [Additional requirements on Windows](https://github.com/jonasmalacofilho/liquidctl#additional-requirements-on-windows)).**
+**Note: a different kernel driver is necessary on Windows (see: [Installing on Windows](https://github.com/jonasmalacofilho/liquidctl#installing-on-windows)).**
 
 **Note: when dealing with legacy Krakens the `--legacy-690lc` flag should be supplied on all invocations of liquidctl.**
 
