@@ -55,6 +55,11 @@ lighting channel supports up to 6 accessories and a total of 40 LEDs.
 A microphone is still present onboard for noise level optimization through CAM
 and AI.
 
+RGB & Fan Controller
+--------------------
+
+The NZXT RGB & Fan Controller is a retail version of the NZXT Smart Device V2.
+
 HUE 2
 -----
 

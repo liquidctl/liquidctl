@@ -1,4 +1,4 @@
-# HUE 2, HUE 2 Ambient and Smart Device V2
+# NZXT HUE 2 and Smart Device V2 variants
 
 The NZXT HUE 2 lighting system is a refresh of the original HUE+.  The main improvement is the ability to mix Aer RGB 2 fans and HUE 2 lighting accessories (e.g. HUE 2 LED strip, HUE 2 Underglow, HUE 2 Cable Comb) in a channel.  HUE+ devices, including the original Aer RGB fans, are also supported, but HUE 2 components cannot be mixed with HUE+ components in the same channel.
 
@@ -24,6 +24,11 @@ The NZXT Smart Device V2 is a HUE 2 variant of the original Smart Device fan and
 It provides two HUE 2 lighting channels and three independent fan channels with standard 4-pin connectors.  Both PWM and DC fan control is supported, and the device automatically chooses the appropriate mode for each channel; the device also reports the state of each fan channel, as well as speed and duty (from 0% to 100%).
 
 A microphone is still present onboard for noise level optimization through CAM and AI.
+
+
+## NZXT RGB & Fan Controller
+
+The NZXT RGB & Fan Controller is a retail version of the NZXT Smart Device V2.
 
 
 ## Initialization

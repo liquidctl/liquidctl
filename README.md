@@ -80,7 +80,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>E</sup> |
+| NZXT Smart Device V2, RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>E</sup> |
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
