@@ -64,12 +64,12 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E_</sup> |
-| Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | |
-| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | |
+| Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E, Z_</sup> |
+| Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
+| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
 | NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
-| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_E, L_</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L_</sup> |
+| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
+| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
 
 ### Other parts
@@ -86,6 +86,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
+<sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._--
 
 
 ## Installing on Linux
@@ -134,7 +135,7 @@ A pre-built executable for the last stable version is available in [liquidctl-1.
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
-Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb.  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/).¹
+Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb (see notes in the [Supported devices](#supported-devices) section).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/).¹
 
 Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  Pre-build liquidctl executables for Windows already include Python and libusb, but when installing from PyPI or the sources both of these will need to be manually set up.
 
