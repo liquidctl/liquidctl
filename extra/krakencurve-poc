@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 
-"""Adjust Kraken speeds dynamically, with software.
+"""Adjust Kraken X42/X52/X62/X72 speeds dynamically, with software.
 
-This is just a proof of concept.
+Periodicatly adjusts the pump and fan speeds according to user-specified
+profiles.
+
+Different sensors can be used for the pump and fans; when no sensor
+is specified, the coolant temperatue is used.  Use show-sensors to view the
+available sensors.
 
 Usage:
   krakencurve-poc [options] show-sensors
-  krakencurve-poc [options] control <pump-profile> <fan-profile>
+  krakencurve-poc [options] control --pump <profile> --fan <profile>
   krakencurve-poc --help
   krakencurve-poc --version
 
 Options:
-  --use-psutil            Enable extra sensors from psutil (requires psutil)
-  --pump-sensor <sensor>  Select custom sensor for pump speed
-  --fan-sensor <sensor>   Select custom sensor for fan speed
+  --pump <profile>        Profile to use for the pump
+  --fan <profile>         Profile to use for the fan
+  --pump-sensor <sensor>  Select alternate sensor for pump speed
+  --fan-sensor <sensor>   Select alternate sensor for fan speed
   --interval <seconds>    Update interval in seconds [default: 2]
   -v, --verbose           Output additional information
   -g, --debug             Show debug information on stderr
@@ -21,8 +27,19 @@ Options:
   --help                  Show this message
 
 Examples:
-  krakencurve-poc control '(30,50),(40,100)' '(30,60),(45,100)'
-  krakencurve-poc control '(30,50),(40,100)' '(20,25),(60,100)' --use-psutil --fan-sensor 'coretemp:Package id 0'
+  krakencurve-poc show-sensors
+  krakencurve-poc control --pump '(25,50),(35,100)' --fan '(25,40),(45,100)'
+  krakencurve-poc control --pump '(25,50),(35,100)' --fan '(20,25),(60,100)' --fan-sensor 'istats.cpu'
+
+Requirements:
+  all platforms  liquidctl, including the Python APIs (pip install liquidctl)
+  Linux/FreeBSD  psutil (pip install psutil)
+  macOS          iStats (gem install iStats)
+  Windows        none, system sensors not yet supported
+
+Changelog:
+  0.0.2  MacOS support for iStats; breaking refresh of the CLI and sensor names
+  0.0.1  Initial proof-of-concept; system sensors only supported on Linux
 """
 
 import ast
@@ -34,26 +51,43 @@ from docopt import docopt
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.util import normalize_profile, interpolate_profile
 
+if sys.platform == 'darwin':
+    import subprocess
+elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
+    import psutil
+
+VERSION = '0.0.2'
 LOGGER = logging.getLogger(__name__)
 
-LIQUID_SENSOR = 'kraken:Liquid temperature'
+LIQUID_SENSOR = 'kraken.coolant'
 
 
-def read_sensors(cooler, psutil=None):
+def read_sensors(cooler):
     sensors = {}
     if cooler:
         data = {k: v for k, v, u in cooler.get_status()}
         sensors[LIQUID_SENSOR] = data['Liquid temperature']
-    if psutil:
+    if sys.platform == 'darwin':
+        istats_stdout = proc.check_output(['istats']).decode('utf-8')
+        for line in istats_stdout.split('\n'):
+            if line.startswith('CPU'):
+                cpu_temp = float(re.search('\d+\.\d+', line).group(0))
+                sensors['istats.cpu'] = cpu_temp
+                break
+    elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
         for m, li in psutil.sensors_temperatures().items():
             for label, current, _, _ in li:
-                sensors['{}:{}'.format(m, label)] = current
+                sensors['{}.{}'.format(m, label.lower().replace(' ', '_'))] = current
     return sensors
 
 
-def show_sensors(cooler, psutil=None):
-    sensors = read_sensors(cooler, psutil)
+def show_sensors(cooler):
+    print('{:<60}  {:>18}'.format('Sensor identifier', 'Temperature'))
+    print('-' * 80)
+    sensors = read_sensors(cooler)
     for k, v in sensors.items():
+        if k == LIQUID_SENSOR:
+            k = k + '  [default]'
         print('{:<70}  {:>6}{}'.format(k, v, '°C'))
 
 
@@ -110,13 +144,13 @@ def parse_profile(arg, mintemp, maxtemp, minduty=0, maxduty=100):
 
 
 def control(cooler, pump_profile, fan_profile, update_interval,
-            pump_sensor, fan_sensor, psutil=None):
-    LOGGER.info('pump: following %s, profile %s', pump_sensor, str(pump_profile))
-    LOGGER.info('fan: following %s, profile %s', fan_sensor, str(fan_profile))
+            pump_sensor, fan_sensor):
+    LOGGER.info('pump following sensor %s and profile %s', pump_sensor, str(pump_profile))
+    LOGGER.info('fan following sensor %s and profile %s', fan_sensor, str(fan_profile))
     while True:
-        sensors = read_sensors(cooler, psutil)
-        LOGGER.info('pump control sensor: %.1f°C; fan control sensor: %.1f°C',
-                    sensors[pump_sensor], sensors[fan_sensor])
+        sensors = read_sensors(cooler)
+        LOGGER.info('pump control (%s): %.1f°C, fan control (%s): %.1f°C',
+                    pump_sensor, sensors[pump_sensor], fan_sensor, sensors[fan_sensor])
         pump_duty = interpolate_profile(pump_profile, sensors[pump_sensor])
         fan_duty = interpolate_profile(fan_profile, sensors[fan_sensor])
         cooler.set_instantaneous_speed('pump', pump_duty)
@@ -130,49 +164,42 @@ if __name__ == '__main__':
         doctest.testmod(verbose=True)
         sys.exit(0)
 
-    args = docopt(__doc__, version='0.0.1')
+    args = docopt(__doc__, version='krakencurve-poc v{}'.format(VERSION))
 
     if args['--debug']:
-        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        logging.getLogger('usb').setLevel(logging.DEBUG)
-        import usb._debug
-        usb._debug.enable_tracing(True)
         args['--verbose'] = True
+        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+        LOGGER.debug('krakencurve-poc v%s', VERSION)
+        import liquidctl.version
+        LOGGER.debug('liquidctl v%s', liquidctl.version.__version__)
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         sys.tracebacklimit = 0
-
-    if args['--use-psutil']:
-        import psutil
-    else:
-        psutil = None
 
     device = KrakenTwoDriver.find_supported_devices()[0]
     device.connect()
 
     try:
         if args['show-sensors']:
-            show_sensors(device, psutil)
+            show_sensors(device)
         elif args['control']:
             pump_sensor = args['--pump-sensor'] or LIQUID_SENSOR
             pump_max_temp = 100 if pump_sensor != LIQUID_SENSOR else 60
             fan_sensor = args['--fan-sensor'] or LIQUID_SENSOR
             fan_max_temp = 100 if fan_sensor != LIQUID_SENSOR else 60
 
-            pump_profile = parse_profile(args['<pump-profile>'], 0, pump_max_temp, minduty=50)
-            fan_profile = parse_profile(args['<fan-profile>'], 0, fan_max_temp, minduty=25)
+            pump_profile = parse_profile(args['--pump'], 0, pump_max_temp, minduty=50)
+            fan_profile = parse_profile(args['--fan'], 0, fan_max_temp, minduty=25)
 
             control(device, pump_profile, fan_profile,
                     update_interval=int(args['--interval']),
                     pump_sensor=pump_sensor,
-                    fan_sensor=fan_sensor,
-                    psutil=psutil)
+                    fan_sensor=fan_sensor)
         else:
             raise Exception('Nothing to do')
     except KeyboardInterrupt:
         LOGGER.info('Stopped by user')
     finally:
         device.disconnect()
-
