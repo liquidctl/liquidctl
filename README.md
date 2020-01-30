@@ -86,7 +86,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
-<sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._--
+<sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
 
 
 ## Installing on Linux
@@ -189,7 +189,7 @@ $ cd liquidctl
 $ python3 setup.py install
 ```
 
-_Note: installation into a virtual environment is recommended to avoid conflicts with Python modules instalelled with Homebrew.  The use of virtual environments is outside the scope of this document.  Their use will also restrict the availability of the liquidctl command to that virtual environment._
+_Note: installation into a virtual environment is recommended to avoid conflicts with Python modules installed with Homebrew.  The use of virtual environments is outside the scope of this document.  Their use will also restrict the availability of the liquidctl command to that virtual environment._
 
 
 ## Introducing the command-line interface
