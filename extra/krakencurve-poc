@@ -52,6 +52,7 @@ from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.util import normalize_profile, interpolate_profile
 
 if sys.platform == 'darwin':
+    import re
     import subprocess
 elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
     import psutil
@@ -68,10 +69,10 @@ def read_sensors(cooler):
         data = {k: v for k, v, u in cooler.get_status()}
         sensors[LIQUID_SENSOR] = data['Liquid temperature']
     if sys.platform == 'darwin':
-        istats_stdout = proc.check_output(['istats']).decode('utf-8')
+        istats_stdout = subprocess.check_output(['istats']).decode('utf-8')
         for line in istats_stdout.split('\n'):
             if line.startswith('CPU'):
-                cpu_temp = float(re.search('\d+\.\d+', line).group(0))
+                cpu_temp = float(re.search(r'\d+\.\d+', line).group(0))
                 sensors['istats.cpu'] = cpu_temp
                 break
     elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
