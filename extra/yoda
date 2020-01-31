@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-"""Adjust device speeds dynamically, with software.
+"""yoda – dynamically adjust liquidctl device pump and fan speeds.
 
-Periodicatly adjusts pump or fan speeds according to user-specified
-profiles.
+Periodically adjusts pump and fan speeds according to user-specified profiles.
 
-Different sensors can be used for each channel; use show-sensors to view the
-available sensors for use with a device.
+Different sensors can be used for each channel.  Use show-sensors to view the
+sensors available for use with a particular device.
+
+To avoid jerks in pump or fan speeds, an exponential moving average is used as
+low-pass filter on sensor data.
 
 Usage:
   yoda [options] show-sensors
@@ -15,7 +17,7 @@ Usage:
   yoda --version
 
 Options:
-  --interval <seconds>     Update interval in seconds [default: 3]
+  --interval <seconds>     Update interval in seconds [default: 2]
   -m, --match <substring>  Filter devices by description substring
   -n, --pick <number>      Pick among many results for a given filter
   --vendor <id>            Filter devices by vendor id
@@ -37,7 +39,7 @@ Examples:
   yoda --match grid show-sensors
   yoda --match grid control fan1 with '(20,20),(35,100)' on nct6793.systin
   yoda --match kraken show-sensors
-  yoda --match kraken control pump with '(20,50),(50,100)' on istats.cpu and fan with '(20,25),(35,100)' on _internal.liquid
+  yoda --match kraken control pump with '(20,50),(50,100)' on istats.cpu and fan with '(20,25),(34,100)' on _internal.liquid
 
 Requirements:
   all platforms  liquidctl, including the Python APIs (pip install liquidctl)
@@ -46,11 +48,31 @@ Requirements:
   Windows        none, system sensors not yet supported
 
 Changelog:
+  0.0.2  Add low-pass filter and basic error handling.
   0.0.1  Generalization of krakencurve-poc 0.0.2 to multiple devices.
+
+---
+
+yoda – dynamically adjust liquidctl device pump and fan speeds.
+Copyright (C) 2020  Jonas Malaco
+
+yoda is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+yoda is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import ast
 import logging
+import math
 import sys
 import time
 
@@ -66,19 +88,21 @@ if sys.platform == 'darwin':
 elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
     import psutil
 
-VERSION = '0.0.1'
+VERSION = '0.0.2'
+
 LOGGER = logging.getLogger(__name__)
 
 INTERNAL_CHIP_NAME = '_internal'
 
+MAX_FAILURES = 3
+
 
 def read_sensors(device):
     sensors = {}
-    if device:
-        for k, v, u in device.get_status():
-            if u == '°C':
-                sensor_name = k.lower().replace(' ', '_').replace('_temperature', '')
-                sensors[f'{INTERNAL_CHIP_NAME}.{sensor_name}'] = v
+    for k, v, u in device.get_status():
+        if u == '°C':
+            sensor_name = k.lower().replace(' ', '_').replace('_temperature', '')
+            sensors[f'{INTERNAL_CHIP_NAME}.{sensor_name}'] = v
     if sys.platform == 'darwin':
         istats_stdout = subprocess.check_output(['istats']).decode('utf-8')
         for line in istats_stdout.split('\n'):
@@ -155,23 +179,49 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100):
 
 
 def control(device, channels, profiles, sensors, update_interval):
-    LOGGER.info('device: %s on bus %s, address %s', device.description, device.bus, device.address)
+    LOGGER.info('device: %s on bus %s and address %s', device.description, device.bus, device.address)
     for channel, profile, sensor in zip(channels, profiles, sensors):
         LOGGER.info('channel: %s following profile %s on %s', channel, str(profile), sensor)
-    LOGGER.info('update interval: %d s', update_interval)
+
+    averages = [None] * len(channels)
+    cutoff_freq = 1 / update_interval / 10
+    alpha = 1 - math.exp(-2 * math.pi * cutoff_freq)
+    LOGGER.info('update interval: %d s; cutoff frequency (low-pass): %.2f Hz; ema alpha: %.2f',
+                update_interval, cutoff_freq, alpha)
+
     try:
         # more efficient and safer API, but only supported by very few devices
-        set_duty = device.set_instantaneous_speed
+        apply_duty = device.set_instantaneous_speed
     except AttributeError:
-        set_duty = device.set_fixed_speed
-    LOGGER.info('Starting')
+        apply_duty = device.set_fixed_speed
+
+    LOGGER.info('starting...')
+    failures = 0
     while True:
-        sensor_data = read_sensors(device)
-        for channel, profile, sensor in zip(channels, profiles, sensors):
-            duty = interpolate_profile(profile, sensor_data[sensor])
-            LOGGER.info('%s control (%s): %.1f°C => %d%%', channel, sensor, sensor_data[sensor], duty)
-            # TODO basic error handling and recovery
-            set_duty(channel, duty)
+        try:
+            sensor_data = read_sensors(device)
+            for i, (channel, profile, sensor) in enumerate(zip(channels, profiles, sensors)):
+                # compute the exponential moving average (ema), used as a low-pass filter (lpf)
+                ema = averages[i]
+                sample = sensor_data[sensor]
+                if ema is None:
+                    ema = sample
+                else:
+                    ema = alpha * sample + (1 - alpha) * ema
+                averages[i] = ema
+
+                # interpolate on sensor ema and apply corresponding duty
+                duty = interpolate_profile(profile, ema)
+                LOGGER.info('%s control: lpf(%s) = lpf(%.1f°C) = %.1f°C => duty := %d%%',
+                            channel, sensor, sample, ema, duty)
+                apply_duty(channel, duty)
+            failures = 0
+        except Exception as err:
+            failures += 1
+            LOGGER.error(err)
+            if failures >= MAX_FAILURES:
+                LOGGER.critical('Too many failures in a row: %d', failures)
+                raise
         time.sleep(update_interval)
 
 
@@ -186,11 +236,10 @@ if __name__ == '__main__':
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        LOGGER.debug('yoda v%s', VERSION)
         import liquidctl.version
+        LOGGER.debug('yoda v%s', VERSION)
         LOGGER.debug('liquidctl v%s', liquidctl.version.__version__)
     elif args['--verbose']:
-        # keep basic logging level at WARNING, but set this module's LOGGER to INFO
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         LOGGER.setLevel(logging.INFO)
     else:
@@ -200,7 +249,7 @@ if __name__ == '__main__':
     frwd = _borrow._make_opts(args)
     selected = list(find_liquidctl_devices(**frwd))
     if len(selected) > 1:
-        raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
+        raise SystemExit('Too many devices, filter or select one.  See liquidctl --help and yoda --help.')
     elif len(selected) == 0:
         raise SystemExit('No devices matches available drivers and selection criteria')
 
@@ -215,6 +264,6 @@ if __name__ == '__main__':
         else:
             raise Exception('Nothing to do')
     except KeyboardInterrupt:
-        LOGGER.info('Stopped by user')
+        LOGGER.info('stopped by user.')
     finally:
         device.disconnect()
