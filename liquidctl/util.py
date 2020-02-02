@@ -19,7 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import colorsys
 import logging
+
+from ast import literal_eval
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,16 +94,71 @@ def interpolate_profile(profile, x):
 
 
 def color_from_str(x):
-    """Parse a RGB color from a hexadecimal string.
+    """Parse a color, and, if necessary, translate it into the RGB model.
+
+    The input string can be encoded in several formats:
+
+     - ffffff: hexadecimal RGB implicit tuple
+     - rgb(255, 255, 255): explicit RGB, R,G,B ∊ [0, 255]
+     - hsv(360, 100, 100): explicit HSV, H ∊ [0, 360], SV ∊ [0, 100]
+     - hsl(360, 100, 100): explicit HSL, H ∊ [0, 360], SV ∊ [0, 100]
 
     >>> color_from_str('fF7f3f')
     [255, 127, 63]
+    >>> color_from_str('Rgb(255, 127, 63)')
+    [255, 127, 63]
+    >>> color_from_str('Hsv(20, 75, 100)')
+    [255, 128, 64]
+    >>> color_from_str('Hsl(20, 100, 62)')
+    [255, 126, 61]
 
     >>> color_from_str('fF7f3f1f')
     Traceback (most recent call last):
         ...
     ValueError: Cannot parse color: fF7f3f1f
+    >>> color_from_str('rgb()')
+    Traceback (most recent call last):
+        ...
+    ValueError: Expected 3-element triple: rgb()
+    >>> color_from_str('rgb(255)')
+    Traceback (most recent call last):
+        ...
+    ValueError: Expected 3-element triple: rgb(255)
+    >>> color_from_str('rgb(300, 255, 255)')
+    Traceback (most recent call last):
+        ...
+    ValueError: Expected value in range [0, 255]: 300 in rgb(300, 255, 255)
+    >>> color_from_str('hsv(360, 150, 100)')
+    Traceback (most recent call last):
+        ...
+    ValueError: Expected value in range [0, 100]: 150 in hsv(360, 150, 100)
+    >>> color_from_str('hsl(360, 100, 150)')
+    Traceback (most recent call last):
+        ...
+    ValueError: Expected value in range [0, 100]: 150 in hsl(360, 100, 150)
     """
-    if len(x) != 6:
-        raise ValueError('Cannot parse color: {}'.format(x))
-    return list(bytes.fromhex(x))
+
+    def parse_triple(sub, maxvalues):
+        literal = literal_eval(sub)
+        if not isinstance(literal, tuple) or len(literal) != 3:
+            raise ValueError(f'Expected 3-element triple: {x}')
+        for value, maxvalue in zip(literal, maxvalues):
+            if not isinstance(value, int) and not isinstance(value, float):
+                raise ValueError(f'Expected float or int: {value} in {x}')
+            if value < 0 or value > maxvalue:
+                raise ValueError(f'Expected value in range [0, {maxvalue}]: {value} in {x}')
+        return literal
+
+    if x.lower().startswith('rgb('):
+        r, g, b = parse_triple(x[3:], (255, 255, 255))
+        return [r, g, b]
+    elif x.lower().startswith('hsv('):
+        h, s, v = parse_triple(x[3:], (360, 100, 100))
+        return list(map(lambda b: round(b*255), colorsys.hsv_to_rgb(h/360, s/100, v/100)))
+    elif x.lower().startswith('hsl('):
+        h, s, l = parse_triple(x[3:], (360, 100, 100))
+        return list(map(lambda b: round(b*255), colorsys.hls_to_rgb(h/360, l/100, s/100)))
+    elif len(x) == 6:
+        return list(bytes.fromhex(x))
+    else:
+        raise ValueError(f'Cannot parse color: {x}')
