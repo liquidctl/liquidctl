@@ -8,8 +8,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased]
 
 Changelog since 1.3.2:
+### Added
+ - List **experimental support for the NZXT RGB & Fan Controller**
+ - Add support for HSV, HSL and explicit RGB color representations
+ - [extra] Add initial generalized script for dynamic pump & fan control
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
+ - [extra/krakencurve-poc] Refresh CLI syntax and sensor names
+ - [extra/krakencurve-poc] Use iStats on macOS to get the CPU temperature
+ - Improve the documentation
 
 
 ## [1.3.2] – 2019-12-11
