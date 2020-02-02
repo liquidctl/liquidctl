@@ -500,8 +500,8 @@ class GenericHidBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            LOGGER.debug('probing drivers for device %s:%s', hex(handle.vendor_id),
-                         hex(handle.product_id))
+            LOGGER.debug('probing drivers for device %04x:%04x', handle.vendor_id,
+                         handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
 
@@ -520,7 +520,7 @@ class PyUsbBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            LOGGER.debug('probing drivers for device %s:%s', hex(handle.vendor_id),
-                         hex(handle.product_id))
+            LOGGER.debug('probing drivers for device %04x:%04x', handle.vendor_id,
+                         handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
