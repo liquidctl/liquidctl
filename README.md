@@ -50,6 +50,8 @@ NZXT Kraken X (X42, X52, X62 or X72)
 3. [Installing on Windows](#installing-on-windows)
 4. [Installing on macOS](#installing-on-macos)
 5. [The command-line interface](#introducing-the-command-line-interface)
+    1. [Listing and selecting devices](#listing-and-selecting-devices)
+    2. [Initializing and interacting with devices](#intializing-and-interacting-with-devices)
 6. [Automation and running at boot](#automation-and-running-at-boot)
     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
@@ -194,22 +196,48 @@ _Note: installation into a virtual environment is recommended to avoid conflicts
 
 ## Introducing the command-line interface
 
-The complete list of commands and options can be seen with `liquidctl --help`, but a good place to start is to ask liquidctl to list all recognized devices.
+The complete list of commands and options can be found in `liquidctl --help`, on in the man page, but the following topics cover the most common operations in the command-line interface.
+
+Brackets `[ ]`, parenthesis `( )`, less-than/greater-than `< >` and ellipsis `...` are used to describe optional, required, positional and repeating elements.
+
+The `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
+
+_Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG=debug` or/and `LIBUSB_DEBUG=4 environment variables._
+
+### Listing and selecting devices
+
+A good place to start is to ask liquidctl to list all recognized devices.
 
 ```
 # liquidctl list
+Device ID 0: NZXT Smart Device (V1)
+Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
 In case more than one supported device is found, the desired one can be selected with `--match <substring>`, where `<substring>` matches part of the desired device's description using a case insensitive comparison.
 
-More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of these can also be used to select a particular product.  See `liquidctl --help` or the man page for more information.
+```
+# liquidctl --match kraken list
+Device ID 0: NZXT Kraken X (X42, X52, X62 or X72)
+```
 
-Finally, devices can also be selected with `--device <ID>`, but these are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal enumeration order variance.
+More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of these can also be used to select a particular product.
+
+```
+# liquidctl --serial 1234567890 list
+Device ID 0: NZXT Kraken X (X42, X52, X62 or X72)
+```
+
+Ambiguities for any given filter can be solved with `--pick <number>`.  Devices can also be selected with `--device <ID>`, but these are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal variance in enumeration order.
+
+### Initializing and interacting with devices
 
 Devices will usually need to be initialized before they can be used, though each device has its own requirements and limitations.  This and other information specific to a particular device will appear on the documentation linked in the [supported devices](#supported-devices) section.
 
+Devices can be initialized individually or all at once.
+
 ```
-# liquidctl initialize
+# liquidctl [options] initialize [all]
 ```
 
 Most devices provide some status information, like fan speeds and liquid temperatures.  This can be queried for all devices or using the filtering methods mentioned before.
@@ -231,9 +259,7 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 # liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
-Finally, the `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
 
-_Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG` (`=debug`) or/and `LIBUSB_DEBUG` (`=4`) environment variables._
 
 
 ## Automation and running at boot
