@@ -75,9 +75,17 @@ speeds.  These, depending on the device, can be set to fixed duty values,
 variable temperature\–duty curves, or both.
 .PP
 \fBliquidctl set \fIchannel\fB color\fR allows the user to configure and set
-lighting modes.  Each color is specified in hexadecimal RGB, without prefixes
-(e.g. \fIff2608\fR).  Supported modes and additional options vary by device and
-are listed in later sections of this manual.
+lighting modes.  Supported lighting modes and additional options vary by device
+and are listed in later sections of this manual.  Each color can be specified
+as:
+.IP \(bu
+hexadecimal RGB without prefix: \fIff7f3f\fR;
+.IP \(bu
+decimal RGB triple, R,G,B ∊ [0, 255]: \fIrgb(255,127,63)\fR;
+.IP \(bu
+hue\-saturation\-value HSV triple, H ∊ [0, 360], S,V ∊ [0, 100]: \fIhsv(20,75,100)\fR;
+.IP \(bu
+hue\-saturation\-lightness HSL triple, H ∊ [0, 360], S,L ∊ [0, 100]: \fIhsl(20,100,62)\fR.
 .
 .SH OPTIONS
 .
