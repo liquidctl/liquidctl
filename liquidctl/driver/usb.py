@@ -89,7 +89,16 @@ try:
 except:
     hidraw = hid
 
+from usb.util import ENDPOINT_IN, ENDPOINT_OUT, ENDPOINT_TYPE_INTR, CTRL_TYPE_CLASS, \
+                     CTRL_RECIPIENT_INTERFACE
+
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
+
+_CLASS_HID = 3
+_ENDPOINT_DIR_MASK = 0x80
+_ENDPOINT_TRANSFER_TYPE_MASK = 7
+_HID_SET_REPORT = 0x09
+_HID_OUTPUT = 2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -241,40 +250,45 @@ class PyUsbDevice:
      - OpenUSB
     """
 
-    _DEFAULT_INTERFACE = 0  # FIXME not necessarily the desired interface
-
-    def __init__(self, usbdev):
+    def __init__(self, usbdev, bInterfaceNumber=None):
         self.api = usb
         self.usbdev = usbdev
+        self.bInterfaceNumber = bInterfaceNumber
         self._attached = False
 
-    def open(self):
+    def _select_interface(self, cfg):
+        return self.bInterfaceNumber or 0
+
+    def open(self, bInterfaceNumber=0):
         """Connect to the device.
 
-        Replace the kernel driver (Linux only) and set the device configuration
-        to the first available one, if none has been set.
+        Ensure the device is configured and replace the kernel kernel on the
+        selected interface, if necessary.
         """
-        if (sys.platform.startswith('linux') and
-                self.usbdev.is_kernel_driver_active(self._DEFAULT_INTERFACE)):
-            LOGGER.debug('replacing stock kernel driver with libusb')
-            self.usbdev.detach_kernel_driver(self._DEFAULT_INTERFACE)
-            self._attached = True
         try:
             cfg = self.usbdev.get_active_configuration()
         except usb.core.USBError:
             LOGGER.debug('setting the (first) configuration')
-            self.usbdev.set_configuration()
-            # FIXME device is not ready yet
+            self.usbdev.set_configuration()  # assume the first configuration
+            # FIXME device or handle might not be ready for use after set_configuration()
+            cfg = self.usbdev.get_active_configuration()
+        self.bInterfaceNumber = self._select_interface(cfg)
+        LOGGER.debug('selected interface: %d', self.bInterfaceNumber)
+        if (sys.platform.startswith('linux') and
+                self.usbdev.is_kernel_driver_active(self.bInterfaceNumber)):
+            LOGGER.debug('replacing stock kernel driver with libusb')
+            self.usbdev.detach_kernel_driver(self.bInterfaceNumber)
+            self._attached = True
 
     def claim(self):
         """Explicitly claim the device from other programs."""
         LOGGER.debug('explicitly claim interface')
-        usb.util.claim_interface(self.usbdev, self._DEFAULT_INTERFACE)
+        usb.util.claim_interface(self.usbdev, self.bInterfaceNumber)
 
     def release(self):
         """Release the device to other programs."""
         LOGGER.debug('ensure interface is released')
-        usb.util.release_interface(self.usbdev, self._DEFAULT_INTERFACE)
+        usb.util.release_interface(self.usbdev, self.bInterfaceNumber)
 
     def close(self):
         """Disconnect from the device.
@@ -284,7 +298,7 @@ class PyUsbDevice:
         self.release()
         if self._attached:
             LOGGER.debug('restoring stock kernel driver')
-            self.usbdev.attach_kernel_driver(self._DEFAULT_INTERFACE)
+            self.usbdev.attach_kernel_driver(self.bInterfaceNumber)
             self._attached = False
 
     def read(self, endpoint, length, timeout=None):
@@ -355,16 +369,48 @@ class PyUsbHid(PyUsbDevice):
     """
     def __init__(self, usbdev):
         super().__init__(usbdev)
-        self.hidin = 0x81
-        self.hidout = 0x1  # FIXME apart from NZXT HIDs, usually ctrl (0x0)
+        self.ep_in = None
+        self.ep_out = None
+
+    def _select_interface(self, cfg):
+        hid_intf = None
+        for intf in cfg:
+            if intf.bInterfaceClass != _CLASS_HID:
+                continue
+            hid_intf = intf
+            for ep in intf:
+                if (ep.bmAttributes & _ENDPOINT_TRANSFER_TYPE_MASK) != ENDPOINT_TYPE_INTR:
+                    continue
+                if not self.ep_in and (ep.bEndpointAddress & _ENDPOINT_DIR_MASK) == ENDPOINT_IN:
+                    self.ep_in = ep.bEndpointAddress
+                elif not self.ep_out:
+                    self.ep_out = ep.bEndpointAddress
+            break
+        if not hid_intf:
+            raise usb.core.USBError('Missing a HID interface')
+        if not self.ep_in:
+            raise usb.core.USBError('Missing an interrupt IN endpoint')
+        # if ep_out is not available Set_Report will be sent on CTRL OUT (0x00)
+        LOGGER.debug('hid endpoints: %#04x (IN), %#04x (OUT)', self.ep_in, self.ep_out or 0)
+        return hid_intf.bInterfaceNumber
 
     def read(self, length):
         """Read raw report from HID."""
-        return self.usbdev.read(self.hidin, length, timeout=0)
+        return self.usbdev.read(self.ep_in, length, timeout=0)
 
     def write(self, data):
         """Write raw report to HID."""
-        return self.usbdev.write(self.hidout, data, timeout=0)
+        report_id = data[0]
+        if self.ep_out:
+            sent = self.usbdev.write(self.ep_out, data, timeout=0)
+        else:
+            sent = self.ctrl_transfer(
+                    bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_OUT,
+                    bRequest=_HID_SET_REPORT,
+                    wValue=(_HID_OUTPUT << 8) | report_id,
+                    wIndex=self.bInterfaceNumber,
+                    data_or_wLength=data)
+        return sent
 
 
 class HidapiDevice:
