@@ -399,8 +399,21 @@ class PyUsbHid(PyUsbDevice):
         return self.usbdev.read(self.ep_in, length, timeout=0)
 
     def write(self, data):
-        """Write raw report to HID."""
+        """Write raw report to HID.
+
+        The first byte of the buffer passed to write() should be set to the
+        report number.  If the device does not use numbered reports, the first
+        byte should be set to 0. The report data itself should begin at the
+        second byte.
+
+        The distinction between report number and data is
+        important for compatibility with kernel APIs and HidapiDevice.
+        """
+        # report_id == 0 means it's not used, so it isn't actually sent;
+        # mimicking hidapi on libusb, this is transparently handled
         report_id = data[0]
+        if not report_id:
+            data = data[1:]
         if self.ep_out:
             sent = self.usbdev.write(self.ep_out, data, timeout=0)
         else:
@@ -410,6 +423,8 @@ class PyUsbHid(PyUsbDevice):
                     wValue=(_HID_OUTPUT << 8) | report_id,
                     wIndex=self.bInterfaceNumber,
                     data_or_wLength=data)
+        if not report_id:
+            sent += 1
         return sent
 
 
@@ -462,7 +477,13 @@ class HidapiDevice:
         return self.hiddev.read(length)
 
     def write(self, data):
-        """Write raw report to HID."""
+        """Write raw report to HID.
+
+        The first byte of the buffer passed to write() should be set to the
+        report number.  If the device does not use numbered reports, the first
+        byte should be set to 0. The report data itself should begin at the
+        second byte.
+        """
         return self.hiddev.write(data)
 
     @classmethod
