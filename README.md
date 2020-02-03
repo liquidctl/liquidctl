@@ -52,6 +52,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 5. [The command-line interface](#introducing-the-command-line-interface)
     1. [Listing and selecting devices](#listing-and-selecting-devices)
     2. [Initializing and interacting with devices](#intializing-and-interacting-with-devices)
+    3. [Support color specification formats](#supported-color-specification-formats)
 6. [Automation and running at boot](#automation-and-running-at-boot)
     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
@@ -259,7 +260,19 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 # liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
+### Supported color specification formats
 
+When configuring lighting effects, colors can be specified in different representations and formats:
+
+ - as an implicit hexadecimal RGB triple: e.g. `ff7f3f`
+ - as an explicit RGB triple: e.g. `rgb(255, 127, 63)`
+ - as a HSV (hue‑saturation‑value) triple: e.g. `hsv(20, 75, 100)`
+    * hue ∊ [0, 360] (degrees); saturation, value ∊ [0, 100] (percent)
+    * note: this is sometimes called HSB (hue‑saturation‑brightness)
+  - as a HSL (hue‑saturation‑lightness) triple: e.g. `hsl(20, 100, 62)`
+    * hue ∊ [0, 360] (degrees); saturation, lightness ∊ [0, 100] (percent)
+
+Color arguments containing spaces, parenthesis or commas need to be quoted, as these characters can have special meaning on the command-line; the easiest way to do this on all supported platforms is with double quotes.  On Unix-like shells it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
 
 
 ## Automation and running at boot
