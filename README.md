@@ -199,7 +199,7 @@ _Note: installation into a virtual environment is recommended to avoid conflicts
 
 The complete list of commands and options can be found in `liquidctl --help`, on in the man page, but the following topics cover the most common operations in the command-line interface.
 
-Brackets `[ ]`, parenthesis `( )`, less-than/greater-than `< >` and ellipsis `...` are used to describe optional, required, positional and repeating elements.
+Brackets `[ ]`, parenthesis `( )`, less-than/greater-than `< >` and ellipsis `...` are used to describe optional, required, positional and repeating elements.  Example commands are prefixed with a number sign `#`, which also serves to indicate that on Linux root permissions might be required.
 
 The `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
 
@@ -278,7 +278,7 @@ Color arguments containing spaces, parenthesis or commas need to be quoted, as t
 # liquidctl --match kraken set ring color fading "hsv(0,80,100)" "hsv(180,80,100)"
 ```
 
-On Unix-like shells it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
+On Linux it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
 
 
 ## Automation and running at boot
