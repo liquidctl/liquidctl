@@ -272,7 +272,13 @@ When configuring lighting effects, colors can be specified in different represen
   - as a HSL (hue‑saturation‑lightness) triple: e.g. `hsl(20, 100, 62)`
     * hue ∊ [0, 360] (degrees); saturation, lightness ∊ [0, 100] (percent)
 
-Color arguments containing spaces, parenthesis or commas need to be quoted, as these characters can have special meaning on the command-line; the easiest way to do this on all supported platforms is with double quotes.  On Unix-like shells it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
+Color arguments containing spaces, parenthesis or commas need to be quoted, as these characters can have special meaning on the command-line; the easiest way to do this on all supported platforms is with double quotes.
+
+```
+# liquidctl --match kraken set ring color fading "hsv(0,80,100)" "hsv(180,80,100)"
+```
+
+On Unix-like shells it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
 
 
 ## Automation and running at boot
