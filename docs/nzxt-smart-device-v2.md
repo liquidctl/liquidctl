@@ -93,7 +93,7 @@ LED channels are numbered sequentially: `led1`, `led2`, (only HUE 2: `led3`, `le
 # liquidctl set led4 color backwards-marquee-5 2f6017 --speed slowest
 ```
 
-Colors are set in hexadecimal RGB, and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
+Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
 
 | Mode | Colors | Notes |
 | --- | --- | --- |
