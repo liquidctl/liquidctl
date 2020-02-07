@@ -38,8 +38,6 @@ install:
   - cmd: git apply ..\extra\windows\0001-Fix-203-libusb-sometimes-cleaned-up-too-early.patch
   - cmd: git apply ..\extra\windows\9999-Add-local-version.patch
   - cmd: C:\Python36-x64\python -m pip install . && cd .. && rmdir /q /s pyusb
-  # specific hidapi version
-  - cmd: C:\Python36-x64\python -m pip install hidapi==0.9.0
   # remaining dependencies
   - cmd: C:\Python36-x64\python setup.py install
   # generate list of packages that will be included
