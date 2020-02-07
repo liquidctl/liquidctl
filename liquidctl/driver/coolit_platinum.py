@@ -62,3 +62,22 @@ class CoolitPlatinumDriver(UsbHidDriver):
         Aparently not required.
         """
         pass
+
+    def get_status(self, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        msg = self._read()
+        return [
+            ('Liquid temperature', msg[7] / 256 + msg[8], '°C'),
+            ('Fan 1 speed', msg[15] << 8 | msg[16], 'rpm'),
+            ('Fan 2 speed', msg[22] << 8 | msg[23], 'rpm'),
+            ('Pump speed', msg[29] << 8 | msg[30], 'rpm'),
+        ]
+
+    def _read(self):
+        data = self.device.read(_READ_LENGTH)
+        self.device.release()
+        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
+        return data
