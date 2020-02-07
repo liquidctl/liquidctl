@@ -55,3 +55,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         (0x1b1c, 0x0c18, None, 'Corsair H100i Platinum (experimental)', {}),
         (0x1b1c, 0x0c17, None, 'Corsair H115i Platinum (experimental)', {}),
     ]
+
+    def initialize(self, **kwargs):
+        """Initialize the device.
+
+        Aparently not required.
+        """
+        pass
