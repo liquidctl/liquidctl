@@ -88,7 +88,7 @@ if sys.platform == 'darwin':
 elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
     import psutil
 
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 
 LOGGER = logging.getLogger(__name__)
 
