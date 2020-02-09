@@ -47,7 +47,7 @@ Requirements:
   Windows        none, system sensors not yet supported
 
 Changelog:
-  0.0.3  Remove duplicate option definition 
+  0.0.3  Remove duplicate option definition
   0.0.2  Add low-pass filter and basic error handling.
   0.0.1  Generalization of krakencurve-poc 0.0.2 to multiple devices.
 
