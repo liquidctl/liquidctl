@@ -40,11 +40,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.pmbus import compute_pec
+
 
 LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
+_WRITE_PREFIX = b'\x3f'
 
 
 class CoolitPlatinumDriver(UsbHidDriver):
@@ -68,7 +71,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        msg = self._read()
+        msg = self._call([0x78, 0xff])
         return [
             ('Liquid temperature', msg[7] / 256 + msg[8], '°C'),
             ('Fan 1 speed', msg[15] << 8 | msg[16], 'rpm'),
@@ -76,8 +79,15 @@ class CoolitPlatinumDriver(UsbHidDriver):
             ('Pump speed', msg[29] << 8 | msg[30], 'rpm'),
         ]
 
-    def _read(self):
-        data = self.device.read(_READ_LENGTH)
+    def _call(self, data):
+        buf = bytearray(_WRITE_PREFIX)
+        buf.extend(data)
+        buf.zfill(_WRITE_LENGTH)
+        buf[-1] = compute_pec(buf[1:-1])
+        LOGGER.debug('write %s', buf.hex())  # FIXME lazily call buf.hex()
+        self.device.write(buf)
+
+        buf = bytes(self.device.read(_READ_LENGTH))
         self.device.release()
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
-        return data
+        LOGGER.debug('received %s', buf.hex())  # FIXME lazily call buf.hex()
+        return buf
