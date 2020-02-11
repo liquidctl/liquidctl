@@ -77,6 +77,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
             ('Fan 1 speed', msg[15] << 8 | msg[16], 'rpm'),
             ('Fan 2 speed', msg[22] << 8 | msg[23], 'rpm'),
             ('Pump speed', msg[29] << 8 | msg[30], 'rpm'),
+            ('Firmware version', f'{msg[2] >> 4}.{msg[2] & 0xf}.{msg[3]}', '')
         ]
 
     def _call(self, data):
