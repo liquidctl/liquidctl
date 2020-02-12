@@ -376,6 +376,8 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
     }
 
     _ACCESSORY_NAMES = {
+        0x01: "HUE+ LED Strip",
+        0x02: "AER RGB 1",
         0x04: "HUE 2 LED Strip 300 mm",
         0x05: "HUE 2 LED Strip 250 mm",
         0x08: "HUE 2 Cable Comb",
