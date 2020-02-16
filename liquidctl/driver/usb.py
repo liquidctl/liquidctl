@@ -413,7 +413,16 @@ class HidapiDevice:
 
     def read(self, length):
         """Read raw report from HID."""
-        return self.hiddev.read(length)
+        self.hiddev.set_nonblocking(False)
+        ret = self.hiddev.read(length)
+        # the OS queues incoming reports, but we rather just have the last one
+        self.hiddev.set_nonblocking(True)
+        while True:
+            tmp = self.hiddev.read(length)
+            if not tmp:
+                break
+            ret = tmp
+        return ret
 
     def write(self, data):
         """Write raw report to HID."""
