@@ -96,7 +96,7 @@ setuptools.setup(
         'Documentation': DOC_URL,
         'Changelog': CHANGES_URL,
     },
-    install_requires=['docopt', 'pyusb', 'hidapi'],
+    install_requires=['docopt', 'pyusb @ git+https://github.com/pyusb/pyusb.git', 'hidapi'],
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
