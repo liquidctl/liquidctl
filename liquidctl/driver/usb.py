@@ -203,7 +203,7 @@ class UsbHidDriver(BaseUsbDriver):
         """Find devices specifically compatible with this driver."""
         devs = []
         for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
-            for dev in GenericHidBus().find_devices(vendor=vid, product=pid, **kwargs):
+            for dev in GenericHidBus().find_devices(hid=hid, vendor=vid, product=pid, **kwargs):
                 if type(dev) == cls:
                     devs.append(dev)
         return devs
