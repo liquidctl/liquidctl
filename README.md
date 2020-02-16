@@ -96,6 +96,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 Packages are available for certain Linux distributions and package managers:
 
+ - Alpine Linux: [liquidctl](https://pkgs.alpinelinux.org/packages?name=liquidctl)
  - ArchLinux/Manjaro: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
  - Fedora: [liquidctl](https://apps.fedoraproject.org/packages/liquidctl)
  - Debian/Ubuntu: work in progress (issue #62), continue reading for manual installation instructions
