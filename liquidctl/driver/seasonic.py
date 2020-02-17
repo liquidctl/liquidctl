@@ -74,6 +74,7 @@ class SeasonicEDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        self.device.clear_enqueued_reports()
         fw_human, fw_cam = self._get_fw_versions()
         status = [
             ('Temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),

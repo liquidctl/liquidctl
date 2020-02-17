@@ -246,13 +246,15 @@ class KrakenTwoDriver(UsbHidDriver):
     def supports_cooling_profiles(self):
         if self._supports_cooling_profiles is None:
             if self.supports_cooling:
-                self._read()
+                self._read(clear_first=False)
                 self._supports_cooling_profiles = self._firmware_version >= (3, 0, 0)
             else:
                 self._supports_cooling_profiles = False
         return self._supports_cooling_profiles
 
-    def _read(self):
+    def _read(self, clear_first=True):
+        if clear_first:
+            self.device.clear_enqueued_reports()
         msg = self.device.read(_READ_LENGTH)
         self.device.release()
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))

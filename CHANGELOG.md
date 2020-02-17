@@ -17,6 +17,8 @@ Changelog since 1.3.2:
  - [extra/krakencurve-poc] Refresh CLI syntax and sensor names
  - [extra/krakencurve-poc] Use iStats on macOS to get the CPU temperature
  - Improve the documentation
+### Fixed
+ - Prevent reporting stale data during long lived connections to HIDs (#87)
 
 
 ## [1.3.2] – 2019-12-11
