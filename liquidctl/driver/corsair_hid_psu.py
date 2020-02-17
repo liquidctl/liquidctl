@@ -111,6 +111,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         Note: replies before calling this function appear to follow the
         pattern <address> <cte 0xfe> <zero> <zero> <padding...>.
         """
+        self.device.clear_enqueued_reports()
         self._write([0xfe, 0x03])  # not well understood
         self._read()
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
@@ -128,6 +129,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        self.device.clear_enqueued_reports()
         ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         if ret[1] == 0xfe:
             LOGGER.warning('possibly uninitialized device')

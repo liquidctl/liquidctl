@@ -264,6 +264,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         """
         status = []
         noise = []
+        self.device.clear_enqueued_reports()
         for i, _ in enumerate(self._speed_channels):
             msg = self.device.read(self._READ_LENGTH)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
@@ -402,6 +403,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
+        self.device.clear_enqueued_reports()
         # initialize
         self._write([0x60, 0x02, 0x01, 0xE8, 0x03, 0x01, 0xE8, 0x03])
         self._write([0x60, 0x03])
@@ -450,6 +452,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
                 rpm_offset += 2
             status.append(('Noise level', msg[noise_offset], 'dB'))
 
+        self.device.clear_enqueued_reports()
         self._read_until({b'\x67\x02': parse_fan_info})
         self.device.release()
         return sorted(status)

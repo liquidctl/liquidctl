@@ -352,11 +352,23 @@ class PyUsbHid(PyUsbDevice):
 
     This change (while unorthodox) unifies the behavior of read() and write()
     between PyUsbHid and HidapiDevice.
+
+    Additionally, clear_enqueued_reports() is provided for compatibility with
+    HidapiDevice.
     """
     def __init__(self, usbdev):
         super().__init__(usbdev)
         self.hidin = 0x81
         self.hidout = 0x1  # FIXME apart from NZXT HIDs, usually ctrl (0x0)
+
+    def clear_enqueued_reports(self):
+        """Clear already enqueued incoming reports.
+
+        This methodis available for compatibitily with HidapiDevice, but here
+        it is as a no-op since we always directly read from the device, and
+        thus avoid any queuing of reports at the OS level.
+        """
+        pass
 
     def read(self, length):
         """Read raw report from HID."""
@@ -411,18 +423,24 @@ class HidapiDevice:
         """NOOP."""
         pass
 
+    def clear_enqueued_reports(self):
+        """Clear already enqueued incoming reports.
+
+        The OS generally enqueues incomming reports for open HIDs, and hidapi
+        emulates this when running on top of libusb.  On Linux, up to 64
+        reports can be enqueued.
+
+        This method quickly reads and discards any already enqueued reports,
+        and is useful when later reads are not expected to return stale data.
+        """
+        self.hiddev.set_nonblocking(True)
+        while self.hiddev.read(1):
+            pass
+
     def read(self, length):
         """Read raw report from HID."""
         self.hiddev.set_nonblocking(False)
-        ret = self.hiddev.read(length)
-        # the OS queues incoming reports, but we rather just have the last one
-        self.hiddev.set_nonblocking(True)
-        while True:
-            tmp = self.hiddev.read(length)
-            if not tmp:
-                break
-            ret = tmp
-        return ret
+        return self.hiddev.read(length)
 
     def write(self, data):
         """Write raw report to HID."""
