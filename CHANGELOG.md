@@ -14,10 +14,12 @@ Changelog since 1.3.2:
  - [extra] Add initial generalized script for dynamic pump & fan control
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
- - [extra/krakencurve-poc] Refresh CLI syntax and sensor names
- - [extra/krakencurve-poc] Use iStats on macOS to get the CPU temperature
+ - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
+ - Dynamically find the HID interface and endpoints of PyUsbHids
  - Improve the documentation
 ### Fixed
+ - [HUE 2] Add missing identifiers for HUE+ accessories
+ - Forward hid option from UsbHidDriver.find_supported_devices
  - Prevent reporting stale data during long lived connections to HIDs (#87)
 
 
