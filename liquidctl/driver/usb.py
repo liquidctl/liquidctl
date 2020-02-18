@@ -406,6 +406,15 @@ class PyUsbHid(PyUsbDevice):
         """
         pass
 
+    def clear_enqueued_reports(self):
+        """Clear already enqueued incoming reports.
+
+        This methodis available for compatibitily with HidapiDevice, but here
+        it is as a no-op since we always directly read from the device, and
+        thus avoid any queuing of reports at the OS level.
+        """
+        pass
+
     def read(self, length):
         """Read raw report from HID."""
         return self.usbdev.read(self.ep_in, length, timeout=0)

@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
-Changelog since 1.3.2:
+Changelog since 1.3.3:
 ### Added
  - List **experimental support for the NZXT RGB & Fan Controller**
  - Add support for HSV, HSL and explicit RGB color representations
@@ -17,10 +17,21 @@ Changelog since 1.3.2:
  - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
  - Dynamically find the HID interface and endpoints of PyUsbHids
  - Improve the documentation
+
+
+## [1.3.3] – 2020-02-18
+_Summary for the 1.3.3 release: fix possibly stale data with HIDs and other minor issues._
+
+Changelog since 1.3.2:
 ### Fixed
  - [HUE 2] Add missing identifiers for HUE+ accessories
  - Forward hid option from UsbHidDriver.find_supported_devices
  - Prevent reporting stale data during long lived connections to HIDs (#87)
+### Checksums
+```
+1422a892f9c2c69f5949cd831083c6fef8f6a1f6e3215e90b696bfcd557924b4  liquidctl-1.3.3-bin-windows-x86_64.zip
+d13180867e07420c5890fe1110e8f45fe343794549a9ed7d5e8e76663bc10c24  liquidctl-1.3.3.tar.gz
+```
 
 
 ## [1.3.2] – 2019-12-11
