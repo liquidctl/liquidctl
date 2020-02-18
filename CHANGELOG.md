@@ -5,12 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
 
 
+## [1.3.3] – 2020-02-18
+_Summary for the 1.3.3 release: fix possibly stale data with HIDs and other minor issues._
+
+Changelog since 1.3.2:
+### Fixed
+ - [HUE 2] Add missing identifiers for HUE+ accessories
+ - Forward hid option from UsbHidDriver.find_supported_devices
+ - Prevent reporting stale data during long lived connections to HIDs (#87)
+
+
 ## [1.3.2] – 2019-12-11
 _Summary for the 1.3.2 release: fix fan status reporting from Smart Device V2._
 
 Changelog since 1.3.1:
 ### Fixed
  - [Smart Device V2] Parse fan info from correct status message
+### Checksums
+```
+acf44a491567703c109c03f446c3c0761e5f9b97098613f8ecb4366a1d2afd50  liquidctl-1.3.2-bin-windows-x86_64.zip
+bb742947c15f4a3987685641c0dd73184c4a40add5ad818ced68e5ace3631b6b  liquidctl-1.3.2.tar.gz
+```
 
 
 ## [1.3.1] – 2019-11-23
