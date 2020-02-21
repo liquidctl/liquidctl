@@ -100,7 +100,6 @@ Packages are available for certain Linux distributions and package managers:
  - ArchLinux/Manjaro: [liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
  - Fedora: [liquidctl](https://apps.fedoraproject.org/packages/liquidctl)
  - Debian/Ubuntu: work in progress (issue #62), continue reading for manual installation instructions
- - Linuxbrew: tap [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
 
 Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following dependencies are necessary:
 
@@ -176,9 +175,9 @@ $ brew install liquidctl --HEAD
 
 By default the last stable version will be installed, but by passing `--HEAD` this can be changed to the last snapshot from this repository.  All dependencies are automatically resolved.
 
-A [custom tap](https://github.com/jonasmalacofilho/homebrew-liquidctl) is also available, which can sometimes be slightly ahead of the official formula, as well as allows testing release candidates (i.e. devel versions).
+Another possibility is to install liquidctl from PyPI or directly from the source code repository, but in these cases Python 3 and libsub must be installed first; the recommended way is with `brew install python libusb`.
 
-It is also possible to install liquidctl from PyPI or directly from the source code repository.  In these cases, Python 3 and libsub must be installed first; the recommended way is with `brew install libusb`.  To install any release from PyPI, *pip* should be used:
+To install any release from PyPI, *pip* should be used:
 
 ```
 $ pip3 install liquidctl
