@@ -30,6 +30,7 @@ Animation options (devices/modes can support zero or more):
   --alert-color <color>       Color used by the visual high temperature alert
 
 Other options:
+  --json                      Output in machine-readable JSON
   -v, --verbose               Output additional information
   -g, --debug                 Show debug information on stderr
   --hid <module>              Override API for USB HIDs: usb, hid or hidraw
@@ -188,27 +189,42 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
     assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
 
 
-def _print_dev_status(dev, status):
+def _report_dev_status(dev, status, data_buf=None):
     if not status:
         return
-    print(f'{dev.description}')
-    tmp = []
-    kcols, vcols = 0, 0
-    for k, v, u in status:
-        if isinstance(v, datetime.timedelta):
-            v = str(v)
-            u = ''
-        else:
-            valfmt = _VALUE_FORMATS.get(u, '')
-            v = f'{v:{valfmt}}'
-        kcols = max(kcols, len(k))
-        vcols = max(vcols, len(v))
-        tmp.append((k, v, u))
-    for k, v, u in tmp[:-1]:
-        print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
-    k, v, u = tmp[-1]
-    print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
-    print('')
+    if data_buf is not None:
+        out = {
+            '_description': dev.description,
+            '_bus': dev.bus,
+            '_address': dev.address
+        }
+        for k, v, u in status:
+            if not u:
+                u = '_misc'
+            if u not in out:
+                out[u] = {k: v}
+            else:
+                out[u][k] = v
+        data_buf.append(out)
+    else:
+        print(f'{dev.description}')
+        tmp = []
+        kcols, vcols = 0, 0
+        for k, v, u in status:
+            if isinstance(v, datetime.timedelta):
+                v = str(v)
+                u = ''
+            else:
+                valfmt = _VALUE_FORMATS.get(u, '')
+                v = f'{v:{valfmt}}'
+            kcols = max(kcols, len(k))
+            vcols = max(vcols, len(v))
+            tmp.append((k, v, u))
+        for k, v, u in tmp[:-1]:
+            print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
+        k, v, u = tmp[-1]
+        print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
+        print('')
 
 
 def _device_set_color(dev, args, **opts):
@@ -299,14 +315,16 @@ def main():
     elif len(selected) == 0:
         raise SystemExit('No devices matches available drivers and selection criteria')
 
+    data_buf = [] if args ['--json'] else None
+
     for dev in selected:
         LOGGER.debug('device: %s', dev.description)
         dev.connect(**opts)
         try:
             if args['initialize']:
-                _print_dev_status(dev, dev.initialize(**opts))
+                _report_dev_status(dev, dev.initialize(**opts), data_buf=data_buf)
             elif args['status']:
-                _print_dev_status(dev, dev.get_status(**opts))
+                _report_dev_status(dev, dev.get_status(**opts), data_buf=data_buf)
             elif args['set'] and args['speed']:
                 _device_set_speed(dev, args, **opts)
             elif args['set'] and args['color']:
@@ -318,6 +336,10 @@ def main():
             sys.exit(1)
         finally:
             dev.disconnect(**opts)
+
+    if data_buf is not None:
+        import json
+        print(json.dumps(data_buf, ensure_ascii=True))
 
 
 def find_all_supported_devices(**opts):
