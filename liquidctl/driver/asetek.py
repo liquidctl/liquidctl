@@ -54,11 +54,31 @@ from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
 
+_TX_COMMAND = {
+    0x10: "Runtime",
+    0x11: "Profile",
+    0x12: "Override",
+    0x13: "PumpPwm",
+    0x14: "Luid",
+    0x20: "ReadOnlyRuntime",
+    0x21: "StoreSettings",
+    0x22: "ExternalTemperature"
+}
+
+_CMD_RUNTIME = 0x10
+_CMD_PROFILE = 0x11
+_CMD_OVERRIDE = 0x12
+_CMD_PUMP_PWM = 0x13
+_CMD_LUID = 0x14
+_CMD_READ_ONLY_RUNTIME = 0x20
+_CMD_STORE_SETTINGS = 0x21
+_CMD_EXTERNAL_TEMPERATURE = 0x22
+
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'pump':  (0x13, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
+    'pump':  (_CMD_PUMP_PWM, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
 }
 _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
-    'fan':   (0x11, 0, 100)
+    'fan':   (_CMD_PROFILE, 0, 100)
 }
 _MAX_PROFILE_POINTS = 6
 _CRITICAL_TEMPERATURE = 60
@@ -72,8 +92,8 @@ _WRITE_ENDPOINT = 0x2
 _WRITE_TIMEOUT = 2000
 
 _LEGACY_FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'fan':  (0x12, 0, 100),
-    'pump':  (0x13, 50, 100),
+    'fan':  (_CMD_OVERRIDE, 0, 100),
+    'pump':  (_CMD_PUMP_PWM, 50, 100),
 }
 
 # USBXpress specific control parameters; from the USBXpress SDK
@@ -90,6 +110,56 @@ _UNKNOWN_OPEN_VALUE = 0xFFFF
 
 # Control request type
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
+
+class AsetekRuntimeSettings():
+
+    def __init__(self, color1, color2, color3, alert_temp, interval1, interval2, blackout,
+                 fading, blinking, enable_alert):
+        self.command = _CMD_RUNTIME
+        self.red_light_intensity = color1[0]
+        self.green_light_intensity = color1[1]
+        self.blue_light_intensity = color1[2]
+        self.fade_r = color2[0]
+        self.fade_g = color2[1]
+        self.fade_b = color2[2]
+        self.high_r = color3[0]
+        self.high_g = color3[1]
+        self.high_b = color3[2]
+        self.high_temp = alert_temp
+        self.fade_throb_int = interval1
+        self.throb_seq = interval2
+        self.is_light_enable = not blackout
+        self.is_fade_enable = fading
+        self.is_throb_enable = blinking
+        self.is_high_temp_enable = enable_alert
+        self.boot_me = 0x00
+        self.fan_type = 0x01
+
+    def __repr__(self):
+        return "AsetekRuntimeSettings({!r})".format(self.__dict__)
+
+    def __bytes__(self):
+        return bytes([
+            self.command,
+            self.red_light_intensity,
+            self.green_light_intensity,
+            self.blue_light_intensity,
+            self.fade_r,
+            self.fade_g,
+            self.fade_b,
+            self.high_r,
+            self.high_g,
+            self.high_b,
+            self.high_temp,
+            self.fade_throb_int,
+            self.throb_seq,
+            self.is_light_enable,
+            self.is_fade_enable,
+            self.is_throb_enable,
+            self.is_high_temp_enable,
+            self.boot_me,
+            self.fan_type
+        ])
 
 
 class CommonAsetekDriver(UsbDriver):
@@ -130,9 +200,11 @@ class CommonAsetekDriver(UsbDriver):
     def _configure_device(self, color1=[0, 0, 0], color2=[0, 0, 0], color3=[255, 0, 0],
                           alert_temp=_HIGH_TEMPERATURE, interval1=0, interval2=0,
                           blackout=False, fading=False, blinking=False, enable_alert=True):
-        self._write([0x10] + color1 + color2 + color3
-                    + [alert_temp, interval1, interval2, not blackout, fading,
-                       blinking, enable_alert, 0x00, 0x01])
+        runtime_settings = AsetekRuntimeSettings(color1, color2, color3, alert_temp,
+                                                 interval1, interval2, blackout,
+                                                 fading, blinking, enable_alert)
+        LOGGER.debug(repr(runtime_settings))
+        self._write(bytes(runtime_settings))
 
     def _prepare_profile(self, profile, min_duty, max_duty):
         opt = list(profile)
@@ -203,7 +275,7 @@ class AsetekDriver(CommonAsetekDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         self._begin_transaction()
-        self._write([0x14, 0, 0, 0])
+        self._write([_CMD_LUID, 0, 0, 0])
         msg = self._end_transaction_and_read()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
@@ -397,6 +469,26 @@ class CorsairAsetekDriver(AsetekDriver):
         # the modern driver overrides probe and rigs it to switch on
         # --legacy-690lc, so we override it again
         return super().probe(handle, legacy_690lc=False, **kwargs)
+
+    def get_status(self, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        self._begin_transaction()
+        self._write([_CMD_LUID, 0, 0, 0])
+        msg = self._end_transaction_and_read()
+        firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
+        command_type = _TX_COMMAND[msg[11]]
+        return [
+            ('Liquid temperature', msg[10] + msg[14]/10, '°C'),
+            ('Fan speed', msg[0] << 8 | msg[1], 'rpm'),
+            ('Pump speed', msg[8] << 8 | msg[9], 'rpm'),
+            ('Firmware version', firmware, ''),
+            ('Type', command_type, 'command'),
+            ('Luid', msg[27] << 8 | msg[28], ''),
+            ('Profile', msg[22], '')
+        ]
 
     def set_color(self, channel, mode, colors, **kwargs):
         if mode == 'rainbow':
