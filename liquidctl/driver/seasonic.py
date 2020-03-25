@@ -50,7 +50,7 @@ _MIN_DELAY = 0.0025
 _ATTEMPTS = 3
 
 _SEASONIC_READ_FIRMWARE_VERSION = CMD.MFR_SPECIFIC_FC
-_RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
+_RAILS = ['+12V peripherals', '+12V EPS/ATX12V', '+12V motherboard/PCI-e', '+5V combined', '+3.3V combined']
 
 
 class SeasonicEDriver(UsbHidDriver):
