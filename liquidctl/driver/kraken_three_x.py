@@ -52,3 +52,27 @@ class KrakenThreeX(UsbHidDriver):
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2007, None, 'NZXT Kraken X3 Pump (X53, X63 or X73) (experimental)', {})
     ]
+
+    def initialize(self, **kwargs):
+        """Initialize the device.
+
+        Aparently not required.
+        """
+        pass
+
+    def get_status(self, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        msg = self._read()
+
+        return [
+            ('Liquid temperature', msg[14] / 256 + msg[15], '°C'),
+        ]
+
+    def _read(self):
+        data = self.device.read(_READ_LENGTH)
+        self.device.release()
+        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
+        return data
