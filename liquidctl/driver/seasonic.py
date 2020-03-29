@@ -155,5 +155,5 @@ class SeasonicEDriver(UsbHidDriver):
     def _get_fw_versions(self):
         minor, major = self._exec_read(_SEASONIC_READ_FIRMWARE_VERSION, 2)
         human_ver = f'{bytes([major]).decode()}{minor:03}'
-        ascam_ver = int.from_bytes(bytes.fromhex('A017'), byteorder='big')
+        ascam_ver = int.from_bytes(bytes.fromhex(human_ver), byteorder='big')
         return (human_ver, ascam_ver)
