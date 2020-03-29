@@ -68,7 +68,8 @@ class KrakenThreeX(UsbHidDriver):
         msg = self._read()
 
         return [
-            ('Liquid temperature', msg[14] / 256 + msg[15], '°C'),
+            ('Liquid temperature', msg[15] + msg[14] / 10, '°C'),
+            ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
         ]
 
     def _read(self):
