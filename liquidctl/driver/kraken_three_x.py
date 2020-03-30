@@ -44,6 +44,7 @@ LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
+_MAX_READ_ATTEMPTS = 12
 
 
 class KrakenThreeX(UsbHidDriver):
@@ -56,9 +57,26 @@ class KrakenThreeX(UsbHidDriver):
     def initialize(self, **kwargs):
         """Initialize the device.
 
-        Aparently not required.
+        Reports the current firmware of the device.
+
+        Returns a list of (key, value, unit) tuples.
         """
-        pass
+        self.device.clear_enqueued_reports()
+        # initialize (don't work currently - responds with a 0x71 0x01 message?)
+        #self._write([0x70, 0x02, 0x01, 0xb8, 0x0b])
+        #self._write([0x70, 0x01])
+
+        # request static infos
+        self._write([0x10, 0x01])  # firmware info
+        status = []
+
+        def parse_firm_info(msg):
+            fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
+            status.append(('Firmware version', fw, ''))
+
+        self._read_until({b'\x11\x01': parse_firm_info})
+        self.device.release()
+        return sorted(status)
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -77,3 +95,22 @@ class KrakenThreeX(UsbHidDriver):
         self.device.release()
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
         return data
+
+    def _read_until(self, parsers):
+        for _ in range(_MAX_READ_ATTEMPTS):
+            msg = self.device.read(_READ_LENGTH)
+            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
+            prefix = bytes(msg[0:2])
+            func = parsers.pop(prefix, None)
+            if func:
+                func(msg)
+            if not parsers:
+                return
+        assert False, f'missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})'
+
+
+    def _write(self, data):
+        padding = [0x0]*(_WRITE_LENGTH - len(data))
+        LOGGER.debug('write %s (and %i padding bytes)',
+                     ' '.join(format(i, '02x') for i in data), len(padding))
+        self.device.write(data + padding)
