@@ -88,6 +88,7 @@ class KrakenThreeX(UsbHidDriver):
         return [
             ('Liquid temperature', msg[15] + msg[14] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
+            ('Pump speed', msg[19], '%'),
         ]
 
     def _read(self):
@@ -107,7 +108,6 @@ class KrakenThreeX(UsbHidDriver):
             if not parsers:
                 return
         assert False, f'missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})'
-
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
