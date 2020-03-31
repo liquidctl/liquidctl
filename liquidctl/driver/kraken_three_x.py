@@ -91,6 +91,23 @@ class KrakenThreeX(UsbHidDriver):
             ('Pump speed', msg[19], '%'),
         ]
 
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed duty."""
+        if channel != 'pump':
+            assert False, 'kraken X3 devices only support changing pump speeds'
+        if duty < 25 or duty > 100:
+            assert False, f'invalid duty value: {duty}. must be between 25 and 100!'
+
+        def parse_pump_speed(msg):
+            if msg[19] == duty:
+                LOGGER.debug(f'pump speed successfully changed to {msg[19]} % [{hex(msg[19])}]')
+            else:
+                assert False, f'pump speed did not update! currently at {msg[19]} % [{hex(msg[19])}]'
+
+        self._write([0x72, 0x01, 0x00, 0x00] + [duty] * 40)
+        self._read_until({b'\x75\x02': parse_pump_speed})
+        self.device.release()
+
     def _read(self):
         data = self.device.read(_READ_LENGTH)
         self.device.release()
@@ -111,6 +128,5 @@ class KrakenThreeX(UsbHidDriver):
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
+        LOGGER.debug('write %s (and %i padding bytes)', ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
