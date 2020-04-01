@@ -88,21 +88,21 @@ class KrakenThreeX(UsbHidDriver):
         return [
             ('Liquid temperature', msg[15] + msg[14] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
-            ('Pump speed', msg[19], '%'),
+            ('Pump duty', msg[19], '%'),
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         if channel != 'pump':
             assert False, 'kraken X3 devices only support changing pump speeds'
-        if duty < 25 or duty > 100:
-            assert False, f'invalid duty value: {duty}. must be between 25 and 100!'
+        if duty < 20 or duty > 100:
+            assert False, f'invalid duty value: {duty}. must be between 20 and 100!'
 
         def parse_pump_speed(msg):
             if msg[19] == duty:
-                LOGGER.debug(f'pump speed successfully changed to {msg[19]} % [{hex(msg[19])}]')
+                LOGGER.debug(f'pump duty successfully changed to {msg[19]} % [{hex(msg[19])}]')
             else:
-                assert False, f'pump speed did not update! currently at {msg[19]} % [{hex(msg[19])}]'
+                assert False, f'pump duty did not update! currently at {msg[19]} % [{hex(msg[19])}]'
 
         self._write([0x72, 0x01, 0x00, 0x00] + [duty] * 40)
         self._read_until({b'\x75\x02': parse_pump_speed})
