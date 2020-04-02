@@ -46,6 +46,23 @@ _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
 
+_COLOR_CHANNELS = {
+    'ring': 0x02,
+    'logo': 0x04,
+}
+_ACCESSORY_NAMES = {
+    0x01: "HUE+ LED Strip",
+    0x02: "AER RGB 1",
+    0x04: "HUE 2 LED Strip 300 mm",
+    0x05: "HUE 2 LED Strip 250 mm",
+    0x06: "HUE 2 LED Strip 200 mm",
+    0x08: "HUE 2 Cable Comb",
+    0x0a: "HUE 2 Underglow 200 mm",
+    0x0b: "AER RGB 2 120 mm",
+    0x0c: "AER RGB 2 140 mm",
+    0x10: "Kraken X3 Pump Ring",
+    0x11: "Kraken X3 Pump Logo",
+}
 
 class KrakenThreeX(UsbHidDriver):
     """liquidctl driver for Kraken X3 devices from NZXT."""
@@ -62,19 +79,36 @@ class KrakenThreeX(UsbHidDriver):
         Returns a list of (key, value, unit) tuples.
         """
         self.device.clear_enqueued_reports()
-        # initialize (don't work currently - responds with a 0x71 0x01 message?)
-        #self._write([0x70, 0x02, 0x01, 0xb8, 0x0b])
-        #self._write([0x70, 0x01])
-
         # request static infos
         self._write([0x10, 0x01])  # firmware info
+        self._write([0x20, 0x03])  # lighting info
+        # initialize
+        self._write([0x70, 0x02, 0x01, 0xb8, 0x0b])
+        self._write([0x70, 0x01])
         status = []
 
         def parse_firm_info(msg):
             fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
             status.append(('Firmware version', fw, ''))
 
-        self._read_until({b'\x11\x01': parse_firm_info})
+        def parse_led_info(msg):
+            """
+            FIXME: is is possible to attach other accessories to the pump?
+            currently not possible to address devices via led id e.g. "led1"
+            accessory_id: ? (LED 1 - ?) & 0x10 (LED 2 - ring) & 0x11 (LED 3 - logo)
+            """
+            num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
+            accessories_per_channel = 6  # each lighting channel supports up to 6 accessories
+            light_accessory_index = 15  # offset in msg of info about first light accessory
+            for light_channel in range(num_light_channels):
+                for accessory_num in range(accessories_per_channel):
+                    accessory_id = msg[light_accessory_index]
+                    light_accessory_index += 1
+                    if accessory_id != 0:
+                        status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
+                                       _ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+
+        self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()
         return sorted(status)
 
