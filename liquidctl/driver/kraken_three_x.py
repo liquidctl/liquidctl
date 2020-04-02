@@ -1,4 +1,4 @@
-"""liquidctl driver for CoolIT Platinum coolers for Corsair.
+"""liquidctl driver for Kraken X3 devices from NZXT.
 
  Supported devices
  -----------------
@@ -10,14 +10,17 @@
  Supported features
  ------------------
 
-  - [ ] general monitoring
-  - [ ] pump speed control
-  - [ ] lighting control
+  - [✓] general monitoring
+  - [✓] pump speed control
+  - [✓] lighting control
+  - [ ] lighting control advanced - super-breathing, super-fixed, super-wave, wings, water-cooler
+  - [ ] pump speed curve ?
 
  ---
 
  liquidctl driver for Kraken X3 devices from NZXT.
  Copyright (C) 2020–2020  Jonas Malaco
+ Copyright (C) 2020–2020  Tom Frey
  Copyright (C) 2020–2020  each contribution's author
 
  This file is part of liquidctl.
