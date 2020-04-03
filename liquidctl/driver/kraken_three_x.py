@@ -97,7 +97,7 @@ _COLOR_MODES = {
     'backwards-rainbow-pulse':              (0x0b, 0x00, 2, 0, 0),
     'loading':                              (0x10, 0x00, 8, 1, 1),
     'tai-chi':                              (0x0e, 0x00, 7, 1, 2),
-    # 'water-cooler':                         (0x0f, 0x00, 6, 0, 0),
+    'water-cooler':                         (0x0f, 0x00, 6, 2, 2),
 }
 _STATIC_VALUE = {
     0x02: 0x08,
@@ -261,7 +261,7 @@ class KrakenThreeX(UsbHidDriver):
     def _write_colors(self, cid, mode, colors, sval):
         mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
         color_count = len(colors)
-        if 'super-fixed' == mode or 'super-breathing':
+        if 'super-fixed' == mode or 'super-breathing' == mode:
             color = list(itertools.chain(*colors)) + [0xff, 0xff, 0xff] * (maxcolors - color_count)
             speed_value = _SPEED_VALUE[speed_scale][sval]
             self._write([0x22, 0x10, cid, 0x00] + color)
@@ -285,8 +285,11 @@ class KrakenThreeX(UsbHidDriver):
                 backwards_byte += 0x02
             if mode == 'fading' or mode == 'pulse' or mode == 'breathing':
                 mode_related = 0x08
-            elif mode == 'tai-chi' or mode == 'water-cooler':
+            elif mode == 'tai-chi':
                 mode_related = 0x05
+            elif mode == 'water-cooler':
+                mode_related = 0x05
+                color_count = 0x01
             elif mode == 'loading':
                 mode_related = 0x04
             else:
