@@ -14,7 +14,7 @@
   - [✓] pump speed control
   - [✓] lighting control
   - [✓] lighting control advanced - super-breathing, super-fixed, wings, water-cooler
-  - [ ] pump speed curve ?
+  - [✓] pump speed curve
 
  ---
 
@@ -43,12 +43,14 @@ import logging
 import itertools
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.util import normalize_profile, interpolate_profile
 
 LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
+_CRITICAL_TEMPERATURE = 59
 
 _COLOR_CHANNELS = {
     'ring': 0x02,
@@ -195,7 +197,6 @@ class KrakenThreeXDriver(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         msg = self._read()
-
         return [
             ('Liquid temperature', msg[15] + msg[14] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
@@ -219,6 +220,17 @@ class KrakenThreeXDriver(UsbHidDriver):
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval)
         self.device.release()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Set channel to use a speed profile."""
+        if channel != 'pump':
+            assert False, 'kraken X3 devices only support changing pump speeds'
+        header = [0x72, 0x01, 0x00, 0x00]
+        norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
+        interp = [(interpolate_profile(norm, t)) for t in range(20, 60)]
+        LOGGER.debug('setting pump curve: %s', [(num+20, duty) for (num, duty) in enumerate(interp)])
+        raise NotImplementedError()  # precaution
+        self._write(header + interp)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
