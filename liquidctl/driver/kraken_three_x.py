@@ -13,7 +13,7 @@
   - [✓] general monitoring
   - [✓] pump speed control
   - [✓] lighting control
-  - [ ] lighting control advanced - super-breathing, super-fixed, super-wave, wings, water-cooler
+  - [ ] lighting control advanced - super-breathing, super-fixed, wings, water-cooler
   - [ ] pump speed curve ?
 
  ---
@@ -59,6 +59,7 @@ _COLOR_MODES = {
     'off':                                  (0x00, 0x00, 0, 0, 0),
     'fixed':                                (0x00, 0x00, 0, 1, 1),
     'fading':                               (0x01, 0x00, 1, 1, 8),
+    'super-fixed':                          (0x01, 0x01, 9, 1, 8),
     'spectrum-wave':                        (0x02, 0x00, 2, 0, 0),
     'backwards-spectrum-wave':              (0x02, 0x00, 2, 0, 0),
     'marquee-3':                            (0x03, 0x03, 2, 1, 1),
@@ -85,6 +86,7 @@ _COLOR_MODES = {
     'backwards-moving-alternating-6':       (0x05, 0x06, 4, 1, 2),
     'pulse':                                (0x06, 0x00, 5, 1, 8),
     'breathing':                            (0x07, 0x00, 6, 1, 8),
+    'super-breathing':                      (0x03, 0x00,10, 1, 8),
     'candle':                               (0x08, 0x00, 0, 1, 1),
     'starry-night':                         (0x09, 0x00, 5, 1, 1),
     'rainbow-flow':                         (0x0b, 0x00, 2, 0, 0),
@@ -112,6 +114,8 @@ _SPEED_VALUE = {
     6: ([0x28, 0x00], [0x1e, 0x00], [0x14, 0x00], [0x0a, 0x00], [0x04, 0x00]),
     7: ([0x32, 0x00], [0x28, 0x00], [0x1e, 0x00], [0x14, 0x00], [0x0a, 0x00]),
     8: ([0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00]),
+    9: ([0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00]),
+    10:([0x37, 0x00], [0x28, 0x00], [0x19, 0x00], [0x0a, 0x00], [0x00, 0x00]),
 }
 _ANIMATION_SPEEDS = {
     'slowest': 0x0,
@@ -257,8 +261,12 @@ class KrakenThreeX(UsbHidDriver):
     def _write_colors(self, cid, mode, colors, sval):
         mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
         color_count = len(colors)
-        if maxcolors == 40:
-            raise NotImplementedError()
+        if 'super-fixed' == mode or 'super-breathing':
+            color = list(itertools.chain(*colors)) + [0xff, 0xff, 0xff] * (maxcolors - color_count)
+            speed_value = _SPEED_VALUE[speed_scale][sval]
+            self._write([0x22, 0x10, cid, 0x00] + color)
+            self._write([0x22, 0x11, cid, 0x00])
+            self._write([0x22, 0xa0, cid, 0x00, mval] + speed_value + [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             raise NotImplementedError()
         else:
