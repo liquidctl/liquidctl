@@ -13,7 +13,7 @@
   - [✓] general monitoring
   - [✓] pump speed control
   - [✓] lighting control
-  - [ ] lighting control advanced - super-breathing, super-fixed, wings, water-cooler
+  - [✓] lighting control advanced - super-breathing, super-fixed, wings, water-cooler
   - [ ] pump speed curve ?
 
  ---
@@ -98,6 +98,7 @@ _COLOR_MODES = {
     'loading':                              (0x10, 0x00, 8, 1, 1),
     'tai-chi':                              (0x0e, 0x00, 7, 1, 2),
     'water-cooler':                         (0x0f, 0x00, 6, 2, 2),
+    'wings':                                (None, 0x00,11, 1, 1),
 }
 _STATIC_VALUE = {
     0x02: 0x08,
@@ -116,6 +117,7 @@ _SPEED_VALUE = {
     8: ([0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00]),
     9: ([0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00]),
     10:([0x37, 0x00], [0x28, 0x00], [0x19, 0x00], [0x0a, 0x00], [0x00, 0x00]),
+    11:([0x6e, 0x00], [0x53, 0x00], [0x39, 0x00], [0x2e, 0x00], [0x20, 0x00]),
 }
 _ANIMATION_SPEEDS = {
     'slowest': 0x0,
@@ -139,7 +141,7 @@ _ACCESSORY_NAMES = {
 }
 
 
-class KrakenThreeX(UsbHidDriver):
+class KrakenThreeXDriver(UsbHidDriver):
     """liquidctl driver for Kraken X3 devices from NZXT."""
 
     SUPPORTED_DEVICES = [
@@ -268,7 +270,20 @@ class KrakenThreeX(UsbHidDriver):
             self._write([0x22, 0x11, cid, 0x00])
             self._write([0x22, 0xa0, cid, 0x00, mval] + speed_value + [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
-            raise NotImplementedError()
+            self._write([0x22, 0x10, cid])  # clear out all independent LEDs
+            self._write([0x22, 0x11, cid])  # clear out all independent LEDs
+            color_lists = {}
+            color_lists[0] = colors[0] * 2
+            color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
+            color_lists[2] = [int(x // 4) for x in color_lists[1]]
+            color_lists[3] = [0x00] * 8
+            for i in range(8):   #  send color scheme first, before enabling wings mode
+                mod = 0x05 if i in [3, 7] else 0x01
+                speed_value = _SPEED_VALUE[speed_scale][sval]
+                direction = [0x04, 0x84] if i // 4 == 0 else [0x84, 0x04]
+                msg = ([0x22, 0x20, cid, i, 0x04] + speed_value + [mod] + [0x00] * 7 + [0x02] + direction + [0x00] * 10)
+                self._write(msg + color_lists[i % 4])
+            self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
             opcode = [0x2a, 0x04]
             address = [cid, cid]
