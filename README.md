@@ -101,7 +101,7 @@ Packages are available for certain Linux distributions and package managers:
  - Fedora: [liquidctl](https://apps.fedoraproject.org/packages/liquidctl)
  - Debian/Ubuntu: work in progress (issue #62), continue reading for manual installation instructions
 
-Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following dependencies are necessary:
+Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
 
 | Dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
@@ -111,6 +111,13 @@ Alternatively, it is possible to install liquidctl from PyPI or directly from th
 | docopt | python-docopt | python3-docopt | python3-docopt |
 | PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
+
+Setuptools and, optionally, pip are needed to manually install liquidctl:
+
+| Dependency | Arch Linux | Fedora | Ubuntu |
+| --- | --- | --- | --- |
+| setuptools | python-setuptools | python3-setuptools | python3-setuptools |
+| pip (optional) | python-pip | python3-pip | python3-pip |
 
 If cython-hidapi is to be installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
 
