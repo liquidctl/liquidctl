@@ -116,6 +116,8 @@ def _export_loop(devices, init, update, deinit, update_interval, **opts):
 
 
 def run(devices, args, **opts):
+    if not devices:
+        return
     update_interval = float(args['--update-interval'] or '2')
     if args['hwinfo']:
         if sys.platform != 'win32':
