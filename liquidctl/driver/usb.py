@@ -385,30 +385,41 @@ class PyUsbHid(PyUsbDevice):
                 if (ep.bmAttributes & _ENDPOINT_TRANSFER_TYPE_MASK) != ENDPOINT_TYPE_INTR:
                     continue
                 if not self.ep_in and (ep.bEndpointAddress & _ENDPOINT_DIR_MASK) == ENDPOINT_IN:
-                    self.ep_in = ep.bEndpointAddress
+                    self.ep_in = ep
                 elif not self.ep_out:
-                    self.ep_out = ep.bEndpointAddress
+                    self.ep_out = ep
             break
         if not hid_intf:
             raise usb.core.USBError('Missing a HID interface')
         if not self.ep_in:
             raise usb.core.USBError('Missing an interrupt IN endpoint')
         # if ep_out is not available Set_Report will be sent on CTRL OUT (0x00)
-        LOGGER.debug('hid endpoints: %#04x (IN), %#04x (OUT)', self.ep_in, self.ep_out or 0)
+        LOGGER.debug('hid endpoints: %#04x (IN), %#04x (OUT)', self.ep_in.bEndpointAddress,
+                     self.ep_out.bEndpointAddress if self.ep_out else 0)
         return hid_intf.bInterfaceNumber
 
     def clear_enqueued_reports(self):
         """Clear already enqueued incoming reports.
 
-        This method is available for compatibitily with HidapiDevice, but here
-        it is as a no-op since we always directly read from the device, and
-        thus avoid any queuing of reports at the OS level.
+        The OS generally enqueues incomming reports for open HIDs, and libusb
+        on Windows still accesses the device through the HID driver; by
+        default up to 32 reports can be enqueued.
+
+        On Windows, this method quickly reads and discards any already enqueued
+        reports, and is useful when later reads are not expected to return
+        stale data.  On platforms other than Windows, it is a NO-OP.
         """
-        pass
+        if sys.platform != 'win32':
+            return
+        while True:
+            try:
+                self.usbdev.read(self.ep_in.bEndpointAddress, self.ep_in.wMaxPacketSize, timeout=1)
+            except usb.core.USBError:
+                return
 
     def read(self, length):
         """Read raw report from HID."""
-        return self.usbdev.read(self.ep_in, length, timeout=0)
+        return self.usbdev.read(self.ep_in.bEndpointAddress, length, timeout=0)
 
     def write(self, data):
         """Write raw report to HID.
@@ -427,7 +438,7 @@ class PyUsbHid(PyUsbDevice):
         if not report_id:
             data = data[1:]
         if self.ep_out:
-            sent = self.usbdev.write(self.ep_out, data, timeout=0)
+            sent = self.usbdev.write(self.ep_out.bEndpointAddress, data, timeout=0)
         else:
             sent = self.ctrl_transfer(
                     bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_OUT,
