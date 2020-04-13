@@ -7,6 +7,7 @@ Usage:
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
+  liquidctl [options] export hwinfo [--update-interval=<seconds>]
   liquidctl --help
   liquidctl --version
 
@@ -85,9 +86,10 @@ from docopt import docopt
 from liquidctl.driver import *
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
+import liquidctl.export
 
 
-# conversion from CLI arg to internal option; as options as forwarded to bused
+# conversion from CLI arg to internal option; as options are forwarded to buses
 # and drivers, they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
 #  - and avoid unintentional conflicts with target function arguments
@@ -292,6 +294,10 @@ def main():
 
     if args['list']:
         _list_devices(selected, using_filters=bool(filter_count), device_id=device_id, **opts)
+        return
+
+    if args['export']:
+        liquidctl.export.run(selected, args, **opts)
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
