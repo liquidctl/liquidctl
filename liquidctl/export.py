@@ -33,54 +33,62 @@ import usb
 
 LOGGER = logging.getLogger(__name__)
 
-_HWINFO_SENSOR_TYPES = {
-    '°C': 'Temp',
-    'rpm': 'Fan',
-    'V': 'Volt',
-    'A': 'Current',
-    'W': 'Power',
-    'dB': 'Other'
-}
-_hwinfo_devinfos = namedtuple('_hwinfo_devinfos', ['dev_key', 'sensor_keys'])
 
+_hwinfo_sensor_type = namedtuple('_hwinfo_sensor_type', ['prefix', 'format'])
+_HWINFO_FLOAT = (winreg.REG_SZ, str)
+_HWINFO_INT = (winreg.REG_DWORD, round)
+_HWINFO_SENSOR_TYPES = {
+    '°C': _hwinfo_sensor_type('Temp', _HWINFO_FLOAT),
+    'rpm': _hwinfo_sensor_type('Fan', _HWINFO_INT),
+    'V': _hwinfo_sensor_type('Volt', _HWINFO_FLOAT),
+    'A': _hwinfo_sensor_type('Current', _HWINFO_FLOAT),
+    'W': _hwinfo_sensor_type('Power', _HWINFO_FLOAT),
+    '%': _hwinfo_sensor_type('Usage', _HWINFO_INT),
+    'dB': _hwinfo_sensor_type('Other', _HWINFO_INT),
+}
+
+_hwinfo_sensor = namedtuple('_hwinfo_sensor', ['key', 'format'])
+_hwinfo_devinfos = namedtuple('_hwinfo_devinfos', ['key', 'sensors'])
 _export_infos = namedtuple('_export_infos', ['dev', 'devinfos'])
 
 
-def _hwinfo_update_value(sensor_key, value):
-    winreg.SetValueEx(sensor_key, 'Value', None, winreg.REG_SZ, str(value))
+def _hwinfo_update_value(sensor, value):
+    regtype, regwrite = sensor.format
+    winreg.SetValueEx(sensor.key, 'Value', None, regtype, regwrite(value))
 
 
 def _hwinfo_init(dev, **opts):
     _HWINFO_BASE_KEY = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'Software\HWiNFO64\Sensors\Custom')
     dev_key = winreg.CreateKey(_HWINFO_BASE_KEY, f'{dev.description} ({dev.bus}:{dev.address.__hash__()})')
-    sensor_keys = {}
-    counts = {prefix: 0 for unit, prefix in _HWINFO_SENSOR_TYPES.items()}
+    sensors = {}
+    counts = {unit: 0 for unit in _HWINFO_SENSOR_TYPES.keys()}
     for k, v, u in dev.get_status(**opts):
-        hwinfo_type = _HWINFO_SENSOR_TYPES.get(u, None)
-        if not hwinfo_type:
+        sensor_type = _HWINFO_SENSOR_TYPES.get(u, None)
+        if not sensor_type:
             continue
-        type_count = counts[hwinfo_type]
-        sensor_key = winreg.CreateKey(dev_key, f'{hwinfo_type}{type_count}')
-        counts[hwinfo_type] += 1
+        type_count = counts[u]
+        counts[u] += 1
+        sensor_key = winreg.CreateKey(dev_key, f'{sensor_type.prefix}{type_count}')
         winreg.SetValueEx(sensor_key, 'Name', None, winreg.REG_SZ, k)
         winreg.SetValueEx(sensor_key, 'Unit', None, winreg.REG_SZ, u)
-        _hwinfo_update_value(sensor_key, v)
-        sensor_keys[k] = sensor_key
-    return _hwinfo_devinfos(dev_key, sensor_keys)
+        sensor = _hwinfo_sensor(sensor_key, sensor_type.format)
+        _hwinfo_update_value(sensor, v)
+        sensors[k] = sensor
+    return _hwinfo_devinfos(dev_key, sensors)
 
 
 def _hwinfo_update(dev, devinfos, status):
     for k, v, u in status:
-        sensor_key = devinfos.sensor_keys.get(k)
-        if not sensor_key:
+        sensor = devinfos.sensors.get(k)
+        if not sensor:
             continue
-        _hwinfo_update_value(sensor_key, v)
+        _hwinfo_update_value(sensor, v)
 
 
 def _hwinfo_deinit(dev, devinfos):
-    for sensor_key in devinfos.sensor_keys.values():
-        winreg.DeleteKey(sensor_key, '')
-    winreg.DeleteKey(devinfos.dev_key, '')
+    for sensor in devinfos.sensors.values():
+        winreg.DeleteKey(sensor.key, '')
+    winreg.DeleteKey(devinfos.key, '')
 
 
 def _export_loop(devices, init, update, deinit, update_interval, **opts):
