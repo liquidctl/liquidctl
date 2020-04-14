@@ -23,9 +23,6 @@ import logging
 import sys
 import time
 
-if sys.platform == 'win32':
-    import winreg
-
 from collections import namedtuple
 
 import usb
@@ -34,64 +31,72 @@ import usb
 LOGGER = logging.getLogger(__name__)
 
 
-_hwinfo_sensor_type = namedtuple('_hwinfo_sensor_type', ['prefix', 'format'])
-_HWINFO_FLOAT = (winreg.REG_SZ, str)
-_HWINFO_INT = (winreg.REG_DWORD, round)
-_HWINFO_SENSOR_TYPES = {
-    '°C': _hwinfo_sensor_type('Temp', _HWINFO_FLOAT),
-    'rpm': _hwinfo_sensor_type('Fan', _HWINFO_INT),
-    'V': _hwinfo_sensor_type('Volt', _HWINFO_FLOAT),
-    'A': _hwinfo_sensor_type('Current', _HWINFO_FLOAT),
-    'W': _hwinfo_sensor_type('Power', _HWINFO_FLOAT),
-    '%': _hwinfo_sensor_type('Usage', _HWINFO_INT),
-    'dB': _hwinfo_sensor_type('Other', _HWINFO_INT),
-}
-
-_hwinfo_sensor = namedtuple('_hwinfo_sensor', ['key', 'format'])
-_hwinfo_devinfos = namedtuple('_hwinfo_devinfos', ['key', 'sensors'])
+_export_modes = {}
 _export_infos = namedtuple('_export_infos', ['dev', 'devinfos'])
 
 
-def _hwinfo_update_value(sensor, value):
-    regtype, regwrite = sensor.format
-    winreg.SetValueEx(sensor.key, 'Value', None, regtype, regwrite(value))
+if sys.platform == 'win32':
+    import winreg
+
+    _hwinfo_sensor_type = namedtuple('_hwinfo_sensor_type', ['prefix', 'format'])
+    _HWINFO_FLOAT = (winreg.REG_SZ, str)
+    _HWINFO_INT = (winreg.REG_DWORD, round)
+    _HWINFO_SENSOR_TYPES = {
+        '°C': _hwinfo_sensor_type('Temp', _HWINFO_FLOAT),
+        'rpm': _hwinfo_sensor_type('Fan', _HWINFO_INT),
+        'V': _hwinfo_sensor_type('Volt', _HWINFO_FLOAT),
+        'A': _hwinfo_sensor_type('Current', _HWINFO_FLOAT),
+        'W': _hwinfo_sensor_type('Power', _HWINFO_FLOAT),
+        '%': _hwinfo_sensor_type('Usage', _HWINFO_INT),
+        'dB': _hwinfo_sensor_type('Other', _HWINFO_INT),
+    }
+
+    _hwinfo_sensor = namedtuple('_hwinfo_sensor', ['key', 'format'])
+    _hwinfo_devinfos = namedtuple('_hwinfo_devinfos', ['key', 'sensors'])
+
+    def _hwinfo_update_value(sensor, value):
+        regtype, regwrite = sensor.format
+        winreg.SetValueEx(sensor.key, 'Value', None, regtype, regwrite(value))
+
+    def _hwinfo_init(dev, **opts):
+        _HWINFO_BASE_KEY = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'Software\HWiNFO64\Sensors\Custom')
+        dev_key = winreg.CreateKey(_HWINFO_BASE_KEY, f'{dev.description} ({dev.bus}:{dev.address.__hash__()})')
+        sensors = {}
+        counts = {unit: 0 for unit in _HWINFO_SENSOR_TYPES.keys()}
+        for k, v, u in dev.get_status(**opts):
+            sensor_type = _HWINFO_SENSOR_TYPES.get(u, None)
+            if not sensor_type:
+                continue
+            type_count = counts[u]
+            counts[u] += 1
+            sensor_key = winreg.CreateKey(dev_key, f'{sensor_type.prefix}{type_count}')
+            winreg.SetValueEx(sensor_key, 'Name', None, winreg.REG_SZ, k)
+            winreg.SetValueEx(sensor_key, 'Unit', None, winreg.REG_SZ, u)
+            sensor = _hwinfo_sensor(sensor_key, sensor_type.format)
+            _hwinfo_update_value(sensor, v)
+            sensors[k] = sensor
+        return _hwinfo_devinfos(dev_key, sensors)
+
+    def _hwinfo_update(dev, devinfos, status):
+        for k, v, u in status:
+            sensor = devinfos.sensors.get(k)
+            if not sensor:
+                continue
+            _hwinfo_update_value(sensor, v)
+
+    def _hwinfo_deinit(dev, devinfos):
+        for sensor in devinfos.sensors.values():
+            winreg.DeleteKey(sensor.key, '')
+        winreg.DeleteKey(devinfos.key, '')
+
+    _export_modes['hwinfo'] = {
+        'init': _hwinfo_init,
+        'update':  _hwinfo_update,
+        'deinit':  _hwinfo_deinit
+    }
 
 
-def _hwinfo_init(dev, **opts):
-    _HWINFO_BASE_KEY = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'Software\HWiNFO64\Sensors\Custom')
-    dev_key = winreg.CreateKey(_HWINFO_BASE_KEY, f'{dev.description} ({dev.bus}:{dev.address.__hash__()})')
-    sensors = {}
-    counts = {unit: 0 for unit in _HWINFO_SENSOR_TYPES.keys()}
-    for k, v, u in dev.get_status(**opts):
-        sensor_type = _HWINFO_SENSOR_TYPES.get(u, None)
-        if not sensor_type:
-            continue
-        type_count = counts[u]
-        counts[u] += 1
-        sensor_key = winreg.CreateKey(dev_key, f'{sensor_type.prefix}{type_count}')
-        winreg.SetValueEx(sensor_key, 'Name', None, winreg.REG_SZ, k)
-        winreg.SetValueEx(sensor_key, 'Unit', None, winreg.REG_SZ, u)
-        sensor = _hwinfo_sensor(sensor_key, sensor_type.format)
-        _hwinfo_update_value(sensor, v)
-        sensors[k] = sensor
-    return _hwinfo_devinfos(dev_key, sensors)
-
-
-def _hwinfo_update(dev, devinfos, status):
-    for k, v, u in status:
-        sensor = devinfos.sensors.get(k)
-        if not sensor:
-            continue
-        _hwinfo_update_value(sensor, v)
-
-
-def _hwinfo_deinit(dev, devinfos):
-    for sensor in devinfos.sensors.values():
-        winreg.DeleteKey(sensor.key, '')
-    winreg.DeleteKey(devinfos.key, '')
-
-
-def _export_loop(devices, init, update, deinit, update_interval, **opts):
+def _run_export_loop(devices, init, update, deinit, update_interval=None, opts=None):
     infos = []
     for dev in devices:
         LOGGER.info('Preparing %s', dev.description)
@@ -123,13 +128,10 @@ def _export_loop(devices, init, update, deinit, update_interval, **opts):
                 LOGGER.exception('Unexpected error when cleaning up %s', dev.description)
 
 
-def run(devices, args, **opts):
+def run(devices, target, update_interval, opts):
     if not devices:
         return
-    update_interval = float(args['--update-interval'] or '2')
-    if args['hwinfo']:
-        if sys.platform != 'win32':
-            raise ValueError('HWiNFO not supported on this platform')
-        _export_loop(devices, _hwinfo_init, _hwinfo_update, _hwinfo_deinit, update_interval, **opts)
-    else:
-        raise Exception('Not sure what to do')
+    mode = _export_modes.get(target.lower())
+    if not mode:
+        raise ValueError(f'Exporting to {target} not supported on this platform')
+    _run_export_loop(devices, update_interval=update_interval, opts=opts, **mode)

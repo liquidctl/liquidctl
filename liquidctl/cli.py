@@ -297,7 +297,8 @@ def main():
         return
 
     if args['export']:
-        liquidctl.export.run(selected, args, **opts)
+        interval = float(args['--update-interval'] or '2')
+        liquidctl.export.run(selected, 'HWiNFO', interval, opts)
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
