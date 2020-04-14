@@ -287,8 +287,13 @@ class PyUsbDevice:
 
     def release(self):
         """Release the device to other programs."""
-        LOGGER.debug('ensure interface is released')
-        usb.util.release_interface(self.usbdev, self.bInterfaceNumber)
+        if sys.platform.startswith('linux'):
+            LOGGER.debug('ensure interface is released')
+            usb.util.release_interface(self.usbdev, self.bInterfaceNumber)
+        else:
+            # assume the driver only allows a single application, and release the device
+            LOGGER.debug('ensure device is released')
+            usb.util.dispose_resources(self.usbdev)
 
     def close(self):
         """Disconnect from the device.
