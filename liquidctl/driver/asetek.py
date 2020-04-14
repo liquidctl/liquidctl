@@ -121,7 +121,17 @@ class CommonAsetekDriver(UsbDriver):
         size and read data in chunks.  However, leviathan and its derivatives
         seem to work fine without this complexity; we currently try the same
         approach.
+
+        Before reading, ensure the device is clear to send data to the host with
+        _USBXPRESS_CLEAR_TO_SEND; this is important when the device has recently
+        been suspended.
+        
+        Unlike SiUSBXp,¹ do not send _USBXPRESS_NOT_CLEAR_TO_SEND once done and
+        allow another program to keep reading from the device.
+
+        ¹ https://github.com/craigshelley/SiUSBXp/blob/master/SiUSBXp.c
         """
+        self._configure_flow_control(clear_to_send=True)
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         self.device.release()
@@ -155,33 +165,11 @@ class CommonAsetekDriver(UsbDriver):
             opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
         return opt
 
-    def connect(self, **kwargs):
-        """Connect to the device.
-
-        Enables the device to send data to the host."""
-        super().connect(**kwargs)
-        self._configure_flow_control(clear_to_send=True)
-
     def initialize(self, **kwargs):
         """Initialize the device."""
         self._begin_transaction()
         self._configure_device()
         self._end_transaction_and_read()
-
-    def disconnect(self, **kwargs):
-        """Disconnect from the device.
-
-        Implementation note: unlike SI_Close is supposed to do,¹ do not send
-        _USBXPRESS_NOT_CLEAR_TO_SEND to the device.  This allows one program to
-        disconnect without sotping reads from another.
-
-        Surrounding device.read() with _USBXPRESS_[NOT_]CLEAR_TO_SEND would
-        make more sense, but there seems to be a yet unknown minimum delay
-        necessary for that to work well.
-
-        ¹ https://github.com/craigshelley/SiUSBXp/blob/master/SiUSBXp.c
-        """
-        super().disconnect(**kwargs)
 
 
 class AsetekDriver(CommonAsetekDriver):
