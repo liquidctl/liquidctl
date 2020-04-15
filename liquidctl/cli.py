@@ -254,8 +254,29 @@ def _gen_version():
     return 'liquidctl v{} ({})'.format(__version__, '; '.join(extra))
 
 
+def _uac_elevate():
+    import ctypes
+
+    def is_admin():
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+
+    if not is_admin():
+        LOGGER.warning('Adminstrator privileges required to perform this; elevating with UAC')
+        cmd = sys.argv[0] # FIXME consider liquidctl.exe vs. pip liquidctl
+        params = ' '.join(sys.argv[1:])  # FIXME https://chromium.googlesource.com/chromium/src/tools/win/+/26e3c8d6427444bcd73bb3d825849ce0caa8f423/split_link/split_link.cc#91
+        ctypes.windll.shell32.ShellExecuteW(None, 'runas', cmd, params, None, 1)
+        sys.exit(0)
+
+
 def main():
     args = docopt(__doc__)
+
+    if args['hwinfo'] and sys.platform == 'win32':
+        # FIXME consider elevating only a special restart-hwinfo command
+        _uac_elevate()
 
     if args['--version']:
         print(_gen_version())

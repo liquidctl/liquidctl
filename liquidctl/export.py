@@ -26,6 +26,7 @@ import time
 from collections import namedtuple
 
 import usb
+import psutil
 
 
 LOGGER = logging.getLogger(__name__)
@@ -54,11 +55,29 @@ if sys.platform == 'win32':
     _hwinfo_sensor = namedtuple('_hwinfo_sensor', ['key', 'format'])
     _hwinfo_devinfos = namedtuple('_hwinfo_devinfos', ['key', 'sensors'])
 
+    def _hwinfo_find_hwinfo_process():
+        for p in psutil.process_iter(['name']):
+            if p.info['name'].lower().startswith('hwinfo'):
+                return p
+        return None
+
+    def _hwinfo_restart_hwinfo():
+        cmdline = r'C:\Program Files\HWiNFO64\HWiNFO64.exe'
+        curr = _hwinfo_find_hwinfo_process()
+        if curr:
+            LOGGER.info('HWiNFO already open, restarting')
+            cmdline = curr.cmdline()
+            curr.terminate()
+            curr.wait()
+        else:
+            LOGGER.info('Starting HWiNFO')
+        psutil.Popen(cmdline)
+
     def _hwinfo_update_value(sensor, value):
         regtype, regwrite = sensor.format
         winreg.SetValueEx(sensor.key, 'Value', None, regtype, regwrite(value))
 
-    def _hwinfo_init(dev, **opts):
+    def _hwinfo_init_device(dev, **opts):
         _HWINFO_BASE_KEY = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'Software\HWiNFO64\Sensors\Custom')
         dev_key = winreg.CreateKey(_HWINFO_BASE_KEY, f'{dev.description} ({dev.bus}:{dev.address.__hash__()})')
         sensors = {}
@@ -90,19 +109,21 @@ if sys.platform == 'win32':
         winreg.DeleteKey(devinfos.key, '')
 
     _export_modes['hwinfo'] = {
-        'init': _hwinfo_init,
+        'init': _hwinfo_init_device,
+        'post_init': _hwinfo_restart_hwinfo,
         'update':  _hwinfo_update,
         'deinit':  _hwinfo_deinit
     }
 
 
-def _run_export_loop(devices, init, update, deinit, update_interval=None, opts=None):
+def _run_export_loop(devices, init, post_init, update, deinit, update_interval=None, opts=None):
     infos = []
     for dev in devices:
         LOGGER.info('Preparing %s', dev.description)
         dev.connect(**opts)
         devinfos = init(dev, **opts)
         infos.append(_export_infos(dev, devinfos))
+    post_init()
     try:
         while True:
             for dev, devinfos in infos:
