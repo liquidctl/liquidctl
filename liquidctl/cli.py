@@ -4,10 +4,11 @@ Usage:
   liquidctl [options] list
   liquidctl [options] initialize [all]
   liquidctl [options] status
-  liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
+  liquidctl [options] set <channel> speed (<temperature> <percentage>)...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
-  liquidctl [options] export hwinfo [--update-interval=<seconds>]
+  liquidctl [options] list-sensors
+  liquidctl [options] control [<channel> speed with <profile> on <sensor>]...
   liquidctl --help
   liquidctl --version
 
@@ -29,6 +30,11 @@ Animation options (devices/modes can support zero or more):
   --time-off <value>          Time to wait with the LED turned off (seconds)
   --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
+
+Dynamic control options:
+  --interval <seconds>        Update interval in seconds [default: 2]
+  --export-to-hwinfo          Export sensor data to HWiNFO
+  --dummy-export              Test export
 
 Other options:
   -v, --verbose               Output additional information
@@ -87,7 +93,7 @@ from liquidctl.driver import *
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 import liquidctl.elevate
-import liquidctl.export
+import liquidctl.control
 
 
 # conversion from CLI arg to internal option; as options are forwarded to buses
@@ -302,9 +308,19 @@ def main():
         _list_devices(selected, using_filters=bool(filter_count), device_id=device_id, **opts)
         return
 
-    if args['export']:
-        interval = float(args['--update-interval'] or '2')
-        liquidctl.export.run(selected, 'HWiNFO', interval, opts)
+    if args['list-sensors']:
+        raise NotImplementedError()
+        return
+
+    if args['control']:
+        interval = float(args['--interval'])
+        features = []
+        if args['--export-to-hwinfo']:
+            features.append(liquidctl.control.HWiNFO())
+        if args['--dummy-export']:
+            features.append(liquidctl.control.DummyExport('Foo'))
+            features.append(liquidctl.control.DummyExport('Bar'))
+        liquidctl.control.control(selected, features, interval, opts)
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
