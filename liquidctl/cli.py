@@ -323,6 +323,9 @@ def main():
         liquidctl.control.control(selected, features, interval, opts)
         return
 
+    # simplify: only one <channel> for commands other than control
+    args['<channel>'] = args['<channel>'][0]
+
     if len(selected) > 1 and not (args['status'] or args['all']):
         raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
     elif len(selected) == 0:
