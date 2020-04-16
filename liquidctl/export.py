@@ -22,11 +22,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 import sys
 import time
-
 from collections import namedtuple
 
 import usb
 import psutil
+
+import liquidctl.elevate
 
 
 LOGGER = logging.getLogger(__name__)
@@ -34,6 +35,26 @@ LOGGER = logging.getLogger(__name__)
 
 _export_modes = {}
 _export_infos = namedtuple('_export_infos', ['dev', 'devinfos'])
+
+
+def _restart_hwinfo():
+    import psutil
+
+    def find_hwinfo_process():
+        for p in psutil.process_iter(['name']):
+            if p.info['name'].lower().startswith('hwinfo'):
+                return p
+        return None
+
+    cmdline = r'C:\Program Files\HWiNFO64\HWiNFO64.exe'
+    curr = find_hwinfo_process()
+    if curr:
+        LOGGER.info('HWiNFO already open, restarting')
+        cmdline = curr.cmdline()
+        curr.terminate()
+        curr.wait()
+    LOGGER.debug('cmdline: %s', cmdline)
+    psutil.Popen(cmdline)
 
 
 if sys.platform == 'win32':
@@ -55,23 +76,9 @@ if sys.platform == 'win32':
     _hwinfo_sensor = namedtuple('_hwinfo_sensor', ['key', 'format'])
     _hwinfo_devinfos = namedtuple('_hwinfo_devinfos', ['key', 'sensors'])
 
-    def _hwinfo_find_hwinfo_process():
-        for p in psutil.process_iter(['name']):
-            if p.info['name'].lower().startswith('hwinfo'):
-                return p
-        return None
-
     def _hwinfo_restart_hwinfo():
-        cmdline = r'C:\Program Files\HWiNFO64\HWiNFO64.exe'
-        curr = _hwinfo_find_hwinfo_process()
-        if curr:
-            LOGGER.info('HWiNFO already open, restarting')
-            cmdline = curr.cmdline()
-            curr.terminate()
-            curr.wait()
-        else:
-            LOGGER.info('Starting HWiNFO')
-        psutil.Popen(cmdline)
+        LOGGER.info('Starting HWiNFO')
+        liquidctl.elevate.call(_restart_hwinfo, [])
 
     def _hwinfo_update_value(sensor, value):
         regtype, regwrite = sensor.format
