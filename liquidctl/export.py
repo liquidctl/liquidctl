@@ -25,7 +25,6 @@ import time
 from collections import namedtuple
 
 import usb
-import psutil
 
 import liquidctl.elevate
 
