@@ -222,15 +222,15 @@ def _print_dev_status(dev, status):
 
 def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, **opts)
+    dev.set_color(args['<channel>'][0], args['<mode>'], color, **opts)
 
 
 def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile, **opts)
+        dev.set_speed_profile(args['<channel>'][0], profile, **opts)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **opts)
+        dev.set_fixed_speed(args['<channel>'][0], int(args['<percentage>'][0]), **opts)
 
 
 def _make_opts(args):
@@ -322,9 +322,6 @@ def main():
             features.append(liquidctl.control.DummyExport('Bar'))
         liquidctl.control.control(selected, features, interval, opts)
         return
-
-    # simplify: only one <channel> for commands other than control
-    args['<channel>'] = args['<channel>'][0]
 
     if len(selected) > 1 and not (args['status'] or args['all']):
         raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
