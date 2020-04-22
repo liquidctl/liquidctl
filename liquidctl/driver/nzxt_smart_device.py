@@ -98,9 +98,9 @@ updates.  It is recommended to initialize the devices at every boot.
 ---
 
 liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2019–2019  CaseySJ
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2019–2020  CaseySJ
+Copyright (C) 2018–2020  each contribution's author
 
 This file is part of liquidctl.
 
