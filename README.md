@@ -85,11 +85,13 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2, RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>E</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
+| NZXT RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E, U_</sup> |
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
+<sup>_U_</sup> _Starting with upcoming liquidctl 1.4.0._  
 
 
 ## Installing on Linux
@@ -269,9 +271,13 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 ### Supported color specification formats
 
+
 When configuring lighting effects, colors can be specified in different representations and formats:
 
  - as an implicit hexadecimal RGB triple: e.g. `ff7f3f`
+
+_Starting with upcoming liquidctl 1.4.0:_
+
  - as an explicit RGB triple: e.g. `rgb(255, 127, 63)`
  - as a HSV (hue‑saturation‑value) triple: e.g. `hsv(20, 75, 100)`
     * hue ∊ [0, 360] (degrees); saturation, value ∊ [0, 100] (percent)
