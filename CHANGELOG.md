@@ -18,7 +18,7 @@ Changelog since 1.3.3:
  - Dynamically find the HID interface and endpoints of PyUsbHids
  - Improve the documentation
 ### Fixed
- - [HUE 2] Add missing identifiers for 200 mm HUE 2 strip
+ - [HUE 2] Add missing identifier for 200 mm HUE 2 strip
  - [NZXT E500/E650/E850] Fix CAM-like decoding of firmware version
 
 
