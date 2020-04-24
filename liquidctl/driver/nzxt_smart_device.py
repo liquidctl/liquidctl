@@ -388,6 +388,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         0x05: "HUE 2 LED Strip 250 mm",
         0x06: "HUE 2 LED Strip 200 mm",
         0x08: "HUE 2 Cable Comb",
+        0x09: "HUE 2 Underglow 300 mm",
         0x0a: "HUE 2 Underglow 200 mm",
         0x0b: "AER RGB 2 120 mm",
         0x0c: "AER RGB 2 140 mm"
