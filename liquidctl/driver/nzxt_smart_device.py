@@ -398,8 +398,9 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         """Instantiate a driver with a device handle."""
         speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
-        color_channels = {'led{}'.format(i + 1): (i)
+        color_channels = {'led{}'.format(i + 1): (1 << i)
                           for i in range(color_channel_count)}
+        color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, **kwargs):
@@ -482,32 +483,32 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
             leds = list(itertools.chain(*colors)) + led_padding
-            self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
-            self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
-            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, 0x00, 0x00,
+            self._write([0x22, 0x10, cid, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
+            self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
+            self._write([0x22, 0xA0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             for [g, r, b] in colors:
-                self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
-                self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
+                self._write([0x22, 0x10, cid])  # clear out all independent LEDs
+                self._write([0x22, 0x11, cid])  # clear out all independent LEDs
                 color_lists = [] * 3
                 color_lists[0] = [g, r, b] * 8
                 color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
                 color_lists[2] = [int(x // 4) for x in color_lists[1]]
                 for i in range(8):   #  send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
-                    msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
+                    msg = ([0x22, 0x20, cid, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
                             0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00])
                     self._write(msg + color_lists[i % 4])
-                self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
+                self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
             byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
             byte8 = mod4 & 0x01  # sets 'backwards' flag
             byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
-            header = [0x28, 0x03, cid + 1, 0x00, mval, sval, byte7, byte8, byte9, byte10]
+            header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
