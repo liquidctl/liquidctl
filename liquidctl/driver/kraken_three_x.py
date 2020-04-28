@@ -43,7 +43,7 @@ import logging
 import itertools
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.util import normalize_profile, interpolate_profile
+from liquidctl.util import normalize_profile, interpolate_profile, clamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ class KrakenThreeXDriver(UsbHidDriver):
     """liquidctl driver for Kraken X3 devices from NZXT."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x2007, None, 'NZXT Kraken X3 Pump (X53, X63 or X73) (experimental)', {})
+        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {})
     ]
 
     def initialize(self, **kwargs):
@@ -236,9 +236,7 @@ class KrakenThreeXDriver(UsbHidDriver):
         """Set channel to a fixed speed duty."""
         if channel != 'pump':
             assert False, 'kraken X3 devices only support changing pump speeds'
-        if duty < 20 or duty > 100:
-            assert False, f'invalid duty value: {duty}. must be between 20 and 100!'
-
+        duty = clamp(duty, 20, 100)
         self._write([0x72, 0x01, 0x00, 0x00] + [duty] * 40)
         self.device.release()
 

@@ -36,7 +36,7 @@ First, some important notes...
 
 *You should also consider monitoring your hardware temperatures and setting alerts for overheating components or pump failures.*
 
-With those out of the way, the pump speed can be configured to a fixed duty value or with a profile dependent on the liquid temperature.  Fixed speeds can be set by specifying the desired channel – `fan` or `pump` – and duty.
+With those out of the way, the pump speed can be configured to a fixed duty value or with a profile dependent on the liquid temperature.  Fixed speeds can be set by specifying the channel `pump` and duty.
 
 
 ```
