@@ -135,6 +135,7 @@ _ACCESSORY_NAMES = {
     0x05: "HUE 2 LED Strip 250 mm",
     0x06: "HUE 2 LED Strip 200 mm",
     0x08: "HUE 2 Cable Comb",
+    0x09: "HUE 2 Underglow 300 mm",
     0x0a: "HUE 2 Underglow 200 mm",
     0x0b: "AER RGB 2 120 mm",
     0x0c: "AER RGB 2 140 mm",
@@ -229,7 +230,6 @@ class KrakenThreeXDriver(UsbHidDriver):
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         interp = [(interpolate_profile(norm, t)) for t in range(20, 60)]
         LOGGER.debug('setting pump curve: %s', [(num+20, duty) for (num, duty) in enumerate(interp)])
-        raise NotImplementedError()  # precaution
         self._write(header + interp)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
