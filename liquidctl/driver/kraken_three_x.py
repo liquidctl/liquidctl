@@ -239,14 +239,7 @@ class KrakenThreeXDriver(UsbHidDriver):
         if duty < 20 or duty > 100:
             assert False, f'invalid duty value: {duty}. must be between 20 and 100!'
 
-        def parse_pump_speed(msg):
-            if msg[19] == duty:
-                LOGGER.debug(f'pump duty successfully changed to {msg[19]} % [{hex(msg[19])}]')
-            else:
-                assert False, f'pump duty did not update! currently at {msg[19]} % [{hex(msg[19])}]'
-
         self._write([0x72, 0x01, 0x00, 0x00] + [duty] * 40)
-        self._read_until({b'\x75\x02': parse_pump_speed})
         self.device.release()
 
     def _read(self):
