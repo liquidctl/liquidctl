@@ -229,15 +229,13 @@ class KrakenThreeXDriver(UsbHidDriver):
         header = [0x72, 0x01, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         interp = [(interpolate_profile(norm, t)) for t in range(20, 60)]
-        LOGGER.debug('setting pump curve: %s', [(num+20, duty) for (num, duty) in enumerate(interp)])
+        LOGGER.debug('setting pump curve: %s', [(num + 20, duty) for (num, duty) in enumerate(interp)])
         self._write(header + interp)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
-        if channel != 'pump':
-            assert False, 'kraken X3 devices only support changing pump speeds'
         duty = clamp(duty, 20, 100)
-        self._write([0x72, 0x01, 0x00, 0x00] + [duty] * 40)
+        self.set_speed_profile(channel, [(i, duty) for i in range(20, 60)])
         self.device.release()
 
     def _read(self):
