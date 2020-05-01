@@ -267,7 +267,7 @@ class KrakenThreeXDriver(UsbHidDriver):
         mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
         color_count = len(colors)
         if 'super-fixed' == mode or 'super-breathing' == mode:
-            color = list(itertools.chain(*colors)) + [0xff, 0xff, 0xff] * (maxcolors - color_count)
+            color = list(itertools.chain(*colors)) + [0x00, 0x00, 0x00] * (maxcolors - color_count)
             speed_value = _SPEED_VALUE[speed_scale][sval]
             self._write([0x22, 0x10, cid, 0x00] + color)
             self._write([0x22, 0x11, cid, 0x00])
