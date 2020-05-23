@@ -52,6 +52,8 @@ _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
 _CRITICAL_TEMPERATURE = 59
+_MIN_DUTY = 20
+_MAX_DUTY = 100
 
 _COLOR_CHANNELS = {
     'external': 0b001,
@@ -222,8 +224,11 @@ class KrakenThreeXDriver(UsbHidDriver):
             assert False, 'kraken X3 devices only support changing pump speeds'
         header = [0x72, 0x01, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
-        interp = [(interpolate_profile(norm, t)) for t in range(20, 60)]
-        LOGGER.debug('setting pump curve: %s', [(num + 20, duty) for (num, duty) in enumerate(interp)])
+        stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
+        interp = [clamp(interpolate_profile(norm, t), _MIN_DUTY, _MAX_DUTY) for t in stdtemps]
+        for temp, duty in zip(stdtemps, interp):
+            LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
+                        duty, temp)
         self._write(header + interp)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
