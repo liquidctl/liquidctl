@@ -53,8 +53,10 @@ _MAX_READ_ATTEMPTS = 12
 _CRITICAL_TEMPERATURE = 59
 
 _COLOR_CHANNELS = {
-    'ring': 0x02,
-    'logo': 0x04,
+    'external': 0b001,
+    'ring': 0b010,
+    'logo': 0b100,
+    'sync': 0b111
 }
 _COLOR_MODES = {
     # (mode, size/variant, speed scale, min colors, max colors)
@@ -102,9 +104,15 @@ _COLOR_MODES = {
     'water-cooler':                         (0x0f, 0x00, 6, 2, 2),
     'wings':                                (None, 0x00,11, 1, 1),
 }
+# A static value per channel that is somehow related to animation time and
+# synchronization, although the specific mecanism is not yet understood.  Could
+# require information from `initialize`, but more testing is required.
+# FIXME: should also be move into the corresponding _COLOR_CHANNELS
 _STATIC_VALUE = {
-    0x02: 0x08,
-    0x04: 0x01
+    0b001: 40, # may result in long all-off intervals (FIXME?)
+    0b010: 8,
+    0b100: 1,
+    0b111: 40, # may result in long all-off intervals (FIXME?)
 }
 _SPEED_VALUE = {
     # (slowest, slow, normal, fast, fastest)
