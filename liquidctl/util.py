@@ -1,7 +1,7 @@
 """Assorted utilities used by drivers and the CLI.
 
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
 This file is part of liquidctl.
 
@@ -23,8 +23,56 @@ import colorsys
 import logging
 
 from ast import literal_eval
+from enum import Enum, unique
 
 LOGGER = logging.getLogger(__name__)
+
+
+@unique
+class Hue2Accessory(Enum):
+    """Mapping of HUE 2 accessory IDs and names.
+
+    >>> Hue2Accessory.from_int(4).value
+    (4, 'HUE 2 LED Strip 300 mm')
+    >>> Hue2Accessory.from_int(59).value
+    (59, 'Unknown')
+    >>> str(Hue2Accessory.from_int(4))
+    'HUE 2 LED Strip 300 mm'
+
+    >>> Hue2Accessory.from_int(59).value == Hue2Accessory.from_int(59).value
+    True
+    >>> Hue2Accessory.from_int(59).value != Hue2Accessory.from_int(58).value
+    True
+    """
+
+    HUE_PLUS_LED_STRIP = (0x01, 'HUE+ LED Strip')
+    AER_RGB1_FAN = (0x02, 'AER RGB 1')
+    HUE2_LED_STRIP_300 = (0x04, 'HUE 2 LED Strip 300 mm')
+    HUE2_LED_STRIP_250 = (0x05, 'HUE 2 LED Strip 250 mm')
+    HUE2_LED_STRIP_200 = (0x06, 'HUE 2 LED Strip 200 mm')
+    HUE2_CABLE_COMB = (0x07, 'HUE 2 Cable Comb')
+    HUE2_UNDERGLOW_300 = (0x09, 'HUE 2 Underglow 300 mm')
+    HUE2_UNDERGLOW_200 = (0x0a, 'HUE 2 Underglow 200 mm')
+    AER_RGB2_120 = (0x0b, 'AER RGB 2 120 mm')
+    AER_RGB2_140 = (0x0c, 'AER RGB 2 140 mm')
+    KRAKENX_GEN4_PUMP = (0x10, 'Fourth generation Kraken X Pump')
+    KRAKENX_GEN4_LOGO = (0x11, 'Fourth generation Kraken X Logo')
+
+    @classmethod
+    def from_int(cls, value):
+        for member in cls:
+            if member.value[0] == value:
+                return member
+        member = object.__new__(cls)
+        member._name_ = f'UNKNOWN_{value}'
+        member._value_ = (value, 'Unknown')
+        return member
+
+    def to_int(self):
+        return self.value[0]
+
+    def __str__(self):
+        return self.value[1]
 
 
 def clamp(value, clampmin, clampmax):

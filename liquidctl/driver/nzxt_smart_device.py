@@ -98,9 +98,9 @@ updates.  It is recommended to initialize the devices at every boot.
 ---
 
 liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
-Copyright (C) 2018–2019  Jonas Malaco
+Copyright (C) 2018–2020  Jonas Malaco
 Copyright (C) 2019–2019  CaseySJ
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  each contribution's author
 
 This file is part of liquidctl.
 
@@ -122,7 +122,7 @@ import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.util import clamp
+from liquidctl.util import clamp, Hue2Accessory
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,7 +136,6 @@ _ANIMATION_SPEEDS = {
 
 _MIN_DUTY = 0
 _MAX_DUTY = 100
-
 
 class CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
@@ -381,17 +380,6 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
 
-    _ACCESSORY_NAMES = {
-        0x01: "HUE+ LED Strip",
-        0x02: "AER RGB 1",
-        0x04: "HUE 2 LED Strip 300 mm",
-        0x05: "HUE 2 LED Strip 250 mm",
-        0x06: "HUE 2 LED Strip 200 mm",
-        0x08: "HUE 2 Cable Comb",
-        0x0a: "HUE 2 Underglow 200 mm",
-        0x0b: "AER RGB 2 120 mm",
-        0x0c: "AER RGB 2 140 mm"
-    }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
@@ -432,7 +420,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
                     light_accessory_index += 1
                     if accessory_id != 0:
                         status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                       self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+                                       Hue2Accessory.from_int(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()

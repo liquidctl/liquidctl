@@ -43,7 +43,8 @@ import logging
 import itertools
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.util import normalize_profile, interpolate_profile, clamp
+from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
+                           Hue2Accessory
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,20 +137,6 @@ _ANIMATION_SPEEDS = {
     'faster': 0x3,
     'fastest': 0x4,
 }
-_ACCESSORY_NAMES = {
-    0x01: "HUE+ LED Strip",
-    0x02: "AER RGB 1",
-    0x04: "HUE 2 LED Strip 300 mm",
-    0x05: "HUE 2 LED Strip 250 mm",
-    0x06: "HUE 2 LED Strip 200 mm",
-    0x08: "HUE 2 Cable Comb",
-    0x09: "HUE 2 Underglow 300 mm",
-    0x0a: "HUE 2 Underglow 200 mm",
-    0x0b: "AER RGB 2 120 mm",
-    0x0c: "AER RGB 2 140 mm",
-    0x10: "Kraken X3 Pump Ring",
-    0x11: "Kraken X3 Pump Logo",
-}
 
 
 class KrakenThreeXDriver(UsbHidDriver):
@@ -194,7 +181,7 @@ class KrakenThreeXDriver(UsbHidDriver):
                     light_accessory_index += 1
                     if accessory_id != 0:
                         status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                       _ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+                                       Hue2Accessory.from_int(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()
