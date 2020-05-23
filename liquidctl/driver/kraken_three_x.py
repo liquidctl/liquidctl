@@ -193,6 +193,7 @@ class KrakenThreeXDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        self.device.clear_enqueued_reports()
         msg = self._read()
         return [
             ('Liquid temperature', msg[15] + msg[14] / 10, '°C'),
@@ -230,6 +231,7 @@ class KrakenThreeXDriver(UsbHidDriver):
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
                         duty, temp)
         self._write(header + interp)
+        self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
