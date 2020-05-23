@@ -167,11 +167,6 @@ class KrakenThreeXDriver(UsbHidDriver):
             status.append(('Firmware version', fw, ''))
 
         def parse_led_info(msg):
-            """
-            FIXME: is is possible to attach other accessories to the pump?
-            currently not possible to address devices via led id e.g. "led1"
-            accessory_id: ? (LED 1 - ?) & 0x10 (LED 2 - ring) & 0x11 (LED 3 - logo)
-            """
             num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
             accessories_per_channel = 6  # each lighting channel supports up to 6 accessories
             light_accessory_index = 15  # offset in msg of info about first light accessory
@@ -180,8 +175,12 @@ class KrakenThreeXDriver(UsbHidDriver):
                     accessory_id = msg[light_accessory_index]
                     light_accessory_index += 1
                     if accessory_id != 0:
-                        status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                       Hue2Accessory.from_int(accessory_id), ''))
+                        if light_channel == 0:
+                            status.append(('LED accessory {}'.format(accessory_num + 1),
+                                           Hue2Accessory.from_int(accessory_id), ''))
+                        else:
+                            LOGGER.debug('found LED component: (id=%d) %s', accessory_id,
+                                         Hue2Accessory.from_int(accessory_id))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()
