@@ -221,7 +221,7 @@ class KrakenThreeXDriver(UsbHidDriver):
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
         if channel != 'pump':
-            assert False, 'kraken X3 devices only support changing pump speeds'
+            raise ValueError(f'Unsupported channel \'{channel}\', only \'pump\' supported')
         header = [0x72, 0x01, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
