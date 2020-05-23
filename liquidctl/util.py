@@ -32,16 +32,18 @@ LOGGER = logging.getLogger(__name__)
 class Hue2Accessory(Enum):
     """Mapping of HUE 2 accessory IDs and names.
 
-    >>> Hue2Accessory.from_int(4).value
-    (4, 'HUE 2 LED Strip 300 mm')
-    >>> Hue2Accessory.from_int(59).value
-    (59, 'Unknown')
-    >>> str(Hue2Accessory.from_int(4))
+    >>> Hue2Accessory(4)
+    <Hue2Accessory.HUE2_LED_STRIP_300: 4>
+    >>> str(Hue2Accessory(4))
     'HUE 2 LED Strip 300 mm'
 
-    >>> Hue2Accessory.from_int(59).value == Hue2Accessory.from_int(59).value
+    Unknown IDs are automatically translated to equivalent pseudo-names.
+
+    >>> Hue2Accessory(59)
+    <Hue2Accessory.UNKNOWN_59: 59>
+    >>> Hue2Accessory(59).value == Hue2Accessory(59).value
     True
-    >>> Hue2Accessory.from_int(59).value != Hue2Accessory.from_int(58).value
+    >>> Hue2Accessory(59) != Hue2Accessory(58)
     True
     """
 
@@ -58,21 +60,25 @@ class Hue2Accessory(Enum):
     KRAKENX_GEN4_PUMP = (0x10, 'Fourth generation Kraken X Pump')
     KRAKENX_GEN4_LOGO = (0x11, 'Fourth generation Kraken X Logo')
 
-    @classmethod
-    def from_int(cls, value):
-        for member in cls:
-            if member.value[0] == value:
-                return member
+    def __new__(cls, value, pretty_name):
         member = object.__new__(cls)
-        member._name_ = f'UNKNOWN_{value}'
-        member._value_ = (value, 'Unknown')
+        member.pretty_name = pretty_name
+        member._value_ = value
         return member
 
-    def to_int(self):
-        return self.value[0]
+    @classmethod
+    def _missing_(cls, value):
+        dummy = object.__new__(cls)
+        dummy.pretty_name = 'Unknown'
+        dummy._name_ = f'UNKNOWN_{value}'
+        dummy._value_ = value
+        return dummy
 
     def __str__(self):
-        return self.value[1]
+        return self.pretty_name
+
+    def __eq__(self, other):
+        return self.value == other.value
 
 
 def clamp(value, clampmin, clampmax):

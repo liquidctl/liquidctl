@@ -177,10 +177,10 @@ class KrakenThreeXDriver(UsbHidDriver):
                     if accessory_id != 0:
                         if light_channel == 0:
                             status.append(('LED accessory {}'.format(accessory_num + 1),
-                                           Hue2Accessory.from_int(accessory_id), ''))
+                                           Hue2Accessory(accessory_id), ''))
                         else:
                             LOGGER.info('Additional LED component %s', 
-                                         Hue2Accessory.from_int(accessory_id))
+                                        Hue2Accessory(accessory_id))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()
