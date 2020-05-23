@@ -235,9 +235,7 @@ class KrakenThreeXDriver(UsbHidDriver):
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
-        duty = clamp(duty, 20, 100)
-        self.set_speed_profile(channel, [(i, duty) for i in range(20, 60)])
-        self.device.release()
+        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
 
     def _read(self):
         data = self.device.read(_READ_LENGTH)
