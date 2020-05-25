@@ -51,15 +51,32 @@ LOGGER = logging.getLogger(__name__)
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
-_CRITICAL_TEMPERATURE = 59
-_MIN_DUTY = 20
-_MAX_DUTY = 100
 
-_COLOR_CHANNELS = {
+# Available speed channels for model X coolers
+# name -> (channel_id, min_duty, max_duty)
+# TODO adjust min duty value to what the firmware enforces
+_SPEED_CHANNELS_KRAKENX = {
+    'pump': (0x1, 20, 100),
+}
+# Available speed channels for model Z coolers
+# name -> (channel_id, min_duty, max_duty)
+# TODO adjust min duty values to what the firmware enforces
+_SPEED_CHANNELS_KRAKENZ = {
+    'pump': (0x1, 20, 100),
+    'fan': (0x2, 0, 100),
+}
+_CRITICAL_TEMPERATURE = 59
+
+# Available color channels and IDs for model X coolers
+_COLOR_CHANNELS_KRAKENX = {
     'external': 0b001,
     'ring': 0b010,
     'logo': 0b100,
     'sync': 0b111
+}
+# Available color channels and IDs for model Z coolers
+_COLOR_CHANNELS_KRAKENZ = {
+    'external': 0b001,
 }
 _COLOR_MODES = {
     # (mode, size/variant, speed scale, min colors, max colors)
@@ -110,7 +127,7 @@ _COLOR_MODES = {
 # A static value per channel that is somehow related to animation time and
 # synchronization, although the specific mecanism is not yet understood.  Could
 # require information from `initialize`, but more testing is required.
-# FIXME: should also be move into the corresponding _COLOR_CHANNELS
+# FIXME: should also be move into the corresponding _COLOR_CHANNELS_KRAKENX
 _STATIC_VALUE = {
     0b001: 40, # may result in long all-off intervals (FIXME?)
     0b010: 8,
@@ -141,12 +158,20 @@ _ANIMATION_SPEEDS = {
 }
 
 
-class KrakenThreeXDriver(UsbHidDriver):
-    """liquidctl driver for Kraken X3 devices from NZXT."""
+class KrakenX3Driver(UsbHidDriver):
+    """liquidctl driver for model X forth-generation coolers from NZXT."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {})
+        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {
+            '_speed_channels': _SPEED_CHANNELS_KRAKENX,
+            '_color_channels': _COLOR_CHANNELS_KRAKENX,
+        })
     ]
+
+    def __init__(self, device, description, speed_channels, color_channels):
+        super().__init__(device, description)
+        self._speed_channels = speed_channels
+        self._color_channels = color_channels
 
     def initialize(self, **kwargs):
         """Initialize the device.
@@ -181,7 +206,7 @@ class KrakenThreeXDriver(UsbHidDriver):
                             status.append(('LED accessory {}'.format(accessory_num + 1),
                                            Hue2Accessory(accessory_id), ''))
                         else:
-                            LOGGER.info('Additional LED component %s', 
+                            LOGGER.info('Additional LED component %s',
                                         Hue2Accessory(accessory_id))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
@@ -203,7 +228,7 @@ class KrakenThreeXDriver(UsbHidDriver):
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel."""
-        cid = _COLOR_CHANNELS[channel]
+        cid = self.color_channels[channel]
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
@@ -221,12 +246,11 @@ class KrakenThreeXDriver(UsbHidDriver):
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
-        if channel != 'pump':
-            raise ValueError(f'Unsupported channel \'{channel}\', only \'pump\' supported')
-        header = [0x72, 0x01, 0x00, 0x00]
+        cid, dmin, dmax = self.speed_channels[channel]
+        header = [0x72, cid, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
-        interp = [clamp(interpolate_profile(norm, t), _MIN_DUTY, _MAX_DUTY) for t in stdtemps]
+        interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
         for temp, duty in zip(stdtemps, interp):
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
                         duty, temp)
@@ -313,3 +337,14 @@ class KrakenThreeXDriver(UsbHidDriver):
             led_size = size_variant if mval == 0x03 or mval == 0x05 else 0x03
             footer = [backwards_byte, color_count, mode_related, static_byte, led_size]
             self._write(header + color + footer)
+
+
+class KrakenZ3Driver(UsbHidDriver):
+    """liquidctl driver for model Z forth-generation coolers from NZXT."""
+
+    SUPPORTED_DEVICES = [
+        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (experimental)', {
+            '_speed_channels': _SPEED_CHANNELS_KRAKENZ,
+            '_color_channels': _COLOR_CHANNELS_KRAKENZ,
+        })
+    ]
