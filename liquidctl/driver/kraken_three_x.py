@@ -168,7 +168,7 @@ class KrakenX3Driver(UsbHidDriver):
         })
     ]
 
-    def __init__(self, device, description, speed_channels, color_channels):
+    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
         super().__init__(device, description)
         self._speed_channels = speed_channels
         self._color_channels = color_channels
