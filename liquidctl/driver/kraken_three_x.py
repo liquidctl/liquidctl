@@ -228,7 +228,7 @@ class KrakenX3Driver(UsbHidDriver):
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel."""
-        cid = self.color_channels[channel]
+        cid = self._color_channels[channel]
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
@@ -246,7 +246,7 @@ class KrakenX3Driver(UsbHidDriver):
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
-        cid, dmin, dmax = self.speed_channels[channel]
+        cid, dmin, dmax = self._speed_channels[channel]
         header = [0x72, cid, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
