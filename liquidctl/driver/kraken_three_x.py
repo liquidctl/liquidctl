@@ -339,7 +339,7 @@ class KrakenX3Driver(UsbHidDriver):
             self._write(header + color + footer)
 
 
-class KrakenZ3Driver(UsbHidDriver):
+class KrakenZ3Driver(KrakenX3Driver):
     """liquidctl driver for model Z forth-generation coolers from NZXT."""
 
     SUPPORTED_DEVICES = [
