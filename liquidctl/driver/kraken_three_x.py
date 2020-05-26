@@ -221,7 +221,7 @@ class KrakenX3Driver(UsbHidDriver):
         self.device.clear_enqueued_reports()
         msg = self._read()
         return [
-            ('Liquid temperature', msg[15] + msg[14] / 10, '°C'),
+            ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
             ('Pump duty', msg[19], '%'),
         ]
