@@ -163,8 +163,8 @@ class KrakenX3Driver(UsbHidDriver):
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {
-            '_speed_channels': _SPEED_CHANNELS_KRAKENX,
-            '_color_channels': _COLOR_CHANNELS_KRAKENX,
+            'speed_channels': _SPEED_CHANNELS_KRAKENX,
+            'color_channels': _COLOR_CHANNELS_KRAKENX,
         })
     ]
 
@@ -344,7 +344,7 @@ class KrakenZ3Driver(KrakenX3Driver):
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (experimental)', {
-            '_speed_channels': _SPEED_CHANNELS_KRAKENZ,
-            '_color_channels': _COLOR_CHANNELS_KRAKENZ,
+            'speed_channels': _SPEED_CHANNELS_KRAKENZ,
+            'color_channels': _COLOR_CHANNELS_KRAKENZ,
         })
     ]
