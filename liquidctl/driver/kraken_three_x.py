@@ -209,8 +209,8 @@ class KrakenX3Driver(UsbHidDriver):
                 status.append((f'LED accessory {i + 1}', accessory, ''))
 
             if len(self._color_channels) > 1:
-                found_ring = find(1, 0) == Hue2Accessory.KrakenX_GEN4_RING
-                found_logo = find(2, 0) == Hue2Accessory.KrakenX_GEN4_LOGO
+                found_ring = find(1, 0) == Hue2Accessory.KRAKENX_GEN4_RING
+                found_logo = find(2, 0) == Hue2Accessory.KRAKENX_GEN4_LOGO
                 status.append(('Pump Ring LEDs', 'detected' if found_ring else 'missing', ''))
                 status.append(('Pump Logo LEDs', 'detected' if found_logo else 'missing', ''))
                 assert found_ring and found_logo, "Pump ring and/or logo were not detected"
