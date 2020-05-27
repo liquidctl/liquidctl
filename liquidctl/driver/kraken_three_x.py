@@ -199,7 +199,8 @@ class KrakenX3Driver(UsbHidDriver):
                    f'Unexpected number of color channels received: {channel_count}'
 
             def find(channel, accessory):
-                acc_id = msg[15 + channel * HUE2_MAX_ACCESSORIES_IN_CHANNEL + accessory]
+                offset = 15  # offset of first channel/first accessory
+                acc_id = msg[offset + channel * HUE2_MAX_ACCESSORIES_IN_CHANNEL + accessory]
                 return Hue2Accessory(acc_id) if acc_id else None
 
             for i in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
