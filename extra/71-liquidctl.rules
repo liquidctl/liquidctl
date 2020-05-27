@@ -6,10 +6,10 @@
 # Distros will likely want to place this file in `/usr/lib/udev/rules.d/`,
 # while users installing this manually SHOULD use `/etc/udev/rules.d/` instead.
 #
-# The suggested name for this file is `51-liquidctl-uaccess.rules`.  This was
-# chosen based on the numbering of other uaccess tagging rule files in my
-# system (not very scientific, I know, but I could not find any documented
-# policy for this), as well as the need to let users overrule these rules.
+# The suggested name for this file is `51-liquidctl.rules`.  This was chosen
+# based on the numbering of other uaccess tagging rule files in my system (not
+# very scientific, I know, but I could not find any documented policy for
+# this), as well as the need to let users overrule these rules.
 #
 # These rules assume a system with a modern versions of systemd/udev, with
 # support for the `uaccess` tag; on older systems the rules can be changed to
