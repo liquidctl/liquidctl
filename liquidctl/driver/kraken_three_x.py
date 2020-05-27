@@ -355,3 +355,45 @@ class KrakenZ3Driver(KrakenX3Driver):
             'color_channels': _COLOR_CHANNELS_KRAKENZ,
         })
     ]
+
+    @classmethod
+    def probe(cls, handle, debug=False, **kwargs):
+        if not debug:
+            return
+        yield from super().probe(handle, **kwargs)
+
+
+class KrakenZ3GuardDriver(UsbHidDriver):
+    """liquidctl guard driver for model Z forth-generation coolers from NZXT.
+
+    Allows calls to initialize and status to succeed, even if the future support
+    driver is disabled.  This prevents breaking `liquidctl initialize all` or
+    `liquidctl status` when there are other fully supported devices.
+    """
+
+    SUPPORTED_DEVICES = [
+        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (future support)', {
+            'speed_channels': _SPEED_CHANNELS_KRAKENZ,
+            'color_channels': _COLOR_CHANNELS_KRAKENZ,
+        })
+    ]
+
+    @classmethod
+    def probe(cls, handle, debug=False, **kwargs):
+        if debug:
+            return
+        for dev in super().probe(handle, **kwargs):
+            LOGGER.warning('%s requires --debug to be enabled', dev.description)
+            yield dev
+
+    def connect(self, **kwargs):
+        pass
+
+    def initialize(self, **kwargs):
+        return []
+
+    def disconnect(self, **kwargs):
+        pass
+
+    def get_status(self, **kwargs):
+        return []
