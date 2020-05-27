@@ -411,11 +411,10 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
 
         def parse_led_info(msg):
             channel_count = msg[14]
-            offset = 15  # start at first channel/first accessory
+            offset = 15  # offset of first channel/first accessory
             for c in range(channel_count):
                 for a in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
-                    accessory_id = msg[offset]
-                    offset += 1
+                    accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
                     if accessory_id == 0:
                         break
                     status.append((f'LED {c + 1} accessory {a + 1}',
