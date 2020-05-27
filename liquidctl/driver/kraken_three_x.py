@@ -195,7 +195,7 @@ class KrakenX3Driver(UsbHidDriver):
 
         def parse_led_info(msg):
             channel_count = msg[14]
-            assert channel_count == len(self._color_channels) - 1, \
+            assert channel_count == len(self._color_channels) - ('sync' in self._color_channels), \
                    f'Unexpected number of color channels received: {channel_count}'
 
             def find(channel, accessory):
