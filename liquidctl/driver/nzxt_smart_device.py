@@ -122,7 +122,7 @@ import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.util import clamp, Hue2Accessory
+from liquidctl.util import clamp, Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
 LOGGER = logging.getLogger(__name__)
 
@@ -380,7 +380,6 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
 
-
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
         speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
@@ -407,20 +406,20 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         status = []
 
         def parse_firm_info(msg):
-            fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
+            fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
             status.append(('Firmware version', fw, ''))
 
         def parse_led_info(msg):
-            num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
-            accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
-            light_accessory_index = 15    # offset in msg of info about first light accessory
-            for light_channel in range(num_light_channels):
-                for accessory_num in range(accessories_per_channel):
-                    accessory_id = msg[light_accessory_index]
-                    light_accessory_index += 1
-                    if accessory_id != 0:
-                        status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                       Hue2Accessory(accessory_id), ''))
+            channel_count = msg[14]
+            offset = 15  # start at first channel/first accessory
+            for c in range(channel_count):
+                for a in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
+                    accessory_id = msg[offset]
+                    offset += 1
+                    if accessory_id == 0:
+                        break
+                    status.append((f'LED {c + 1} accessory {a + 1}',
+                                   Hue2Accessory(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()

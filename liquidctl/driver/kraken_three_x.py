@@ -44,7 +44,7 @@ import itertools
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
-                           Hue2Accessory
+                           Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
 LOGGER = logging.getLogger(__name__)
 
@@ -190,24 +190,29 @@ class KrakenX3Driver(UsbHidDriver):
         status = []
 
         def parse_firm_info(msg):
-            fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
+            fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
             status.append(('Firmware version', fw, ''))
 
         def parse_led_info(msg):
-            num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
-            accessories_per_channel = 6  # each lighting channel supports up to 6 accessories
-            light_accessory_index = 15  # offset in msg of info about first light accessory
-            for light_channel in range(num_light_channels):
-                for accessory_num in range(accessories_per_channel):
-                    accessory_id = msg[light_accessory_index]
-                    light_accessory_index += 1
-                    if accessory_id != 0:
-                        if light_channel == 0:
-                            status.append(('LED accessory {}'.format(accessory_num + 1),
-                                           Hue2Accessory(accessory_id), ''))
-                        else:
-                            LOGGER.info('Additional LED component %s',
-                                        Hue2Accessory(accessory_id))
+            channel_count = msg[14]
+            assert channel_count == len(self._color_channels) - 1, \
+                   f'Unexpected number of color channels received: {channel_count}'
+
+            def find(channel, accessory):
+                acc_id = msg[15 + channel * HUE2_MAX_ACCESSORIES_IN_CHANNEL + accessory]
+                return Hue2Accessory(acc_id) if acc_id else None
+
+            for i in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
+                accessory = find(0, i)
+                if not accessory:
+                    break
+                status.append((f'LED accessory {i + 1}', accessory, ''))
+
+            if len(self._color_channels) > 1:
+                assert find(1, 0) == Hue2Accessory.KrakenX_GEN4_RING, "Pump ring not detected"
+                assert find(2, 0) == Hue2Accessory.KrakenX_GEN4_LOGO, "Pump logo not detected"
+                status.append(('Pump Ring LEDs', 'detected', ''))
+                status.append(('Pump Logo LEDs', 'detected', ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()

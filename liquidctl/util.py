@@ -28,6 +28,9 @@ from enum import Enum, unique
 LOGGER = logging.getLogger(__name__)
 
 
+HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
+
+
 @unique
 class Hue2Accessory(Enum):
     """Mapping of HUE 2 accessory IDs and names.
@@ -57,8 +60,8 @@ class Hue2Accessory(Enum):
     HUE2_UNDERGLOW_200 = (0x0a, 'HUE 2 Underglow 200 mm')
     AER_RGB2_120 = (0x0b, 'AER RGB 2 120 mm')
     AER_RGB2_140 = (0x0c, 'AER RGB 2 140 mm')
-    KRAKENX_GEN4_PUMP = (0x10, 'Fourth generation Kraken X Pump')
-    KRAKENX_GEN4_LOGO = (0x11, 'Fourth generation Kraken X Logo')
+    KRAKENX_GEN4_RING = (0x10, 'Kraken X (X53, X63 or X73) Pump Ring')
+    KRAKENX_GEN4_LOGO = (0x11, 'Kraken X (X53, X63 or X73) Pump Logo')
 
     def __new__(cls, value, pretty_name):
         member = object.__new__(cls)
