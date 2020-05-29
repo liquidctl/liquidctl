@@ -239,7 +239,8 @@ class KrakenX3Driver(UsbHidDriver):
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'.format(mode, mincolors))
+            raise ValueError('Not enough colors for mode={}, at least {} required'
+                             .format(mode, mincolors))
         elif maxcolors == 0:
             if colors:
                 LOGGER.warning('too many colors for mode=%s, none needed', mode)
@@ -288,7 +289,8 @@ class KrakenX3Driver(UsbHidDriver):
 
     def _write(self, data):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)', ' '.join(format(i, '02x') for i in data), len(padding))
+        LOGGER.debug('write %s (and %i padding bytes)',
+                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
 
     def _write_colors(self, cid, mode, colors, sval):
@@ -299,7 +301,8 @@ class KrakenX3Driver(UsbHidDriver):
             speed_value = _SPEED_VALUE[speed_scale][sval]
             self._write([0x22, 0x10, cid, 0x00] + color)
             self._write([0x22, 0x11, cid, 0x00])
-            self._write([0x22, 0xa0, cid, 0x00, mval] + speed_value + [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
+            self._write([0x22, 0xa0, cid, 0x00, mval] + speed_value +
+                        [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             self._write([0x22, 0x10, cid])  # clear out all independent LEDs
             self._write([0x22, 0x11, cid])  # clear out all independent LEDs
@@ -308,11 +311,12 @@ class KrakenX3Driver(UsbHidDriver):
             color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
             color_lists[2] = [int(x // 4) for x in color_lists[1]]
             color_lists[3] = [0x00] * 8
-            for i in range(8):   #  send color scheme first, before enabling wings mode
+            for i in range(8):  # send color scheme first, before enabling wings mode
                 mod = 0x05 if i in [3, 7] else 0x01
                 speed_value = _SPEED_VALUE[speed_scale][sval]
                 direction = [0x04, 0x84] if i // 4 == 0 else [0x84, 0x04]
-                msg = ([0x22, 0x20, cid, i, 0x04] + speed_value + [mod] + [0x00] * 7 + [0x02] + direction + [0x00] * 10)
+                msg = ([0x22, 0x20, cid, i, 0x04] + speed_value + [mod] + [0x00] * 7 + [0x02] +
+                       direction + [0x00] * 10)
                 self._write(msg + color_lists[i % 4])
             self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
