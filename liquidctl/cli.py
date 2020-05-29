@@ -48,8 +48,8 @@ Examples:
 ---
 
 liquidctl – monitor and control liquid coolers and other devices.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
 liquidctl includes contributions by CaseySJ and other authors.
 

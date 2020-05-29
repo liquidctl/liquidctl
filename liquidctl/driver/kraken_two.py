@@ -24,8 +24,8 @@ backwards compatibility.
 ---
 
 liquidctl driver for third generation NZXT Kraken X and M liquid coolers.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
 Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier.
 

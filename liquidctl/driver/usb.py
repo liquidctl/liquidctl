@@ -60,8 +60,8 @@ keyword arguments and forwards them to the driver constructor.
 ---
 
 Base USB bus, driver and device APIs.
-Copyright (C) 2019–2019  Jonas Malaco
-Copyright (C) 2019–2019  each contribution's author
+Copyright (C) 2019–2020  Jonas Malaco
+Copyright (C) 2019–2020  each contribution's author
 
 This file is part of liquidctl.
 

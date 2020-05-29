@@ -86,11 +86,13 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2, RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>E</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
+| NZXT RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E, U_</sup> |
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
+<sup>_U_</sup> _Starting with upcoming liquidctl 1.4.0._  
 
 
 ## Installing on Linux
@@ -99,10 +101,10 @@ Packages are available for certain Linux distributions and package managers:
 
  - Alpine Linux: [liquidctl](https://pkgs.alpinelinux.org/packages?name=liquidctl)
  - ArchLinux/Manjaro: [liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
- - Fedora: [liquidctl](https://apps.fedoraproject.org/packages/liquidctl)
- - Debian/Ubuntu: work in progress (issue #62), continue reading for manual installation instructions
+ - Fedora: [liquidctl](https://src.fedoraproject.org/rpms/liquidctl)
+ - Debian/Ubuntu: keep reading for manual installation instructions (see also: [#62](https://github.com/jonasmalacofilho/liquidctl/issues/62))
 
-Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following dependencies are necessary:
+Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
 
 | Dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
@@ -112,6 +114,13 @@ Alternatively, it is possible to install liquidctl from PyPI or directly from th
 | docopt | python-docopt | python3-docopt | python3-docopt |
 | PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
+
+Setuptools and, optionally, pip are needed to manually install liquidctl:
+
+| Dependency | Arch Linux | Fedora | Ubuntu |
+| --- | --- | --- | --- |
+| setuptools | python-setuptools | python3-setuptools | python3-setuptools |
+| pip (optional) | python-pip | python3-pip | python3-pip |
 
 If cython-hidapi is to be installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
 
@@ -263,9 +272,13 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 ### Supported color specification formats
 
+
 When configuring lighting effects, colors can be specified in different representations and formats:
 
  - as an implicit hexadecimal RGB triple: e.g. `ff7f3f`
+
+_Starting with upcoming liquidctl 1.4.0:_
+
  - as an explicit RGB triple: e.g. `rgb(255, 127, 63)`
  - as a HSV (hue‑saturation‑value) triple: e.g. `hsv(20, 75, 100)`
     * hue ∊ [0, 360] (degrees); saturation, value ∊ [0, 100] (percent)
@@ -385,8 +398,8 @@ A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.co
 ## License
 
 liquidctl – monitor and control liquid coolers and other devices.  
-Copyright (C) 2018–2019  Jonas Malaco  
-Copyright (C) 2018–2019  each contribution's author  
+Copyright (C) 2018–2020  Jonas Malaco  
+Copyright (C) 2018–2020  each contribution's author  
 
 liquidctl includes contributions by CaseySJ and other authors.
 

@@ -54,11 +54,20 @@ from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
 
+_CMD_RUNTIME = 0x10
+_CMD_PROFILE = 0x11
+_CMD_OVERRIDE = 0x12
+_CMD_PUMP_PWM = 0x13
+_CMD_LUID = 0x14
+_CMD_READ_ONLY_RUNTIME = 0x20
+_CMD_STORE_SETTINGS = 0x21
+_CMD_EXTERNAL_TEMPERATURE = 0x22
+
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'pump':  (0x13, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
+    'pump':  (_CMD_PUMP_PWM, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
 }
 _VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
-    'fan':   (0x11, 0, 100)
+    'fan':   (_CMD_PROFILE, 0, 100)
 }
 _MAX_PROFILE_POINTS = 6
 _CRITICAL_TEMPERATURE = 60
@@ -72,8 +81,8 @@ _WRITE_ENDPOINT = 0x2
 _WRITE_TIMEOUT = 2000
 
 _LEGACY_FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
-    'fan':  (0x12, 0, 100),
-    'pump':  (0x13, 50, 100),
+    'fan':  (_CMD_OVERRIDE, 0, 100),
+    'pump':  (_CMD_PUMP_PWM, 50, 100),
 }
 
 # USBXpress specific control parameters; from the USBXpress SDK
@@ -203,7 +212,7 @@ class AsetekDriver(CommonAsetekDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         self._begin_transaction()
-        self._write([0x14, 0, 0, 0])
+        self._write([_CMD_LUID, 0, 0, 0])
         msg = self._end_transaction_and_read()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [

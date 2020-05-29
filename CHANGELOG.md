@@ -11,12 +11,15 @@ Changelog since 1.3.3:
 ### Added
  - List **experimental support for the NZXT RGB & Fan Controller**
  - Add support for HSV, HSL and explicit RGB color representations
- - [extra] Add initial generalized script for dynamic pump & fan control
+ - [NZXT E500/E650/E850] Add tentative names for the different +12 V rails
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
  - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
  - Dynamically find the HID interface and endpoints of PyUsbHids
  - Improve the documentation
+### Fixed
+ - [HUE 2] Add missing identifier for 200 mm HUE 2 strip
+ - [NZXT E500/E650/E850] Fix CAM-like decoding of firmware version
 
 
 ## [1.3.3] – 2020-02-18
