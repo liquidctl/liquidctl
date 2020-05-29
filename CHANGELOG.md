@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 Changelog since 1.3.3:
 ### Added
- - Add **experimental support for the NZXT RGB & Fan Controller**
+ - Add **experimental support for the NZXT RGB & Fan Controller** with the SmartDeviceV2Driver
  - Add support for HSV, HSL and explicit RGB color representations
  - [NZXT E500/E650/E850] Add tentative names for the different +12 V rails
  - [HUE 2] Add `sync` lighting channel
@@ -75,8 +75,8 @@ _Summary for the 1.3.0 release: man page, Corsair RXi/HXi and NZXT E power suppl
 
 Changelog since 1.3.0rc1:
 ### Added
- - Enable **experimental support for the NZXT HUE 2** with the Smart Device V2 driver
- - Enable **experimental support for the NZXT HUE 2 Ambient** with the Smart Device V2 driver
+ - Enable **experimental support for the NZXT HUE 2** with the SmartDeviceV2Driver
+ - Enable **experimental support for the NZXT HUE 2 Ambient** with the SmartDeviceV2Driver
  - Add `-m, --match <substring>` to allow filtering devices by description
  - Add `-n` short alias for `--pick`
 ### Changed
