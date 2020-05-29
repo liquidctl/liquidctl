@@ -13,6 +13,14 @@ The Kraken M22 shares similar RGB funcionality to the X models of the same
 generation, but has no liquid temperature sensor and no hability to report or
 set fan or pump speeds.
 
+Naming
+------
+
+The module and driver were named "kraken_two" and "KrakenTwoDriver" in
+reference to the common sufix in the model names (instead of the generation
+number).  This turned out to be a bad idea, but the names are kept for
+backwards compatibility.
+
 ---
 
 liquidctl driver for third generation NZXT Kraken X and M liquid coolers.

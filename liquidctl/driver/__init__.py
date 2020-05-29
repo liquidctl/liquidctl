@@ -39,7 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import liquidctl.driver.asetek
 import liquidctl.driver.corsair_hid_psu
 import liquidctl.driver.kraken_two
-import liquidctl.driver.kraken_three_x
+import liquidctl.driver.kraken_gen4
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.seasonic
 

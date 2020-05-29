@@ -1,43 +1,46 @@
-"""liquidctl driver for Kraken X3 devices from NZXT.
+"""liquidctl driver for fourth-generation NZXT Kraken X and Z liquid coolers.
 
- Supported devices
- -----------------
+Supported devices
+-----------------
 
-  - [ ] NZXT Kraken X53
-  - [ ] NZXT Kraken X63
-  - [✓] NZXT Kraken X73
+ - [✓] NZXT Kraken X (X53, X63 and Z73)
+ - [ ] NZXT Kraken Z (Z63 and Z73)
 
- Supported features
- ------------------
+Supported features
+------------------
 
-  - [✓] general monitoring
-  - [✓] pump speed control
-  - [✓] lighting control
-  - [✓] lighting control advanced - super-breathing, super-fixed, wings, water-cooler
-  - [✓] pump speed curve
+ - [✓] general monitoring
+ - [✓] pump/fan speed control
+ - [✓] hardware-supported LED animations
+ - [ ] OLED screen control (only Z models)
 
- ---
+Documentation
+-------------
 
- liquidctl driver for Kraken X3 devices from NZXT.
- Copyright (C) 2020–2020  Jonas Malaco
- Copyright (C) 2020–2020  Tom Frey
- Copyright (C) 2020–2020  each contribution's author
+See: <../../docs/fourth-generation-krakens.md>.
 
- This file is part of liquidctl.
+---
 
- liquidctl is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+liquidctl driver for fourth-generation NZXT Kraken X and Z liquid coolers.
+Copyright (C) 2020–2020  Jonas Malaco
+Copyright (C) 2020–2020  Tom Frey
+Copyright (C) 2020–2020  each contribution's author
 
- liquidctl is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+This file is part of liquidctl.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <https://www.gnu.org/licenses/>.
- """
+liquidctl is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+liquidctl is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import logging
 import itertools
@@ -78,76 +81,81 @@ _COLOR_CHANNELS_KRAKENX = {
 _COLOR_CHANNELS_KRAKENZ = {
     'external': 0b001,
 }
+# Available LED channel modes/animations
+# name -< (mode, size/variant, speed scale, min colors, max colors)
+# FIXME any point in a one-color *alternating* animation?
+# FIXME are all modes really supported by all channels? (this is better because
+#       of synchronization, but it's not how the previous generation worked, so
+#       I would like to double check)
 _COLOR_MODES = {
-    # (mode, size/variant, speed scale, min colors, max colors)
-    'off':                                  (0x00, 0x00, 0, 0, 0),
-    'fixed':                                (0x00, 0x00, 0, 1, 1),
-    'fading':                               (0x01, 0x00, 1, 1, 8),
-    'super-fixed':                          (0x01, 0x01, 9, 1, 40),
-    'spectrum-wave':                        (0x02, 0x00, 2, 0, 0),
-    'backwards-spectrum-wave':              (0x02, 0x00, 2, 0, 0),
-    'marquee-3':                            (0x03, 0x03, 2, 1, 1),
-    'marquee-4':                            (0x03, 0x04, 2, 1, 1),
-    'marquee-5':                            (0x03, 0x05, 2, 1, 1),
-    'marquee-6':                            (0x03, 0x06, 2, 1, 1),
-    'backwards-marquee-3':                  (0x03, 0x03, 2, 1, 1),
-    'backwards-marquee-4':                  (0x03, 0x04, 2, 1, 1),
-    'backwards-marquee-5':                  (0x03, 0x05, 2, 1, 1),
-    'backwards-marquee-6':                  (0x03, 0x06, 2, 1, 1),
-    'covering-marquee':                     (0x04, 0x00, 2, 1, 8),
-    'covering-backwards-marquee':           (0x04, 0x00, 2, 1, 8),
-    'alternating-3':                        (0x05, 0x03, 3, 1, 2),
-    'alternating-4':                        (0x05, 0x04, 3, 1, 2),
-    'alternating-5':                        (0x05, 0x05, 3, 1, 2),
-    'alternating-6':                        (0x05, 0x06, 3, 1, 2),
-    'moving-alternating-3':                 (0x05, 0x03, 4, 1, 2),
-    'moving-alternating-4':                 (0x05, 0x04, 4, 1, 2),
-    'moving-alternating-5':                 (0x05, 0x05, 4, 1, 2),
-    'moving-alternating-6':                 (0x05, 0x06, 4, 1, 2),
-    'backwards-moving-alternating-3':       (0x05, 0x03, 4, 1, 2),
-    'backwards-moving-alternating-4':       (0x05, 0x04, 4, 1, 2),
-    'backwards-moving-alternating-5':       (0x05, 0x05, 4, 1, 2),
-    'backwards-moving-alternating-6':       (0x05, 0x06, 4, 1, 2),
-    'pulse':                                (0x06, 0x00, 5, 1, 8),
-    'breathing':                            (0x07, 0x00, 6, 1, 8),
-    'super-breathing':                      (0x03, 0x00,10, 1, 40),
-    'candle':                               (0x08, 0x00, 0, 1, 1),
-    'starry-night':                         (0x09, 0x00, 5, 1, 1),
-    'rainbow-flow':                         (0x0b, 0x00, 2, 0, 0),
-    'super-rainbow':                        (0x0c, 0x00, 2, 0, 0),
-    'rainbow-pulse':                        (0x0d, 0x00, 2, 0, 0),
-    'backwards-rainbow-flow':               (0x0b, 0x00, 2, 0, 0),
-    'backwards-super-rainbow':              (0x0c, 0x00, 2, 0, 0),
-    'backwards-rainbow-pulse':              (0x0b, 0x00, 2, 0, 0),
-    'loading':                              (0x10, 0x00, 8, 1, 1),
-    'tai-chi':                              (0x0e, 0x00, 7, 1, 2),
-    'water-cooler':                         (0x0f, 0x00, 6, 2, 2),
-    'wings':                                (None, 0x00,11, 1, 1),
+    'off':                                  (0x00, 0x00,  0, 0, 0),
+    'fixed':                                (0x00, 0x00,  0, 1, 1),
+    'fading':                               (0x01, 0x00,  1, 1, 8),
+    'super-fixed':                          (0x01, 0x01,  9, 1, 40),
+    'spectrum-wave':                        (0x02, 0x00,  2, 0, 0),
+    'backwards-spectrum-wave':              (0x02, 0x00,  2, 0, 0),
+    'marquee-3':                            (0x03, 0x03,  2, 1, 1),
+    'marquee-4':                            (0x03, 0x04,  2, 1, 1),
+    'marquee-5':                            (0x03, 0x05,  2, 1, 1),
+    'marquee-6':                            (0x03, 0x06,  2, 1, 1),
+    'backwards-marquee-3':                  (0x03, 0x03,  2, 1, 1),
+    'backwards-marquee-4':                  (0x03, 0x04,  2, 1, 1),
+    'backwards-marquee-5':                  (0x03, 0x05,  2, 1, 1),
+    'backwards-marquee-6':                  (0x03, 0x06,  2, 1, 1),
+    'covering-marquee':                     (0x04, 0x00,  2, 1, 8),
+    'covering-backwards-marquee':           (0x04, 0x00,  2, 1, 8),
+    'alternating-3':                        (0x05, 0x03,  3, 1, 2),
+    'alternating-4':                        (0x05, 0x04,  3, 1, 2),
+    'alternating-5':                        (0x05, 0x05,  3, 1, 2),
+    'alternating-6':                        (0x05, 0x06,  3, 1, 2),
+    'moving-alternating-3':                 (0x05, 0x03,  4, 1, 2),
+    'moving-alternating-4':                 (0x05, 0x04,  4, 1, 2),
+    'moving-alternating-5':                 (0x05, 0x05,  4, 1, 2),
+    'moving-alternating-6':                 (0x05, 0x06,  4, 1, 2),
+    'backwards-moving-alternating-3':       (0x05, 0x03,  4, 1, 2),
+    'backwards-moving-alternating-4':       (0x05, 0x04,  4, 1, 2),
+    'backwards-moving-alternating-5':       (0x05, 0x05,  4, 1, 2),
+    'backwards-moving-alternating-6':       (0x05, 0x06,  4, 1, 2),
+    'pulse':                                (0x06, 0x00,  5, 1, 8),
+    'breathing':                            (0x07, 0x00,  6, 1, 8),
+    'super-breathing':                      (0x03, 0x00, 10, 1, 40),
+    'candle':                               (0x08, 0x00,  0, 1, 1),
+    'starry-night':                         (0x09, 0x00,  5, 1, 1),
+    'rainbow-flow':                         (0x0b, 0x00,  2, 0, 0),
+    'super-rainbow':                        (0x0c, 0x00,  2, 0, 0),
+    'rainbow-pulse':                        (0x0d, 0x00,  2, 0, 0),
+    'backwards-rainbow-flow':               (0x0b, 0x00,  2, 0, 0),
+    'backwards-super-rainbow':              (0x0c, 0x00,  2, 0, 0),
+    'backwards-rainbow-pulse':              (0x0b, 0x00,  2, 0, 0),
+    'loading':                              (0x10, 0x00,  8, 1, 1),
+    'tai-chi':                              (0x0e, 0x00,  7, 1, 2),
+    'water-cooler':                         (0x0f, 0x00,  6, 2, 2),
+    'wings':                                (None, 0x00, 11, 1, 1),
 }
 # A static value per channel that is somehow related to animation time and
-# synchronization, although the specific mecanism is not yet understood.  Could
-# require information from `initialize`, but more testing is required.
-# FIXME: should also be move into the corresponding _COLOR_CHANNELS_KRAKENX
+# synchronization, although the specific mechanism is not yet understood.
+# Could require information from `initialize`, but more testing is required.
 _STATIC_VALUE = {
-    0b001: 40, # may result in long all-off intervals (FIXME?)
+    0b001: 40,  # may result in long all-off intervals (FIXME?)
     0b010: 8,
     0b100: 1,
-    0b111: 40, # may result in long all-off intervals (FIXME?)
+    0b111: 40,  # may result in long all-off intervals (FIXME?)
 }
+# Speed scale/timing bytes
+# scale -> (slowest, slow, normal, fast, fastest)
 _SPEED_VALUE = {
-    # (slowest, slow, normal, fast, fastest)
-    0: ([0x32, 0x00], [0x32, 0x00], [0x32, 0x00], [0x32, 0x00], [0x32, 0x00]),
-    1: ([0x50, 0x00], [0x3c, 0x00], [0x28, 0x00], [0x14, 0x00], [0x0a, 0x00]),
-    2: ([0x5e, 0x01], [0x2c, 0x01], [0xfa, 0x00], [0x96, 0x00], [0x50, 0x00]),
-    3: ([0x40, 0x06], [0x14, 0x05], [0xe8, 0x03], [0x20, 0x03], [0x58, 0x02]),
-    4: ([0x20, 0x03], [0xbc, 0x02], [0xf4, 0x01], [0x90, 0x01], [0x2c, 0x01]),
-    5: ([0x19, 0x00], [0x14, 0x00], [0x0f, 0x00], [0x07, 0x00], [0x04, 0x00]),
-    6: ([0x28, 0x00], [0x1e, 0x00], [0x14, 0x00], [0x0a, 0x00], [0x04, 0x00]),
-    7: ([0x32, 0x00], [0x28, 0x00], [0x1e, 0x00], [0x14, 0x00], [0x0a, 0x00]),
-    8: ([0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00]),
-    9: ([0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00]),
-    10:([0x37, 0x00], [0x28, 0x00], [0x19, 0x00], [0x0a, 0x00], [0x00, 0x00]),
-    11:([0x6e, 0x00], [0x53, 0x00], [0x39, 0x00], [0x2e, 0x00], [0x20, 0x00]),
+    0:  ([0x32, 0x00], [0x32, 0x00], [0x32, 0x00], [0x32, 0x00], [0x32, 0x00]),
+    1:  ([0x50, 0x00], [0x3c, 0x00], [0x28, 0x00], [0x14, 0x00], [0x0a, 0x00]),
+    2:  ([0x5e, 0x01], [0x2c, 0x01], [0xfa, 0x00], [0x96, 0x00], [0x50, 0x00]),
+    3:  ([0x40, 0x06], [0x14, 0x05], [0xe8, 0x03], [0x20, 0x03], [0x58, 0x02]),
+    4:  ([0x20, 0x03], [0xbc, 0x02], [0xf4, 0x01], [0x90, 0x01], [0x2c, 0x01]),
+    5:  ([0x19, 0x00], [0x14, 0x00], [0x0f, 0x00], [0x07, 0x00], [0x04, 0x00]),
+    6:  ([0x28, 0x00], [0x1e, 0x00], [0x14, 0x00], [0x0a, 0x00], [0x04, 0x00]),
+    7:  ([0x32, 0x00], [0x28, 0x00], [0x1e, 0x00], [0x14, 0x00], [0x0a, 0x00]),
+    8:  ([0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00], [0x14, 0x00]),
+    9:  ([0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00], [0x00, 0x00]),
+    10: ([0x37, 0x00], [0x28, 0x00], [0x19, 0x00], [0x0a, 0x00], [0x00, 0x00]),
+    11: ([0x6e, 0x00], [0x53, 0x00], [0x39, 0x00], [0x2e, 0x00], [0x20, 0x00]),
 }
 _ANIMATION_SPEEDS = {
     'slowest': 0x0,
@@ -159,7 +167,7 @@ _ANIMATION_SPEEDS = {
 
 
 class KrakenX3Driver(UsbHidDriver):
-    """liquidctl driver for model X forth-generation coolers from NZXT."""
+    """liquidctl driver for model X fourth-generation coolers from NZXT."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {
@@ -351,7 +359,7 @@ class KrakenX3Driver(UsbHidDriver):
 
 
 class KrakenZ3Driver(KrakenX3Driver):
-    """liquidctl driver for model Z forth-generation coolers from NZXT."""
+    """liquidctl driver for model Z fourth-generation coolers from NZXT."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (experimental)', {
@@ -368,7 +376,7 @@ class KrakenZ3Driver(KrakenX3Driver):
 
 
 class KrakenZ3GuardDriver(UsbHidDriver):
-    """liquidctl guard driver for model Z forth-generation coolers from NZXT.
+    """liquidctl guard driver for model Z fourth-generation coolers from NZXT.
 
     Allows calls to initialize and status to succeed, even if the future support
     driver is disabled.  This prevents breaking `liquidctl initialize all` or
