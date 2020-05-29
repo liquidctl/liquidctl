@@ -83,7 +83,7 @@ _COLOR_CHANNELS_KRAKENZ = {
 }
 # Available LED channel modes/animations
 # name -< (mode, size/variant, speed scale, min colors, max colors)
-# FIXME any point in a one-color *alternating* animation?
+# FIXME any point in a one-color *alternating* or tai-chi animations?
 # FIXME are all modes really supported by all channels? (this is better because
 #       of synchronization, but it's not how the previous generation worked, so
 #       I would like to double check)
