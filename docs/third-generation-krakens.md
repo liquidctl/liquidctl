@@ -54,7 +54,7 @@ With those out of the way, each channel can be independently configured to a fix
 
 *Another important note: pump speeds between 50% and 60% are not currently exposed in CAM.  Presumably, there might be some scenarios when these lower speeds are not suitable.*
 
-For profiles, one or more temperature–duty pairs must be supplied.  Liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
+For profiles, one or more temperature–duty pairs must be supplied.  liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
 
 ```
 # liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100

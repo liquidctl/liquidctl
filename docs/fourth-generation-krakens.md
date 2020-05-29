@@ -87,7 +87,7 @@ For profiles, one or more temperature–duty pairs are supplied instead of singl
                         pairs of temperature (°C) -> duty (%)
 ```
 
-Liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
+liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
 
 
 ## RGB lighting with LEDs
