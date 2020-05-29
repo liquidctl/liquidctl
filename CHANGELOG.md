@@ -9,17 +9,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 Changelog since 1.3.3:
 ### Added
- - List **experimental support for the NZXT RGB & Fan Controller**
+ - Add **experimental support for the NZXT RGB & Fan Controller**
  - Add support for HSV, HSL and explicit RGB color representations
  - [NZXT E500/E650/E850] Add tentative names for the different +12 V rails
+ - [HUE 2] Add `sync` lighting channel
+ - Add **experimental support for NZXT Kraken X53, X63 and X73 coolers**
+ - Add future support for NZXT Kraken Z63 and Z73 coolers
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
  - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
  - Dynamically find the HID interface and endpoints of PyUsbHids
  - Improve the documentation
 ### Fixed
- - [HUE 2] Add missing identifier for 200 mm HUE 2 strip
- - [NZXT E500/E650/E850] Fix CAM-like decoding of firmware version
+ - [HUE 2] Add missing identifiers for some HUE2 accessories (#95; #109)
+ - [NZXT E500/E650/E850] Fix CAM-like decoding of firmware version (#46, comment)
+ - [HUE 2] Select the lighting channel with a bitmask (#109)
 
 
 ## [1.3.3] – 2020-02-18
