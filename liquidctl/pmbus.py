@@ -26,29 +26,13 @@ https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py
 White, Robert V.  Using the PMBus Protocol.  2005.
 http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
----
-
-Constants and methods for interfacing with PMBus compliant devices.
 Copyright (C) 2019–2019  Jonas Malaco
 Copyright (C) 2019–2019  each contribution's author
 
 Includes a CRC-8 implementation adapted from pycrc by Thomas Pircher.
 Copyright (c) 2006-2017  Thomas Pircher  <tehpeh-web@tty1.net>
 
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import math

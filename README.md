@@ -401,7 +401,7 @@ liquidctl – monitor and control liquid coolers and other devices.
 Copyright (C) 2018–2020  Jonas Malaco  
 Copyright (C) 2018–2020  each contribution's author  
 
-liquidctl includes contributions by CaseySJ and other authors.
+liquidctl includes contributions by CaseySJ, Tom Frey and other authors.
 
 liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
@@ -422,6 +422,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+This project uses [short SPDX License List identifiers][SPDX-Short-Identifiers]
+to concisely and unambiguously indicate the applicable license in each source
+file.
+
+[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
 
 
 ## Related projects

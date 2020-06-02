@@ -14,26 +14,10 @@ Is also possible to find devices compatible with a specific driver.
     for dev in KrakenTwoDriver.find_supported_devices():
         print(dev.description)
 
----
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
-Initialization of the drivers and buses package.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
-
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import liquidctl.driver.asetek
