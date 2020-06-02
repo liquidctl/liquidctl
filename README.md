@@ -148,7 +148,7 @@ A pre-built executable for the last stable version is available in [liquidctl-1.
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
-Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb (see notes in the [Supported devices](#supported-devices) section).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/).¹
+Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb (see notes in the [Supported devices](#supported-devices) section).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/)¹ - open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click `Replace Driver`. 
 
 The pre-built executables can be used as is by calling them from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that becomes true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
 
