@@ -2,29 +2,29 @@
 
 Specifications:
 
-Power Systems Management Protocol Specification.  Revision 1.3.1, 2015.
-Available uppon request, check the PMBus website.
+- Power Systems Management Protocol Specification.  Revision 1.3.1, 2015.
+  Available uppon request, check the PMBus website.
 
-Power Systems Management Protocol Specification.  Revision 1.2, 2010.
-Available on the PMBus website.
-http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_I_Rev_1-2_20100906.pdf
-http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_II_Rev_1-2_20100906.pdf
+- Power Systems Management Protocol Specification.  Revision 1.2, 2010.
+  Available on the PMBus website.
+  http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_I_Rev_1-2_20100906.pdf
+  http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_II_Rev_1-2_20100906.pdf
 
-System Management Bus (SMBus) Specification.  Version 3.1, 2018.
-Available on the SMBus website.
-http://smbus.org/specs/SMBus_3_1_20180319.pdf
+- System Management Bus (SMBus) Specification.  Version 3.1, 2018.
+  Available on the SMBus website.
+  http://smbus.org/specs/SMBus_3_1_20180319.pdf
 
 Additional references:
 
-Milios, John.  CRC-8 firmware implementations for SMBus.  1999.
-http://sbs-forum.org/marcom/dc2/20_crc-8_firmware_implementations.pdf
+- Milios, John.  CRC-8 firmware implementations for SMBus.  1999.
+ http://sbs-forum.org/marcom/dc2/20_crc-8_firmware_implementations.pdf
 
-Pircher, Thomas.  pycrc -- parameterisable CRC calculation utility and C source
-code generator: CRC algorithms implemented in Python.
-https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py
+- Pircher, Thomas.  pycrc -- parameterisable CRC calculation utility and C
+  source code generator: CRC algorithms implemented in Python.
+  https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py
 
-White, Robert V.  Using the PMBus Protocol.  2005.
-http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
+- White, Robert V.  Using the PMBus Protocol.  2005.
+  http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
 Copyright (C) 2019–2019  Jonas Malaco
 Copyright (C) 2019–2019  each contribution's author
