@@ -27,6 +27,7 @@ import liquidctl.driver.kraken_two
 import liquidctl.driver.kraken_gen4
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.seasonic
+import liquidctl.driver.gigabyte_rgb_fusion
 
 from liquidctl.driver.base import BaseBus, find_all_subclasses
 
