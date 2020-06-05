@@ -177,7 +177,8 @@ class KrakenX3Driver(UsbHidDriver):
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
         # initialize
-        self._write([0x70, 0x02, 0x01, 0xb8, 0x0b])
+        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+        self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
         self._write([0x70, 0x01])
         status = []
 
