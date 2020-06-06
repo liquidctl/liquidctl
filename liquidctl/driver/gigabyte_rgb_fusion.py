@@ -121,6 +121,17 @@ class CommonRGBFusionDriver(UsbHidDriver):
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
         return data
 
+    def _get_feature_report(self, report_id):
+        data = self.device.get_feature_report(report_id, self._READ_LENGTH)
+        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
+        return data
+        
+    def _send_feature_report(self, data):
+        padding = [0x0]*(self._WRITE_LENGTH - len(data))
+        LOGGER.debug('write %s (and %i padding bytes)',
+                     ' '.join(format(i, '02x') for i in data), len(padding))
+        self.device.send_feature_report(data + padding, self._WRITE_LENGTH)
+        
     def _write_colors(self, cid, mode, colors, sval):
         raise NotImplementedError()
 
@@ -214,50 +225,51 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         status = []
         # initialize
         self._write_single(0x60) # 0x60 = Initialize code
-        # self._write_single(0x60) # 0x60 = Initialize code
-        self._write_single(0x34) # 0x34 might refer to DIMM Module
-        self._write_series()
-        self._write_end_block()
-        self._write_single(0x32) # 0x32 might refer to DIMM Module
-        self._write([0xcc, 0x20, 0xff]) # another termination block?
-        self._write_end_block()
-        self._write_series()
-        self._write_end_block()
-        # self._write_series();
-        # self._write_end_block()        
-        status.append(('Name', 'Gigabyte', 'RGB Fusion'))
-        return sorted(status)
-        
-        LOGGER.debug('Command written, waiting for reply')
-        data = self._read()
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
+        data=self._get_feature_report(0xcc)
         if data[0]==0xcc and data[1]==0x01:
             num_devices = data[3]
             ver_major = data[4]
             ver_minor = data[5]
             ver_build = data[6]
+            ver_sub = data[7]
             index = 12  # first letter of device name in 'data'
             dev_name = ""
-            while True:
-                dev_name += data[index]
+            while data[index] != 0 and index < self._READ_LENGTH:
+                dev_name += chr(data[index])
                 index += 1
-                if data[index] == 0 or index >= _READ_LENGTH:
-                    break
-            status.append(('Name', dev_name, ''))
-            status.append(('LED channels', str(num_devices), ''))
-        self.device.release()
-        return sorted(status)
 
+            status.append(('Name', dev_name, ''))
+            status.append(('Version', '{}.'.format(ver_major)+'{}.'.format(ver_minor)+
+                    '{}.'.format(ver_build)+'{}'.format(ver_sub), ''))
+            status.append(('LED channels', num_devices, ''))
+        # self.device.release()
+        # return (status)
+        """
+        self._write_single(0x34) # 0x34 might refer to DIMM Module
+        self._write_series()
+        self._write_end_block()
+        self._write_single(0x32) # 0x32 might refer to DIMM Module
+        self._send_feature_report([0xcc, 0x20, 0xff]) # another termination block?
+        self._write_end_block()
+        self._write_series()
+        self._write_end_block()
+        """
+        # self._write_series();
+        # self._write_end_block()        
+
+        self.device.release()
+        return status
+        
     def _write_single(self, code):
-        self._write([0xcc, code])
+        self._send_feature_report([0xcc, code])
         
     def _write_series(self):
         """Send a series of initializer data packets"""
         for x in range(0x20,0x28):
-            self._write([0xcc, x])
+            self._send_feature_report([0xcc, x])
             
     def _write_end_block(self):
-        self._write([0xcc, 0x28, 0xff])
+        self._send_feature_report([0xcc, 0x28, 0xff])
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -304,8 +316,8 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         byte2=data[1]
         header = [0xcc, byte2, byte3]
         """
-        self._write_series()
-        self._write_end_block()
+        # self._write_series()
+        # self._write_end_block()
         # data=self._read()
 
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
@@ -313,10 +325,10 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         brightness = 0x5a        
         header = [adr1, adr2, adr3, 0x00, 0x00, 0x00, 0x00, 0x00,
                   0x00, 0x00, 0x00, mval, brightness, 0x00]
-        self._write(header + list(itertools.chain(*colors)))
+        self._send_feature_report(header + list(itertools.chain(*colors)))
         # self._read()
         
-        self._write_end_block()
+        # self._write_end_block()
         # self._read()
         
         self.device.release()
