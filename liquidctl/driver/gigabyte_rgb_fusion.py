@@ -12,32 +12,51 @@ Lighting is controlled on these motherboards via an ITE Tech chip with
 product ID 0x5072 that is mapped to a USB 2 port. On the Gigabyte Z490 Vision D,
 for example, the lighting controller is mapped to USB port HS12.
 
-... to do ...
-Additionally, it features two independent lighting (Addressable RGB) channels,
-unlike the single channel in the original. NZXT Aer RGB 2 fans and HUE 2 lighting
-accessories (HUE 2 LED strip, HUE 2 Unerglow, HUE 2 Cable Comb) can be
-connected. The firmware installed on the device exposes several color presets, most
-of them common to other NZXT products.
-
-HUE 2 and HUE+ devices (including Aer RGB and Aer RGB 2 fans) are supported, but
-HUE 2 components cannot be mixed with HUE+ components in the same channel. Each
-lighting channel supports up to 6 accessories and a total of 40 LEDs.
-...
-
 Driver
 ------
 
-This driver implements all features available at the hardware level:
+This driver implements the following features available at the hardware level:
 
  - initialization
  - control of lighting modes and colors
- - reporting of LED accessory count and type
  - reporting of firmware version
 
-After powering on from Mechanical Off, or if there have been hardware changes,
-the devices must be manually initialized by calling `initialize()`.  This will
-cause all connected fans and LED accessories to be detected, and enable status
-updates.  It is recommended to initialize the devices at every boot.
+The driver supports 7 color channels and a 'sync' channel. Channel names must
+be specified exactly as shown (upper/lower case matters):
+ - IOLED    : This is the LED next to the IO panel
+ - LED1     : This is one of two 12V RGB headers
+ - PCHLED   : This is the LED on the PCH chip ("Designare" on Vision D)
+ - PCILED   : This is an array of LEDs behind the PCI slots on *back side* of motherboard
+ - LED2     : This is second 12V RGB header
+ - DLED1    : This is one of two 5V addressable RGB headers
+ - DLED2    : This is second 5V addressable RGB header
+
+Each of these channels can be controlled individually. However, channel name 'sync'
+can be used to control all 7 channels at once.
+
+The driver supports 6 color modes:
+ - Off
+ - static
+ - pulse
+ - flash
+ - double-flash
+ - color-cycle
+ 
+The more elaborate Addressable RGB color/animation schemes permissable on DLED1
+and DLED2 headers are not currently supported.
+
+For color modes pulse, flash, double-flash and color-cycle, the speed of color change
+is governed by the --speed parameter on command line. It may be set to:
+ - slowest
+ - slower
+ - normal (default)
+ - faster
+ - fastest
+ - ludicrous
+
+The driver also supports brightness levels, but future version will provide command
+line support for this.
+
 
 Copyright (C) 2020–2020  CaseySJ
 Copyright (C) 2018–2020  each contribution's author
@@ -140,7 +159,6 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         }),
     ]
 
-    _MAX_READ_ATTEMPTS = 12
     _READ_LENGTH = 64
     _WRITE_LENGTH = 64
     _REPORT_ID = 0xCC	# RGB Fusion Device USB Request Report ID
