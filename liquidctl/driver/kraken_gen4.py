@@ -1,4 +1,5 @@
 """liquidctl driver for fourth-generation NZXT Kraken X and Z liquid coolers.
+<<<<<<< HEAD
 
 Supported devices
 -----------------
@@ -9,10 +10,19 @@ Supported devices
 Supported features
 ------------------
 
+=======
+Supported devices
+-----------------
+ - [✓] NZXT Kraken X (X53, X63 and Z73)
+ - [ ] NZXT Kraken Z (Z63 and Z73)
+Supported features
+------------------
+>>>>>>> Add kraken_gen4.py
  - [✓] general monitoring
  - [✓] pump/fan speed control
  - [✓] hardware-supported LED animations
  - [ ] OLED screen control (only Z models)
+<<<<<<< HEAD
 
 Documentation
 -------------
@@ -23,6 +33,14 @@ Copyright (C) 2020–2020  Jonas Malaco
 Copyright (C) 2020–2020  Tom Frey
 Copyright (C) 2020–2020  each contribution's author
 
+=======
+Documentation
+-------------
+See: <../../docs/fourth-generation-krakens.md>.
+Copyright (C) 2020–2020  Jonas Malaco
+Copyright (C) 2020–2020  Tom Frey
+Copyright (C) 2020–2020  each contribution's author
+>>>>>>> Add kraken_gen4.py
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -167,9 +185,13 @@ class KrakenX3Driver(UsbHidDriver):
 
     def initialize(self, **kwargs):
         """Initialize the device.
+<<<<<<< HEAD
 
         Reports the current firmware of the device.
 
+=======
+        Reports the current firmware of the device.
+>>>>>>> Add kraken_gen4.py
         Returns a list of (key, value, unit) tuples.
         """
         self.device.clear_enqueued_reports()
@@ -215,7 +237,10 @@ class KrakenX3Driver(UsbHidDriver):
 
     def get_status(self, **kwargs):
         """Get a status report.
+<<<<<<< HEAD
 
+=======
+>>>>>>> Add kraken_gen4.py
         Returns a list of `(property, value, unit)` tuples.
         """
         self.device.clear_enqueued_reports()
@@ -353,6 +378,7 @@ class KrakenZ3Driver(KrakenX3Driver):
         })
     ]
 
+<<<<<<< HEAD
     def get_status(self, **kwargs):
         """Get a status report.
 
@@ -368,3 +394,45 @@ class KrakenZ3Driver(KrakenX3Driver):
             ('Fan speed', msg[24] << 8 | msg[23], 'rpm'),
             ('Fan duty', msg[25], '%'),
         ]
+=======
+    @classmethod
+    def probe(cls, handle, debug=False, **kwargs):
+        if not debug:
+            return
+        yield from super().probe(handle, **kwargs)
+
+
+class KrakenZ3GuardDriver(UsbHidDriver):
+    """liquidctl guard driver for model Z fourth-generation coolers from NZXT.
+    Allows calls to initialize and status to succeed, even if the future support
+    driver is disabled.  This prevents breaking `liquidctl initialize all` or
+    `liquidctl status` when there are other fully supported devices.
+    """
+
+    SUPPORTED_DEVICES = [
+        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (future support)', {
+            'speed_channels': _SPEED_CHANNELS_KRAKENZ,
+            'color_channels': _COLOR_CHANNELS_KRAKENZ,
+        })
+    ]
+
+    @classmethod
+    def probe(cls, handle, debug=False, **kwargs):
+        if debug:
+            return
+        for dev in super().probe(handle, **kwargs):
+            LOGGER.warning('%s requires --debug to be enabled', dev.description)
+            yield dev
+
+    def connect(self, **kwargs):
+        pass
+
+    def initialize(self, **kwargs):
+        return []
+
+    def disconnect(self, **kwargs):
+        pass
+
+    def get_status(self, **kwargs):
+        return []
+>>>>>>> Add kraken_gen4.py
