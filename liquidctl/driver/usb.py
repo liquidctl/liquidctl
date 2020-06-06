@@ -82,7 +82,9 @@ _CLASS_HID = 3
 _ENDPOINT_DIR_MASK = 0x80
 _ENDPOINT_TRANSFER_TYPE_MASK = 7
 _HID_SET_REPORT = 0x09
+_HID_GET_REPORT = 0x01
 _HID_OUTPUT = 2
+_HID_FEATURE = 3
 
 LOGGER = logging.getLogger(__name__)
 
@@ -422,7 +424,39 @@ class PyUsbHid(PyUsbDevice):
         if not report_id:
             sent += 1
         return sent
-
+        
+    def get_feature_report(self, report_id, length):
+        """Get a feature report from a HID device
+        
+        Upon return, the first byte will contain the Report ID, and
+        the report data itself will begin at the second byte (data[1])
+        """
+        res = self.ctrl_transfer(
+                    bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_IN,
+                    bRequest=_HID_GET_REPORT,
+                    wValue=(_HID_FEATURE << 8) | report_id,
+                    wIndex=self.bInterfaceNumber,
+                    data_or_wLength=data)
+        return data
+        
+    def send_feature_report(self, data):
+        """Send a feature report to a HID device
+        
+        First byte must be Report ID. 
+        Returns number of bytes sent or -1 if error.
+        """
+        report_id = data[0]
+        if not report_id:
+            data = data[1:]
+        sent = self.ctrl_transfer(
+                    bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_OUT,
+                    bRequest=_HID_SET_REPORT,
+                    wValue=(_HID_FEATURE << 8) | report_id,
+                    wIndex=self.bInterfaceNumber,
+                    data_or_wLength=data)
+        if not report_id:
+            sent += 1
+        return sent
 
 class HidapiDevice:
     """A hidapi backed device.
@@ -496,6 +530,23 @@ class HidapiDevice:
         second byte.
         """
         return self.hiddev.write(data)
+
+    def get_feature_report(self, report_id, length):
+        """Get a feature report from a HID device
+        
+        Upon return, the first byte will contain the Report ID, and
+        the report data itself will begin at the second byte (data[1])
+        """
+        return self.hiddev.get_feature_report(report_id, length)
+
+    def send_feature_report(self, data, length):
+        """Send a feature report to a HID device
+        
+        First byte of data must be Report ID.
+        Returns number of bytes sent or -1 on error.
+        """
+        return self.hiddev.send_feature_report(data)
+
 
     @classmethod
     def enumerate(cls, api, vid=None, pid=None):
