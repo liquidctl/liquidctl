@@ -53,11 +53,12 @@ from liquidctl.driver.usb import UsbHidDriver
 LOGGER = logging.getLogger(__name__)
 
 _ANIMATION_SPEEDS = {
-    'slowest':  0x0,
-    'slower':   0x1,
-    'normal':   0x2,
-    'faster':   0x3,
-    'fastest':  0x4,
+    'slowest':   0x0,
+    'slower':    0x1,
+    'normal':    0x2,
+    'faster':    0x3,
+    'fastest':   0x4,
+    'ludicrous': 0x5,
 }
 
 
@@ -75,11 +76,7 @@ class CommonRGBFusionDriver(UsbHidDriver):
         if not self._color_channels:
             raise NotImplementedError()
 
-        adr1, adr2, adr3 = self._color_channels[channel]
-        LOGGER.info('channel address %s %s %s', hex(adr1), hex(adr2), hex(adr3))
-        #    ' '.join(format(adr2, '02x')), ' '.join(format(adr3, '02x')))
-
-        _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
+        _, _, _, _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
             raise ValueError('Not enough colors for mode={}, at least {} required'
@@ -92,23 +89,17 @@ class CommonRGBFusionDriver(UsbHidDriver):
             LOGGER.warning('too many colors for mode=%s, dropping to %i',
                            mode, maxcolors)
             colors = colors[:maxcolors]
-        sval = _ANIMATION_SPEEDS[speed]
-        self._write_colors(adr1, adr2, adr3, mode, colors, sval)
+        
+        if channel == 'sync':
+            selected_channels = self._color_channels
+        else:
+            selected_channels = {channel: self._color_channels[channel]}
+        
+        self._write_colors(selected_channels, mode, colors, speed)
         self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
-        if not self._speed_channels:
-            raise NotImplementedError()
-        if channel == 'sync':
-            selected_channels = self._speed_channels
-        else:
-            selected_channels = {channel: self._speed_channels[channel]}
-        for cname, (cid, dmin, dmax) in selected_channels.items():
-            duty = clamp(duty, dmin, dmax)
-            LOGGER.info('setting %s duty to %i%%', cname, duty)
-            self._write_fixed_duty(cid, duty)
-        self.device.release()
+        raise NotImplementedError()
 
     def _write(self, data):
         padding = [0x0]*(self._WRITE_LENGTH - len(data))
@@ -152,65 +143,74 @@ class RGBFusionDriver(CommonRGBFusionDriver):
     _MAX_READ_ATTEMPTS = 12
     _READ_LENGTH = 64
     _WRITE_LENGTH = 64
+    _REPORT_ID = 0xCC	# RGB Fusion Device USB Request Report ID
 
     _COLOR_MODES = {
-        # (mode, size/variant, moving/backwards, min colors, max colors)
-        'off':                              (0x00, 0x00, 0x00, 0, 0),
-        'static':                           (0x01, 0x00, 0x00, 1, 1),
-        'flash':                            (0x02, 0x00, 0x00, 1, 1),  
-        'double flash':                     (0x03, 0x00, 0x00, 1, 1),
-        'spectrum-wave':                    (0x02, 0x00, 0x00, 0, 0),
-        'backwards-spectrum-wave':          (0x02, 0x00, 0x01, 0, 0),
-        'marquee-3':                        (0x03, 0x00, 0x00, 1, 1),
-        'marquee-4':                        (0x03, 0x01, 0x00, 1, 1),
-        'marquee-5':                        (0x03, 0x02, 0x00, 1, 1),
-        'marquee-6':                        (0x03, 0x03, 0x00, 1, 1),
-        'backwards-marquee-3':              (0x03, 0x00, 0x01, 1, 1),
-        'backwards-marquee-4':              (0x03, 0x01, 0x01, 1, 1),
-        'backwards-marquee-5':              (0x03, 0x02, 0x01, 1, 1),
-        'backwards-marquee-6':              (0x03, 0x03, 0x01, 1, 1),
-        'covering-marquee':                 (0x04, 0x00, 0x00, 1, 8),
-        'covering-backwards-marquee':       (0x04, 0x00, 0x01, 1, 8),
-        'alternating-3':                    (0x05, 0x00, 0x00, 2, 2),
-        'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
-        'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
-        'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),
-        'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-6':             (0x05, 0x03, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'pulse':                            (0x06, 0x00, 0x00, 1, 8),
-        'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
-        'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
-        'candle':                           (0x08, 0x00, 0x00, 1, 1),
-        'starry-night':                     (0x09, 0x00, 0x00, 1, 1),
-        'rainbow-flow':                     (0x0b, 0x00, 0x00, 0, 0),
-        'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),
-        'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
-        'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
-        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),
-        'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
-        'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
+        # (mode, cycle, flash/pulse, number of flashes, min bright, max bright, min colors, max colors)
+        'off':                              (0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0, 0),
+        'static':                           (0x01, 0x00, 0x00, 0x00, 0x0f, 0x5a, 1, 1),
+        'pulse':                            (0x02, 0x00, 0x01, 0x00, 0x0f, 0x5a, 1, 1),  
+        'flash':                            (0x03, 0x00, 0x01, 0x01, 0x0f, 0x64, 1, 1),
+        'double-flash':                     (0x03, 0x00, 0x01, 0x02, 0x0f, 0x64, 1, 1),
+        'color-cycle':                      (0x04, 0x07, 0x00, 0x00, 0x0f, 0x64, 0, 0),
     }
-        
+    
+    _PULSE_SPEEDS = {
+        'slowest':                          (0x40, 0x06, 0x40, 0x06, 0x20, 0x03),
+        'slower':                           (0x78, 0x05, 0x78, 0x05, 0xbc, 0x02),
+        'normal':                           (0xb0, 0x04, 0xb0, 0x04, 0xf4, 0x01),
+        'faster':                           (0xe8, 0x03, 0xe8, 0x03, 0xf4, 0x01),
+        'fastest':                          (0x84, 0x03, 0x84, 0x03, 0xc2, 0x01),
+        'ludicrous':                        (0x20, 0x03, 0x20, 0x03, 0x90, 0x01),
+    }
+    
+    _FLASH_SPEEDS = {
+        'slowest':                          (0x64, 0x00, 0x64, 0x00, 0x60, 0x09),
+        'slower':                           (0x64, 0x00, 0x64, 0x00, 0x90, 0x08),
+        'normal':                           (0x64, 0x00, 0x64, 0x00, 0xd0, 0x07),
+        'faster':                           (0x64, 0x00, 0x64, 0x00, 0x08, 0x07),
+        'fastest':                          (0x64, 0x00, 0x64, 0x00, 0x40, 0x06),
+        'ludicrous':                        (0x64, 0x00, 0x64, 0x00, 0x78, 0x05),
+    }
+
+    _DOUBLE_FLASH_SPEEDS = {
+        'slowest':                          (0x64, 0x00, 0x64, 0x00, 0x28, 0x0a),
+        'slower ':                          (0x64, 0x00, 0x64, 0x00, 0x60, 0x09),
+        'normal':                           (0x64, 0x00, 0x64, 0x00, 0x90, 0x08),
+        'faster':                           (0x64, 0x00, 0x64, 0x00, 0xd0, 0x07),
+        'fastest':                          (0x64, 0x00, 0x64, 0x00, 0x08, 0x07),
+        'ludicrous':                        (0x64, 0x00, 0x64, 0x00, 0x40, 0x06),
+    }
+
+    _COLOR_CYCLE_SPEEDS = {
+        'slowest':                          (0x78, 0x05, 0xb0, 0x04, 0x00, 0x00),
+        'slower':                           (0x7e, 0x04, 0x1a, 0x04, 0x00, 0x00),
+        'normal':                           (0x52, 0x03, 0xee, 0x02, 0x00, 0x00),
+        'faster':                           (0xf8, 0x02, 0x94, 0x02, 0x00, 0x00),
+        'fastest':                          (0x26, 0x02, 0xc2, 0x01, 0x00, 0x00),
+        'ludicrous':                        (0xcc, 0x01, 0x68, 0x01, 0x00, 0x00),
+    }
+    
+    _RGB_FUSION_SPEEDS = {
+        'pulse':                            (_PULSE_SPEEDS),
+        'flash':                            (_FLASH_SPEEDS),
+        'double-flash':                     (_DOUBLE_FLASH_SPEEDS),
+        'color-cycle':                      (_COLOR_CYCLE_SPEEDS),    
+    }
+
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
         speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
         color_channels = {
-            'IOLED':  (0xcc, 0x20, 0x01),
-            'LED1':   (0xcc, 0x21, 0x02),
-            'PCHLED': (0xcc, 0x22, 0x04),
-            'PCILED': (0xcc, 0x23, 0x08),
-            'LED2':   (0xcc, 0x24, 0x10),
-            'DLED1':  (0xcc, 0x25, 0x20),
-            'DLED2':  (0xcc, 0x26, 0x40),
+            'IOLED':  (0x20, 0x01),
+            'LED1':   (0x21, 0x02),
+            'PCHLED': (0x22, 0x04),
+            'PCILED': (0x23, 0x08),
+            'LED2':   (0x24, 0x10),
+            'DLED1':  (0x25, 0x20),
+            'DLED2':  (0x26, 0x40),
         }
-        # color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, **kwargs):
@@ -225,7 +225,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         status = []
         # initialize
         self._write_single(0x60) # 0x60 = Initialize code
-        data=self._get_feature_report(0xcc)
+        data=self._get_feature_report(self._REPORT_ID)
         if data[0]==0xcc and data[1]==0x01:
             num_devices = data[3]
             ver_major = data[4]
@@ -242,34 +242,23 @@ class RGBFusionDriver(CommonRGBFusionDriver):
             status.append(('Version', '{}.'.format(ver_major)+'{}.'.format(ver_minor)+
                     '{}.'.format(ver_build)+'{}'.format(ver_sub), ''))
             status.append(('LED channels', num_devices, ''))
-        # self.device.release()
-        # return (status)
-        """
-        self._write_single(0x34) # 0x34 might refer to DIMM Module
-        self._write_series()
-        self._write_end_block()
-        self._write_single(0x32) # 0x32 might refer to DIMM Module
-        self._send_feature_report([0xcc, 0x20, 0xff]) # another termination block?
-        self._write_end_block()
-        self._write_series()
-        self._write_end_block()
-        """
-        # self._write_series();
-        # self._write_end_block()        
-
         self.device.release()
         return status
+
+    def _write_one_cycle(self):
+        self._write_series()
+        self._write_end_block()
         
     def _write_single(self, code):
-        self._send_feature_report([0xcc, code])
+        self._send_feature_report([self._REPORT_ID, code])
         
     def _write_series(self):
         """Send a series of initializer data packets"""
         for x in range(0x20,0x28):
-            self._send_feature_report([0xcc, x])
+            self._send_feature_report([self._REPORT_ID, x])
             
     def _write_end_block(self):
-        self._send_feature_report([0xcc, 0x28, 0xff])
+        self._send_feature_report([self._REPORT_ID, 0x28, 0xff])
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -279,62 +268,33 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         if not self._speed_channels:
             return []
         status = []
-
-        def parse_fan_info(msg):
-            rpm_offset = 24
-            duty_offset = 40
-            noise_offset = 56
-            for i, _ in enumerate(self._speed_channels):
-                if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
-                    status.append(('Fan {} speed'.format(i + 1), msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                    status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
-                rpm_offset += 2
-            status.append(('Noise level', msg[noise_offset], 'dB'))
-
-        self.device.clear_enqueued_reports()
-        self._read_until({b'\x67\x02': parse_fan_info})
-        self.device.release()
+        status.append(('Lighting channels only. Nothing to report', '', ''))
         return sorted(status)
 
+    def _write_colors(self, selected_channels, mode, colors, speed):
+        # self.device.clear_enqueued_reports()
+        mval, cycle, flash, num_flash, min_bright, max_bright, mincolors, maxcolors = self._COLOR_MODES[mode]
+        brightness = max_bright # temp place holder; need to get brightness from CLI
 
-    def _write_colors(self, adr1, adr2, adr3, mode, colors, sval):
-        self.device.clear_enqueued_reports()
-        """
-        header = [0xcc, 0x20, 0x00]
-        self._write(header)        
-        while True:
-            data=self._read()
-            byte2=data[1]
-            byte3=data[2]
-            if byte3 == 0xff:
-                break
-            header = [0xcc, byte2, 0x00]
-            self._write(header)
-        header = [0xcc, byte2-1, 0x00]
-        self._write(header)
-        data=self_.read()
-        byte2=data[1]
-        header = [0xcc, byte2, byte3]
-        """
-        # self._write_series()
-        # self._write_end_block()
-        # data=self._read()
-
-        mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
-        color_count = len(colors)
-        brightness = 0x5a        
-        header = [adr1, adr2, adr3, 0x00, 0x00, 0x00, 0x00, 0x00,
+        header = [self._REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                   0x00, 0x00, 0x00, mval, brightness, 0x00]
-        self._send_feature_report(header + list(itertools.chain(*colors)))
-        # self._read()
-        
-        # self._write_end_block()
-        # self._read()
-        
-        self.device.release()
+        header += list(itertools.chain(*colors))
+        header += [0x00, 0x00, 0x00, 0x00, 0x00]
+        if mval == 1: # this modes does not support color flashing or pulsing
+            header += [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+        else:
+            mode_speeds = self._RGB_FUSION_SPEEDS[mode]
+            animation_speed = mode_speeds[speed]
+            header += animation_speed
+        header += [0x00, 0x00, cycle, flash, num_flash]
 
-    def _write_fixed_duty(self, cid, duty):
-        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel passed as bitflag in last 3 bits of 3rd byte
-        msg[cid + 3] = duty # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
-        self._write(msg)
+        for cname, (adr1, adr2) in selected_channels.items():
+            header[1]=adr1
+            header[2]=adr2
+            # self._write_series()
+            self._write_single(adr1) # this clears previous setting to allow new setting for that channel
+            self._write_end_block()
+            self._send_feature_report(header)
+        self._write_end_block() 
+        self.device.release()
 
