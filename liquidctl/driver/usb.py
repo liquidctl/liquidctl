@@ -52,6 +52,7 @@ details of the device parameter, and find_supported_devices already accepts
 keyword arguments and forwards them to the driver constructor.
 
 Copyright (C) 2019–2020  Jonas Malaco
+Copyright (C) 2020-2020  CaseySJ
 Copyright (C) 2019–2020  each contribution's author
 
 SPDX-License-Identifier: GPL-3.0-or-later
