@@ -387,7 +387,8 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         """
         self.device.clear_enqueued_reports()
         # initialize
-        self._write([0x60, 0x02, 0x01, 0xE8, 0x03, 0x01, 0xE8, 0x03])
+        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+        self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
         self._write([0x60, 0x03])
         # request static infos
         self._write([0x10, 0x01])  # firmware info
