@@ -54,8 +54,10 @@ is governed by the --speed parameter on command line. It may be set to:
  - fastest
  - ludicrous
 
-The driver also supports brightness levels, but future version will provide command
-line support for this.
+The driver also supports brightness levels via --brightness argument on the command
+line. Brightness is specified in percentage from 0 to 100. Example:
+
+liquidctl set DLED1 color static FF0000 --brightness 75
 
 
 Copyright (C) 2020–2020  CaseySJ
@@ -90,10 +92,15 @@ class CommonRGBFusionDriver(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
+    def set_color(self, channel, mode, colors, speed='normal', brightness=-1, **kwargs):
         """Set the color mode."""
         if not self._color_channels:
             raise NotImplementedError()
+
+        if brightness == -1:
+            brightness = 100
+        elif (brightness < 0 or brightness > 100):
+            raise ValueError('invalid brightness, must be between 0 and 100 (percent)')
 
         _, _, _, _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
@@ -114,7 +121,7 @@ class CommonRGBFusionDriver(UsbHidDriver):
         else:
             selected_channels = {channel: self._color_channels[channel]}
         
-        self._write_colors(selected_channels, mode, colors, speed)
+        self._write_colors(selected_channels, mode, colors, speed, brightness)
         self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -289,10 +296,13 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         status.append(('Lighting channels only. Nothing to report', '', ''))
         return sorted(status)
 
-    def _write_colors(self, selected_channels, mode, colors, speed):
+    def _write_colors(self, selected_channels, mode, colors, speed, brightness):
         # self.device.clear_enqueued_reports()
         mval, cycle, flash, num_flash, min_bright, max_bright, mincolors, maxcolors = self._COLOR_MODES[mode]
-        brightness = max_bright # temp place holder; need to get brightness from CLI
+
+        # bright = max_bright # temp place holder; need to get brightness from CLI
+        bright = min_bright + ((max_bright - min_bright) * (brightness / 100))
+        LOGGER.debug('Brightness %i', bright)
 
         header = [self._REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                   0x00, 0x00, 0x00, mval, brightness, 0x00]

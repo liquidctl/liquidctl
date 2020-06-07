@@ -28,6 +28,7 @@ Animation options (devices/modes can support zero or more):
   --time-off <value>          Time to wait with the LED turned off (seconds)
   --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
+  --brightness <value>        Brightness of LED
 
 Other device options:
   --single-12v-ocp            Enable single rail +12V OCP
@@ -99,6 +100,7 @@ _PARSE_ARG = {
     '--time-off': int,
     '--alert-threshold': int,
     '--alert-color': color_from_str,
+    '--brightness': int,
 
     '--single-12v-ocp': bool,
     '--pump-mode': str,
