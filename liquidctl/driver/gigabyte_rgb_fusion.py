@@ -225,7 +225,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+        speed_channels = {'fan{}'.format(i + 1): (1 << i)
                           for i in range(speed_channel_count)}
         color_channels = {
             'IOLED':  (0x20, 0x01),
