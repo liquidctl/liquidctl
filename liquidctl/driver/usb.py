@@ -432,6 +432,7 @@ class PyUsbHid(PyUsbDevice):
         Upon return, the first byte will contain the Report ID, and
         the report data itself will begin at the second byte (data[1])
         """
+        data={}
         res = self.ctrl_transfer(
                     bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_IN,
                     bRequest=_HID_GET_REPORT,
