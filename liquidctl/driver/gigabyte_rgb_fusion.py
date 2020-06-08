@@ -157,7 +157,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
 
     _READ_LENGTH = 64
     _WRITE_LENGTH = 64
-    _REPORT_ID = 0xCC	# RGB Fusion Device USB Request Report ID
+    _REPORT_ID = 0xCC	# RGB Fusion USB Feature Report ID
 
     _COLOR_MODES = {
         # (mode, cycle, flash/pulse, number of flashes, min bright, max bright, min colors, max colors)
@@ -291,7 +291,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
                   0x00, 0x00, 0x00, mval, bright, 0x00]
         header += list(itertools.chain(*colors))
         header += [0x00, 0x00, 0x00, 0x00, 0x00]
-        if mval == 1: # this modes does not support color flashing or pulsing
+        if mval == 1: # this mode does not support color flashing or pulsing
             header += [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
         else:
             mode_speeds = self._RGB_FUSION_SPEEDS[mode]
