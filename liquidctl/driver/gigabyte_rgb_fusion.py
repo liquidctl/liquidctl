@@ -136,7 +136,7 @@ class CommonRGBFusionDriver(UsbHidDriver):
         padding = [0x0]*(self._WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
-        self.device.send_feature_report(data + padding, self._WRITE_LENGTH)
+        self.device.send_feature_report(data + padding)
         
     def _write_colors(self, cid, mode, colors, sval):
         raise NotImplementedError()
