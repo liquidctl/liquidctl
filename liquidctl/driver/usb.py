@@ -544,7 +544,7 @@ class HidapiDevice:
         """
         return self.hiddev.get_feature_report(report_id, length)
 
-    def send_feature_report(self, data, length):
+    def send_feature_report(self, data):
         """Send a feature report to a HID device
         
         First byte of data must be Report ID.
