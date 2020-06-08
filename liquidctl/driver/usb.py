@@ -429,16 +429,19 @@ class PyUsbHid(PyUsbDevice):
     def get_feature_report(self, report_id, length):
         """Get a feature report from a HID device
         
-        Upon return, the first byte will contain the Report ID, and
-        the report data itself will begin at the second byte (data[1])
+        If report_id > 0, the first byte of the returned data will
+        contain the Report ID, and the report data itself will begin at
+        the second byte (data[1])
+        
+        If report_id = 0, the data will begin at the first byte (data[0])
         """
-        data={}
-        res = self.ctrl_transfer(
+        
+        data = self.ctrl_transfer(
                     bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_IN,
                     bRequest=_HID_GET_REPORT,
                     wValue=(_HID_FEATURE << 8) | report_id,
                     wIndex=self.bInterfaceNumber,
-                    data_or_wLength=data)
+                    data_or_wLength=length)
         return data
         
     def send_feature_report(self, data):

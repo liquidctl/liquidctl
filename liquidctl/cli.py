@@ -94,7 +94,6 @@ _PARSE_ARG = {
     '--time-off': int,
     '--alert-threshold': int,
     '--alert-color': color_from_str,
-    '--brightness': int,
 
     '--hid': str,
     '--legacy-690lc': bool,

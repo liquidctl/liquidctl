@@ -54,11 +54,6 @@ is governed by the --speed parameter on command line. It may be set to:
  - fastest
  - ludicrous
 
-The driver also supports brightness levels via --brightness argument on the command
-line. Brightness is specified in percentage from 0 to 100. Example:
-
-liquidctl set DLED1 color static FF0000 --brightness 75
-
 
 Copyright (C) 2020–2020  CaseySJ
 Copyright (C) 2018–2020  each contribution's author
@@ -86,21 +81,15 @@ _ANIMATION_SPEEDS = {
 class CommonRGBFusionDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+    def __init__(self, device, description, color_channels, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
-        self._speed_channels = speed_channels
         self._color_channels = color_channels
 
-    def set_color(self, channel, mode, colors, speed='normal', brightness=-1, **kwargs):
+    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode."""
         if not self._color_channels:
             raise NotImplementedError()
-
-        if brightness == -1:
-            brightness = 100
-        elif (brightness < 0 or brightness > 100):
-            raise ValueError('invalid brightness, must be between 0 and 100 (percent)')
 
         _, _, _, _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
@@ -121,7 +110,7 @@ class CommonRGBFusionDriver(UsbHidDriver):
         else:
             selected_channels = {channel: self._color_channels[channel]}
         
-        self._write_colors(selected_channels, mode, colors, speed, brightness)
+        self._write_colors(selected_channels, mode, colors, speed)
         self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -225,8 +214,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        speed_channels = {'fan{}'.format(i + 1): (1 << i)
-                          for i in range(speed_channel_count)}
+        
         color_channels = {
             'IOLED':  (0x20, 0x01),
             'LED1':   (0x21, 0x02),
@@ -236,7 +224,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
             'DLED1':  (0x25, 0x20),
             'DLED2':  (0x26, 0x40),
         }
-        super().__init__(device, description, speed_channels, color_channels, **kwargs)
+        super().__init__(device, description, color_channels, **kwargs)
 
     def initialize(self, **kwargs):
         """Initialize the device.
@@ -251,7 +239,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         # initialize
         self._write_single(0x60) # 0x60 = Initialize code
         data=self._get_feature_report(self._REPORT_ID)
-        if data[0]==0xcc and data[1]==0x01:
+        if data[0]==self._REPORT_ID and data[1]==0x01:
             num_devices = data[3]
             ver_major = data[4]
             ver_minor = data[5]
@@ -286,26 +274,21 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         self._send_feature_report([self._REPORT_ID, 0x28, 0xff])
 
     def get_status(self, **kwargs):
-        """Get a status report.
+        """Get a status report. Nothing to report"""
+        
+        return []
 
-        Returns a list of (key, value, unit) tuples.
-        """
-        if not self._speed_channels:
-            return []
-        status = []
-        status.append(('Lighting channels only. Nothing to report', '', ''))
-        return sorted(status)
-
-    def _write_colors(self, selected_channels, mode, colors, speed, brightness):
+    def _write_colors(self, selected_channels, mode, colors, speed):
         # self.device.clear_enqueued_reports()
         mval, cycle, flash, num_flash, min_bright, max_bright, mincolors, maxcolors = self._COLOR_MODES[mode]
 
         # bright = max_bright # temp place holder; need to get brightness from CLI
-        bright = min_bright + ((max_bright - min_bright) * (brightness / 100))
+        brightness = 100 # hardcode this for now
+        bright = int(min_bright + ((max_bright - min_bright) * (brightness / 100)))
         LOGGER.debug('Brightness %i', bright)
 
         header = [self._REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                  0x00, 0x00, 0x00, mval, brightness, 0x00]
+                  0x00, 0x00, 0x00, mval, bright, 0x00]
         header += list(itertools.chain(*colors))
         header += [0x00, 0x00, 0x00, 0x00, 0x00]
         if mval == 1: # this modes does not support color flashing or pulsing
