@@ -153,6 +153,10 @@ class RGBFusionDriver(CommonRGBFusionDriver):
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),
+        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 (experimental)', {
+            'speed_channel_count': 0,
+            'color_channel_count': 7
+        }),
     ]
 
     _READ_LENGTH = 64
@@ -234,7 +238,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
-        self.device.clear_enqueued_reports()
+        # self.device.clear_enqueued_reports()
         status = []
         # initialize
         self._write_single(0x60) # 0x60 = Initialize code
