@@ -35,6 +35,7 @@ Other options:
   --hid <module>              Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
   --single-12v-ocp            Enable single rail +12V OCP
+  --unsafe <features>         Comma-separated bleeding-edge features to enable
   --version                   Display the version number
   --help                      Show this message
 
@@ -97,6 +98,7 @@ _PARSE_ARG = {
     '--hid': str,
     '--legacy-690lc': bool,
     '--single-12v-ocp': bool,
+    '--unsafe': lambda x: x.split(','),
     '--verbose': bool,
     '--debug': bool,
 }
