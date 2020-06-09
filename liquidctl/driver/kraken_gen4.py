@@ -343,6 +343,9 @@ class KrakenX3Driver(UsbHidDriver):
             self._write(header + color + footer)
 
 
+_UNSAFE_DRIVER = 'kraken_z3_driver'
+
+
 class KrakenZ3Driver(KrakenX3Driver):
     """liquidctl driver for model Z fourth-generation coolers from NZXT."""
 
@@ -354,10 +357,9 @@ class KrakenZ3Driver(KrakenX3Driver):
     ]
 
     @classmethod
-    def probe(cls, handle, debug=False, **kwargs):
-        if not debug:
-            return
-        yield from super().probe(handle, **kwargs)
+    def probe(cls, handle, unsafe=None, **kwargs):
+        if unsafe and _UNSAFE_DRIVER in unsafe:
+            yield from super().probe(handle, **kwargs)
 
 
 class KrakenZ3GuardDriver(UsbHidDriver):
@@ -365,7 +367,7 @@ class KrakenZ3GuardDriver(UsbHidDriver):
 
     Allows calls to initialize and status to succeed, even if the future support
     driver is disabled.  This prevents breaking `liquidctl initialize all` or
-    `liquidctl status` when there are other fully supported devices.
+    `liquidctl status` for users that have other devices.
     """
 
     SUPPORTED_DEVICES = [
@@ -376,11 +378,11 @@ class KrakenZ3GuardDriver(UsbHidDriver):
     ]
 
     @classmethod
-    def probe(cls, handle, debug=False, **kwargs):
-        if debug:
+    def probe(cls, handle, unsafe=None, **kwargs):
+        if unsafe and _UNSAFE_DRIVER in unsafe:
             return
         for dev in super().probe(handle, **kwargs):
-            LOGGER.warning('%s requires --debug to be enabled', dev.description)
+            LOGGER.warning('%s requires `--unsafe %s` to be enabled', dev.description, _UNSAFE_DRIVER)
             yield dev
 
     def connect(self, **kwargs):
