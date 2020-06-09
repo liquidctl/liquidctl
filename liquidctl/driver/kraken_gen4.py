@@ -361,6 +361,22 @@ class KrakenZ3Driver(KrakenX3Driver):
         if unsafe and _UNSAFE_DRIVER in unsafe:
             yield from super().probe(handle, **kwargs)
 
+    def get_status(self, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        self.device.clear_enqueued_reports()
+        self._write([0x74, 0x01])
+        msg = self._read()
+        return [
+            ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
+            ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
+            ('Pump duty', msg[19], '%'),
+            ('Fan speed', msg[24] << 8 | msg[23], 'rpm'),
+            ('Fan duty', msg[25], '%'),
+        ]
+
 
 class KrakenZ3GuardDriver(UsbHidDriver):
     """liquidctl guard driver for model Z fourth-generation coolers from NZXT.
@@ -382,7 +398,8 @@ class KrakenZ3GuardDriver(UsbHidDriver):
         if unsafe and _UNSAFE_DRIVER in unsafe:
             return
         for dev in super().probe(handle, **kwargs):
-            LOGGER.warning('%s requires `--unsafe %s` to be enabled', dev.description, _UNSAFE_DRIVER)
+            LOGGER.warning('%s requires `--unsafe %s` to be enabled', dev.description,
+                           _UNSAFE_DRIVER)
             yield dev
 
     def connect(self, **kwargs):
