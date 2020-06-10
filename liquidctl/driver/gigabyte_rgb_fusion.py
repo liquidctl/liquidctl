@@ -92,7 +92,7 @@ class CommonRGBFusionDriver(UsbHidDriver):
             raise NotImplementedError()
 
         _, _, _, _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
-        colors = [[g, r, b] for [r, g, b] in colors]
+        colors = [[b, g, r] for [r, g, b] in colors]
         if len(colors) < mincolors:
             raise ValueError('Not enough colors for mode={}, at least {} required'
                              .format(mode, mincolors))
