@@ -85,6 +85,9 @@ class CommonRGBFusionDriver(UsbHidDriver):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._color_channels = color_channels
+        print('interface_number ', self.device.hidinfo['interface_number'])
+        print('usage_page ', self.device.hidinfo['usage_page'])
+        print('usage ', self.device.hidinfo['usage'])
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode."""
