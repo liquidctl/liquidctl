@@ -100,3 +100,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2007", TAG+="uacc
 
 # NZXT Kraken Z (Z63 or Z73)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3008", TAG+="uaccess"
+
+# Gigabyte RGB Fusion 2.0
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="8297", TAG+="uaccess"
