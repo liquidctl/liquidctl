@@ -152,11 +152,11 @@ class RGBFusionDriver(CommonRGBFusionDriver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 motherboards."""
 
     SUPPORTED_DEVICES = [
-        (0x048d, 0x5702, 0xCC, 'Gigabyte RGB Fusion 2.0 (experimental)', {
+        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 (experimental)', {
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),
-        (0x048d, 0x8297, 0xCC, 'Gigabyte RGB Fusion 2.0 (experimental)', {
+        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 (experimental)', {
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),

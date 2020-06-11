@@ -106,16 +106,13 @@ class BaseUsbDriver(BaseDriver):
     SUPPORTED_DEVICES = []
 
     @classmethod
-    def probe(cls, handle, vendor=None, product=None, usage=None, release=None,
+    def probe(cls, handle, vendor=None, product=None, release=None,
               serial=None, match=None, **kwargs):
         """Probe `handle` and yield corresponding driver instances."""
-        """uid = usage number; third parameter of SUPPORTED_DEVICES"""
-        for vid, pid, uid, description, devargs in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
             if (product and product != pid) or handle.product_id != pid:
-                continue
-            if (usage and usage != uid) or handle.usage_id != uid:
                 continue
             if release and handle.release_number != release:
                 continue
@@ -152,11 +149,6 @@ class BaseUsbDriver(BaseDriver):
         """16-bit umeric product identifier."""
         return self.device.product_id
 
-    @property
-    def usage_id(self):
-        """16-bit numeric vendor identifier."""
-        return self.device.usage_id
-        
     @property
     def release_number(self):
         """16-bit BCD device versioning number."""
@@ -324,14 +316,6 @@ class PyUsbDevice:
     @property
     def vendor_id(self):
         return self.usbdev.idVendor
-
-    @property
-    def product_id(self):
-        return self.usbdev.idProduct
-
-    @property
-    def usage_id(self):    # return 0 for now
-        return 0
 
     @property
     def product_id(self):
@@ -585,10 +569,6 @@ class HidapiDevice:
     def product_id(self):
         return self.hidinfo['product_id']
 
-    @property
-    def usage_id(self):
-        return self.hidinfo['usage']
-        
     @property
     def release_number(self):
         return self.hidinfo['release_number']
