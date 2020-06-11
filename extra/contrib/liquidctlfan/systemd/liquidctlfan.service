@@ -1,0 +1,10 @@
+[Unit]
+Description=Liquidctl Fan Control
+After=liquidcfg.service
+
+[Service]
+ExecStart=/usr/bin/liquidctlfan
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target 

@@ -1,0 +1,77 @@
+#!/bin/bash
+# Place this script in /usr/bin or you've to adjust systemd unit file. 
+# Please have a look at cputemp. You may have to adjust something for your system.
+Name="Liquidctl Fan Control"
+PROCNAME=`basename "$0"`
+# Product ID of HUE Grid
+PRID="0x1711"
+
+# CPU temperature values
+CPUT1="50.0"
+CPUT2="60.0"
+CPUT3="70.0"
+CPUT4="80.0"
+# FAN setpoints
+FANT0="30"
+FANT1="40"
+FANT2="50"
+FANT3="80"
+FANT4="100"
+#Interval check time
+SLTIME="10"
+#Enable Syslog
+SYSLOG="1"
+programs=(bc sensors liquidctl logger)
+
+for program in "${programs[@]}"; do
+    if ! command -v "$program" > /dev/null 2>&1; then
+        echo "The following application: $program is missing. Please check it first."
+	exit 1
+    fi
+done
+
+LIQBIN=`command -v liquidctl`
+
+while true
+do
+	# ATTENTION Check your CPU temperature sensor value.
+	cputemp=`sensors | grep Tdie | awk '{ print $2 }' | sed -e s/°C//g | sed -e s/+//g`
+	if (( $(echo "$cputemp > $CPUT4" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT4%\r"`
+		fi
+		$LIQBIN --product $PRID set sync speed $FANT4
+	elif (( $(echo "$cputemp >= $CPUT3" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT3%\r"`
+		fi
+		$LIQBIN --product $PRID set sync speed $FANT3
+	elif (( $(echo "$cputemp >= $CPUT2" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT2%\r"`
+		fi
+		$LIQBIN --product $PRID set sync speed $FANT2
+	elif (( $(echo "$cputemp >= $CPUT1" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT1%\r"`
+		fi
+		$LIQBIN --product $PRID set sync speed $FANT1
+	elif (( $(echo "$cputemp < $CPUT1" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME Low CPU $cputemp°C FANs $FANT0%\r"`
+		fi
+		$LIQBIN --product $PRID set sync speed $FANT0
+	fi
+	sleep $SLTIME
+done
+
