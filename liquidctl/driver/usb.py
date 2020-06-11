@@ -98,12 +98,7 @@ class BaseUsbDriver(BaseDriver):
                 continue
             if (product and product != pid) or handle.product_id != pid:
                 continue
-            # if usage_id == 0, it means we can accept the device regardless
-            # of what SUPPORTED_DEVICES requires, because usage_id is meant
-            # for Mac/Windows where a superfluous device with usage_id = 16
-            # can appear, but that device should not be used. On Linux,
-            # usage_id will be 0, so we can accept that device.
-            if (usage and usage != uid) or (handle.usage_id != uid and handle.usage_id != 0):
+            if (usage and usage != uid) or handle.usage_id != uid:
                 continue
             if release and handle.release_number != release:
                 continue
