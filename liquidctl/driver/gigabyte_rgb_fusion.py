@@ -61,8 +61,10 @@ Copyright (C) 2018–2020  each contribution's author
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import sys
 import itertools
 import logging
+from liquidctl.driver.usb import UsbHidDriver, HidapiDevice
 
 from liquidctl.driver.usb import UsbHidDriver
 
@@ -218,6 +220,25 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         'double-flash':                     (_DOUBLE_FLASH_SPEEDS),
         'color-cycle':                      (_COLOR_CYCLE_SPEEDS),    
     }
+
+    @classmethod
+    def probe(cls, handle, **kwargs):
+        """Probe `handle` and yield corresponding driver instances.
+
+        These devices have multiple top-level HID usages.  On Windows and Mac
+        each usage results in a different HID handle and, specifically on
+        Windows, only one of them is usable.  So HidapiDevice handles matching
+        other usages have to be ignored.
+
+        PyUsbHid handles are also ignored on Mac and Windows since they are not
+        useful either: on Mac OS it is not practical to interact with a HID
+        using libusb, and on Windows libusb wraps an underlying HID handle of
+        unknown usage.
+        """
+        if (not sys.platform.startswith('linux')) and (type(handle) != HidapiDevice or handle.hidinfo['usage'] != 0xCC):
+            return
+        yield from super().probe(handle, **kwargs)
+
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
