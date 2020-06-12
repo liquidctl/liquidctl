@@ -401,13 +401,13 @@ A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.co
 
 ## Troubleshooting
 
-### Device does not show up in `list` (Windows)
+### Device not listed (Windows)
 
 This is likely caused by having replaced the original Microsoft Generic HID driver for a USB HID.  If the device in question is not marked in [Supported devices](#supported-devices) as requiring a special driver, try uninstalling the custom driver.
 
-### Device does not show up in `list` (Linux)
+### Device not listed (Linux)
 
-As before, this is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of using a program that accesses the device (directly or indirectly) via libusb-1.0 but fails to reattach the original kernel driver.
+As before, this is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0 but failed to reattach the original driver.
 
 This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
 
@@ -415,24 +415,26 @@ This can be temporarily solved by manually rebinding the device to the kernel `u
 echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usbhid/bind
 ```
 
-A more permanent solution is to politely ask the authors of the program responsible leaving the kernel driver detached to use `libusb_attach_kernel_driver` or `libusb_set_auto_detach_kernel_driver`.
+A more permanent solution is to politely ask the authors of the program that is responsible for leaving the kernel driver detached to use `libusb_attach_kernel_driver` or `libusb_set_auto_detach_kernel_driver`.
 
 ### Access denied or open failed (Linux)
 
 These errors are usually caused by a lack of permission to access the device.  On Linux distros that normally requires root privileges.
 
-You can execute liquidctl as root or using `sudo`.  Alternatively, you can install the udev rules provided in [`extra/71-liquidctl.rules`](extra/71-liquidctl.rules) to allow unprivileged access to the devices supported by liquidctl.
+Alternatively to running liquidctl as root (or with `sudo`), you can install the udev rules provided in [`extra/71-liquidctl.rules`](extra/71-liquidctl.rules) to allow unprivileged access to the devices supported by liquidctl.
 
 ### Other problems
 
-If your problem is not listed here, try searching the [Issues](https://github.com/jonasmalacofilho/liquidctl/issues).  You can also always open a new issue.
+If your problem is not listed here, try searching the [issues](https://github.com/jonasmalacofilho/liquidctl/issues).  If no issue matches your problem, if you still need help, or if you have found a bug, please open one.
 
-When opening or commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.  Also include the arguments and output of all relevant/failing liquidctl commands, using the `--debug` option to enable additional debug information.
+When commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.
+
+Also include the arguments and output of all relevant/failing liquidctl commands, using the `--debug` option to enable additional debug information.
 
 
 ## Additional documentation
 
-Be sure to browse [`docs/`](docs/) for additional documentation.  You are also encouraged to contribute to the documentation, including by adding new files covering specific use cases or solutions.
+Be sure to browse [`docs/`](docs/) for additional documentation.  You are also encouraged to contribute to the documentation, including adding new files that cover specific use cases or solutions.
 
 
 ## License
