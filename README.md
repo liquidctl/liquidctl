@@ -328,7 +328,9 @@ The unit can be started manually or set to automatically run during boot using s
 # systemctl enable liquidcfg
 ```
 
-A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which handles multiple devices and uses the LEDs to convey progress and alert of errors.
+If necessary, it is also possible to have the service unit explicitly wait for the device to be available: [Making systemd units wait for devices](docs/linux/making-systemd-units-wait-for-devices).
+
+A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which includes dynamic adjustments of the lighting depending on the time of day.
 
 ### Set up Windows using Task Scheduler
 
