@@ -32,10 +32,10 @@ Animation options (devices/modes can support zero or more):
 Other options:
   -v, --verbose               Output additional information
   -g, --debug                 Show debug information on stderr
-  --hid <module>              Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
   --single-12v-ocp            Enable single rail +12V OCP
   --unsafe <features>         Comma-separated bleeding-edge features to enable
+  --hid <ignored>             Deprecated
   --version                   Display the version number
   --help                      Show this message
 
@@ -95,7 +95,6 @@ _PARSE_ARG = {
     '--alert-threshold': int,
     '--alert-color': color_from_str,
 
-    '--hid': str,
     '--legacy-690lc': bool,
     '--single-12v-ocp': bool,
     '--unsafe': lambda x: x.split(','),
@@ -213,6 +212,9 @@ def _device_set_speed(dev, args, **opts):
 
 
 def _make_opts(args):
+    if args['--hid']:
+        LOGGER.warning('Ignoring --hid %s: deprecated option, API will be selected automatically',
+                       args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
