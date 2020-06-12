@@ -45,21 +45,22 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Table of contents
 
-1. [Supported devices](#supported-devices)
-2. [Installing on Linux](#installing-on-linux)
-3. [Installing on Windows](#installing-on-windows)
-4. [Installing on macOS](#installing-on-macos)
-5. [The command-line interface](#introducing-the-command-line-interface)
-    1. [Listing and selecting devices](#listing-and-selecting-devices)
-    2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
-    3. [Supported color specification formats](#supported-color-specification-formats)
-6. [Automation and running at boot](#automation-and-running-at-boot)
-    1. [Set up Linux using systemd](#set-up-linux-using-systemd)
-    2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
-    3. [Set up macOS using launchd](#set-up-macos-using-launchd)
-7. [Troubleshooting](#troubleshooting)
-8. [License](#license)
-9. [Related projects](#related-projects)
+1.  [Supported devices](#supported-devices)
+2.  [Installing on Linux](#installing-on-linux)
+3.  [Installing on Windows](#installing-on-windows)
+4.  [Installing on macOS](#installing-on-macos)
+5.  [The command-line interface](#introducing-the-command-line-interface)
+     1. [Listing and selecting devices](#listing-and-selecting-devices)
+     2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
+     3. [Supported color specification formats](#supported-color-specification-formats)
+6.  [Automation and running at boot](#automation-and-running-at-boot)
+     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
+     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
+     3. [Set up macOS using launchd](#set-up-macos-using-launchd)
+7.  [Troubleshooting](#troubleshooting)
+8.  [Additional documentation](#additional-documentation)
+9.  [License](#license)
+10. [Related projects](#related-projects)
 
 
 ## Supported devices
@@ -420,13 +421,18 @@ A more permanent solution is to politely ask the authors of the program responsi
 
 These errors are usually caused by a lack of permission to access the device.  On Linux distros that normally requires root privileges.
 
-You can execute liquidctl as root or using `sudo`.  Alternatively, you can install the udev rules provided in `extra/71-liquidctl.rules` to allow unprivileged access to the devices supported by liquidctl.
+You can execute liquidctl as root or using `sudo`.  Alternatively, you can install the udev rules provided in [`extra/71-liquidctl.rules`](extra/71-liquidctl.rules) to allow unprivileged access to the devices supported by liquidctl.
 
 ### Other problems
 
 If your problem is not listed here, try searching the [Issues](https://github.com/jonasmalacofilho/liquidctl/issues).  You can also always open a new issue.
 
 When opening or commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.  Also include the arguments and output of all relevant/failing liquidctl commands, using the `--debug` option to enable additional debug information.
+
+
+## Additional documentation
+
+Be sure to browse [`docs/`](docs/) for additional documentation.  You are also encouraged to contribute to the documentation, including by adding new files covering specific use cases or solutions.
 
 
 ## License
