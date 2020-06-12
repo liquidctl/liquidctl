@@ -34,7 +34,7 @@ With these changes in place, and after rebooting the system, the service should 
 
 Notes:
 
-- the `SUBSYSTEM` value must match how liquidctl connects to the device, consult [`extra/71-liquidctl.rules`](../../extra/71-liquidctl.rules) for the correct value for a given device
+- the `SUBSYSTEM` value must match how liquidctl connects to the device, consult [`extra/linux/71-liquidctl.rules`](../../extra/linux/71-liquidctl.rules) for the correct value for a given device
 - when possible it is good to include the serial number in the match, to account for the possibility of multiple units of the same model
 - on the service unit file `Requires=` is used instead of `Wants=` because we want a [strong dependency](https://www.freedesktop.org/software/systemd/man/systemd.unit.html#%5BUnit%5D%20Section%20Options)
 - rebooting the system is not technically necessary, but triggering the new udev rules without a reboot is outside the scope of this document

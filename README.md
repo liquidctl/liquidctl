@@ -421,7 +421,7 @@ A more permanent solution is to politely ask the authors of the program that is 
 
 These errors are usually caused by a lack of permission to access the device.  On Linux distros that normally requires root privileges.
 
-Alternatively to running liquidctl as root (or with `sudo`), you can install the udev rules provided in [`extra/71-liquidctl.rules`](extra/71-liquidctl.rules) to allow unprivileged access to the devices supported by liquidctl.
+Alternatively to running liquidctl as root (or with `sudo`), you can install the udev rules provided in [`extra/linux/71-liquidctl.rules`](extra/linux/71-liquidctl.rules) to allow unprivileged access to the devices supported by liquidctl.
 
 ### Other problems
 
