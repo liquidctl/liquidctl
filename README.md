@@ -57,8 +57,9 @@ NZXT Kraken X (X42, X52, X62 or X72)
     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
     3. [Set up macOS using launchd](#set-up-macos-using-launchd)
-7. [License](#license)
-8. [Related projects](#related-projects)
+7. [Troubleshooting](#troubleshooting)
+8. [License](#license)
+9. [Related projects](#related-projects)
 
 
 ## Supported devices
@@ -148,7 +149,7 @@ A pre-built executable for the last stable version is available in [liquidctl-1.
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
-Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb (see notes in the [Supported devices](#supported-devices) section).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/)¹ - open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click `Replace Driver`. 
+Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb: for the specific devices that are affected see the notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for other devices will likely cause them to disapear from liquidctl.
 
 The pre-built executables can be used as is by calling them from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that becomes true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
 
@@ -393,6 +394,37 @@ It is important to adjust the location of Python 3 framework in the PATH environ
 You can enable and disable the agent with `launchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist`.  Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.
 
 A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/post_install/pump_control).
+
+
+## Troubleshooting
+
+### Device does not show up in `list` (Windows)
+
+This is likely caused by having replaced the original Microsoft Generic HID driver for a USB HID.  If the device in question is not marked in [Supported devices](#supported-devices) as requiring a special driver, try uninstalling the custom driver.
+
+### Device does not show up in `list` (Linux)
+
+As before, this is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of using a program that accesses the device (directly or indirectly) via libusb-1.0 but fails to reattach the original kernel driver.
+
+This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
+
+```
+echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usbhid/bind
+```
+
+A more permanent solution is to politely ask the authors of the program responsible leaving the kernel driver detached to use `libusb_attach_kernel_driver` or `libusb_set_auto_detach_kernel_driver`.
+
+### Access denied or open failed (Linux)
+
+These errors are usually caused by a lack of permission to access the device.  On Linux distros that normally requires root privileges.
+
+You can execute liquidctl as root or using `sudo`.  Alternatively, you can install the udev rules provided in `extra/71-liquidctl.rules` to allow unprivileged access to the devices supported by liquidctl.
+
+### Other problems
+
+If your problem is not listed here, try searching the [Issues](https://github.com/jonasmalacofilho/liquidctl/issues).  You can also always open a new issue.
+
+When opening or commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.  Also include the arguments and output of all relevant/failing liquidctl commands, using the `--debug` option to enable additional debug information.
 
 
 ## License
