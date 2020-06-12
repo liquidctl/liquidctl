@@ -434,7 +434,9 @@ Also include the arguments and output of all relevant/failing liquidctl commands
 
 ## Additional documentation
 
-Be sure to browse [`docs/`](docs/) for additional documentation.  You are also encouraged to contribute to the documentation, including adding new files that cover specific use cases or solutions.
+Be sure to browse [`docs/`](docs/) for additional documentation, and [`extra/`](extra/) for some example scripts and other possibly useful things.
+
+You are also encouraged to contribute to the documentation and to these examples, including adding new files that cover your specific use cases or solutions.
 
 
 ## License
