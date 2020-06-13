@@ -37,7 +37,12 @@ LIQBIN=`command -v liquidctl`
 while true
 do
 	# ATTENTION Check your CPU temperature sensor value.
-	cputemp=`sensors | grep Tdie | awk '{ print $2 }' | sed -e s/°$UNIT//g | sed -e s/+//g`
+	if [ $UNIT == "F" ]
+	then
+		cputemp=`sensors -f | grep Tdie | awk '{ print $2 }' | sed -e s/°$UNIT//g | sed -e s/+//g`
+	else
+		cputemp=`sensors | grep Tdie | awk '{ print $2 }' | sed -e s/°$UNIT//g | sed -e s/+//g`
+	fi
 	if (( $(echo "$cputemp > $CPUT4" | bc  -l) ))
 	then
 		if [ $SYSLOG -eq "1" ]
