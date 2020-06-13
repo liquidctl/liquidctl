@@ -55,6 +55,10 @@ SYSLOG="1" # Enable Syslog
 SYSLOG="0" # Only STDOUT
 ```
 
+UNIT defines whether Celsius or Fahrenheit is used. _Attention: No conversion takes place!_
+
+`UNIT="C"`
+
 ## Systemd
 In the directory systemd you will find the unit file.
 Copy the file with root access liquidctlfan.service into /etc/systemd/system.
