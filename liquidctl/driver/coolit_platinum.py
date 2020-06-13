@@ -124,12 +124,19 @@ class CoolitPlatinumDriver(UsbHidDriver):
         Work-in-progress; currently the pump mode will unconditionally be set
         to balanced.
 
-        Channels that remain to be configured might default to 100% duty.
+        Channels that remain to be configured may default to 100% duty.
         """
         channel = channel.lower()
-        if channel not in ['fan1', 'fan2']:
-            raise ValueError("Only channels supported channels are fan1 and fan2")
-        self._data.store_int(f'{channel}_duty', clamp(duty, 0, 100))
+        duty = clamp(duty, 0, 100)
+        if channel == 'fan':
+            # TODO revisit the name of this pseudo-channel
+            keys = ['fan1_duty', ['fan2_duty']
+        elif channel in ['fan1', 'fan2']:
+            keys = [f'{name}_duty']
+        else:
+            raise ValueError("Unknown channel, should be one of: 'fan', 'fan1' or 'fan2'")
+        for key in keys:
+            self._data.store_int(key, duty)
         self._send_set_cooling()
 
     def _send_command(self, feature, command, data=None):
