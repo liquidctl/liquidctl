@@ -28,6 +28,10 @@ In my PC I have three fans on the radiator and one case fan on a NZXT Grid+ V3 c
 Under PRID you have to enter the ID of the controller to be controlled:
 `PRID="0x1711"`
 
+UNIT defines whether Celsius or Fahrenheit is used. _Attention: You've to take a look at CPUT1..CPUT4!_
+
+`UNIT="C"`
+
 The CPU temperatures CPUT1...4 are the limit values of the CPU temperature.
 CPUT1 is the lowest and CPUT4 the highest. The values are stored in degrees Celsius and must be adjusted if Fahrenheit is to be used.
 ```
@@ -54,10 +58,6 @@ Via SYSLOG the logging into the syslog is activated. With 1 the output is transf
 SYSLOG="1" # Enable Syslog
 SYSLOG="0" # Only STDOUT
 ```
-
-UNIT defines whether Celsius or Fahrenheit is used. _Attention: No conversion takes place!_
-
-`UNIT="C"`
 
 ## Systemd
 In the directory systemd you will find the unit file.
