@@ -5,7 +5,8 @@ Name="Liquidctl Fan Control"
 PROCNAME=`basename "$0"`
 # Product ID of HUE Grid
 PRID="0x1711"
-
+#Unit Celsius C or Fahrenheit F
+UNIT="C"
 # CPU temperature values
 CPUT1="50.0"
 CPUT2="60.0"
@@ -21,8 +22,7 @@ FANT4="100"
 SLTIME="10"
 #Enable Syslog
 SYSLOG="1"
-#Unit Celsius C or Fahrenheit F
-UNIT="C"
+
 programs=(bc sensors liquidctl logger)
 
 for program in "${programs[@]}"; do
