@@ -58,6 +58,23 @@ _FAN_MODE_FIXED_DUTY = 0x2
 _PUMP_MODE_BALANCED = 0x1
 
 
+def sequence(storage):
+    """Return a generator that produces valid protocol sequence numbers.
+
+    Unstable API.
+
+    Sequence numbers increment across successful invocations of liquidctl, but
+    are not atomic.  The sequence is: 1, 2, 3... 29, 30, 31, 1, 2, 3...
+
+    In the protocol the sequence number is usually shifted left by 3 bits, and
+    a shifted sequence will look like: 8, 16, 24... 232, 240, 248, 8, 16, 24...
+    """
+    while True:
+        seq = storage.load_int('sequence', default=0) % 31 + 1
+        storage.store_int('sequence', seq)
+        yield seq
+
+
 class CoolitPlatinumDriver(UsbHidDriver):
     """liquidctl driver for Corsair Platinum and PRO XT coolers."""
 
@@ -72,14 +89,16 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
-        self._sequence = itertools.count()
-        self._data = None  # only initialize in connect
+        # the following fields are only initialized in connect()
+        self._data = None
+        self._sequence = None
 
     def connect(self, **kwargs):
         super().connect(**kwargs)
         ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
         # FIXME uniquely identify specific units of the same model
         self._data = RuntimeStorage(key_prefixes=[ids])
+        self._sequence = sequence(self._data)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -117,7 +136,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         # self.device.write expects buf[0] to be the report number (=0, not used)
         buf = bytearray(_REPORT_LENGTH + 1)
         buf[1] = _WRITE_PREFIX
-        buf[2] = (next(self._sequence) % 31 + 1) << 3
+        buf[2] = next(self._sequence) << 3
         if feature is not None:
             buf[2] |= feature
             buf[3] = command
