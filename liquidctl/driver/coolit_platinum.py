@@ -35,11 +35,8 @@ from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
 
-_READ_LENGTH = 64
-_WRITE_LENGTH = 64
-_HEADER_LENGTH = 3
+_REPORT_LENGTH = 64
 _TRAILER_LENGTH = 1
-_DATA_LENGTH = _WRITE_LENGTH - _HEADER_LENGTH - _TRAILER_LENGTH
 
 _WRITE_PREFIX = 0x3F
 _FEATURE_COOLING = 0x0
@@ -48,9 +45,11 @@ _CMD_SET_COOLING = 0x14
 _CMD_SET_LIGHTING1 = 0b100
 _CMD_SET_LIGHTING2 = 0b100
 
-_FAN1_DATA_OFFSET = 0xB - _HEADER_LENGTH
-_FAN2_DATA_OFFSET = 0x11 - _HEADER_LENGTH
-_PUMP_DATA_OFFSET = 0x14 - _HEADER_LENGTH
+_SET_COOLING_DATA_OFFSET = 3
+_SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - _SET_COOLING_DATA_OFFSET - _TRAILER_LENGTH
+_FAN1_DATA_OFFSET = 0xB - _SET_COOLING_DATA_OFFSET
+_FAN2_DATA_OFFSET = 0x11 - _SET_COOLING_DATA_OFFSET
+_PUMP_DATA_OFFSET = 0x14 - _SET_COOLING_DATA_OFFSET
 
 # TODO replace with enums and add modes
 _FAN_MODE_FIXED_DUTY = 0x2
@@ -113,29 +112,31 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._send_set_cooling()
 
     def _call(self, command, feature=None, data=None):
-        buf = bytearray(_WRITE_LENGTH)
-        buf[0] = _WRITE_PREFIX
-        buf[1] = (next(self._sequence) % 31 + 1) << 3
+        # self.device.write expects buf[0] to be the report number (=0, not used)
+        buf = bytearray(_REPORT_LENGTH + 1)
+        buf[1] = _WRITE_PREFIX
+        buf[2] = (next(self._sequence) % 31 + 1) << 3
         if feature is not None:
-            buf[1] |= feature
-            buf[2] = command
+            buf[2] |= feature
+            buf[3] = command
+            start_at = 4
         else:
-            buf[1] |= command
+            buf[2] |= command
+            start_at = 3
         if data:
-            buf[_HEADER_LENGTH:-1] = data
-        buf[-1] = compute_pec(buf[1:-1])
+            buf[start_at:-1] = data
+        buf[-1] = compute_pec(buf[2:-1])
         LOGGER.debug('write %s', buf.hex())
         self.device.clear_enqueued_reports()
         self.device.write(buf)
-
-        buf = bytes(self.device.read(_READ_LENGTH))
+        buf = bytes(self.device.read(_REPORT_LENGTH))
         self.device.release()
         LOGGER.debug('received %s', buf.hex())
         # TODO check response PEC
         return buf
 
     def _send_set_cooling(self):
-        data = bytearray(_DATA_LENGTH)
+        data = bytearray(_SET_COOLING_DATA_LENGTH)
         data[_FAN1_DATA_OFFSET] = _FAN_MODE_FIXED_DUTY
         fan1_duty = clamp(self._data.load_int('fan1_duty', default=100), 0, 100)
         data[_FAN1_DATA_OFFSET + 5] = int(fan1_duty * 2.55)
