@@ -89,6 +89,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         """
         self._data.store_int('fan1_duty', None)
         self._data.store_int('fan2_duty', None)
+        self._send_set_cooling()
 
     def get_status(self, **kwargs):
         """Get a status report.
