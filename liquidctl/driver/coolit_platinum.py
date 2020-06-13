@@ -36,12 +36,14 @@ from liquidctl.util import clamp
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
+_WRITE_PREFIX = 0x3F
 _TRAILER_LENGTH = 1
 
-_WRITE_PREFIX = 0x3F
 _FEATURE_COOLING = 0x0
 _CMD_GET_STATUS = 0xFF
 _CMD_SET_COOLING = 0x14
+
+_FEATURE_LIGHTING = None
 _CMD_SET_LIGHTING1 = 0b100
 _CMD_SET_LIGHTING2 = 0b100
 
@@ -88,7 +90,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        msg = self._call(_CMD_GET_STATUS, feature=_FEATURE_COOLING)
+        msg = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
         return [
             ('Liquid temperature', msg[8] + msg[7] / 255, '°C'),
             ('Fan 1 speed', int.from_bytes(msg[15:18], byteorder='little'), 'rpm'),
@@ -111,7 +113,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._data.store_int(f'{channel}_duty', clamp(duty, 0, 100))
         self._send_set_cooling()
 
-    def _call(self, command, feature=None, data=None):
+    def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number (=0, not used)
         buf = bytearray(_REPORT_LENGTH + 1)
         buf[1] = _WRITE_PREFIX
@@ -144,5 +146,5 @@ class CoolitPlatinumDriver(UsbHidDriver):
         fan2_duty = clamp(self._data.load_int('fan2_duty', default=100), 0, 100)
         data[_FAN2_DATA_OFFSET + 5] = int(fan2_duty * 2.55)
         data[_PUMP_DATA_OFFSET] = _PUMP_MODE_BALANCED
-        self._call(_CMD_SET_COOLING, feature=_FEATURE_COOLING, data=data)
+        self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
         # TODO try to assert something on the response
