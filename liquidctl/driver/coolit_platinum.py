@@ -130,9 +130,9 @@ class CoolitPlatinumDriver(UsbHidDriver):
         duty = clamp(duty, 0, 100)
         if channel == 'fan':
             # TODO revisit the name of this pseudo-channel
-            keys = ['fan1_duty', ['fan2_duty']
+            keys = ['fan1_duty', 'fan2_duty']
         elif channel in ['fan1', 'fan2']:
-            keys = [f'{name}_duty']
+            keys = [f'{channel}_duty']
         else:
             raise ValueError("Unknown channel, should be one of: 'fan', 'fan1' or 'fan2'")
         for key in keys:
