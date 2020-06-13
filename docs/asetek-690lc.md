@@ -36,7 +36,7 @@ Asetek 690LC (assuming EVGA CLC)
 
 ## Fan and pump speed control
 
-Fan speeds can be configured either by fixed duty values or (temperature, duty) profiles.  The profiles accept up to six points, and are interpolated by the device.
+Fan speeds can be configured either to fixed duty values or profiles.  The profiles accept up to six (liquid temperature, duty) points, and are interpolated by the device.
 
 ```
 # liquidctl set fan speed 50

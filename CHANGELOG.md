@@ -7,16 +7,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
-Changelog since 1.3.2:
+Changelog since 1.3.3:
 ### Added
- - List **experimental support for the NZXT RGB & Fan Controller**
+ - Add **experimental support for the NZXT RGB & Fan Controller** with the SmartDeviceV2Driver
  - Add support for HSV, HSL and explicit RGB color representations
- - [extra] Add initial generalized script for dynamic pump & fan control
+ - [NZXT E500/E650/E850] Add tentative names for the different +12 V rails
+ - [HUE 2] Add `sync` lighting channel
+ - Add **experimental support for NZXT Kraken X53, X63 and X73 coolers**
+ - Add future support for NZXT Kraken Z63 and Z73 coolers
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
- - [extra/krakencurve-poc] Refresh CLI syntax and sensor names
- - [extra/krakencurve-poc] Use iStats on macOS to get the CPU temperature
+ - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
+ - Use hidapi for HIDs on Windows
  - Improve the documentation
+### Fixed
+ - [HUE 2] Add missing identifiers for some HUE2 accessories (#95; #109)
+ - [NZXT E500/E650/E850] Fix CAM-like decoding of firmware version (#46, comment)
+ - [HUE 2] Select the lighting channel with a bitmask (#109)
+### Deprecated
+ - Deprecate and ignore `--hid` override HID API selection
+### Removed
+ - Remove the PyUsbHid device backend for HIDs
+
+
+## [1.3.3] – 2020-02-18
+_Summary for the 1.3.3 release: fix possibly stale data with HIDs and other minor issues._
+
+Changelog since 1.3.2:
+### Fixed
+ - [HUE 2] Add missing identifiers for HUE+ accessories
+ - Forward hid option from UsbHidDriver.find_supported_devices
+ - Prevent reporting stale data during long lived connections to HIDs (#87)
+### Checksums
+```
+1422a892f9c2c69f5949cd831083c6fef8f6a1f6e3215e90b696bfcd557924b4  liquidctl-1.3.3-bin-windows-x86_64.zip
+d13180867e07420c5890fe1110e8f45fe343794549a9ed7d5e8e76663bc10c24  liquidctl-1.3.3.tar.gz
+```
 
 
 ## [1.3.2] – 2019-12-11
@@ -53,8 +79,8 @@ _Summary for the 1.3.0 release: man page, Corsair RXi/HXi and NZXT E power suppl
 
 Changelog since 1.3.0rc1:
 ### Added
- - Enable **experimental support for the NZXT HUE 2** with the Smart Device V2 driver
- - Enable **experimental support for the NZXT HUE 2 Ambient** with the Smart Device V2 driver
+ - Enable **experimental support for the NZXT HUE 2** with the SmartDeviceV2Driver
+ - Enable **experimental support for the NZXT HUE 2 Ambient** with the SmartDeviceV2Driver
  - Add `-m, --match <substring>` to allow filtering devices by description
  - Add `-n` short alias for `--pick`
 ### Changed

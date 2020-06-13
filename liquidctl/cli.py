@@ -32,9 +32,10 @@ Animation options (devices/modes can support zero or more):
 Other options:
   -v, --verbose               Output additional information
   -g, --debug                 Show debug information on stderr
-  --hid <module>              Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
   --single-12v-ocp            Enable single rail +12V OCP
+  --unsafe <features>         Comma-separated bleeding-edge features to enable
+  --hid <ignored>             Deprecated
   --version                   Display the version number
   --help                      Show this message
 
@@ -45,33 +46,19 @@ Examples:
   liquidctl --product 0x170e set led color fading 350017 ff2608
   liquidctl status
 
----
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
-liquidctl – monitor and control liquid coolers and other devices.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+liquidctl includes contributions by CaseySJ, Tom Frey and other authors.
 
-liquidctl includes contributions by CaseySJ and other authors.
+liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens Neumaier,
+Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas Pircher.
 
-liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
-Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
-and Thomas Pircher.
+SPDX-License-Identifier: GPL-3.0-or-later
 
-Depending on how it is packaged, it might also bundle copies of
-python, hidapi, libusb, cython-hidapi, pyusb and docopt.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
 import datetime
@@ -108,9 +95,9 @@ _PARSE_ARG = {
     '--alert-threshold': int,
     '--alert-color': color_from_str,
 
-    '--hid': str,
     '--legacy-690lc': bool,
     '--single-12v-ocp': bool,
+    '--unsafe': lambda x: x.split(','),
     '--verbose': bool,
     '--debug': bool,
 }
@@ -225,6 +212,9 @@ def _device_set_speed(dev, args, **opts):
 
 
 def _make_opts(args):
+    if args['--hid']:
+        LOGGER.warning('Ignoring --hid %s: deprecated option, API will be selected automatically',
+                       args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:

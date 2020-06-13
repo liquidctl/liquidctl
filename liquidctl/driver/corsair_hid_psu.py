@@ -15,31 +15,15 @@ Supported features
  - fan control
  - +12V single or multi rail OCP
 
----
-
-liquidctl driver for Corsair HID PSUs.
-Copyright (C) 2019–2019  Jonas Malaco
-Copyright (C) 2019–2019  each contribution's author
+Copyright (C) 2019–2020  Jonas Malaco
+Copyright (C) 2019–2020  each contribution's author
 
 Port of corsaiRMi by notaz and realies.
 Copyright (c) notaz, 2016
 
 Incorporates or uses as reference work by Sean Nelson.
 
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
@@ -111,6 +95,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         Note: replies before calling this function appear to follow the
         pattern <address> <cte 0xfe> <zero> <zero> <padding...>.
         """
+        self.device.clear_enqueued_reports()
         self._write([0xfe, 0x03])  # not well understood
         self._read()
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
@@ -128,6 +113,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        self.device.clear_enqueued_reports()
         ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         if ret[1] == 0xfe:
             LOGGER.warning('possibly uninitialized device')

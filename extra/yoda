@@ -27,7 +27,6 @@ Options:
   --bus <bus>              Filter devices by bus
   --address <address>      Filter devices by address in bus
   --usb-port <port>        Filter devices by USB port in bus
-  --pick <number>          Pick among many results for a given filter
   -v, --verbose            Output additional information
   -g, --debug              Show debug information on stderr
   --hid <module>           Override API for USB HIDs: usb, hid or hidraw
@@ -48,6 +47,7 @@ Requirements:
   Windows        none, system sensors not yet supported
 
 Changelog:
+  0.0.3  Remove duplicate option definition
   0.0.2  Add low-pass filter and basic error handling.
   0.0.1  Generalization of krakencurve-poc 0.0.2 to multiple devices.
 
@@ -88,7 +88,7 @@ if sys.platform == 'darwin':
 elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
     import psutil
 
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 
 LOGGER = logging.getLogger(__name__)
 

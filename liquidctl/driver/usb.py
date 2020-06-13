@@ -7,31 +7,25 @@ UsbHidDriver level.
 
 BaseUsbDriver
 └── device: PyUsbDevice
-    └── uses module usb (PyUSB)
+    ├── uses PyUSB
+    └── backed by (in order of priority)
         ├── libusb-1.0
         ├── libusb-0.1
         └── OpenUSB
 
 UsbHidDriver
 ├── extends: BaseUsbDriver
-├── device: PyUsbHid
-│   └── extends PyUsbDevice
-│       └── uses module usb (PyUSB)
-│           ├── libusb-1.0
-│           ├── libusb-0.1
-│           └── OpenUSB
 └── device: HidapiDevice
-    ├── uses module hid (hidapi)
-    │   ├── hid.dll (Windows)
-    │   ├── hidraw (Linux, depends on hidapi build options)
-    │   ├── IOHidManager (MacOS)
-    │   └── libusb-1
-    └── uses module hidraw (hidapi, depends on build options)
-        └── hidraw (Linux)
+    ├── uses hidapi
+    └── backed by
+        ├── hid.dll on Windows
+        ├── hidraw on Linux if it was enabled during the build of hidapi
+        ├── IOHidManager on MacOS
+        └── libusb-1.0 on all other cases
 
 UsbDriver
 ├── extends: BaseUsbDriver
-└── allows to differentiate between UsbHidDriver and (non Hid) UsbDriver
+└── allows to differentiate between UsbHidDriver and (non HID) UsbDriver
 
 UsbDriver and UsbHidDriver are meant to be used as base classes to the actual
 device drivers.  The users of those drivers generally do not care about read,
@@ -47,7 +41,7 @@ The USB drivers are organized into two buses.  The recommended way to
 initialize and bind drivers is through their respective buses, though
 <driver>.find_supported_devices can also be useful in certain scenarios.
 
-GenericHidBus
+HidapiBus
 └── drivers: all (recursive) subclasses of UsbHidDriver
 
 PyUsbBus
@@ -57,48 +51,23 @@ The subclass constructor can generally be kept unaware of the implementation
 details of the device parameter, and find_supported_devices already accepts
 keyword arguments and forwards them to the driver constructor.
 
----
+Copyright (C) 2019–2020  Jonas Malaco
+Copyright (C) 2019–2020  each contribution's author
 
-Base USB bus, driver and device APIs.
-Copyright (C) 2019–2019  Jonas Malaco
-Copyright (C) 2019–2019  each contribution's author
-
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
 import sys
 
 import usb
-import hid
 try:
-    import hidraw
-except:
-    hidraw = hid
-
-from usb.util import ENDPOINT_IN, ENDPOINT_OUT, ENDPOINT_TYPE_INTR, CTRL_TYPE_CLASS, \
-                     CTRL_RECIPIENT_INTERFACE
+    import hidraw as hid
+except ModuleNotFoundError:
+    import hid
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 
-_CLASS_HID = 3
-_ENDPOINT_DIR_MASK = 0x80
-_ENDPOINT_TRANSFER_TYPE_MASK = 7
-_HID_SET_REPORT = 0x09
-_HID_OUTPUT = 2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -138,6 +107,10 @@ class BaseUsbDriver(BaseDriver):
             dev = cls(handle, description, **consargs)
             LOGGER.debug('instanced driver for %s', description)
             yield dev
+
+    def __init__(self, device, description, **kwargs):
+        self.device = device
+        self._description = description
 
     def connect(self, **kwargs):
         """Connect to the device."""
@@ -199,23 +172,28 @@ class UsbHidDriver(BaseUsbDriver):
     """Base driver class for USB Human Interface Devices (HIDs)."""
 
     @classmethod
-    def find_supported_devices(cls, hid=None, **kwargs):
+    def find_supported_devices(cls, **kwargs):
         """Find devices specifically compatible with this driver."""
         devs = []
         for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
-            for dev in GenericHidBus().find_devices(vendor=vid, product=pid, **kwargs):
+            for dev in HidapiBus().find_devices(vendor=vid, product=pid, **kwargs):
                 if type(dev) == cls:
                     devs.append(dev)
         return devs
 
     def __init__(self, device, description, **kwargs):
-        # compatibility with v1.1.0 drivers (all HIDs): they could be directly
-        # instantiated with a usb.core.Device (but don't do it in new code)
+        # compatibility with v1.1.0 drivers, which could be directly
+        # instantiated with a usb.core.Device
         if isinstance(device, usb.core.Device):
-            LOGGER.warning('deprecated: delegate to find_supported_devices or use an appropriate wrapper')
-            device = PyUsbHid(device)
-        self.device = device
-        self._description = description
+            LOGGER.warning('deprecated: device must be HidapiDevice, not PyUSB handle')
+            LOGGER.warning('deprecated: PyUSB no longer supported for HID devices')
+            LOGGER.warning('deprecated: switch to find_supported_devices or pass HidapiDevice')
+            usbdev = device
+            hidinfo = next(info for info in hid.enumerate(usbdev.idVendor, usbdev.idProduct)
+                           if info['serial_number'] == usbdev.serial_number)
+            assert hidinfo, 'Could not find device in HID bus'
+            device = HidapiDevice(hid, hidinfo)
+        super().__init__(device, description, **kwargs)
 
 
 class UsbDriver(BaseUsbDriver):
@@ -225,7 +203,7 @@ class UsbDriver(BaseUsbDriver):
     """
 
     @classmethod
-    def find_supported_devices(cls, hid=None, **kwargs):
+    def find_supported_devices(cls, **kwargs):
         """Find devices specifically compatible with this driver."""
         devs = []
         for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
@@ -233,10 +211,6 @@ class UsbDriver(BaseUsbDriver):
                 if type(dev) == cls:
                     devs.append(dev)
         return devs
-
-    def __init__(self, device, description, **kwargs):
-        self.device = device
-        self._description = description
 
 
 class PyUsbDevice:
@@ -310,7 +284,8 @@ class PyUsbDevice:
         return self.usbdev.write(endpoint, data, timeout=timeout)
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-                      data_or_wLength = None, timeout = None):
+                      data_or_wLength=None, timeout=None):
+        """Submit a contrl transfer."""
         return self.usbdev.ctrl_transfer(bmRequestType, bRequest,
                                          wValue=wValue, wIndex=wIndex,
                                          data_or_wLength=data_or_wLength,
@@ -358,98 +333,27 @@ class PyUsbDevice:
         return type(self) == type(other) and self.bus == other.bus and self.address == other.address
 
 
-class PyUsbHid(PyUsbDevice):
-    """A PyUSB backed HID device.
-
-    The signatures of read() and write() are changed from PyUsbDevice, and no
-    longer accept target (in/out) endpoints, which are automatically inferred.
-
-    This change (while unorthodox) unifies the behavior of read() and write()
-    between PyUsbHid and HidapiDevice.
-    """
-    def __init__(self, usbdev):
-        super().__init__(usbdev)
-        self.ep_in = None
-        self.ep_out = None
-
-    def _select_interface(self, cfg):
-        hid_intf = None
-        for intf in cfg:
-            if intf.bInterfaceClass != _CLASS_HID:
-                continue
-            hid_intf = intf
-            for ep in intf:
-                if (ep.bmAttributes & _ENDPOINT_TRANSFER_TYPE_MASK) != ENDPOINT_TYPE_INTR:
-                    continue
-                if not self.ep_in and (ep.bEndpointAddress & _ENDPOINT_DIR_MASK) == ENDPOINT_IN:
-                    self.ep_in = ep.bEndpointAddress
-                elif not self.ep_out:
-                    self.ep_out = ep.bEndpointAddress
-            break
-        if not hid_intf:
-            raise usb.core.USBError('Missing a HID interface')
-        if not self.ep_in:
-            raise usb.core.USBError('Missing an interrupt IN endpoint')
-        # if ep_out is not available Set_Report will be sent on CTRL OUT (0x00)
-        LOGGER.debug('hid endpoints: %#04x (IN), %#04x (OUT)', self.ep_in, self.ep_out or 0)
-        return hid_intf.bInterfaceNumber
-
-    def read(self, length):
-        """Read raw report from HID."""
-        return self.usbdev.read(self.ep_in, length, timeout=0)
-
-    def write(self, data):
-        """Write raw report to HID.
-
-        The first byte of the buffer passed to write() should be set to the
-        report number.  If the device does not use numbered reports, the first
-        byte should be set to 0. The report data itself should begin at the
-        second byte.
-
-        The distinction between report number and data is
-        important for compatibility with kernel APIs and HidapiDevice.
-        """
-        # report_id == 0 means it's not used, so it isn't actually sent;
-        # mimicking hidapi on libusb, this is transparently handled
-        report_id = data[0]
-        if not report_id:
-            data = data[1:]
-        if self.ep_out:
-            sent = self.usbdev.write(self.ep_out, data, timeout=0)
-        else:
-            sent = self.ctrl_transfer(
-                    bmRequestType=CTRL_TYPE_CLASS | CTRL_RECIPIENT_INTERFACE | ENDPOINT_OUT,
-                    bRequest=_HID_SET_REPORT,
-                    wValue=(_HID_OUTPUT << 8) | report_id,
-                    wIndex=self.bInterfaceNumber,
-                    data_or_wLength=data)
-        if not report_id:
-            sent += 1
-        return sent
-
-
 class HidapiDevice:
     """A hidapi backed device.
 
     Depending on the platform, the selected `hidapi` and how it was built, this
     might use any of the following backends:
 
-     - Windows (using hid.dll)
-     - Linux/hidraw (using the Kernel's hidraw driver)
-     - Linux/libusb (using libusb-1.0)
-     - FreeBSD (using libusb-1.0)
-     - Mac (using IOHidManager)
+     - hid.dll on Windows
+     - hidraw on Linux, if it was enabled during the build of hidapi
+     - IOHidManager on MacOS
+     - libusb-1.0 on all other cases
 
-    The default hidapi API is the module 'hid'.  On standard Linux builds of the
-    hidapi package, this will default to a libusb-1.0 backed implementation; at
-    the same time, an alternate 'hidraw' module will also be available in
-    normal installations.
+    The default hidapi API is the module 'hid'.  On standard Linux builds of
+    the hidapi package, this might default to a libusb-1.0 backed
+    implementation; at the same time an alternate 'hidraw' module may also be
+    provided.  The latter is prefered, when available.
 
-    Note: if 'hid' is used with libusb on Linux, it will detach the Kernel
-    driver but fail to reattach it later, making hidraw and hwmon unavailable
-    on that devcie.  To fix, rebind the device to usbhid with:
+    Note: if a libusb-backed 'hid' is used on Linux (assuming default build
+    options) it will detach the kernel driver, making hidraw and hwmon
+    unavailable for that device.  To fix, rebind the device to usbhid with:
 
-        echo '<bus>-<port>:1.0' | _ tee /sys/bus/usb/drivers/usbhid/bind
+        echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usbhid/bind
     """
     def __init__(self, hidapi, hidapi_dev_info):
         self.api = hidapi
@@ -472,8 +376,23 @@ class HidapiDevice:
         """NOOP."""
         pass
 
+    def clear_enqueued_reports(self):
+        """Clear already enqueued incoming reports.
+
+        The OS generally enqueues incomming reports for open HIDs, and hidapi
+        emulates this when running on top of libusb.  On Linux, up to 64
+        reports can be enqueued.
+
+        This method quickly reads and discards any already enqueued reports,
+        and is useful when later reads are not expected to return stale data.
+        """
+        self.hiddev.set_nonblocking(True)
+        while self.hiddev.read(1):
+            pass
+
     def read(self, length):
         """Read raw report from HID."""
+        self.hiddev.set_nonblocking(False)
         return self.hiddev.read(length)
 
     def write(self, data):
@@ -526,46 +445,17 @@ class HidapiDevice:
         return type(self) == type(other) and self.bus == other.bus and self.address == other.address
 
 
-class GenericHidBus(BaseBus):
-
-    def find_devices(self, vendor=None, product=None, hid=None, bus=None,
-                     address=None, usb_port=None, **kwargs):
-        """Find compatible USB HID devices.
-
-        Both hidapi and PyUSB backends are supported.  On Mac and Linux the
-        default is to use hidapi; on all other platforms it is PyUSB.
-
-        The choice of API for HID can be overiden with `hid`:
-
-         - `hid='usb'`: use PyUSB (libusb-1.0, libusb-0.1 or OpenUSB)
-         - `hid='hid'`: use hidapi (backend depends on hidapi build options)
-         - `hid='hidraw'`: specifically try to use hidraw (Linux; depends on
-           hidapi build options)
-        """
-
-        if not hid:
-            if sys.platform.startswith('linux'):
-                hid = 'hidraw'
-            elif sys.platform == 'darwin':
-                hid = 'hid'
-            else:
-                hid = 'usb'
-
-        api = globals()[hid]
-        if hid.startswith('hid'):
-            handles = HidapiDevice.enumerate(api, vendor, product)
-        else:
-            handles = PyUsbHid.enumerate(vendor, product)
-
+class HidapiBus(BaseBus):
+    def find_devices(self, vendor=None, product=None, bus=None, address=None, **kwargs):
+        """Find compatible USB HID devices."""
+        handles = HidapiDevice.enumerate(hid, vendor, product)
         drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
-        LOGGER.debug('searching %s (api=%s, drivers=[%s])', self.__class__.__name__, api.__name__,
+        LOGGER.debug('searching %s (api=%s, drivers=[%s])', self.__class__.__name__, hid.__name__,
                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in handles:
             if bus and handle.bus != bus:
                 continue
             if address and handle.address != address:
-                continue
-            if usb_port and handle.port != usb_port:
                 continue
             LOGGER.debug('probing drivers for device %04x:%04x', handle.vendor_id,
                          handle.product_id)

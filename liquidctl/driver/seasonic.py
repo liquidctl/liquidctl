@@ -13,26 +13,10 @@ Supported features
  - [ ] fan control
  - [ ] 12V multirail configuration
 
----
+Copyright (C) 2019–2020  Jonas Malaco
+Copyright (C) 2019–2020  each contribution's author
 
-liquidctl driver for Seasonic PSUs.
-Copyright (C) 2019–2019  Jonas Malaco
-Copyright (C) 2019–2019  each contribution's author
-
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
@@ -50,7 +34,7 @@ _MIN_DELAY = 0.0025
 _ATTEMPTS = 3
 
 _SEASONIC_READ_FIRMWARE_VERSION = CMD.MFR_SPECIFIC_FC
-_RAILS = ['+12V #1', '+12V #2', '+12V #3', '+5V', '+3.3V']
+_RAILS = ['+12V peripherals', '+12V EPS/ATX12V', '+12V motherboard/PCI-e', '+5V combined', '+3.3V combined']
 
 
 class SeasonicEDriver(UsbHidDriver):
@@ -74,6 +58,7 @@ class SeasonicEDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        self.device.clear_enqueued_reports()
         fw_human, fw_cam = self._get_fw_versions()
         status = [
             ('Temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
@@ -154,5 +139,5 @@ class SeasonicEDriver(UsbHidDriver):
     def _get_fw_versions(self):
         minor, major = self._exec_read(_SEASONIC_READ_FIRMWARE_VERSION, 2)
         human_ver = f'{bytes([major]).decode()}{minor:03}'
-        ascam_ver = int.from_bytes(bytes.fromhex('A017'), byteorder='big')
+        ascam_ver = int.from_bytes(bytes.fromhex(human_ver), byteorder='big')
         return (human_ver, ascam_ver)

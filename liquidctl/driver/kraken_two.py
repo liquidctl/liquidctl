@@ -13,28 +13,20 @@ The Kraken M22 shares similar RGB funcionality to the X models of the same
 generation, but has no liquid temperature sensor and no hability to report or
 set fan or pump speeds.
 
----
+Naming
+------
 
-liquidctl driver for third generation NZXT Kraken X and M liquid coolers.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+The module and driver were named "kraken_two" and "KrakenTwoDriver" in
+reference to the common sufix in the model names (instead of the generation
+number).  This turned out to be a bad idea, but the names are kept for
+backwards compatibility.
+
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
 Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier.
 
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import itertools
@@ -246,13 +238,15 @@ class KrakenTwoDriver(UsbHidDriver):
     def supports_cooling_profiles(self):
         if self._supports_cooling_profiles is None:
             if self.supports_cooling:
-                self._read()
+                self._read(clear_first=False)
                 self._supports_cooling_profiles = self._firmware_version >= (3, 0, 0)
             else:
                 self._supports_cooling_profiles = False
         return self._supports_cooling_profiles
 
-    def _read(self):
+    def _read(self, clear_first=True):
+        if clear_first:
+            self.device.clear_enqueued_reports()
         msg = self.device.read(_READ_LENGTH)
         self.device.release()
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))

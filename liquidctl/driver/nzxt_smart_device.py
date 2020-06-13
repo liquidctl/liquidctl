@@ -95,34 +95,18 @@ the devices must be manually initialized by calling `initialize()`.  This will
 cause all connected fans and LED accessories to be detected, and enable status
 updates.  It is recommended to initialize the devices at every boot.
 
----
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2019–2020  CaseySJ
+Copyright (C) 2018–2020  each contribution's author
 
-liquidctl drivers for NZXT Smart Device V1/V2 and Grid+ V3.
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2019–2019  CaseySJ
-Copyright (C) 2018–2019  each contribution's author
-
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.util import clamp
+from liquidctl.util import clamp, Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,7 +120,6 @@ _ANIMATION_SPEEDS = {
 
 _MIN_DUTY = 0
 _MAX_DUTY = 100
-
 
 class CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
@@ -269,6 +252,7 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         """
         status = []
         noise = []
+        self.device.clear_enqueued_reports()
         for i, _ in enumerate(self._speed_channels):
             msg = self.device.read(self._READ_LENGTH)
             LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
@@ -330,6 +314,10 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
             'speed_channel_count': 0,
             'color_channel_count': 2
         }),
+        (0x1e71, 0x2009, None, 'NZXT RGB & Fan Controller (experimental)', {
+            'speed_channel_count': 3,
+            'color_channel_count': 2
+        }),
     ]
 
     _MAX_READ_ATTEMPTS = 12
@@ -380,21 +368,13 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
 
-    _ACCESSORY_NAMES = {
-        0x04: "HUE 2 LED Strip 300 mm",
-        0x05: "HUE 2 LED Strip 250 mm",
-        0x08: "HUE 2 Cable Comb",
-        0x0a: "HUE 2 Underglow 200 mm",
-        0x0b: "AER RGB 2 120 mm",
-        0x0c: "AER RGB 2 140 mm"
-    }
-
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
         speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
-        color_channels = {'led{}'.format(i + 1): (i)
+        color_channels = {'led{}'.format(i + 1): (1 << i)
                           for i in range(color_channel_count)}
+        color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, **kwargs):
@@ -405,8 +385,10 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
+        self.device.clear_enqueued_reports()
         # initialize
-        self._write([0x60, 0x02, 0x01, 0xE8, 0x03, 0x01, 0xE8, 0x03])
+        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+        self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
         self._write([0x60, 0x03])
         # request static infos
         self._write([0x10, 0x01])  # firmware info
@@ -414,20 +396,19 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         status = []
 
         def parse_firm_info(msg):
-            fw = '{}.{}.{}'.format(msg[0x11], msg[0x12], msg[0x13])
+            fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
             status.append(('Firmware version', fw, ''))
 
         def parse_led_info(msg):
-            num_light_channels = msg[14]  # the 15th byte (index 14) is # of light channels
-            accessories_per_channel = 6   # each lighting channel supports up to 6 accessories
-            light_accessory_index = 15    # offset in msg of info about first light accessory
-            for light_channel in range(num_light_channels):
-                for accessory_num in range(accessories_per_channel):
-                    accessory_id = msg[light_accessory_index]
-                    light_accessory_index += 1
-                    if accessory_id != 0:
-                        status.append(('LED {} accessory {}'.format(light_channel + 1, accessory_num + 1),
-                                       self._ACCESSORY_NAMES.get(accessory_id, 'Unknown'), ''))
+            channel_count = msg[14]
+            offset = 15  # offset of first channel/first accessory
+            for c in range(channel_count):
+                for a in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
+                    accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
+                    if accessory_id == 0:
+                        break
+                    status.append((f'LED {c + 1} accessory {a + 1}',
+                                   Hue2Accessory(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         self.device.release()
@@ -453,6 +434,7 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
                 rpm_offset += 2
             status.append(('Noise level', msg[noise_offset], 'dB'))
 
+        self.device.clear_enqueued_reports()
         self._read_until({b'\x67\x02': parse_fan_info})
         self.device.release()
         return sorted(status)
@@ -475,32 +457,32 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
             leds = list(itertools.chain(*colors)) + led_padding
-            self._write([0x22, 0x10, cid+1, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
-            self._write([0x22, 0x11, cid+1, 0x00] + leds[60:])  # send remaining colors to device
-            self._write([0x22, 0xA0, cid+1, 0x00, mval, mod3, 0x00, 0x00, 0x00,
+            self._write([0x22, 0x10, cid, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
+            self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
+            self._write([0x22, 0xA0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             for [g, r, b] in colors:
-                self._write([0x22, 0x10, cid+1])  # clear out all independent LEDs
-                self._write([0x22, 0x11, cid+1])  # clear out all independent LEDs
+                self._write([0x22, 0x10, cid])  # clear out all independent LEDs
+                self._write([0x22, 0x11, cid])  # clear out all independent LEDs
                 color_lists = [] * 3
                 color_lists[0] = [g, r, b] * 8
                 color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
                 color_lists[2] = [int(x // 4) for x in color_lists[1]]
                 for i in range(8):   #  send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
-                    msg = ([0x22, 0x20, cid+1, i, 0x04, 0x39, 0x00, mod,
+                    msg = ([0x22, 0x20, cid, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
                             0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00])
                     self._write(msg + color_lists[i % 4])
-                self._write([0x22, 0x03, cid+1, 0x08])   # this actually enables wings mode
+                self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
             byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
             byte8 = mod4 & 0x01  # sets 'backwards' flag
             byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
-            header = [0x28, 0x03, cid + 1, 0x00, mval, sval, byte7, byte8, byte9, byte10]
+            header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):

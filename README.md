@@ -45,20 +45,22 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Table of contents
 
-1. [Supported devices](#supported-devices)
-2. [Installing on Linux](#installing-on-linux)
-3. [Installing on Windows](#installing-on-windows)
-4. [Installing on macOS](#installing-on-macos)
-5. [The command-line interface](#introducing-the-command-line-interface)
-    1. [Listing and selecting devices](#listing-and-selecting-devices)
-    2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
-    3. [Supported color specification formats](#supported-color-specification-formats)
-6. [Automation and running at boot](#automation-and-running-at-boot)
-    1. [Set up Linux using systemd](#set-up-linux-using-systemd)
-    2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
-    3. [Set up macOS using launchd](#set-up-macos-using-launchd)
-7. [License](#license)
-8. [Related projects](#related-projects)
+1.  [Supported devices](#supported-devices)
+2.  [Installing on Linux](#installing-on-linux)
+3.  [Installing on Windows](#installing-on-windows)
+4.  [Installing on macOS](#installing-on-macos)
+5.  [The command-line interface](#introducing-the-command-line-interface)
+     1. [Listing and selecting devices](#listing-and-selecting-devices)
+     2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
+     3. [Supported color specification formats](#supported-color-specification-formats)
+6.  [Automation and running at boot](#automation-and-running-at-boot)
+     1. [Set up Linux using systemd](#set-up-linux-using-systemd)
+     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
+     3. [Set up macOS using launchd](#set-up-macos-using-launchd)
+7.  [Troubleshooting](#troubleshooting)
+8.  [Additional documentation](#additional-documentation)
+9.  [License](#license)
+10. [Related projects](#related-projects)
 
 
 ## Supported devices
@@ -70,10 +72,11 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E, Z_</sup> |
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
-| NZXT Kraken M22 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
+| NZXT Kraken M22 | [documentation](docs/third-generation-krakens.md) | |
 | NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
 | NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
-| NZXT Kraken X42, X52, X62, X72 | [documentation](docs/nzxt-kraken-x-3rd-generation.md) | |
+| NZXT Kraken X42, X52, X62, X72 | [documentation](docs/third-generation-krakens.md) | |
+| NZXT Kraken X53, X63, X73 | [documentation](docs/fourth-generation-krakens.md) | <sup>_E, U_</sup> |
 
 ### Other parts
 
@@ -85,23 +88,25 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2, RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>E</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
+| NZXT RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E, U_</sup> |
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
+<sup>_U_</sup> _Starting with upcoming liquidctl 1.4.0._  
 
 
 ## Installing on Linux
 
 Packages are available for certain Linux distributions and package managers:
 
- - ArchLinux/Manjaro: [python-liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl/), [python-liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/python-liquidctl-git/)
- - Fedora: [liquidctl](https://apps.fedoraproject.org/packages/liquidctl)
- - Debian/Ubuntu: work in progress (issue #62), continue reading for manual installation instructions
- - Linuxbrew: tap [jonasmalacofilho/homebrew-liquidctl](https://github.com/jonasmalacofilho/homebrew-liquidctl)
+ - Alpine Linux: [liquidctl](https://pkgs.alpinelinux.org/packages?name=liquidctl)
+ - ArchLinux/Manjaro: [liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
+ - Fedora: [liquidctl](https://src.fedoraproject.org/rpms/liquidctl)
+ - Debian/Ubuntu: keep reading for manual installation instructions (see also: [#62](https://github.com/jonasmalacofilho/liquidctl/issues/62))
 
-Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following dependencies are necessary:
+Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
 
 | Dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
@@ -111,6 +116,13 @@ Alternatively, it is possible to install liquidctl from PyPI or directly from th
 | docopt | python-docopt | python3-docopt | python3-docopt |
 | PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
+
+Setuptools and, optionally, pip are needed to manually install liquidctl:
+
+| Dependency | Arch Linux | Fedora | Ubuntu |
+| --- | --- | --- | --- |
+| setuptools | python-setuptools | python3-setuptools | python3-setuptools |
+| pip (optional) | python-pip | python3-pip | python3-pip |
 
 If cython-hidapi is to be installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
 
@@ -134,11 +146,11 @@ _Note: in systems that default to Python 2, replace `pip` and `python` by `pip3`
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.3.2-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.3.2/liquidctl-1.3.2-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.3.3-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.3.3/liquidctl-1.3.3-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
-Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb (see notes in the [Supported devices](#supported-devices) section).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/).¹
+Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb: for the specific devices that are affected see the notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for other devices will likely cause them to disapear from liquidctl.
 
 The pre-built executables can be used as is by calling them from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that becomes true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
 
@@ -175,9 +187,9 @@ $ brew install liquidctl --HEAD
 
 By default the last stable version will be installed, but by passing `--HEAD` this can be changed to the last snapshot from this repository.  All dependencies are automatically resolved.
 
-A [custom tap](https://github.com/jonasmalacofilho/homebrew-liquidctl) is also available, which can sometimes be slightly ahead of the official formula, as well as allows testing release candidates (i.e. devel versions).
+Another possibility is to install liquidctl from PyPI or directly from the source code repository, but in these cases Python 3 and libsub must be installed first; the recommended way is with `brew install python libusb`.
 
-It is also possible to install liquidctl from PyPI or directly from the source code repository.  In these cases, Python 3 and libsub must be installed first; the recommended way is with `brew install libusb`.  To install any release from PyPI, *pip* should be used:
+To install any release from PyPI, *pip* should be used:
 
 ```
 $ pip3 install liquidctl
@@ -262,9 +274,13 @@ Lighting is controlled in a similar fashion and, again, the specific documentati
 
 ### Supported color specification formats
 
+
 When configuring lighting effects, colors can be specified in different representations and formats:
 
  - as an implicit hexadecimal RGB triple: e.g. `ff7f3f`
+
+_Starting with upcoming liquidctl 1.4.0:_
+
  - as an explicit RGB triple: e.g. `rgb(255, 127, 63)`
  - as a HSV (hue‑saturation‑value) triple: e.g. `hsv(20, 75, 100)`
     * hue ∊ [0, 360] (degrees); saturation, value ∊ [0, 100] (percent)
@@ -313,7 +329,9 @@ The unit can be started manually or set to automatically run during boot using s
 # systemctl enable liquidcfg
 ```
 
-A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which handles multiple devices and uses the LEDs to convey progress and alert of errors.
+If necessary, it is also possible to have the service unit explicitly wait for the device to be available: [Making systemd units wait for devices](docs/linux/making-systemd-units-wait-for-devices).
+
+A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which includes dynamic adjustments of the lighting depending on the time of day.
 
 ### Set up Windows using Task Scheduler
 
@@ -381,13 +399,53 @@ You can enable and disable the agent with `launchctl load|unload ~/Library/Launc
 A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/post_install/pump_control).
 
 
+## Troubleshooting
+
+### Device not listed (Windows)
+
+This is likely caused by having replaced the original Microsoft Generic HID driver for a USB HID.  If the device in question is not marked in [Supported devices](#supported-devices) as requiring a special driver, try uninstalling the custom driver.
+
+### Device not listed (Linux)
+
+As before, this is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0 but failed to reattach the original driver.
+
+This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
+
+```
+echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usbhid/bind
+```
+
+A more permanent solution is to politely ask the authors of the program that is responsible for leaving the kernel driver detached to use `libusb_attach_kernel_driver` or `libusb_set_auto_detach_kernel_driver`.
+
+### Access denied or open failed (Linux)
+
+These errors are usually caused by a lack of permission to access the device.  On Linux distros that normally requires root privileges.
+
+Alternatively to running liquidctl as root (or with `sudo`), you can install the udev rules provided in [`extra/linux/71-liquidctl.rules`](extra/linux/71-liquidctl.rules) to allow unprivileged access to the devices supported by liquidctl.
+
+### Other problems
+
+If your problem is not listed here, try searching the [issues](https://github.com/jonasmalacofilho/liquidctl/issues).  If no issue matches your problem, if you still need help, or if you have found a bug, please open one.
+
+When commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.
+
+Also include the arguments and output of all relevant/failing liquidctl commands, using the `--debug` option to enable additional debug information.
+
+
+## Additional documentation
+
+Be sure to browse [`docs/`](docs/) for additional documentation, and [`extra/`](extra/) for some example scripts and other possibly useful things.
+
+You are also encouraged to contribute to the documentation and to these examples, including adding new files that cover your specific use cases or solutions.
+
+
 ## License
 
 liquidctl – monitor and control liquid coolers and other devices.  
-Copyright (C) 2018–2019  Jonas Malaco  
-Copyright (C) 2018–2019  each contribution's author  
+Copyright (C) 2018–2020  Jonas Malaco  
+Copyright (C) 2018–2020  each contribution's author  
 
-liquidctl includes contributions by CaseySJ and other authors.
+liquidctl includes contributions by CaseySJ, Tom Frey and other authors.
 
 liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
@@ -408,6 +466,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+This project uses [short SPDX License List identifiers][SPDX-Short-Identifiers]
+to concisely and unambiguously indicate the applicable license in each source
+file.
+
+[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
 
 
 ## Related projects

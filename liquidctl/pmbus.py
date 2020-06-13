@@ -2,53 +2,37 @@
 
 Specifications:
 
-Power Systems Management Protocol Specification.  Revision 1.3.1, 2015.
-Available uppon request, check the PMBus website.
+- Power Systems Management Protocol Specification.  Revision 1.3.1, 2015.
+  Available uppon request, check the PMBus website.
 
-Power Systems Management Protocol Specification.  Revision 1.2, 2010.
-Available on the PMBus website.
-http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_I_Rev_1-2_20100906.pdf
-http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_II_Rev_1-2_20100906.pdf
+- Power Systems Management Protocol Specification.  Revision 1.2, 2010.
+  Available on the PMBus website.
+  http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_I_Rev_1-2_20100906.pdf
+  http://pmbus.org/Assets/PDFS/Public/PMBus_Specification_Part_II_Rev_1-2_20100906.pdf
 
-System Management Bus (SMBus) Specification.  Version 3.1, 2018.
-Available on the SMBus website.
-http://smbus.org/specs/SMBus_3_1_20180319.pdf
+- System Management Bus (SMBus) Specification.  Version 3.1, 2018.
+  Available on the SMBus website.
+  http://smbus.org/specs/SMBus_3_1_20180319.pdf
 
 Additional references:
 
-Milios, John.  CRC-8 firmware implementations for SMBus.  1999.
-http://sbs-forum.org/marcom/dc2/20_crc-8_firmware_implementations.pdf
+- Milios, John.  CRC-8 firmware implementations for SMBus.  1999.
+ http://sbs-forum.org/marcom/dc2/20_crc-8_firmware_implementations.pdf
 
-Pircher, Thomas.  pycrc -- parameterisable CRC calculation utility and C source
-code generator: CRC algorithms implemented in Python.
-https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py
+- Pircher, Thomas.  pycrc -- parameterisable CRC calculation utility and C
+  source code generator: CRC algorithms implemented in Python.
+  https://github.com/tpircher/pycrc/blob/master/pycrc/algorithms.py
 
-White, Robert V.  Using the PMBus Protocol.  2005.
-http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
+- White, Robert V.  Using the PMBus Protocol.  2005.
+  http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
----
-
-Constants and methods for interfacing with PMBus compliant devices.
 Copyright (C) 2019–2019  Jonas Malaco
 Copyright (C) 2019–2019  each contribution's author
 
 Includes a CRC-8 implementation adapted from pycrc by Thomas Pircher.
 Copyright (c) 2006-2017  Thomas Pircher  <tehpeh-web@tty1.net>
 
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import math

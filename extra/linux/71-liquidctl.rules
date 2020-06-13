@@ -1,0 +1,102 @@
+# Rules that grant unprivileged access to devices supported by liquidctl
+#
+# Users and distros are encorouged to use these if they want liquidctl to work
+# without requiring root privileges (possibly with the use of sudo).
+#
+# Distros will likely want to place this file in `/usr/lib/udev/rules.d/`,
+# while users installing this manually SHOULD use `/etc/udev/rules.d/` instead.
+#
+# The suggested name for this file is `71-liquidctl.rules`.  This was chosen
+# based on the numbering of other uaccess tagging rule files in my system (not
+# very scientific, I know, but I could not find any documented policy for
+# this), as well as the need to let users overrule these rules.
+#
+# These rules assume a system with a modern versions of systemd/udev, with
+# support for the `uaccess` tag; on older systems the rules can be changed to
+# set GROUP="plugdev" and MODE="0660" instead.  The currently deprecated
+# 'plugdev' group is not used by default to avoid generating warnings on
+# systems that have already removed it.
+
+# Corsair Hydro H80i GT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c02", TAG+="uaccess"
+
+# Corsair Hydro H100i GTX
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c03", TAG+="uaccess"
+
+# Corsair Hydro H110i GTX
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c07", TAG+="uaccess"
+
+# Corsair Hydro H80i v2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c08", TAG+="uaccess"
+
+# Corsair Hydro H100i v2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c09", TAG+="uaccess"
+
+# Corsair Hydro H115i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c0a", TAG+="uaccess"
+
+# Asetek 690LC (also EVGA CLC or NZXT Kraken)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
+
+# NZXT Kraken M22
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1715", TAG+="uaccess"
+
+# NZXT Kraken X (X42, X52, X62 or X72)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="170e", TAG+="uaccess"
+
+# Corsair HX750i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c05", TAG+="uaccess"
+
+# Corsair HX850i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c06", TAG+="uaccess"
+
+# Corsair HX1000i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c07", TAG+="uaccess"
+
+# Corsair HX1200i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c08", TAG+="uaccess"
+
+# Corsair RM650i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0a", TAG+="uaccess"
+
+# Corsair RM750i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0b", TAG+="uaccess"
+
+# Corsair RM850i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uaccess"
+
+# Corsair RM1000i
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0d", TAG+="uaccess"
+
+# NZXT E500
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="5911", TAG+="uaccess"
+
+# NZXT E650
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="5912", TAG+="uaccess"
+
+# NZXT E850
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="2500", TAG+="uaccess"
+
+# NZXT Grid+ V3
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1711", TAG+="uaccess"
+
+# NZXT HUE 2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2001", TAG+="uaccess"
+
+# NZXT HUE 2 Ambient
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2002", TAG+="uaccess"
+
+# NZXT Smart Device (V1)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1714", TAG+="uaccess"
+
+# NZXT Smart Device V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2006", TAG+="uaccess"
+
+# NZXT RGB & Fan Controller
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2009", TAG+="uaccess"
+
+# NZXT Kraken X (X53, X63 or X73)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2007", TAG+="uaccess"
+
+# NZXT Kraken Z (Z63 or Z73)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3008", TAG+="uaccess"

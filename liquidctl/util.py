@@ -1,30 +1,74 @@
 """Assorted utilities used by drivers and the CLI.
 
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
-This file is part of liquidctl.
-
-liquidctl is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-liquidctl is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import colorsys
 import logging
 
 from ast import literal_eval
+from enum import Enum, unique
 
 LOGGER = logging.getLogger(__name__)
+
+
+HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
+
+
+@unique
+class Hue2Accessory(Enum):
+    """Mapping of HUE 2 accessory IDs and names.
+
+    >>> Hue2Accessory(4)
+    <Hue2Accessory.HUE2_LED_STRIP_300: 4>
+    >>> str(Hue2Accessory(4))
+    'HUE 2 LED Strip 300 mm'
+
+    Unknown IDs are automatically translated to equivalent pseudo-names.
+
+    >>> Hue2Accessory(59)
+    <Hue2Accessory.UNKNOWN_59: 59>
+    >>> Hue2Accessory(59).value == Hue2Accessory(59).value
+    True
+    >>> Hue2Accessory(59) != Hue2Accessory(58)
+    True
+    """
+
+    HUE_PLUS_LED_STRIP = (0x01, 'HUE+ LED Strip')
+    AER_RGB1_FAN = (0x02, 'AER RGB 1')
+    HUE2_LED_STRIP_300 = (0x04, 'HUE 2 LED Strip 300 mm')
+    HUE2_LED_STRIP_250 = (0x05, 'HUE 2 LED Strip 250 mm')
+    HUE2_LED_STRIP_200 = (0x06, 'HUE 2 LED Strip 200 mm')
+    HUE2_CABLE_COMB = (0x07, 'HUE 2 Cable Comb')
+    HUE2_UNDERGLOW_300 = (0x09, 'HUE 2 Underglow 300 mm')
+    HUE2_UNDERGLOW_200 = (0x0a, 'HUE 2 Underglow 200 mm')
+    AER_RGB2_120 = (0x0b, 'AER RGB 2 120 mm')
+    AER_RGB2_140 = (0x0c, 'AER RGB 2 140 mm')
+    KRAKENX_GEN4_RING = (0x10, 'Kraken X (X53, X63 or X73) Pump Ring')
+    KRAKENX_GEN4_LOGO = (0x11, 'Kraken X (X53, X63 or X73) Pump Logo')
+
+    def __new__(cls, value, pretty_name):
+        member = object.__new__(cls)
+        member.pretty_name = pretty_name
+        member._value_ = value
+        return member
+
+    @classmethod
+    def _missing_(cls, value):
+        dummy = object.__new__(cls)
+        dummy.pretty_name = 'Unknown'
+        dummy._name_ = f'UNKNOWN_{value}'
+        dummy._value_ = value
+        return dummy
+
+    def __str__(self):
+        return self.pretty_name
+
+    def __eq__(self, other):
+        return self.value == other.value
 
 
 def clamp(value, clampmin, clampmax):

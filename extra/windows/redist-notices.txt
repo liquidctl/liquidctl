@@ -20,10 +20,10 @@ each project are provided bellow.
 liquidctl – monitor and control liquid coolers and other devices.
 https://github.com/jonasmalacofilho/liquidctl
 
-Copyright (C) 2018–2019  Jonas Malaco
-Copyright (C) 2018–2019  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2020  each contribution's author
 
-liquidctl includes contributions by CaseySJ and other authors.
+liquidctl includes contributions by CaseySJ, Tom Frey and other authors.
 
 liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
