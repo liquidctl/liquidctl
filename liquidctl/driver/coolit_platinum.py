@@ -112,7 +112,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         msg = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
         return [
             ('Liquid temperature', msg[8] + msg[7] / 255, '°C'),
-            ('Fan 1 speed', int.from_bytes(msg[15:18], byteorder='little'), 'rpm'),
+            ('Fan 1 speed', int.from_bytes(msg[15:17], byteorder='little'), 'rpm'),
             ('Fan 2 speed', int.from_bytes(msg[22:24], byteorder='little'), 'rpm'),
             ('Pump speed', int.from_bytes(msg[29:31], byteorder='little'), 'rpm'),
             ('Firmware version', f'{msg[2] >> 4}.{msg[2] & 0xf}.{msg[3]}', ''),
