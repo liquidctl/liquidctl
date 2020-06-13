@@ -44,6 +44,12 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1715", TAG+="uacc
 # NZXT Kraken X (X42, X52, X62 or X72)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="170e", TAG+="uaccess"
 
+# NZXT Kraken X (X53, X63 or X73)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2007", TAG+="uaccess"
+
+# NZXT Kraken Z (Z63 or Z73)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3008", TAG+="uaccess"
+
 # Corsair HX750i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c05", TAG+="uaccess"
 
@@ -94,9 +100,3 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2006", TAG+="uacc
 
 # NZXT RGB & Fan Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2009", TAG+="uaccess"
-
-# NZXT Kraken X (X53, X63 or X73)
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2007", TAG+="uaccess"
-
-# NZXT Kraken Z (Z63 or Z73)
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3008", TAG+="uaccess"
