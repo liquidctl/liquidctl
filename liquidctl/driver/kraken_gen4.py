@@ -4,7 +4,7 @@ Supported devices
 -----------------
 
  - [✓] NZXT Kraken X (X53, X63 and Z73)
- - [ ] NZXT Kraken Z (Z63 and Z73)
+ - [·] NZXT Kraken Z (Z63 and Z73)
 
 Supported features
 ------------------
@@ -343,9 +343,6 @@ class KrakenX3Driver(UsbHidDriver):
             self._write(header + color + footer)
 
 
-_UNSAFE_DRIVER = 'kraken_z3_driver'
-
-
 class KrakenZ3Driver(KrakenX3Driver):
     """liquidctl driver for model Z fourth-generation coolers from NZXT."""
 
@@ -355,11 +352,6 @@ class KrakenZ3Driver(KrakenX3Driver):
             'color_channels': _COLOR_CHANNELS_KRAKENZ,
         })
     ]
-
-    @classmethod
-    def probe(cls, handle, unsafe=None, **kwargs):
-        if unsafe and _UNSAFE_DRIVER in unsafe:
-            yield from super().probe(handle, **kwargs)
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -376,40 +368,3 @@ class KrakenZ3Driver(KrakenX3Driver):
             ('Fan speed', msg[24] << 8 | msg[23], 'rpm'),
             ('Fan duty', msg[25], '%'),
         ]
-
-
-class KrakenZ3GuardDriver(UsbHidDriver):
-    """liquidctl guard driver for model Z fourth-generation coolers from NZXT.
-
-    Allows calls to initialize and status to succeed, even if the future support
-    driver is disabled.  This prevents breaking `liquidctl initialize all` or
-    `liquidctl status` for users that have other devices.
-    """
-
-    SUPPORTED_DEVICES = [
-        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (future support)', {
-            'speed_channels': _SPEED_CHANNELS_KRAKENZ,
-            'color_channels': _COLOR_CHANNELS_KRAKENZ,
-        })
-    ]
-
-    @classmethod
-    def probe(cls, handle, unsafe=None, **kwargs):
-        if unsafe and _UNSAFE_DRIVER in unsafe:
-            return
-        for dev in super().probe(handle, **kwargs):
-            LOGGER.warning('%s requires `--unsafe %s` to be enabled', dev.description,
-                           _UNSAFE_DRIVER)
-            yield dev
-
-    def connect(self, **kwargs):
-        pass
-
-    def initialize(self, **kwargs):
-        return []
-
-    def disconnect(self, **kwargs):
-        pass
-
-    def get_status(self, **kwargs):
-        return []

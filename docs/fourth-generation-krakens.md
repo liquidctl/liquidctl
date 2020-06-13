@@ -8,8 +8,6 @@ Both X and Z models house seventh generation Asetek pump designs, plus secondary
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The coolers also report relevant data via USB, including pump and/or fan speeds and liquid temperature.  The pump speed can be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
-At this time only the X models are supported in liquidctl, but a driver for the Z models is being worked on.
-
 
 ## NZXT Kraken X53, X63, X73
 
@@ -20,7 +18,11 @@ All capabilities available at the hardware level are supported, but other featur
 
 ## NZXT Kraken Z63, Z73
 
-To be implemented.
+The most notable difference between Kraken X and Kraken Z models is the replacement of the infinity mirror by a OLED screen.
+
+In addition to this, Kraken Z coolers restore the embedded fan controller that is missing from the current Kraken X models.
+
+The OLED screen cannot yet be controlled with liquidctl, but all other hardware capabilities are supported.
 
 
 ## Initialization

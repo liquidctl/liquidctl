@@ -77,6 +77,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [documentation](docs/third-generation-krakens.md) | |
 | NZXT Kraken X53, X63, X73 | [documentation](docs/fourth-generation-krakens.md) | <sup>_E, U_</sup> |
+| NZXT Kraken Z63, Z73 | [documentation](docs/fourth-generation-krakens.md) | <sup>_E, U_</sup> |
 
 ### Other parts
 

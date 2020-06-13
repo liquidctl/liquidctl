@@ -391,17 +391,27 @@ class HidapiDevice:
             pass
 
     def read(self, length):
-        """Read raw report from HID."""
+        """Read raw report from HID.
+
+        The returned data follows the semantics of the Linux HIDRAW API.
+
+        > On a device which uses numbered reports, the first byte of the
+        > returned data will be the report number; the report data follows,
+        > beginning in the second byte. For devices which do not use numbered
+        > reports, the report data will begin at the first byte.
+        """
         self.hiddev.set_nonblocking(False)
         return self.hiddev.read(length)
 
     def write(self, data):
         """Write raw report to HID.
 
-        The first byte of the buffer passed to write() should be set to the
-        report number.  If the device does not use numbered reports, the first
-        byte should be set to 0. The report data itself should begin at the
-        second byte.
+        The buffer should follow the semantics of the Linux HIDRAW API.
+
+        > The first byte of the buffer passed to write() should be set to the
+        > report number.  If the device does not use numbered reports, the
+        > first byte should be set to 0. The report data itself should begin
+        > at the second byte.
         """
         return self.hiddev.write(data)
 
