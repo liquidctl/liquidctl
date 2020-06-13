@@ -80,15 +80,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._data = RuntimeStorage(key_prefixes=[ids])
 
     def initialize(self, **kwargs):
-        """Initialize the device.
-
-        While the device itself is not know to require any initialization
-        commands, this driver needs to store some data, and that should be
-        initialized.
-        """
-        self._data.store_int('fan1_duty', None)
-        self._data.store_int('fan2_duty', None)
-        self._send_set_cooling()
+        """Initialize the device."""
+        pass
 
     def get_status(self, **kwargs):
         """Get a status report.
