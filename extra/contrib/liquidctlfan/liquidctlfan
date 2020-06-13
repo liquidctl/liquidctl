@@ -21,6 +21,8 @@ FANT4="100"
 SLTIME="10"
 #Enable Syslog
 SYSLOG="1"
+#Unit Celsius C or Fahrenheit F
+UNIT="C"
 programs=(bc sensors liquidctl logger)
 
 for program in "${programs[@]}"; do
@@ -35,40 +37,50 @@ LIQBIN=`command -v liquidctl`
 while true
 do
 	# ATTENTION Check your CPU temperature sensor value.
-	cputemp=`sensors | grep Tdie | awk '{ print $2 }' | sed -e s/°C//g | sed -e s/+//g`
+	cputemp=`sensors | grep Tdie | awk '{ print $2 }' | sed -e s/°$UNIT//g | sed -e s/+//g`
 	if (( $(echo "$cputemp > $CPUT4" | bc  -l) ))
 	then
 		if [ $SYSLOG -eq "1" ]
 		then
-			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT4%\r"`
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT4%\r"`
+		else
+			echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT4%\r"	
 		fi
 		$LIQBIN --product $PRID set sync speed $FANT4
 	elif (( $(echo "$cputemp >= $CPUT3" | bc  -l) ))
 	then
 		if [ $SYSLOG -eq "1" ]
 		then
-			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT3%\r"`
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT3%\r"`
+		else
+			echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT3%\r"
 		fi
 		$LIQBIN --product $PRID set sync speed $FANT3
 	elif (( $(echo "$cputemp >= $CPUT2" | bc  -l) ))
 	then
 		if [ $SYSLOG -eq "1" ]
 		then
-			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT2%\r"`
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT2%\r"`
+		else
+			echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT2%\r"
 		fi
 		$LIQBIN --product $PRID set sync speed $FANT2
 	elif (( $(echo "$cputemp >= $CPUT1" | bc  -l) ))
 	then
 		if [ $SYSLOG -eq "1" ]
 		then
-			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°C FANs $FANT1%\r"`
+			logger --id=$$ `echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT1%\r"`
+		else
+			echo -ne "$PROCNAME CPU is $cputemp°$UNIT FANs $FANT1%\r"
 		fi
 		$LIQBIN --product $PRID set sync speed $FANT1
 	elif (( $(echo "$cputemp < $CPUT1" | bc  -l) ))
 	then
 		if [ $SYSLOG -eq "1" ]
 		then
-			logger --id=$$ `echo -ne "$PROCNAME Low CPU $cputemp°C FANs $FANT0%\r"`
+			logger --id=$$ `echo -ne "$PROCNAME Low CPU $cputemp°$UNIT FANs $FANT0%\r"`
+		else
+			echo -ne "$PROCNAME Low CPU is $cputemp°$UNIT FANs $FANT0%\r"
 		fi
 		$LIQBIN --product $PRID set sync speed $FANT0
 	fi
