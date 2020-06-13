@@ -25,7 +25,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-import itertools
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
