@@ -98,6 +98,13 @@ class CoolitPlatinumDriver(UsbHidDriver):
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed duty.
+
+        Work-in-progress; currently the pump mode will unconditionally be set
+        to balanced.
+
+        Channels that remain to be configured might default to 100% duty.
+        """
         channel = channel.lower()
         if channel not in ['fan1', 'fan2']:
             raise ValueError("Only channels supported channels are fan1 and fan2")
