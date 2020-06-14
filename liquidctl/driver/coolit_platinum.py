@@ -24,6 +24,7 @@ Copyright (C) 2020–2020  each contribution's author
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
@@ -138,6 +139,66 @@ class CoolitPlatinumDriver(UsbHidDriver):
             self._data.store_int(key, duty)
         self._send_set_cooling()
 
+    def set_color(self, channel, mode, colors, **kwargs):
+        """Set the color for each LED.
+
+        In reality the device does not have the concept of different channels
+        or modes, but a few are implemented for convenience.
+
+        The 'led' channel is used to address the individual LEDs.  The only
+        supported mode for this channel is 'super-fixed', and each color in
+        `colors` is applied to one individual LED, successively.  This is
+        closest to how the device works.
+
+        The 'sync' channel considers that the individual LEDs are associated
+        with components, and provides two distinct convenience modes: 'fixed'
+        allows each component to be set to a different color, which is applied
+        to all LEDs on that component; very differently, 'super-fixed' allows
+        each individual LED to have a different color, but all components will
+        repeat the same pattern.
+
+        The table summarizes the (pseudo) channels and modes:
+
+        | Channel | Mode        | Colors, max | LEDs         | Components   |
+        | ------- | ----------- | ----------- | ------------ | ------------ |
+        | led     | super-fixed |          24 | independent  | independent  |
+        | sync    | fixed       |           3 | synchronized | independent  |
+        | sync    | super-fixed |           8 | independent  | synchronized |
+
+        Animations always require successive calls to this API.
+
+        TODO revisit the channel and mode names, especially (sync, fixed)
+        """
+        channel = channel.lower()
+        mode = mode.lower()
+        if channel == 'led':
+            if mode != 'super-fixed':
+                LOGGER.warning("mode name not enforced but should be 'super-fixed'")
+            if len(colors) > 24:
+                LOGGER.warning('too many colors, dropping to 24')
+            colors = colors[:24]
+        elif channel == 'sync':
+            if mode == 'fixed':
+                if len(colors) > 3:
+                    LOGGER.warning('too many colors for mode=fixed, dropping to 3')
+                colors = [[color] * 8 for color in colors[:3]]
+            elif mode == 'super-fixed':
+                if len(colors) > 8:
+                    LOGGER.warning('too many colors for mode=super-fixed, dropping to 8')
+                colors = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * 3
+            else:
+                raise ValueError("Unknown mode, should be one of: 'fixed', 'super-fixed'")
+        else:
+            raise ValueError("Unknown channel, should be: 'address'")
+        data1 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[0:20])))
+        data2 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[20:])))
+        if len(colors) > 0:
+            self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
+        if len(colors) > 20:
+            self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
+        # TODO try to assert something specific on each response
+        # TODO alternatively, try to skip reading them altogether
+
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number (=0, not used)
         buf = bytearray(_REPORT_LENGTH + 1)
@@ -172,4 +233,4 @@ class CoolitPlatinumDriver(UsbHidDriver):
         data[_FAN2_DATA_OFFSET + 5] = int(fan2_duty * 2.55)
         data[_PUMP_DATA_OFFSET] = _PUMP_MODE_BALANCED
         self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
-        # TODO try to assert something on the response
+        # TODO try to assert something specific on the response
