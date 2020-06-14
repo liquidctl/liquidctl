@@ -109,8 +109,12 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._sequence = sequence(self._data)
 
     def initialize(self, **kwargs):
-        """Initialize the device."""
-        pass
+        """Initialize the device.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        msg = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
+        return [('Firmware version', f'{msg[2] >> 4}.{msg[2] & 0xf}.{msg[3]}', '')]
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -124,7 +128,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
             ('Fan 1 speed', int.from_bytes(msg[15:17], byteorder='little'), 'rpm'),
             ('Fan 2 speed', int.from_bytes(msg[22:24], byteorder='little'), 'rpm'),
             ('Pump speed', int.from_bytes(msg[29:31], byteorder='little'), 'rpm'),
-            ('Firmware version', f'{msg[2] >> 4}.{msg[2] & 0xf}.{msg[3]}', ''),
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
