@@ -151,7 +151,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
             buf[2] |= command
             start_at = 3
         if data:
-            buf[start_at:-1] = data
+            buf[start_at : start_at + len(data)] = data
         buf[-1] = compute_pec(buf[2:-1])
         LOGGER.debug('write %s', buf.hex())
         self.device.clear_enqueued_reports()
