@@ -16,7 +16,7 @@ Supported features
  - [✓] general monitoring
  - [·] pump speed control
  - [·] fan speed control
- - [ ] lighing control
+ - [✓] lighing control
 
 Copyright (C) 2020–2020  Jonas Malaco
 Copyright (C) 2020–2020  each contribution's author
@@ -79,16 +79,24 @@ class CoolitPlatinumDriver(UsbHidDriver):
     """liquidctl driver for Corsair Platinum and PRO XT coolers."""
 
     SUPPORTED_DEVICES = [
-        # (0x1B1C, ??, None, 'Corsair H100i Platinum SE (experimental)', {}),
-        (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)', {}),
-        (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)', {}),
-        (0x1B1C, 0x0C20, None, 'Corsair H100i PRO XT (experimental)', {}),
-        (0x1B1C, 0x0C21, None, 'Corsair H115i PRO XT (experimental)', {}),
-        # Note: unknown adjustments needed to support three fans (H150i PRO XT)
+        # (0x1B1C, ??, None, 'Corsair H100i Platinum SE (experimental)',
+        #     {'fans': 2, 'rgb_fans': True}),
+        (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
+            {'fans': 2, 'rgb_fans': True}),
+        (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
+            {'fans': 2, 'rgb_fans': True}),
+        (0x1B1C, 0x0C20, None, 'Corsair H100i PRO XT (experimental)',
+            {'fans': 2, 'rgb_fans': False}),
+        (0x1B1C, 0x0C21, None, 'Corsair H115i PRO XT (experimental)',
+            {'fans': 2, 'rgb_fans': False}),
+        # (0x1B1C, ??, None, 'Corsair H150i PRO XT (experimental)',
+        #     {'fans': 3, 'rgb_fans': False}),  # check assertions
     ]
 
-    def __init__(self, device, description, **kwargs):
+    def __init__(self, device, description, fans, rgb_fans, **kwargs):
         super().__init__(device, description, **kwargs)
+        self._fans = fans
+        self._rgb_fans = rgb_fans
         # the following fields are only initialized in connect()
         self._data = None
         self._sequence = None
@@ -109,6 +117,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+        assert self._fans == 2, f'Cannot yet handle {self._fans} fans'
         msg = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
         return [
             ('Liquid temperature', msg[8] + msg[7] / 255, '°C'),
@@ -126,6 +135,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Channels that remain to be configured may default to 100% duty.
         """
+        assert self._fans == 2, f'Cannot yet handle {self._fans} fans'
         channel = channel.lower()
         duty = clamp(duty, 0, 100)
         if channel == 'fan':
@@ -159,33 +169,38 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         The table summarizes the (pseudo) channels and modes:
 
-        | Channel | Mode        | Colors, max | LEDs         | Components   |
-        | ------- | ----------- | ----------- | ------------ | ------------ |
-        | led     | super-fixed |          24 | independent  | independent  |
-        | sync    | fixed       |           3 | synchronized | independent  |
-        | sync    | super-fixed |           8 | independent  | synchronized |
+        | Channel | Mode        | LEDs         | Components   | Colors, max |
+        | ------- | ----------- | ------------ | ------------ | ----------- |
+        | led     | super-fixed | independent  | independent  |          24 |
+        | sync    | fixed       | synchronized | independent  |           3 |
+        | sync    | super-fixed | independent  | synchronized |           8 |
+
+        Note: PRO XT colors do not feature RGB fans; only one component and 8
+        LEDs are available.
 
         Animations always require successive calls to this API.
-
-        TODO revisit the channel and mode names, especially (sync, fixed)
         """
+        def warn_if_extra_colors(limit):
+            if len(colors) > limit:
+                LOGGER.warning('too many colors for channel=%s and mode=%s, dropping to %d',
+                               channel, mode, limit)
+
         channel = channel.lower()
         mode = mode.lower()
+        component_count = 1 + self._fans * self._rgb_fans
+        led_count = 8 * component_count
         if channel == 'led':
             if mode != 'super-fixed':
                 LOGGER.warning("mode name not enforced but should be 'super-fixed'")
-            if len(colors) > 24:
-                LOGGER.warning('too many colors, dropping to 24')
-            colors = colors[:24]
+            warn_if_extra_colors(led_count)
+            colors = colors[:led_count]
         elif channel == 'sync':
             if mode == 'fixed':
-                if len(colors) > 3:
-                    LOGGER.warning('too many colors for mode=fixed, dropping to 3')
-                colors = [[color] * 8 for color in colors[:3]]
+                warn_if_extra_colors(component_count)
+                colors = [[color] * 8 for color in colors[:component_count]]
             elif mode == 'super-fixed':
-                if len(colors) > 8:
-                    LOGGER.warning('too many colors for mode=super-fixed, dropping to 8')
-                colors = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * 3
+                warn_if_extra_colors(8)
+                colors = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * component_count
             else:
                 raise ValueError("Unknown mode, should be one of: 'fixed', 'super-fixed'")
         else:
