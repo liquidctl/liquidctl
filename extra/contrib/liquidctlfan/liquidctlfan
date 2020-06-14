@@ -1,0 +1,260 @@
+#!/bin/bash
+# Place this script in /usr/local/bin or you've to adjust systemd unit file. 
+# Please have a look at cputemp. You may have to adjust something for your system.
+#
+# Copyright (C) 2020  Martin Burgholte
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+NAME="Liquidctl Fan Control"
+PROCNAME=`basename "$0"`
+
+### Enable configuration to disable parameter handling ####
+### Product ID of HUE Grid
+#PRID="0x1711"
+###Unit Celsius C or Fahrenheit F
+#UNIT="C"
+### CPU temperature threshold values
+#CPUT1="50.0"
+#CPUT2="60.0"
+#CPUT3="70.0"
+#CPUT4="80.0"
+### FAN setpoints
+#FAN0="30"
+#FAN1="40"
+#FAN2="50"
+#FAN3="80"
+#FAN4="100"
+###Interval check time
+#SLTIME="10"
+###Enable Syslog
+#SYSLOG="enable"
+###########################################################
+
+programs=(bc sensors liquidctl logger)
+
+for program in "${programs[@]}"; do
+    if ! command -v "$program" > /dev/null 2>&1; then
+        echo "The following application: $program is missing. Please check it first."
+	exit 1
+    fi
+done
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+case $key in
+    -p|--product)
+	    PRID="$2"
+	    shift 
+	    ;;
+    -u|--unit)
+	    UNIT="$2"
+	    shift
+	    ;;
+    -ct1|--cputemp1)
+	    CPUT1="$2"
+	    shift 
+	    ;;
+    -ct2|--cputemp2)
+	    CPUT2="$2"
+	    shift 
+	    ;;
+    -ct3|--cputemp3)
+	    CPUT3="$2"
+	    shift 
+	    ;;
+    -ct4|--cputemp4)
+	    CPUT4="$2"
+	    shift 
+	    ;;
+    -f0|--fan0)
+	    FAN0="$2"
+	    shift
+	    ;;
+    -f1|--fan1)
+	    FAN1="$2"
+	    shift
+	    ;;
+    -f2|--fan2)
+	    FAN2="$2"
+	    shift
+	    ;;
+    -f3|--fan3)
+	    FAN3="$2"
+	    shift
+	    ;;
+    -f4|--fan4)
+	    FAN4="$2"
+	    shift
+	    ;;
+    -i|--interval)
+	    SLTIME="$2"
+	    shift
+	    ;;
+    -l|--log)
+	    SYSLOG="$2"
+	    shift
+	    ;;
+    -a|--about)
+	    echo -e "$NAME - wrapper script for liquidctl to control your fans\nCopyright (C) 2020  Martin Burgholte\nSPDX-License-Identifier: GPL-3.0-or-later"
+	    exit 0
+	    ;;
+    -h|--help)
+	    echo -e "Usage: $0\n\t-p|--product Product id of controller \n\t-u|--unit Celsius or Fahrenheit \n\t-ct1|--cputemp1 CPU temperature threshold value lowest \n\t-ct2|--cputemp2 CPU temperature threshold value\n\t-ct3|--cputemp3 CPU temperature threshold value \n\t-ct4|--cputemp4 CPU temperature threshold value highest \n\t-f0|--fan0 Fan setpoint in percent lowest (idle) \n\t-f1|--fan1 Fan setpoint in percent \n\t-f2|--fan2 Fan setpoint in percent \n\t-f3|--fan3 Fan setpoint in percent \n\t-f4|--fan4 Fan setpoint in percent highest\n\t-i|--interval CPU temperature check time\n\t--l|--log Enable syslog logging \n\t-a|--about Show about message \n\t-h|--help Show this message"
+	    exit 0
+	    ;;
+    *)
+	    echo -e "Usage: $0\n\t-p|--product Product id of controller \n\t-u|--unit Celsius or Fahrenheit \n\t-ct1|--cputemp1 CPU temperature threshold value lowest \n\t-ct2|--cputemp2 CPU temperature threshold value\n\t-ct3|--cputemp3 CPU temperature threshold value \n\t-ct4|--cputemp4 CPU temperature threshold value highest \n\t-f0|--fan0 Fan setpoint in percent lowest (idle) \n\t-f1|--fan1 Fan setpoint in percent \n\t-f2|--fan2 Fan setpoint in percent \n\t-f3|--fan3 Fan setpoint in percent \n\t-f4|--fan4 Fan setpoint in percent highest\n\t-i|--interval CPU temperature check time\n\t--l|--log Enable syslog logging \n\t-a|--about Show about message \n\t-h|--help Show this message"
+	    exit 1
+	    ;;
+esac
+shift 
+done
+
+# Parameter check
+if [[ -z $PRID ]] || [[ -z $UNIT ]] || [[ -z $CPUT1 ]] || [[ -z $CPUT2 ]] || [[ -z $CPUT3 ]] || [[ -z $CPUT4 ]] || [[ -z $FAN0 ]] || [[ -z $FAN1 ]] || [[ -z $FAN2 ]] || [[ -z $FAN3 ]] || [[ -z $FAN4 ]] || [[ -z $SLTIME ]] || [[ -z $SYSLOG ]]
+then
+	echo -e "Missing parameter!\nUsage: $0\n\t-p|--product Product id of controller \n\t-u|--unit Celsius or Fahrenheit \n\t-ct1|--cputemp1 CPU temperature threshold value lowest \n\t-ct2|--cputemp2 CPU temperature threshold value\n\t-ct3|--cputemp3 CPU temperature threshold value \n\t-ct4|--cputemp4 CPU temperature threshold value highest \n\t-f0|--fan0 Fan setpoint in percent lowest (idle) \n\t-f1|--fan1 Fan setpoint in percent \n\t-f2|--fan2 Fan setpoint in percent \n\t-f3|--fan3 Fan setpoint in percent \n\t-f4|--fan4 Fan setpoint in percent highest\n\t-i|--interval CPU temperature check time\n\t--l|--log Enable syslog logging \n\t-a|--about Show about message \n\t-h|--help Show this message"
+	exit 1
+fi
+		
+# Unit check
+case $UNIT in
+	f|F|Fahrenheit)
+#		echo -n "Fahrenheit"
+		UNIT="F"
+		;;
+	c|C|Celsius)
+#		echo -n "Celsius"
+		UNIT="C"
+		;;
+	*)
+	echo -e "Wrong unit parameter! Please use for\n\t°C -> c|C|Celsius or\n\t°F -> f|F|Fahrenheit."
+	exit 1
+	;;
+esac
+
+# Syslog check
+case $SYSLOG in
+	enable|ENABLE|true|TRUE)
+		SYSLOG="1"
+		;;
+	disable|DISABLE|false|FALSE)
+		SYSLOG="0"
+		;;
+	*)
+	echo -e "Wrong syslog parameter! Please use for\n\tactive -> enable|ENABLE|TRUE|true or\n\tinactive -> disable|DISABLE|FALSE|false"
+	exit 1
+	;;
+esac
+
+# CPU temperature threshold value check
+
+ if (( $(echo "$CPUT1 < $CPUT2" | bc  -l) ))
+        then
+		if (( $(echo "$CPUT2 < $CPUT3" | bc -l) ))
+		then
+			if (( $(echo "$CPUT3 < $CPUT4" | bc -l) ))
+			then
+				echo -e "CPU temperature thresholds looking good."
+			else
+				echo -e "CPU temperature threshold error! CPU temperature t3 $CPUT3 is not less than t4 $CPUT4. Please check your threshold."
+				exit 1
+			fi
+		else
+			echo -e "CPU temperature threshold error! CPU temperature t2 $CPUT2 is not less than t3 $CPUT3. Please check your threshold."
+			exit 1
+		fi
+	else
+	echo -e "CPU temperature threshold error! CPU temperature t1 $CPUT1 is not less than t2 $CPUT2. Please check your threshold."
+	exit 1
+fi
+
+# FAN setpoint check
+
+ if (( $(echo "$FAN0 < $FAN1" | bc  -l) ))
+        then
+		if (( $(echo "$FAN1 < $FAN2" | bc -l) ))
+		then
+			if (( $(echo "$FAN2 < $FAN3" | bc -l) ))
+			then
+				if (( $(echo "$FAN3 < $FAN4" | bc -l) ))
+				then
+					echo -e "FAN setpoints looking good."
+				else
+					echo -e "FAN setpoint error! FAN setpoint f3 $FAN3 is not less than f4 $FAN4. Please check your setpoints."
+					exit 1
+				fi
+			else
+				echo -e "FAN setpoint error! FAN setpoint f2 $FAN2 is not less than f3 $FAN3. Please check your setpoints."
+				exit 1
+			fi
+		else
+			echo -e "FAN setpoint error! FAN setpoint f1 $FAN1 is not less than f2 $FAN2. Please check your setpoints."
+			exit 1
+		fi
+	else
+	echo -e "FAN setpoint error! FAN setpoint f0 $FAN0 is not less than f1 $FAN1. Please check your setpoints."
+	exit 1
+fi
+
+LIQBIN=`command -v liquidctl`
+
+while true
+do
+	# ATTENTION Check your CPU temperature sensor value.
+	if [ $UNIT == "F" ]
+	then
+		cputemp=`sensors -f | grep Tdie | awk '{ print $2 }' | sed -e s/°$UNIT//g | sed -e s/+//g`
+	else
+		cputemp=`sensors | grep Tdie | awk '{ print $2 }' | sed -e s/°$UNIT//g | sed -e s/+//g`
+	fi
+	if (( $(echo "$cputemp > $CPUT4" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN4 %\r"`
+		else
+			echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN4 %\r"	
+		fi
+		$LIQBIN --product $PRID set sync speed $FAN4
+	elif (( $(echo "$cputemp >= $CPUT3" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN3 %\r"`
+		else
+			echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN3 %\r"
+		fi
+		$LIQBIN --product $PRID set sync speed $FAN3
+	elif (( $(echo "$cputemp >= $CPUT2" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN2 %\r"`
+		else
+			echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN2 %\r"
+		fi
+		$LIQBIN --product $PRID set sync speed $FAN2
+	elif (( $(echo "$cputemp >= $CPUT1" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU temperature is $cputemp°$UNIT setting FANs to $FAN1 %\r"`
+		else
+			echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN1 %\r"
+		fi
+		$LIQBIN --product $PRID set sync speed $FAN1
+	elif (( $(echo "$cputemp < $CPUT1" | bc  -l) ))
+	then
+		if [ $SYSLOG -eq "1" ]
+		then
+			logger --id=$$ `echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN0 %\r"`
+		else
+			echo -ne "$PROCNAME CPU temperature is $cputemp °$UNIT setting FANs to $FAN0 %\r"
+		fi
+		$LIQBIN --product $PRID set sync speed $FAN0
+	fi
+	sleep $SLTIME
+done
+

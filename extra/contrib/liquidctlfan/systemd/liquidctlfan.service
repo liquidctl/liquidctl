@@ -1,0 +1,13 @@
+[Unit]
+Description=Liquidctl Fan Control
+After=liquidcfg.service
+
+[Service]
+## Fixed configuration
+#ExecStart=/usr/local/bin/liquidctlfan
+## Handover parameters
+ExecStart=/usr/local/bin/liquidctlfan -p 0x1711 -u c -ct1 50.0 -ct2 60.0 -ct3 70.0 -ct4 80.0 -f0 30 -f1 40 -f2 50 -f3 80 -f4 100 -i 10 -l enable
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target 
