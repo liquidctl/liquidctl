@@ -207,10 +207,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
             raise ValueError("Unknown channel, should be: 'address'")
         data1 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[0:20])))
         data2 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[20:])))
-        if len(colors) > 0:
-            self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
-        if len(colors) > 20:
-            self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
+        self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
+        self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
         # TODO try to assert something specific on each response
         # TODO alternatively, try to skip reading them altogether
 
