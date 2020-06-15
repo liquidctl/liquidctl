@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 import os
 import sys
+import tempfile
 
 from ast import literal_eval
 
@@ -80,9 +81,12 @@ class _FilesystemBackend:
 
     def store(self, key, value):
         path = os.path.join(self._write_dir, key)
-        with open(path, mode='w') as f:
+        fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
+        with open(fd, mode='w') as f:
             f.write(repr(value))
-            LOGGER.debug('stored %s=%r (in %s)', key, value, path)
+            f.flush()
+        os.replace(tmp, path)
+        LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
 
 class RuntimeStorage:
