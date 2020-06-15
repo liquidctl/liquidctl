@@ -92,8 +92,8 @@ def _sequence(storage):
     a shifted sequence will look like: 8, 16, 24... 232, 240, 248, 8, 16, 24...
     """
     while True:
-        seq = storage.load_int('sequence', default=0) % 31 + 1
-        storage.store_int('sequence', seq)
+        seq = storage.load('sequence', of_type=int, default=0) % 31 + 1
+        storage.store('sequence', seq)
         yield seq
 
 
@@ -155,7 +155,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        self._data.store_int('pump_mode', PumpMode[pump_mode.upper()].value)
+        self._data.store('pump_mode', PumpMode[pump_mode.upper()].value)
         res = self._send_set_cooling()
         return [('Firmware version', f'{res[2] >> 4}.{res[2] & 0xf}.{res[3]}', '')]
 
@@ -189,8 +189,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
         else:
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
-            self._data.store_int(f'{channel}_mode', FanMode.FIXED_DUTY.value)
-            self._data.store_int(f'{channel}_duty', duty)
+            self._data.store(f'{channel}_mode', FanMode.FIXED_DUTY.value)
+            self._data.store(f'{channel}_duty', duty)
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -308,10 +308,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         assert len(self._fans) > 2, 'cannot fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
         for fan, (mode_offset, profile_offset) in zip(self._fans, _FAN_MODE_PROFILE_OFFSETS):
-            mode = FanMode(self._data.load_int(f'{fan}_mode'))
+            mode = FanMode(self._data.load(f'{fan}_mode', of_type=int))
             data[mode_offset] = mode.value
             if mode is FanMode.FIXED_DUTY:
-                duty = self._data.load_int(f'{fan}_duty', default=100)
+                duty = self._data.load(f'{fan}_duty', of_type=int, default=100)
                 data[mode_offset + 5] = int(clamp(duty, 0, 100) * 2.55)
                 LOGGER.info('setting %s duty to %d%%', fan, duty)
             elif mode is FanMode.CUSTOM_PROFILE:
@@ -324,7 +324,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
                                 fan, temp, duty)
             else:
                 assert False, f'unexpected {mode}'
-        pump_mode = PumpMode(self._data.load_int('pump_mode'))
+        pump_mode = PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
         LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
