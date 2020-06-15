@@ -98,7 +98,7 @@ def _sequence(storage):
 
 
 def _prepare_profile(original):
-    res = [(temp, clamp(duty, 0, 100)) for temp, duty in original]
+    res = [(temp, clamp(duty, 0, 100)) for temp, duty in normalize_profile(original)]
     if len(res) < 1:
         raise ValueError('At least one point required')
     elif len(res) > _PROFILE_LENGTH:
@@ -206,7 +206,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
         100% at 60°C.
         """
         channel = channel.lower()
-        profile = _prepare_profile(normalize_profile(profile))
         if channel == 'fan':
             channels = self._fans
         elif channel in self._fans:
@@ -214,10 +213,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
         else:
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
-            self._data.store_int(f'{channel}_mode', FanMode.CUSTOM_PROFILE.value)
-            for i, (temp, duty) in enumerate(profile):
-                self._data.store_int(f'{channel}_temp[{i}]', temp)
-                self._data.store_int(f'{channel}_duty[{i}]', duty)
+            self._data.store(f'{channel}_mode', FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f'{channel}_profile', profile)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -318,11 +315,11 @@ class CoolitPlatinumDriver(UsbHidDriver):
                 data[mode_offset + 5] = int(clamp(duty, 0, 100) * 2.55)
                 LOGGER.info('setting %s duty to %d%%', fan, duty)
             elif mode is FanMode.CUSTOM_PROFILE:
-                for i in range(_PROFILE_LENGTH):
-                    temp = self._data.load_int(f'{fan}_temp[{i}]', default=100)
-                    data[profile_offset + i * 2] = clamp(temp, 0, _CRITICAL_TEMPERATURE)
-                    duty = self._data.load_int(f'{fan}_duty[{i}]', default=100)
-                    data[profile_offset + i * 2 + 1] = int(clamp(duty, 0, 100) * 2.55)
+                profile = self._date.load(f'{fan}_profile', of_type=list)
+                profile = _prepare_profile(profile)
+                for i, (temp, duty) in enumerate(profile):
+                    data[profile_offset + i * 2] = temp
+                    data[profile_offset + i * 2 + 1] = int(duty * 2.55)
                     LOGGER.info('setting %s point (%d°C, %d%%), device interpolated',
                                 fan, temp, duty)
             else:
