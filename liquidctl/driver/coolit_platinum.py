@@ -248,7 +248,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Animations always require successive calls to this API.
         """
-        def warn_if_extra_colors(liait):
+        def warn_if_extra_colors(limit):
             if len(colors) > limit:
                 LOGGER.warning('too many colors for channel=%s and mode=%s, dropping to %d',
                                channel, mode, limit)
