@@ -305,7 +305,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         return buf
 
     def _send_set_cooling(self):
-        assert len(self._fans) > 2, 'cannot fit all fan data'
+        assert len(self._fans) <= 2, 'cannot fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
         for fan, (mode_offset, profile_offset) in zip(self._fans, _FAN_MODE_PROFILE_OFFSETS):
             mode = FanMode(self._data.load(f'{fan}_mode', of_type=int))
