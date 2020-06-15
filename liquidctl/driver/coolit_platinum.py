@@ -315,7 +315,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
                 data[mode_offset + 5] = int(clamp(duty, 0, 100) * 2.55)
                 LOGGER.info('setting %s duty to %d%%', fan, duty)
             elif mode is FanMode.CUSTOM_PROFILE:
-                profile = self._date.load(f'{fan}_profile', of_type=list)
+                profile = self._data.load(f'{fan}_profile', of_type=list)
                 profile = _prepare_profile(profile)
                 for i, (temp, duty) in enumerate(profile):
                     data[profile_offset + i * 2] = temp
