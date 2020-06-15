@@ -100,8 +100,9 @@ _PARSE_ARG = {
     '--alert-threshold': int,
     '--alert-color': color_from_str,
 
-    '--legacy-690lc': bool,
     '--single-12v-ocp': bool,
+    '--pump-mode': str,
+    '--legacy-690lc': bool,
     '--unsafe': lambda x: x.split(','),
     '--verbose': bool,
     '--debug': bool,
