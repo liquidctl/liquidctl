@@ -80,10 +80,12 @@ class _FilesystemBackend:
         return None
 
     def store(self, key, value):
+        data = repr(value)
+        assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
         fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
         with open(fd, mode='w') as f:
-            f.write(repr(value))
+            f.write(data)
             f.flush()
         os.replace(tmp, path)
         LOGGER.debug('stored %s=%r (in %s)', key, value, path)
