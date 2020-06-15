@@ -214,7 +214,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         else:
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
-            self._data.store_int(f'{channel}_mode', FanMode.FIXED_DUTY)
+            self._data.store_int(f'{channel}_mode', FanMode.CUSTOM_PROFILE)
             for i, (temp, duty) in enumerate(profile):
                 self._data.store_int(f'{channel}_temp[{i}]', temp)
                 self._data.store_int(f'{channel}_duty[{i}]', duty)
