@@ -214,7 +214,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
             self._data.store(f'{channel}_mode', FanMode.CUSTOM_PROFILE.value)
-            self._data.store(f'{channel}_profile', profile)
+            self._data.store(f'{channel}_profile', list(profile))
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -248,7 +248,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Animations always require successive calls to this API.
         """
-        def warn_if_extra_colors(limit):
+        def warn_if_extra_colors(liait):
             if len(colors) > limit:
                 LOGGER.warning('too many colors for channel=%s and mode=%s, dropping to %d',
                                channel, mode, limit)
