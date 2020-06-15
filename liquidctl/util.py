@@ -85,7 +85,7 @@ def delta(profile):
             for cur,prev in zip(profile[1:], profile[:-1])]
 
 
-def normalize_profile(profile, critx):
+def normalize_profile(profile, critx=None):
     """Normalize a [(x:int, y:int), ...] profile.
 
     The normalized profile will ensure that:
@@ -94,9 +94,14 @@ def normalize_profile(profile, critx):
        (i.e. for every i, i > 1, x[i] - x[i-1] > 0 and y[i] - y[i-1] >= 0)
      - the profile is sorted
      - a (critx, 100) failsafe is enforced
+     - only the first point that sets y := 100 is kept
 
     >>> normalize_profile([(30, 40), (25, 25), (35, 30), (40, 35), (40, 80)], 60)
     [(25, 25), (30, 40), (35, 40), (40, 80), (60, 100)]
+    >>> normalize_profile([(30, 40), (25, 25), (35, 30), (40, 100)], 60)
+    [(25, 25), (30, 40), (35, 40), (40, 100)]
+    >>> normalize_profile([(30, 40), (25, 25), (35, 100), (40, 100)], 60)
+    [(25, 25), (30, 40), (35, 100)]
     """
     profile = sorted(list(profile) + [(critx, 100)], key=lambda p: (p[0], -p[1]))
     mono = profile[0:1]
@@ -106,6 +111,8 @@ def normalize_profile(profile, critx):
         if y < yb:
             y = yb
         mono.append((x, y))
+        if y == 100:
+            break
     return mono
 
 

@@ -29,15 +29,20 @@ Animation options (devices/modes can support zero or more):
   --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
 
-Other options:
+Other device options:
+  --single-12v-ocp            Enable single rail +12V OCP
+  --pump-mode <mode>          Set the pump mode (certain Corsair coolers)
+  --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
+  --unsafe <features>         Comma-separated bleeding-edge features to enable
+
+Other interface options:
   -v, --verbose               Output additional information
   -g, --debug                 Show debug information on stderr
-  --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
-  --single-12v-ocp            Enable single rail +12V OCP
-  --unsafe <features>         Comma-separated bleeding-edge features to enable
-  --hid <ignored>             Deprecated
   --version                   Display the version number
   --help                      Show this message
+
+Deprecated:
+  --hid <ignored>             Deprecated
 
 Examples:
   liquidctl list --verbose

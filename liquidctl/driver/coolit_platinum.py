@@ -14,8 +14,8 @@ Supported features
 ------------------
 
  - [✓] general monitoring
- - [·] pump speed control
- - [·] fan speed control
+ - [✓] pump speed control
+ - [✓] fan speed control
  - [✓] lighing control
 
 Copyright (C) 2020–2020  Jonas Malaco
@@ -27,41 +27,63 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 
+from enum import Enum, unique
+
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
-from liquidctl.util import clamp
+from liquidctl.util import clamp, normalize_profile
 
 
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 _WRITE_PREFIX = 0x3F
-_TRAILER_LENGTH = 1
 
-_FEATURE_COOLING = 0x0
+_FEATURE_COOLING = 0b000
 _CMD_GET_STATUS = 0xFF
 _CMD_SET_COOLING = 0x14
 
 _FEATURE_LIGHTING = None
 _CMD_SET_LIGHTING1 = 0b100
-_CMD_SET_LIGHTING2 = 0b100
+_CMD_SET_LIGHTING2 = 0b101
 
-_SET_COOLING_DATA_OFFSET = 3
-_SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - _SET_COOLING_DATA_OFFSET - _TRAILER_LENGTH
-_FAN1_DATA_OFFSET = 0xB - _SET_COOLING_DATA_OFFSET
-_FAN2_DATA_OFFSET = 0x11 - _SET_COOLING_DATA_OFFSET
-_PUMP_DATA_OFFSET = 0x17 - _SET_COOLING_DATA_OFFSET
+# cooling data starts at offset 3 and ends just before the PEC byte
+_SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
+_FAN_MODE_PROFILE_OFFSETS = [(0x0B - 3, 0x1E - 3), (0x11 - 3, 0x2C - 3)]
+_PUMP_MODE_OFFSET = 0x17 - 3
 
-# TODO replace with enums and add modes
-_FAN_MODE_FIXED_DUTY = 0x2
-_PUMP_MODE_BALANCED = 0x1
+_PROFILE_LENGTH = 7
+_CRITICAL_TEMPERATURE = 60
 
 
-def sequence(storage):
+@unique
+class FanMode(Enum):
+    CUSTOM_PROFILE = 0x0
+    CUSTOM_PROFILE_WITH_EXTERNAL_SENSOR = 0x1
+    FIXED_DUTY = 0x2
+    FIXED_RPM = 0x4
+
+    @classmethod
+    def _missing_(cls, value):
+        LOGGER.debug("falling back to FIXED_DUTY for FanMode(%s)", value)
+        return FanMode.FIXED_DUTY
+
+
+@unique
+class PumpMode(Enum):
+    QUIET = 0x0
+    BALANCED = 0x1
+    EXTREME = 0x2
+
+    @classmethod
+    def _missing_(cls, value):
+        LOGGER.debug("falling back to BALANCED for PumpMode(%s)", value)
+        return PumpMode.BALANCED
+
+
+def _sequence(storage):
     """Return a generator that produces valid protocol sequence numbers.
-
-    Unstable API.
 
     Sequence numbers increment across successful invocations of liquidctl, but
     are not atomic.  The sequence is: 1, 2, 3... 29, 30, 31, 1, 2, 3...
@@ -75,27 +97,40 @@ def sequence(storage):
         yield seq
 
 
+def _prepare_profile(original):
+    res = [(temp, clamp(duty, 0, 100)) for temp, duty in original]
+    if len(res) < 1:
+        raise ValueError('At least one point required')
+    elif len(res) > _PROFILE_LENGTH:
+        raise ValueError(f'Too many points ({len(res)}), only {_PROFILE_LENGTH} supported')
+    missing = _PROFILE_LENGTH - len(res)
+    if missing:
+        LOGGER.info('filling missing %d points with (%d°C, 100%%)', missing, _CRITICAL_TEMPERATURE)
+        res = res + [(_CRITICAL_TEMPERATURE, 100)] * missing
+    return res
+
+
 class CoolitPlatinumDriver(UsbHidDriver):
     """liquidctl driver for Corsair Platinum and PRO XT coolers."""
 
     SUPPORTED_DEVICES = [
         # (0x1B1C, ??, None, 'Corsair H100i Platinum SE (experimental)',
-        #     {'fans': 2, 'rgb_fans': True}),
+        #     {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
-            {'fans': 2, 'rgb_fans': True}),
+            {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
-            {'fans': 2, 'rgb_fans': True}),
+            {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C20, None, 'Corsair H100i PRO XT (experimental)',
-            {'fans': 2, 'rgb_fans': False}),
+            {'fan_count': 2, 'rgb_fans': False}),
         (0x1B1C, 0x0C21, None, 'Corsair H115i PRO XT (experimental)',
-            {'fans': 2, 'rgb_fans': False}),
+            {'fan_count': 2, 'rgb_fans': False}),
         # (0x1B1C, ??, None, 'Corsair H150i PRO XT (experimental)',
-        #     {'fans': 3, 'rgb_fans': False}),  # check assertions
+        #     {'fan_count': 3, 'rgb_fans': False}),  # check assertions
     ]
 
-    def __init__(self, device, description, fans, rgb_fans, **kwargs):
+    def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
         super().__init__(device, description, **kwargs)
-        self._fans = fans
+        self._fans = [f'fan{i + 1}' for i in range(fan_count)]
         self._rgb_fans = rgb_fans
         # the following fields are only initialized in connect()
         self._data = None
@@ -106,50 +141,83 @@ class CoolitPlatinumDriver(UsbHidDriver):
         ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
         # FIXME uniquely identify specific units of the same model
         self._data = RuntimeStorage(key_prefixes=[ids])
-        self._sequence = sequence(self._data)
+        self._sequence = _sequence(self._data)
 
-    def initialize(self, **kwargs):
+    def initialize(self, pump_mode='balanced', **kwargs):
         """Initialize the device.
+
+        This method should be called when the device settings have been cleared
+        by power cycling or other reasons.
+
+        The pump will be configured to use `pump_mode`.  Valid values are
+        'quiet', 'balanced' and 'extreme'.  Unconfigured fan channels may
+        default to 100% duty.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        msg = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
-        return [('Firmware version', f'{msg[2] >> 4}.{msg[2] & 0xf}.{msg[3]}', '')]
+        self._data.store_int('pump_mode', PumpMode[pump_mode.upper()].value)
+        res = self._send_set_cooling()
+        return [('Firmware version', f'{res[2] >> 4}.{res[2] & 0xf}.{res[3]}', '')]
 
     def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        assert self._fans == 2, f'Cannot yet handle {self._fans} fans'
-        msg = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
+        assert len(self._fans) == 2, 'cannot handle {len(self._fans)} fans'
+        res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
         return [
-            ('Liquid temperature', msg[8] + msg[7] / 255, '°C'),
-            ('Fan 1 speed', int.from_bytes(msg[15:17], byteorder='little'), 'rpm'),
-            ('Fan 2 speed', int.from_bytes(msg[22:24], byteorder='little'), 'rpm'),
-            ('Pump speed', int.from_bytes(msg[29:31], byteorder='little'), 'rpm'),
+            ('Liquid temperature', res[8] + res[7] / 255, '°C'),
+            ('Fan 1 speed', int.from_bytes(res[15:17], byteorder='little'), 'rpm'),
+            ('Fan 2 speed', int.from_bytes(res[22:24], byteorder='little'), 'rpm'),
+            ('Pump speed', int.from_bytes(res[29:31], byteorder='little'), 'rpm'),
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty.
 
-        Work-in-progress; currently the pump mode will unconditionally be set
-        to balanced.
-
-        Channels that remain to be configured may default to 100% duty.
+        Valid channel values are 'fanN', where N is the fan number (starting at
+        1), and 'fan', to set all channels at once.  Unconfigured fan channels
+        may default to 100% duty.
         """
-        assert self._fans == 2, f'Cannot yet handle {self._fans} fans'
         channel = channel.lower()
         duty = clamp(duty, 0, 100)
         if channel == 'fan':
-            # TODO revisit the name of this pseudo-channel
-            keys = ['fan1_duty', 'fan2_duty']
-        elif channel in ['fan1', 'fan2']:
-            keys = [f'{channel}_duty']
+            channels = self._fans
+        elif channel in self._fans:
+            channels = [channel]
         else:
-            raise ValueError("Unknown channel, should be one of: 'fan', 'fan1' or 'fan2'")
-        for key in keys:
-            self._data.store_int(key, duty)
+            raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
+        for channel in channels:
+            self._data.store_int(f'{channel}_mode', FanMode.FIXED_DUTY)
+            self._data.store_int(f'{channel}_duty', duty)
+        self._send_set_cooling()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Set channel to follow a speed duty profile.
+
+        Valid channel values are 'fanN', where N is the fan number (starting at
+        1), and 'fan', to set all channels at once.  Unconfigured fan channels
+        may default to 100% duty.
+
+        Up to 7 (temperature, duty) points can be supplied in `profile`.
+        Temperatures should be in Celcius.  The last point should be set the
+        duty to 100% or be omitted; in the latter case the duty will be set to
+        100% at 60°C.
+        """
+        channel = channel.lower()
+        profile = _prepare_profile(normalize_profile(profile))
+        if channel == 'fan':
+            channels = self._fans
+        elif channel in self._fans:
+            channels = [channel]
+        else:
+            raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
+        for channel in channels:
+            self._data.store_int(f'{channel}_mode', FanMode.FIXED_DUTY)
+            for i, (temp, duty) in enumerate(profile):
+                self._data.store_int(f'{channel}_temp[{i}]', temp)
+                self._data.store_int(f'{channel}_duty[{i}]', duty)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -190,7 +258,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         channel = channel.lower()
         mode = mode.lower()
-        component_count = 1 + self._fans * self._rgb_fans
+        component_count = 1 + len(self._fans) * self._rgb_fans
         led_count = 8 * component_count
         if channel == 'led':
             if mode != 'super-fixed':
@@ -207,7 +275,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
             else:
                 raise ValueError("Unknown mode, should be one of: 'fixed', 'super-fixed'")
         else:
-            raise ValueError("Unknown channel, should be: 'address'")
+            raise ValueError("Unknown channel, should be one of: 'led', 'sync'")
         data1 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[0:20])))
         data2 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[20:])))
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
@@ -240,13 +308,26 @@ class CoolitPlatinumDriver(UsbHidDriver):
         return buf
 
     def _send_set_cooling(self):
+        assert len(self._fans) > 2, 'cannot fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
-        data[_FAN1_DATA_OFFSET] = _FAN_MODE_FIXED_DUTY
-        fan1_duty = clamp(self._data.load_int('fan1_duty', default=100), 0, 100)
-        data[_FAN1_DATA_OFFSET + 5] = int(fan1_duty * 2.55)
-        data[_FAN2_DATA_OFFSET] = _FAN_MODE_FIXED_DUTY
-        fan2_duty = clamp(self._data.load_int('fan2_duty', default=100), 0, 100)
-        data[_FAN2_DATA_OFFSET + 5] = int(fan2_duty * 2.55)
-        data[_PUMP_DATA_OFFSET] = _PUMP_MODE_BALANCED
-        self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
-        # TODO try to assert something specific on the response
+        for fan, (mode_offset, profile_offset) in zip(self._fans, _FAN_MODE_PROFILE_OFFSETS):
+            mode = FanMode(self._data.load_int(f'{fan}_mode'))
+            data[mode_offset] = mode.value
+            if mode is FanMode.FIXED_DUTY:
+                duty = self._data.load_int(f'{fan}_duty', default=100)
+                data[mode_offset + 5] = int(clamp(duty, 0, 100) * 2.55)
+                LOGGER.info('setting %s duty to %d%%', fan, duty)
+            elif mode is FanMode.CUSTOM_PROFILE:
+                for i in range(_PROFILE_LENGTH):
+                    temp = self._data.load_int(f'{fan}_temp[{i}]', default=100)
+                    data[profile_offset + i * 2] = clamp(temp, 0, _CRITICAL_TEMPERATURE)
+                    duty = self._data.load_int(f'{fan}_duty[{i}]', default=100)
+                    data[profile_offset + i * 2 + 1] = int(clamp(duty, 0, 100) * 2.55)
+                    LOGGER.info('setting %s point (%d°C, %d%%), device interpolated',
+                                fan, temp, duty)
+            else:
+                assert False, f'unexpected {mode}'
+        pump_mode = PumpMode(self._data.load_int('pump_mode'))
+        data[_PUMP_MODE_OFFSET] = pump_mode.value
+        LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
+        return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
