@@ -3,6 +3,7 @@ import unittest
 from collections import deque, namedtuple
 
 from liquidctl.driver.coolit_platinum import CoolitPlatinumDriver
+from liquidctl.pmbus import compute_pec
 
 _Report = namedtuple('_Report', ['number', 'data'])
 
@@ -55,6 +56,19 @@ class CorsairPlatinumTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.device.disconnect()
+
+    def test_command_format(self):
+        self.device._data.store('sequence', None)
+        self.device.initialize()
+        self.device.get_status()
+        self.device.set_fixed_speed(channel='fan', duty=100)
+        self.device.get_status()
+        self.assertEqual(len(self.mock_hid.sent), 4)
+        for i, (report, data) in enumerate(reversed(self.mock_hid.sent)):
+            self.assertEqual(report, 0)
+            self.assertEqual(data[0], 0x3f)
+            self.assertEqual(data[1] >> 3, i + 1)
+            self.assertEqual(data[-1], compute_pec(data[1:-1]))
 
     def test_get_status(self):
         temp, fan1, fan2, pump = self.device.get_status()
