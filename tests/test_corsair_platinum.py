@@ -1,3 +1,4 @@
+import itertools
 import unittest
 from collections import deque, namedtuple
 
@@ -39,7 +40,7 @@ class _MockPlatinumDevice:
         return buf[:length]
 
     def write(self, data):
-        self.sent.appendleft(_Report(data[0], bytes(data[1:])))
+        self.sent.appendleft(_Report(data[0], list(data[1:])))
         return len(data) - 1
 
 
@@ -90,8 +91,40 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
         self.assertEqual(self.mock_hid.sent[0].data[2], 0x14)
         self.assertEqual(self.mock_hid.sent[0].data[0x0b], 0x0)
-        self.assertEqual(list(self.mock_hid.sent[0].data[0x1e:0x2c]),
+        self.assertEqual(self.mock_hid.sent[0].data[0x1e:0x2c],
                          [20, 0, 55, 255] + 5 * [60, 255])
         self.assertEqual(self.mock_hid.sent[0].data[0x11], 0x0)
-        self.assertEqual(list(self.mock_hid.sent[0].data[0x2c:0x3a]),
+        self.assertEqual(self.mock_hid.sent[0].data[0x2c:0x3a],
                          [30, 51, 50, 204, 60, 255] + 4 * [60, 255])
+
+    def test_address_leds(self):
+        colors = [[i + 1, i + 2, i + 3] for i in range(0, 24 * 3, 3)]
+        self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[1].data[2:62],
+                          list(itertools.chain(*((b, g, r) for r, g, b in colors[:20]))))
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[0].data[2:14],
+                          list(itertools.chain(*((b, g, r) for r, g, b in colors[20:]))))
+
+    def test_address_components(self):
+        colors = [[i + 1, i + 2, i + 3] for i in range(0, 3 * 3, 3)]
+        eqcolors = [colors[0]] * 8 + [colors[1]] * 8 + [colors[2]] * 8
+        self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[1].data[2:62],
+                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[0].data[2:14],
+                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
+
+    def test_address_component_leds(self):
+        colors = [[i + 1, i + 2, i + 3] for i in range(0, 8 * 3, 3)]
+        eqcolors = colors + colors + colors
+        self.device.set_color(channel='sync', mode='super-fixed', colors=iter(colors))
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[1].data[2:62],
+                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[0].data[2:14],
+                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
