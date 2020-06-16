@@ -16,6 +16,9 @@ class _MockH115iPlatinum(MockHidapiDevice):
         self.pump_speed = 2702
 
     def read(self, length):
+        pre = super().read(length)
+        if pre:
+            return pre
         buf = bytearray(64)
         buf[2] = self.fw_version[0] << 4 | self.fw_version[1]
         buf[3] = self.fw_version[2]

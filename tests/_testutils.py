@@ -37,12 +37,13 @@ class MockHidapiDevice:
         self._read.append(report)
 
     def read(self, length):
-        if self.load:
+        if self._read:
             number, data = self._read.popleft()
             if number:
-                return [number] + data
+                return [number] + list(data)[:length]
             else:
-                return list(data)
+                return list(data)[:length]
+        return None
 
     def write(self, data):
         self.sent.append(Report(data[0], list(data[1:])))
