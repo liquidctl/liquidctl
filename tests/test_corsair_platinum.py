@@ -1,33 +1,19 @@
-import itertools
+from _testutils import *
+
 import unittest
-from collections import deque, namedtuple
 
 from liquidctl.driver.coolit_platinum import CoolitPlatinumDriver
 from liquidctl.pmbus import compute_pec
 
-_Report = namedtuple('_Report', ['number', 'data'])
 
-
-def _noop(*args, **kwargs):
-    return None
-
-
-class _MockPlatinumDevice:
-    def __init__(self, vid, pid):
+class _MockH115iPlatinum(MockHidapiDevice):
+    def __init__(self):
+        super().__init__(vendor_id=0xffff, product_id=0x0c17, address=r'/generic\#123!&')
         self.fw_version = (1, 1, 15)
         self.temperature = 30.9
         self.fan1_speed = 1499
         self.fan2_speed = 1512
         self.pump_speed = 2702
-        self.sent = deque()
-
-        self.vendor_id = vid
-        self.product_id = pid
-        self.open = _noop
-        self.claim = _noop
-        self.release = _noop
-        self.close = _noop
-        self.clear_enqueued_reports = _noop
 
     def read(self, length):
         buf = bytearray(64)
@@ -40,18 +26,13 @@ class _MockPlatinumDevice:
         buf[29:31] = self.pump_speed.to_bytes(length=2, byteorder='little')
         return buf[:length]
 
-    def write(self, data):
-        self.sent.appendleft(_Report(data[0], list(data[1:])))
-        return len(data) - 1
-
 
 class CorsairPlatinumTestCase(unittest.TestCase):
     def setUp(self):
-        vid, pid, desc, kwargs = (
-            0xffff, 0x0c17, 'Mock H115i Platinum', {'fan_count': 2, 'rgb_fans': True}
-        )
-        self.mock_hid = _MockPlatinumDevice(vid, pid)
-        self.device = CoolitPlatinumDriver(self.mock_hid, desc, **kwargs)
+        description = 'Mock H115i Platinum'
+        kwargs = {'fan_count': 2, 'rgb_fans': True}
+        self.mock_hid = _MockH115iPlatinum()
+        self.device = CoolitPlatinumDriver(self.mock_hid, description, **kwargs)
         self.device.connect()
 
     def tearDown(self):
@@ -64,7 +45,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.device.set_fixed_speed(channel='fan', duty=100)
         self.device.get_status()
         self.assertEqual(len(self.mock_hid.sent), 4)
-        for i, (report, data) in enumerate(reversed(self.mock_hid.sent)):
+        for i, (report, data) in enumerate(self.mock_hid.sent):
             self.assertEqual(report, 0)
             self.assertEqual(data[0], 0x3f)
             self.assertEqual(data[1] >> 3, i + 1)
@@ -92,48 +73,48 @@ class CorsairPlatinumTestCase(unittest.TestCase):
     def test_fixed_fan_speeds(self):
         self.device.set_fixed_speed(channel='fan', duty=42)
         self.device.set_fixed_speed(channel='fan2', duty=84)
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
-        self.assertEqual(self.mock_hid.sent[0].data[2], 0x14)
-        self.assertEqual(self.mock_hid.sent[0].data[0x0b], 0x2)
-        self.assertAlmostEqual(self.mock_hid.sent[0].data[0x10] / 2.55, 42, delta=1 / 2.55)
-        self.assertEqual(self.mock_hid.sent[0].data[0x11], 0x2)
-        self.assertAlmostEqual(self.mock_hid.sent[0].data[0x16] / 2.55, 84, delta=1 / 2.55)
+        self.assertEqual(self.mock_hid.sent[-1].data[1] & 0b111, 0)
+        self.assertEqual(self.mock_hid.sent[-1].data[2], 0x14)
+        self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x2)
+        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 42, delta=1 / 2.55)
+        self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x2)
+        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x16] / 2.55, 84, delta=1 / 2.55)
 
     def test_custom_fan_profiles(self):
         self.device.set_speed_profile(channel='fan', profile=[(20, 0), (55, 100)])
         self.device.set_speed_profile(channel='fan2', profile=[(30, 20), (50, 80)])
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
-        self.assertEqual(self.mock_hid.sent[0].data[2], 0x14)
-        self.assertEqual(self.mock_hid.sent[0].data[0x0b], 0x0)
-        self.assertEqual(self.mock_hid.sent[0].data[0x1e:0x2c],
+        self.assertEqual(self.mock_hid.sent[-1].data[1] & 0b111, 0)
+        self.assertEqual(self.mock_hid.sent[-1].data[2], 0x14)
+        self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x0)
+        self.assertEqual(self.mock_hid.sent[-1].data[0x1e:0x2c],
                          [20, 0, 55, 255] + 5 * [60, 255])
-        self.assertEqual(self.mock_hid.sent[0].data[0x11], 0x0)
-        self.assertEqual(self.mock_hid.sent[0].data[0x2c:0x3a],
+        self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x0)
+        self.assertEqual(self.mock_hid.sent[-1].data[0x2c:0x3a],
                          [30, 51, 50, 204, 60, 255] + 4 * [60, 255])
 
     def test_address_leds(self):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
         encoded = list(range(1, 24 * 3 + 1))
         self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[1].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[0].data[2:14], encoded[60:])
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
 
     def test_address_components(self):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 3 * 3, 3)]
         encoded = [1, 2, 3] * 8 + [4, 5, 6] * 8 + [7, 8, 9] * 8
         self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[1].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[0].data[2:14], encoded[60:])
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
 
     def test_address_component_leds(self):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 8 * 3, 3)]
         encoded = list(range(1, 25)) * 3
         self.device.set_color(channel='sync', mode='super-fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[1].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[0].data[2:14], encoded[60:])
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
