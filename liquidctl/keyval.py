@@ -6,8 +6,10 @@ Copyright (C) 2019–2020  each contribution's author
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import base64
 import logging
 import os
+import re
 import sys
 import tempfile
 
@@ -42,15 +44,24 @@ def get_runtime_dirs(appname='liquidctl'):
 
 
 class _FilesystemBackend:
+    def _sanitize(self, key):
+        if type(key) is int:
+            return str(key)
+        if type(key) is str:
+            if self._safe.match(key):
+                return key
+            key = bytes(key, encoding='utf-8')
+        if type(key) is not bytes:
+            raise NotImplementedError('key must be int, str or bytes')
+        return base64.urlsafe_b64encode(key).decode()
+
     def __init__(self, key_prefixes):
-        for prefix in key_prefixes:
-            assert '..' not in prefix
-            assert not os.path.isabs(prefix)
+        self._safe = re.compile(r'^\w[\w.]+$', flags=re.ASCII)
+        key_prefixes = map(self._sanitize, key_prefixes)
         # compute read and write dirs from base runtime dirs: the first base
         # dir is selected for writes and prefered for reads
         self._read_dirs = [os.path.join(x, *key_prefixes) for x in get_runtime_dirs()]
         self._write_dir = self._read_dirs[0]
-        # prepare the write dir
         os.makedirs(self._write_dir, exist_ok=True)
         if XDG_RUNTIME_DIR and os.path.commonpath([XDG_RUNTIME_DIR, self._write_dir]):
             # set the sticky bit to prevent removal during cleanup

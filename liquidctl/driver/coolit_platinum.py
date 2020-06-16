@@ -140,8 +140,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
     def connect(self, **kwargs):
         super().connect(**kwargs)
         ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
-        # FIXME uniquely identify specific units of the same model
-        self._data = RuntimeStorage(key_prefixes=[ids])
+        self._data = RuntimeStorage(key_prefixes=[ids, self.address])
         self._sequence = _sequence(self._data)
 
     def initialize(self, pump_mode='balanced', **kwargs):
