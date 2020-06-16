@@ -207,6 +207,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         100% at 60°C.
         """
         channel = channel.lower()
+        profile = list(profile)
         if channel == 'fan':
             channels = self._fans
         elif channel in self._fans:
@@ -215,7 +216,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
             self._data.store(f'{channel}_mode', FanMode.CUSTOM_PROFILE.value)
-            self._data.store(f'{channel}_profile', list(profile))
+            self._data.store(f'{channel}_profile', profile)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):

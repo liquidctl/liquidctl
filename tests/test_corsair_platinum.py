@@ -87,15 +87,15 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x16] / 2.55, 84, delta=1 / 2.55)
 
     def test_custom_fan_profiles(self):
-        self.device.set_speed_profile(channel='fan', profile=[(20, 0), (55, 100)])
-        self.device.set_speed_profile(channel='fan2', profile=[(30, 20), (50, 80)])
+        self.device.set_speed_profile(channel='fan', profile=iter([(20, 0), (55, 100)]))
+        self.device.set_speed_profile(channel='fan1', profile=iter([(30, 20), (50, 80)]))
         self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x0)
         self.assertEqual(self.mock_hid.sent[-1].data[0x1d], 7)
         self.assertEqual(self.mock_hid.sent[-1].data[0x1e:0x2c],
-                         [20, 0, 55, 255] + 5 * [60, 255])
+                         [30, 51, 50, 204] + 5 * [60, 255])
         self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x0)
         self.assertEqual(self.mock_hid.sent[-1].data[0x2c:0x3a],
-                         [30, 51, 50, 204, 60, 255] + 4 * [60, 255])
+                         [20, 0, 55, 255] + 5 * [60, 255])
 
     def test_address_leds(self):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
