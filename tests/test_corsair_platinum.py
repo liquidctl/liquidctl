@@ -64,17 +64,23 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         (fw_version, ) = self.device.initialize()
         self.assertEqual(fw_version[1], '%d.%d.%d' % self.mock_hid.fw_version)
 
+    def test_common_cooling_prefix(self):
+        self.device.initialize(pump_mode='extreme')
+        self.device.set_fixed_speed(channel='fan', duty=42)
+        self.device.set_speed_profile(channel='fan', profile=[(20, 0), (55, 100)])
+        for _, data in self.mock_hid.sent:
+            self.assertEqual(data[0x1] & 0b111, 0)
+            self.assertEqual(data[0x2], 0x14)
+            # opaque but apparently important prefix (see @makk50's comments in #82):
+            self.assertEqual(data[0x3:0xb], [0x0, 0xff, 0x5] + 5 * [0xff])
+
     def test_set_pump_mode(self):
         self.device.initialize(pump_mode='extreme')
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
-        self.assertEqual(self.mock_hid.sent[0].data[2], 0x14)
         self.assertEqual(self.mock_hid.sent[0].data[0x17], 0x2)
 
     def test_fixed_fan_speeds(self):
         self.device.set_fixed_speed(channel='fan', duty=42)
         self.device.set_fixed_speed(channel='fan2', duty=84)
-        self.assertEqual(self.mock_hid.sent[-1].data[1] & 0b111, 0)
-        self.assertEqual(self.mock_hid.sent[-1].data[2], 0x14)
         self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x2)
         self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 42, delta=1 / 2.55)
         self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x2)
@@ -83,9 +89,8 @@ class CorsairPlatinumTestCase(unittest.TestCase):
     def test_custom_fan_profiles(self):
         self.device.set_speed_profile(channel='fan', profile=[(20, 0), (55, 100)])
         self.device.set_speed_profile(channel='fan2', profile=[(30, 20), (50, 80)])
-        self.assertEqual(self.mock_hid.sent[-1].data[1] & 0b111, 0)
-        self.assertEqual(self.mock_hid.sent[-1].data[2], 0x14)
         self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x0)
+        self.assertEqual(self.mock_hid.sent[-1].data[0x1d], 7)
         self.assertEqual(self.mock_hid.sent[-1].data[0x1e:0x2c],
                          [20, 0, 55, 255] + 5 * [60, 255])
         self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x0)

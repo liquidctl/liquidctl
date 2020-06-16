@@ -50,9 +50,10 @@ _CMD_SET_LIGHTING2 = 0b101
 
 # cooling data starts at offset 3 and ends just before the PEC byte
 _SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
+_SET_COOLING_DATA_PREFIX = [0x0, 0xFF, 0x5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
 _FAN_MODE_PROFILE_OFFSETS = [(0x0B - 3, 0x1E - 3), (0x11 - 3, 0x2C - 3)]
 _PUMP_MODE_OFFSET = 0x17 - 3
-
+_PROFILE_LENGTH_OFFSET = 0x1D - 3
 _PROFILE_LENGTH = 7
 _CRITICAL_TEMPERATURE = 60
 
@@ -310,6 +311,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
     def _send_set_cooling(self):
         assert len(self._fans) <= 2, 'cannot fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
+        data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
+        data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
         for fan, (mode_offset, profile_offset) in zip(self._fans, _FAN_MODE_PROFILE_OFFSETS):
             mode = FanMode(self._data.load(f'{fan}_mode', of_type=int))
             data[mode_offset] = mode.value
