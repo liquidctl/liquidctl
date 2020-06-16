@@ -313,14 +313,14 @@ class CoolitPlatinumDriver(UsbHidDriver):
             data[mode_offset] = mode.value
             if mode is FanMode.FIXED_DUTY:
                 duty = self._data.load(f'{fan}_duty', of_type=int, default=100)
-                data[mode_offset + 5] = int(clamp(duty, 0, 100) * 2.55)
+                data[mode_offset + 5] = round(clamp(duty, 0, 100) * 2.55)
                 LOGGER.info('setting %s duty to %d%%', fan, duty)
             elif mode is FanMode.CUSTOM_PROFILE:
                 profile = self._data.load(f'{fan}_profile', of_type=list)
                 profile = _prepare_profile(profile)
                 for i, (temp, duty) in enumerate(profile):
                     data[profile_offset + i * 2] = temp
-                    data[profile_offset + i * 2 + 1] = int(duty * 2.55)
+                    data[profile_offset + i * 2 + 1] = round(duty * 2.55)
                     LOGGER.info('setting %s point (%d°C, %d%%), device interpolated',
                                 fan, temp, duty)
             else:
