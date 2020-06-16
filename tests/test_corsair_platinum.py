@@ -80,11 +80,11 @@ class CorsairPlatinumTestCase(unittest.TestCase):
 
     def test_fixed_fan_speeds(self):
         self.device.set_fixed_speed(channel='fan', duty=42)
-        self.device.set_fixed_speed(channel='fan2', duty=84)
+        self.device.set_fixed_speed(channel='fan1', duty=84)
         self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x2)
-        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 42, delta=1 / 2.55)
+        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 84, delta=1 / 2.55)
         self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x2)
-        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x16] / 2.55, 84, delta=1 / 2.55)
+        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x16] / 2.55, 42, delta=1 / 2.55)
 
     def test_custom_fan_profiles(self):
         self.device.set_speed_profile(channel='fan', profile=iter([(20, 0), (55, 100)]))
