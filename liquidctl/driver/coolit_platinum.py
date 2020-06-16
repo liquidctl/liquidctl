@@ -256,6 +256,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         channel = channel.lower()
         mode = mode.lower()
+        colors = list(colors)
         component_count = 1 + len(self._fans) * self._rgb_fans
         led_count = 8 * component_count
         if channel == 'led':
@@ -266,7 +267,9 @@ class CoolitPlatinumDriver(UsbHidDriver):
         elif channel == 'sync':
             if mode == 'fixed':
                 warn_if_extra_colors(component_count)
-                colors = [[color] * 8 for color in colors[:component_count]]
+                colors = list(itertools.chain(
+                    *([color] * 8 for color in colors[:component_count])
+                ))
             elif mode == 'super-fixed':
                 warn_if_extra_colors(8)
                 colors = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * component_count
