@@ -85,7 +85,7 @@ def delta(profile):
             for cur,prev in zip(profile[1:], profile[:-1])]
 
 
-def normalize_profile(profile, critx=None):
+def normalize_profile(profile, critx):
     """Normalize a [(x:int, y:int), ...] profile.
 
     The normalized profile will ensure that:

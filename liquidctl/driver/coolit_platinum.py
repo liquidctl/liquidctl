@@ -98,7 +98,8 @@ def _sequence(storage):
 
 
 def _prepare_profile(original):
-    res = [(temp, clamp(duty, 0, 100)) for temp, duty in normalize_profile(original)]
+    res = ((temp, clamp(duty, 0, 100)) for temp, duty in original)
+    res = normalize_profile(res, _CRITICAL_TEMPERATURE)
     if len(res) < 1:
         raise ValueError('At least one point required')
     elif len(res) > _PROFILE_LENGTH:
