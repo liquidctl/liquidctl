@@ -112,33 +112,28 @@ class CorsairPlatinumTestCase(unittest.TestCase):
                          [30, 51, 50, 204, 60, 255] + 4 * [60, 255])
 
     def test_address_leds(self):
-        colors = [[i + 1, i + 2, i + 3] for i in range(0, 24 * 3, 3)]
+        colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
+        encoded = list(range(1, 24 * 3 + 1))
         self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[1].data[2:62],
-                         list(itertools.chain(*((b, g, r) for r, g, b in colors[:20]))))
+        self.assertEqual(self.mock_hid.sent[1].data[2:62], encoded[:60])
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[0].data[2:14],
-                         list(itertools.chain(*((b, g, r) for r, g, b in colors[20:]))))
+        self.assertEqual(self.mock_hid.sent[0].data[2:14], encoded[60:])
 
     def test_address_components(self):
-        colors = [[i + 1, i + 2, i + 3] for i in range(0, 3 * 3, 3)]
-        eqcolors = [colors[0]] * 8 + [colors[1]] * 8 + [colors[2]] * 8
+        colors = [[i + 3, i + 2, i + 1] for i in range(0, 3 * 3, 3)]
+        encoded = [1, 2, 3] * 8 + [4, 5, 6] * 8 + [7, 8, 9] * 8
         self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[1].data[2:62],
-                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
+        self.assertEqual(self.mock_hid.sent[1].data[2:62], encoded[:60])
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[0].data[2:14],
-                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
+        self.assertEqual(self.mock_hid.sent[0].data[2:14], encoded[60:])
 
     def test_address_component_leds(self):
-        colors = [[i + 1, i + 2, i + 3] for i in range(0, 8 * 3, 3)]
-        eqcolors = colors + colors + colors
+        colors = [[i + 3, i + 2, i + 1] for i in range(0, 8 * 3, 3)]
+        encoded = list(range(1, 25)) * 3
         self.device.set_color(channel='sync', mode='super-fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[1].data[2:62],
-                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
+        self.assertEqual(self.mock_hid.sent[1].data[2:62], encoded[:60])
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[0].data[2:14],
-                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
+        self.assertEqual(self.mock_hid.sent[0].data[2:14], encoded[60:])
