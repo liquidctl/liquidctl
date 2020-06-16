@@ -102,10 +102,10 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
         self.assertEqual(self.mock_hid.sent[1].data[2:62],
-                          list(itertools.chain(*((b, g, r) for r, g, b in colors[:20]))))
+                         list(itertools.chain(*((b, g, r) for r, g, b in colors[:20]))))
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
         self.assertEqual(self.mock_hid.sent[0].data[2:14],
-                          list(itertools.chain(*((b, g, r) for r, g, b in colors[20:]))))
+                         list(itertools.chain(*((b, g, r) for r, g, b in colors[20:]))))
 
     def test_address_components(self):
         colors = [[i + 1, i + 2, i + 3] for i in range(0, 3 * 3, 3)]
@@ -113,10 +113,10 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
         self.assertEqual(self.mock_hid.sent[1].data[2:62],
-                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
+                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
         self.assertEqual(self.mock_hid.sent[0].data[2:14],
-                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
+                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
 
     def test_address_component_leds(self):
         colors = [[i + 1, i + 2, i + 3] for i in range(0, 8 * 3, 3)]
@@ -124,7 +124,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.device.set_color(channel='sync', mode='super-fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b100)
         self.assertEqual(self.mock_hid.sent[1].data[2:62],
-                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
+                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[:20]))))
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b101)
         self.assertEqual(self.mock_hid.sent[0].data[2:14],
-                          list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
+                         list(itertools.chain(*((b, g, r) for r, g, b in eqcolors[20:]))))
