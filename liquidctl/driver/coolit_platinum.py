@@ -301,7 +301,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
         buf = bytes(self.device.read(_REPORT_LENGTH))
         self.device.release()
         LOGGER.debug('received %s', buf.hex())
-        # TODO check response PEC
+        if compute_pec(buf[1:]):
+            LOGGER.warning('response checksum does not match data')
         return buf
 
     def _send_set_cooling(self):

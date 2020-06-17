@@ -27,6 +27,7 @@ class _MockH115iPlatinum(MockHidapiDevice):
         buf[15:17] = self.fan1_speed.to_bytes(length=2, byteorder='little')
         buf[22:24] = self.fan2_speed.to_bytes(length=2, byteorder='little')
         buf[29:31] = self.pump_speed.to_bytes(length=2, byteorder='little')
+        buf[-1] = compute_pec(buf[1:-1])
         return buf[:length]
 
 
@@ -62,6 +63,24 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertEqual(pump[1], self.mock_hid.pump_speed)
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
         self.assertEqual(self.mock_hid.sent[0].data[2], 0xff)
+
+    def test_handle_real_statuses(self):
+        samples = [
+            (
+                'ff08110f0001002c1e0000aee803aed10700aee803aece0701aa0000aa9c0900'
+                '0000000000000000000000000000000000000000000000000000000000000010'
+            ),
+            (
+                'ff40110f009e14011b0102ffe8037e6a0502ffe8037e6d0501aa0000aa350901'
+                '0000000000000000000000000000000000000000000000000000000000000098'
+            )
+        ]
+        for sample in samples:
+            self.mock_hid.preload_read(Report(0, bytes.fromhex(sample)))
+            status = self.device.get_status()
+            self.assertEqual(len(status), 4)
+            self.assertNotEqual(status[0][1], self.mock_hid.temperature,
+                                msg='failed sanity check')
 
     def test_initialize_status(self):
         (fw_version, ) = self.device.initialize()
