@@ -172,17 +172,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
         """
-        channel = channel.lower()
         duty = clamp(duty, 0, 100)
-        if channel == 'fan':
-            channels = self._fans
-        elif channel in self._fans:
-            channels = [channel]
-        else:
-            raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
-        for channel in channels:
-            self._data.store(f'{channel}_mode', _FanMode.FIXED_DUTY.value)
-            self._data.store(f'{channel}_duty', duty)
+        for hw_channel in self._get_hw_fan_channels(channel):
+            self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
+            self._data.store(f'{hw_channel}_duty', duty)
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -197,17 +190,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         point should set the fan to 100% duty cycle, or be omitted; in the
         latter case the fan will be set to max out at 60°C.
         """
-        channel = channel.lower()
         profile = list(profile)
-        if channel == 'fan':
-            channels = self._fans
-        elif channel in self._fans:
-            channels = [channel]
-        else:
-            raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
-        for channel in channels:
-            self._data.store(f'{channel}_mode', _FanMode.CUSTOM_PROFILE.value)
-            self._data.store(f'{channel}_profile', profile)
+        for hw_channel in self._get_hw_fan_channels(channel):
+            self._data.store(f'{hw_channel}_mode', _FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f'{hw_channel}_profile', profile)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -274,6 +260,14 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
         # TODO try to skip getting the responses
+
+    def _get_hw_fan_channels(self, channel):
+        channel = channel.lower()
+        if channel == 'fan':
+            return self._fans
+        if channel in self._fans:
+            return [channel]
+        raise ValueError(f"Unknown channel, should be one of: 'fan', {''.join(self._fans)}")
 
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
