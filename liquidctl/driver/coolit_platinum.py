@@ -59,7 +59,7 @@ _CRITICAL_TEMPERATURE = 60
 
 
 @unique
-class FanMode(Enum):
+class _FanMode(Enum):
     CUSTOM_PROFILE = 0x0
     CUSTOM_PROFILE_WITH_EXTERNAL_SENSOR = 0x1
     FIXED_DUTY = 0x2
@@ -67,20 +67,20 @@ class FanMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        LOGGER.debug("falling back to FIXED_DUTY for FanMode(%s)", value)
-        return FanMode.FIXED_DUTY
+        LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
+        return _FanMode.FIXED_DUTY
 
 
 @unique
-class PumpMode(Enum):
+class _PumpMode(Enum):
     QUIET = 0x0
     BALANCED = 0x1
     EXTREME = 0x2
 
     @classmethod
     def _missing_(cls, value):
-        LOGGER.debug("falling back to BALANCED for PumpMode(%s)", value)
-        return PumpMode.BALANCED
+        LOGGER.debug("falling back to BALANCED for _PumpMode(%s)", value)
+        return _PumpMode.BALANCED
 
 
 def _sequence(storage):
@@ -156,7 +156,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        self._data.store('pump_mode', PumpMode[pump_mode.upper()].value)
+        self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
         res = self._send_set_cooling()
         return [('Firmware version', f'{res[2] >> 4}.{res[2] & 0xf}.{res[3]}', '')]
 
@@ -190,7 +190,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         else:
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
-            self._data.store(f'{channel}_mode', FanMode.FIXED_DUTY.value)
+            self._data.store(f'{channel}_mode', _FanMode.FIXED_DUTY.value)
             self._data.store(f'{channel}_duty', duty)
         self._send_set_cooling()
 
@@ -215,7 +215,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         else:
             raise ValueError(f"Unknown channel, should be of: 'fan', {''.join(self._fans)}")
         for channel in channels:
-            self._data.store(f'{channel}_mode', FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f'{channel}_mode', _FanMode.CUSTOM_PROFILE.value)
             self._data.store(f'{channel}_profile', profile)
         self._send_set_cooling()
 
@@ -315,13 +315,13 @@ class CoolitPlatinumDriver(UsbHidDriver):
         data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
         for fan, (mode_offset, profile_offset) in zip(self._fans, _FAN_MODE_PROFILE_OFFSETS):
-            mode = FanMode(self._data.load(f'{fan}_mode', of_type=int))
+            mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
             data[mode_offset] = mode.value
-            if mode is FanMode.FIXED_DUTY:
+            if mode is _FanMode.FIXED_DUTY:
                 duty = self._data.load(f'{fan}_duty', of_type=int, default=100)
                 data[mode_offset + 5] = round(clamp(duty, 0, 100) * 2.55)
                 LOGGER.info('setting %s duty to %d%%', fan, duty)
-            elif mode is FanMode.CUSTOM_PROFILE:
+            elif mode is _FanMode.CUSTOM_PROFILE:
                 profile = self._data.load(f'{fan}_profile', of_type=list)
                 profile = _prepare_profile(profile)
                 for i, (temp, duty) in enumerate(profile):
@@ -331,7 +331,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
                                 fan, temp, duty)
             else:
                 assert False, f'unexpected {mode}'
-        pump_mode = PumpMode(self._data.load('pump_mode', of_type=int))
+        pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
         LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
