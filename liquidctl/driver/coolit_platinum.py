@@ -3,20 +3,18 @@
 Supported devices
 -----------------
 
- - [ ] Corsair H100i Platinum SE
- - [✓] Corsair H100i Platinum
- - [✓] Corsair H115i Platinum
- - [✓] Corsair H100i PRO XT
- - [✓] Corsair H115i PRO XT
- - [ ] Corsair H150i PRO XT
+ - Corsair H100i Platinum
+ - Corsair H115i Platinum
+ - Corsair H100i PRO XT
+ - Corsair H115i PRO XT
 
 Supported features
 ------------------
 
- - [✓] general monitoring
- - [✓] pump speed control
- - [✓] fan speed control
- - [✓] lighing control
+ - general monitoring
+ - pump speed control
+ - fan speed control
+ - lighing control
 
 Copyright (C) 2020–2020  Jonas Malaco
 Copyright (C) 2020–2020  each contribution's author
@@ -139,20 +137,17 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._sequence = None
 
     def connect(self, **kwargs):
+        """Connect to the device."""
         super().connect(**kwargs)
         ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
         self._data = RuntimeStorage(key_prefixes=[ids, self.address])
         self._sequence = _sequence(self._data)
 
     def initialize(self, pump_mode='balanced', **kwargs):
-        """Initialize the device.
+        """Initialize the device and set the pump mode.
 
-        This method should be called when the device settings have been cleared
-        by power cycling or other reasons.
-
-        The pump will be configured to use `pump_mode`.  Valid values are
-        'quiet', 'balanced' and 'extreme'.  Unconfigured fan channels may
-        default to 100% duty.
+        Valid values for `pump_mode` are 'quiet', 'balanced' and 'extreme'.
+        Unconfigured fan channels may default to 100% duty.
 
         Returns a list of `(property, value, unit)` tuples.
         """
@@ -175,10 +170,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed duty.
+        """Set fan or fans to a fixed speed duty.
 
-        Valid channel values are 'fanN', where N is the fan number (starting at
-        1), and 'fan', to set all channels at once.  Unconfigured fan channels
+        Valid channel values are 'fanN', where N >= 1 is the fan number, and
+        'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
         """
         channel = channel.lower()
@@ -195,16 +190,16 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to follow a speed duty profile.
+        """Set fan or fans to follow a speed duty profile.
 
-        Valid channel values are 'fanN', where N is the fan number (starting at
-        1), and 'fan', to set all channels at once.  Unconfigured fan channels
+        Valid channel values are 'fanN', where N >= 1 is the fan number, and
+        'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
 
-        Up to 7 (temperature, duty) points can be supplied in `profile`.
-        Temperatures should be in Celcius.  The last point should be set the
-        duty to 100% or be omitted; in the latter case the duty will be set to
-        100% at 60°C.
+        Up to seven (temperature, duty) pairs can be supplied in `profile`,
+        with temperatures in Celcius and duty values in percentage.  The last
+        point should set the fan to 100% duty cycle, or be omitted; in the
+        latter case the fan will be set to max out at 60°C.
         """
         channel = channel.lower()
         profile = list(profile)
@@ -220,12 +215,13 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
-        """Set the color for each LED.
+        """Set the color of each LED.
 
         In reality the device does not have the concept of different channels
-        or modes, but a few are implemented for convenience.
+        or modes, but this driver provides a few for convenience.  Animations
+        still require successive calls to this API.
 
-        The 'led' channel is used to address the individual LEDs.  The only
+        The 'led' channel can be used to address individual LEDs.  The only
         supported mode for this channel is 'super-fixed', and each color in
         `colors` is applied to one individual LED, successively.  This is
         closest to how the device works.
@@ -234,10 +230,11 @@ class CoolitPlatinumDriver(UsbHidDriver):
         with components, and provides two distinct convenience modes: 'fixed'
         allows each component to be set to a different color, which is applied
         to all LEDs on that component; very differently, 'super-fixed' allows
-        each individual LED to have a different color, but all components will
-        repeat the same pattern.
+        each individual LED to have a different color, but all components are
+        made to repeat the same pattern.
 
-        The table summarizes the (pseudo) channels and modes:
+        The table bellow summarizes the pseudo-channels, and their associated
+        modes, for the Platinum coolers.
 
         | Channel | Mode        | LEDs         | Components   | Colors, max |
         | ------- | ----------- | ------------ | ------------ | ----------- |
@@ -245,10 +242,8 @@ class CoolitPlatinumDriver(UsbHidDriver):
         | sync    | fixed       | synchronized | independent  |           3 |
         | sync    | super-fixed | independent  | synchronized |           8 |
 
-        Note: PRO XT colors do not feature RGB fans; only one component and 8
-        LEDs are available.
-
-        Animations always require successive calls to this API.
+        PRO XT colors do not feature RGB fans, and only one component and eight
+        LEDs are available on those devices.
         """
         def warn_if_extra_colors(limit):
             if len(colors) > limit:
