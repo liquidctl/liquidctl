@@ -114,8 +114,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
     """liquidctl driver for Corsair Platinum and PRO XT coolers."""
 
     SUPPORTED_DEVICES = [
-        # (0x1B1C, ??, None, 'Corsair H100i Platinum SE (experimental)',
-        #     {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
@@ -124,8 +122,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
             {'fan_count': 2, 'rgb_fans': False}),
         (0x1B1C, 0x0C21, None, 'Corsair H115i PRO XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
-        # (0x1B1C, ??, None, 'Corsair H150i PRO XT (experimental)',
-        #     {'fan_count': 3, 'rgb_fans': False}),  # check assertions
     ]
 
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
@@ -277,11 +273,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         data2 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[20:])))
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
-        # TODO try to assert something specific on each response
-        # TODO alternatively, try to skip reading them altogether
+        # TODO try to skip getting the responses
 
     def _send_command(self, feature, command, data=None):
-        # self.device.write expects buf[0] to be the report number (=0, not used)
+        # self.device.write expects buf[0] to be the report number or 0 if not used
         buf = bytearray(_REPORT_LENGTH + 1)
         buf[1] = _WRITE_PREFIX
         buf[2] = next(self._sequence) << 3
