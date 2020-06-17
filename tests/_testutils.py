@@ -46,5 +46,6 @@ class MockHidapiDevice:
         return None
 
     def write(self, data):
+        data = bytes(data)  # ensure data is convertible to bytes
         self.sent.append(Report(data[0], list(data[1:])))
         return len(data) - 1
