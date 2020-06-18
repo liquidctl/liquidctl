@@ -153,8 +153,12 @@ class CoolitPlatinumDriver(UsbHidDriver):
     def initialize(self, pump_mode='balanced', **kwargs):
         """Initialize the device and set the pump mode.
 
+        The device should be initialized every time it is powered on, including when
+        the system resumes from suspending to memory.
+
         Valid values for `pump_mode` are 'quiet', 'balanced' and 'extreme'.
-        Unconfigured fan channels may default to 100% duty.
+        Unconfigured fan channels may default to 100% duty.  Subsequent calls
+        should leave the fan speeds unaffected.
 
         Returns a list of `(property, value, unit)` tuples.
         """
@@ -197,7 +201,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         may default to 100% duty.
 
         Up to seven (temperature, duty) pairs can be supplied in `profile`,
-        with temperatures in Celcius and duty values in percentage.  The last
+        with temperatures in Celsius and duty values in percentage.  The last
         point should set the fan to 100% duty cycle, or be omitted; in the
         latter case the fan will be set to max out at 60°C.
         """
@@ -226,7 +230,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         each individual LED to have a different color, but all components are
         made to repeat the same pattern.
 
-        Both channels addiationally support an 'off' mode, which is equivalent
+        Both channels additionally support an 'off' mode, which is equivalent
         to setting all LEDs to off/solid black.
 
         `colors` should be an iterable of one or more `[red, blue, green]`
@@ -234,19 +238,15 @@ class CoolitPlatinumDriver(UsbHidDriver):
         0–255.  LEDs for which no color has been specified will default to
         off/solid black.
 
-        The table bellow summarizes the pseudo-channels, and their associated
-        modes maximum number of colors, available for the Platinum coolers.
+        The table bellow summarizes the available channels, modes, and their
+        associated maximum number of colors.
 
-        | Channel | Mode        | LEDs         | Components   | Colors, max |
-        | ------- | ----------- | ------------ | ------------ | ----------- |
-        | led     | super-fixed | independent  | independent  |          24 |
-        | sync    | fixed       | synchronized | independent  |           3 |
-        | sync    | super-fixed | independent  | synchronized |           8 |
-        | led     | off         | all off      | all off      |           0 |
-        | sync    | off         | all off      | all off      |           0 |
-
-        PRO XT colors do not feature RGB fans, and only one component and eight
-        LEDs are available on those devices.
+        | Channel  | Mode        | LEDs         | Components   | Platinum | PRO XT |
+        | -------- | ----------- | ------------ | ------------ | -------- | ------ |
+        | sync/led | off         | all off      | all off      |        0 |      0 |
+        | sync     | fixed       | synchronized | independent  |        3 |      1 |
+        | sync     | super-fixed | independent  | synchronized |        8 |      8 |
+        | led      | super-fixed | independent  | independent  |       24 |      8 |
         """
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
         maxcolors = self._check_color_args(channel, mode, colors)

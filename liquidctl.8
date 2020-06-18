@@ -225,6 +225,24 @@ support a visual high-temperature alert configured with
 and
 .BR \-\-alert\-color .
 .
+.SS Corsair H100i Platinum, H115i Platinum
+.SS Corsair H100i PRO XT, H115i PRO XT
+Fan channels: \fIfan[1\(en6]\fR, \fIsync\fR.
+.PP
+Pump mode (\fBinitialize \-\-pump\-mode \fImode\fR): \fIquiet\fR, \fIbalanced\fR (default), \fIextreme\fR.
+.PP
+Lighting channels: \fIsync\fR, \fIled\fR.
+.TS
+l l c c
+----
+l l c c .
+Channel	Mode	#colors (Platinum)	#colors (PRO XT)
+\fIsync\fR/\fIled\fR	\fIoff\fR	0	0
+\fIsync\fR	\fIfixed\fR	3	1
+\fIsync\fR	\fIsuper\-fixed\fR	8	8
+\fIled\fR	\fIsuper\-fixed\fR	24	8
+.TE
+.
 .SS NZXT Kraken X40, X60
 .SS NZXT Kraken X31, X41, X61
 Supports the same modes and options as a Corsair H80i GT (or similar), but
