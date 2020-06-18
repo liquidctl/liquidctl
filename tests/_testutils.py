@@ -3,8 +3,8 @@ import os
 
 from collections import deque, namedtuple
 
-LOGLEVEL = os.getenv('LOGLEVEL', default='WARNING')
-logging.basicConfig(level=LOGLEVEL)
+LOGLEVEL = os.getenv('LOGLEVEL', default='CRITICAL')
+logging.basicConfig(level=LOGLEVEL.upper())
 
 Report = namedtuple('Report', ['number', 'data'])
 
