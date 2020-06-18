@@ -79,6 +79,34 @@ def clamp(value, clampmin, clampmax):
     return clamped
 
 
+def fraction_of_byte(ratio=None, percentage=None):
+    """Return `ratio` xor `percentage` expressed as a fraction of 255.
+
+    >>> fraction_of_byte(ratio=.8)
+    204
+    >>> fraction_of_byte(percentage=20)
+    51
+    """
+    if percentage is None and ratio is None:
+        ratio = percentage / 100
+    if ratio is not None:
+        if ratio < 0 or ratio > 1:
+            raise ValueError('Cannot express ratios outside of [0, 1]')
+        return round(ratio * 255)
+    raise ValueError('Either ratio or percentage must not be None')
+
+
+def u16le_from(buffer, offset=0):
+    """Read an unsigned 16-bit little-endian integer from `buffer`.
+
+    >>> u16le_from(b'\x45\x05\x03')
+    1349
+    >>> u16le_from(b'\x45\x05\x03', offset=1)
+    773
+    """
+    return int.from_bytes(buffer[offset : offset + 2], byteorder='little')
+
+
 def delta(profile):
     """Compute a profile's Δx and Δy."""
     return [(cur[0]-prev[0], cur[1]-prev[1])
