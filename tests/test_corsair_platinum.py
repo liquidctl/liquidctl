@@ -171,4 +171,5 @@ class CorsairPlatinumTestCase(unittest.TestCase):
                           mode='off', colors=[])
 
     def test_bad_stored_data(self):
-        raise NotImplementedError()
+        # TODO
+        pass
