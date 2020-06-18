@@ -45,15 +45,15 @@ def get_runtime_dirs(appname='liquidctl'):
 
 class _FilesystemBackend:
     def _sanitize(self, key):
-        if type(key) is int:
+        if isinstance(key, int):
             return str(key)
-        if type(key) is str:
+        if isinstance(key, str):
             if self._safe.match(key):
                 return key
             key = bytes(key, encoding='utf-8')
-        if type(key) is not bytes:
-            raise NotImplementedError('key must be int, str or bytes')
-        return base64.urlsafe_b64encode(key).decode()
+        if isinstance(key, bytes):
+            return base64.urlsafe_b64encode(key).decode()
+        raise TypeError('key must be int, str or bytes')
 
     def __init__(self, key_prefixes):
         self._safe = re.compile(r'^\w[\w.]+$', flags=re.ASCII)
@@ -118,7 +118,7 @@ class RuntimeStorage:
             self._cache[key] = value
         if value is None:
             return default
-        elif of_type and not type(value) is of_type:
+        elif of_type and not isinstance(value, of_type):
             return default
         else:
             return value
