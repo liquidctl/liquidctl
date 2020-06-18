@@ -130,6 +130,8 @@ def normalize_profile(profile, critx):
     [(25, 25), (30, 40), (35, 40), (40, 100)]
     >>> normalize_profile([(30, 40), (25, 25), (35, 100), (40, 100)], 60)
     [(25, 25), (30, 40), (35, 100)]
+    >>> normalize_profile([], 60)
+    [(60, 100)]
     """
     profile = sorted(list(profile) + [(critx, 100)], key=lambda p: (p[0], -p[1]))
     mono = profile[0:1]

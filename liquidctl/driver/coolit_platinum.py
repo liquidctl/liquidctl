@@ -30,7 +30,7 @@ from enum import Enum, unique
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
-from liquidctl.util import clamp, normalize_profile
+from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profile
 
 
 LOGGER = logging.getLogger(__name__)
@@ -49,7 +49,10 @@ _CMD_SET_LIGHTING2 = 0b101
 # cooling data starts at offset 3 and ends just before the PEC byte
 _SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
 _SET_COOLING_DATA_PREFIX = [0x0, 0xFF, 0x5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-_FAN_MODE_PROFILE_OFFSETS = [(0x0B - 3, 0x1E - 3), (0x11 - 3, 0x2C - 3)]
+_FAN_MODE_OFFSETS = [0x0B - 3, 0x11 - 3]
+_FAN_DUTY_OFFSETS = [offset + 5 for offset in _FAN_MODE_OFFSETS]
+_FAN_PROFILE_OFFSETS = [0x1E - 3, 0x2C - 3]
+_FAN_OFFSETS = list(zip(_FAN_MODE_OFFSETS, _FAN_DUTY_OFFSETS, _FAN_PROFILE_OFFSETS))
 _PUMP_MODE_OFFSET = 0x17 - 3
 _PROFILE_LENGTH_OFFSET = 0x1D - 3
 _PROFILE_LENGTH = 7
@@ -97,17 +100,18 @@ def _sequence(storage):
 
 
 def _prepare_profile(original):
-    res = ((temp, clamp(duty, 0, 100)) for temp, duty in original)
-    res = normalize_profile(res, _CRITICAL_TEMPERATURE)
-    if len(res) < 1:
-        raise ValueError('At least one point required')
-    elif len(res) > _PROFILE_LENGTH:
-        raise ValueError(f'Too many points ({len(res)}), only {_PROFILE_LENGTH} supported')
-    missing = _PROFILE_LENGTH - len(res)
-    if missing:
-        LOGGER.info('filling missing %d points with (%d°C, 100%%)', missing, _CRITICAL_TEMPERATURE)
-        res = res + [(_CRITICAL_TEMPERATURE, 100)] * missing
-    return res
+    clamped = ((temp, clamp(duty, 0, 100)) for temp, duty in original)
+    normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE)
+    missing = _PROFILE_LENGTH - len(normal)
+    if missing < 0:
+        raise ValueError(f'Too many points in profile (remove {-missing})')
+    if missing > 0:
+        normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
+    return normal
+
+
+def _quoted(*names):
+    return ', '.join(map(repr, names))
 
 
 class CoolitPlatinumDriver(UsbHidDriver):
@@ -126,8 +130,15 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
         super().__init__(device, description, **kwargs)
-        self._fans = [f'fan{i + 1}' for i in range(fan_count)]
-        self._rgb_fans = rgb_fans
+        self._component_count = 1 + fan_count * rgb_fans
+        self._fan_names = [f'fan{i + 1}' for i in range(fan_count)]
+        self._maxcolors = {
+            ('led', 'super-fixed'): self._component_count * 8,
+            ('led', 'off'): 0,
+            ('sync', 'fixed'): self._component_count,
+            ('sync', 'super-fixed'): 8,
+            ('sync', 'off'): 0,
+        }
         # the following fields are only initialized in connect()
         self._data = None
         self._sequence = None
@@ -135,7 +146,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
     def connect(self, **kwargs):
         """Connect to the device."""
         super().connect(**kwargs)
-        ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
+        ids = f'{self.vendor_id:04x}_{self.product_id:04x}'
         self._data = RuntimeStorage(key_prefixes=[ids, self.address])
         self._sequence = _sequence(self._data)
 
@@ -149,20 +160,21 @@ class CoolitPlatinumDriver(UsbHidDriver):
         """
         self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
         res = self._send_set_cooling()
-        return [('Firmware version', f'{res[2] >> 4}.{res[2] & 0xf}.{res[3]}', '')]
+        fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
+        return [('Firmware version', '%d.%d.%d' % fw_version, '')]
 
     def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        assert len(self._fans) == 2, 'cannot handle {len(self._fans)} fans'
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
+        assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
         return [
             ('Liquid temperature', res[8] + res[7] / 255, '°C'),
-            ('Fan 1 speed', int.from_bytes(res[15:17], byteorder='little'), 'rpm'),
-            ('Fan 2 speed', int.from_bytes(res[22:24], byteorder='little'), 'rpm'),
-            ('Pump speed', int.from_bytes(res[29:31], byteorder='little'), 'rpm'),
+            ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
+            ('Fan 2 speed', u16le_from(res, offset=22), 'rpm'),
+            ('Pump speed', u16le_from(res, offset=29), 'rpm'),
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -172,7 +184,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
         'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
         """
-        duty = clamp(duty, 0, 100)
         for hw_channel in self._get_hw_fan_channels(channel):
             self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
             self._data.store(f'{hw_channel}_duty', duty)
@@ -215,59 +226,60 @@ class CoolitPlatinumDriver(UsbHidDriver):
         each individual LED to have a different color, but all components are
         made to repeat the same pattern.
 
+        Both channels addiationally support an 'off' mode, which is equivalent
+        to setting all LEDs to off/solid black.
+
+        `colors` should be an iterable of one or more `[red, blue, green]`
+        triples, where each red/blue/green component is a value in the range
+        0–255.  LEDs for which no color has been specified will default to
+        off/solid black.
+
         The table bellow summarizes the pseudo-channels, and their associated
-        modes, for the Platinum coolers.
+        modes maximum number of colors, available for the Platinum coolers.
 
         | Channel | Mode        | LEDs         | Components   | Colors, max |
         | ------- | ----------- | ------------ | ------------ | ----------- |
         | led     | super-fixed | independent  | independent  |          24 |
         | sync    | fixed       | synchronized | independent  |           3 |
         | sync    | super-fixed | independent  | synchronized |           8 |
+        | led     | off         | all off      | all off      |           0 |
+        | sync    | off         | all off      | all off      |           0 |
 
         PRO XT colors do not feature RGB fans, and only one component and eight
         LEDs are available on those devices.
         """
-        def warn_if_extra_colors(limit):
-            if len(colors) > limit:
-                LOGGER.warning('too many colors for channel=%s and mode=%s, dropping to %d',
-                               channel, mode, limit)
-
-        channel = channel.lower()
-        mode = mode.lower()
-        colors = list(colors)
-        component_count = 1 + len(self._fans) * self._rgb_fans
-        led_count = 8 * component_count
-        if channel == 'led':
-            if mode != 'super-fixed':
-                LOGGER.warning("mode name not enforced but should be 'super-fixed'")
-            warn_if_extra_colors(led_count)
-            colors = colors[:led_count]
-        elif channel == 'sync':
-            if mode == 'fixed':
-                warn_if_extra_colors(component_count)
-                colors = list(itertools.chain(
-                    *([color] * 8 for color in colors[:component_count])
-                ))
-            elif mode == 'super-fixed':
-                warn_if_extra_colors(8)
-                colors = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * component_count
-            else:
-                raise ValueError("Unknown mode, should be one of: 'fixed', 'super-fixed'")
+        channel, mode, colors = channel.lower(), mode.lower(), list(colors)
+        maxcolors = self._check_color_args(channel, mode, colors)
+        if mode == 'off':
+            expanded = []
+        elif (channel, mode) == ('led', 'super-fixed'):
+            expanded = colors[:maxcolors]
+        elif (channel, mode) == ('sync', 'fixed'):
+            expanded = list(itertools.chain(*([color] * 8 for color in colors[:maxcolors])))
+        elif (channel, mode) == ('sync', 'super-fixed'):
+            expanded = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * self._component_count
         else:
-            raise ValueError("Unknown channel, should be one of: 'led', 'sync'")
-        data1 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[0:20])))
-        data2 = bytearray(itertools.chain(*((b, g, r) for r, g, b in colors[20:])))
+            assert False, 'assumed unreacheable'
+        data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
+        data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:])))
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
-        # TODO try to skip getting the responses
+
+    def _check_color_args(self, channel, mode, colors):
+        maxcolors = self._maxcolors.get((channel, mode))
+        if maxcolors is None:
+            raise ValueError('Unsupported (channel, mode), should be one of: {_quoted(*self._maxcolors)}')
+        if len(colors) > maxcolors:
+            LOGGER.warning('too many colors, dropping to %d', maxcolors)
+        return maxcolors
 
     def _get_hw_fan_channels(self, channel):
         channel = channel.lower()
         if channel == 'fan':
-            return self._fans
-        if channel in self._fans:
+            return self._fan_names
+        if channel in self._fan_names:
             return [channel]
-        raise ValueError(f"Unknown channel, should be one of: 'fan', {''.join(self._fans)}")
+        raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
 
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
@@ -295,27 +307,26 @@ class CoolitPlatinumDriver(UsbHidDriver):
         return buf
 
     def _send_set_cooling(self):
-        assert len(self._fans) <= 2, 'cannot fit all fan data'
+        assert len(self._fan_names) <= 2, 'cannot yet fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
         data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
-        for fan, (mode_offset, profile_offset) in zip(self._fans, _FAN_MODE_PROFILE_OFFSETS):
+        for fan, (imode, iduty, iprofile) in zip(self._fan_names, _FAN_OFFSETS):
             mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
-            data[mode_offset] = mode.value
             if mode is _FanMode.FIXED_DUTY:
-                duty = self._data.load(f'{fan}_duty', of_type=int, default=100)
-                data[mode_offset + 5] = round(clamp(duty, 0, 100) * 2.55)
-                LOGGER.info('setting %s duty to %d%%', fan, duty)
+                stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
+                duty = clamp(stored, 0, 100)
+                data[iduty] = fraction_of_byte(percentage=duty)
+                LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
-                profile = self._data.load(f'{fan}_profile', of_type=list)
-                profile = _prepare_profile(profile)
-                for i, (temp, duty) in enumerate(profile):
-                    data[profile_offset + i * 2] = temp
-                    data[profile_offset + i * 2 + 1] = round(duty * 2.55)
-                    LOGGER.info('setting %s point (%d°C, %d%%), device interpolated',
-                                fan, temp, duty)
+                stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
+                profile = _prepare_profile(stored)  # ensures correct len(profile)
+                pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
+                data[iprofile : _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
+                LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
-                assert False, f'unexpected {mode}'
+                raise ValueError(f'Unsupported fan {mode}')
+            data[imode] = mode.value
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
         LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
