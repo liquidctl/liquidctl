@@ -87,7 +87,7 @@ def fraction_of_byte(ratio=None, percentage=None):
     >>> fraction_of_byte(percentage=20)
     51
     """
-    if percentage is None and ratio is None:
+    if percentage is not None:
         ratio = percentage / 100
     if ratio is not None:
         if ratio < 0 or ratio > 1:
