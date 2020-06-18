@@ -90,6 +90,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.device.initialize(pump_mode='extreme')
         self.device.set_fixed_speed(channel='fan', duty=42)
         self.device.set_speed_profile(channel='fan', profile=[(20, 0), (55, 100)])
+        self.assertEqual(len(self.mock_hid.sent), 3)
         for _, data in self.mock_hid.sent:
             self.assertEqual(data[0x1] & 0b111, 0)
             self.assertEqual(data[0x2], 0x14)
@@ -99,6 +100,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
     def test_set_pump_mode(self):
         self.device.initialize(pump_mode='extreme')
         self.assertEqual(self.mock_hid.sent[0].data[0x17], 0x2)
+        self.assertRaises(Exception, self.device.initialize, pump_mode='invalid')
 
     def test_fixed_fan_speeds(self):
         self.device.set_fixed_speed(channel='fan', duty=42)
@@ -107,6 +109,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 84, delta=1 / 2.55)
         self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x2)
         self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x16] / 2.55, 42, delta=1 / 2.55)
+        self.assertRaises(Exception, self.device.set_fixed_speed, channel='invalid', duty=0)
 
     def test_custom_fan_profiles(self):
         self.device.set_speed_profile(channel='fan', profile=iter([(20, 0), (55, 100)]))
@@ -118,6 +121,10 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertEqual(self.mock_hid.sent[-1].data[0x11], 0x0)
         self.assertEqual(self.mock_hid.sent[-1].data[0x2c:0x3a],
                          [20, 0, 55, 255] + 5 * [60, 255])
+        self.assertRaises(Exception, self.device.set_speed_profile,
+                          channel='invalid', profile=[])
+        self.assertRaises(ValueError, self.device.set_speed_profile,
+                          channel='fan', profile=zip(range(10), range(10)))
 
     def test_address_leds(self):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
@@ -145,3 +152,23 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
         self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
+
+    def test_leds_off(self):
+        self.device.set_color(channel='led', mode='off', colors=iter([]))
+        self.device.set_color(channel='sync', mode='off', colors=iter([]))
+        self.assertEqual(len(self.mock_hid.sent), 4)
+        for _, data in self.mock_hid.sent:
+            self.assertEqual(data[2:62], [0] * 60)
+
+    def test_invalid_color_modes(self):
+        self.assertRaises(Exception, self.device.set_color, channel='led',
+                          mode='invalid', colors=[])
+        self.assertRaises(Exception, self.device.set_color, channel='led',
+                          mode='fixed', colors=[])
+        self.assertRaises(Exception, self.device.set_color, channel='sync',
+                          mode='invalid', colors=[])
+        self.assertRaises(Exception, self.device.set_color, channel='invalid',
+                          mode='off', colors=[])
+
+    def test_bad_stored_data(self):
+        raise NotImplementedError()
