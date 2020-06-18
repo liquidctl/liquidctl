@@ -322,7 +322,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
                 stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
-                data[iprofile : _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
+                data[iprofile : iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
                 LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
                 raise ValueError(f'Unsupported fan {mode}')
