@@ -79,6 +79,34 @@ def clamp(value, clampmin, clampmax):
     return clamped
 
 
+def fraction_of_byte(ratio=None, percentage=None):
+    """Return `ratio` xor `percentage` expressed as a fraction of 255.
+
+    >>> fraction_of_byte(ratio=.8)
+    204
+    >>> fraction_of_byte(percentage=20)
+    51
+    """
+    if percentage is not None:
+        ratio = percentage / 100
+    if ratio is not None:
+        if ratio < 0 or ratio > 1:
+            raise ValueError('Cannot express ratios outside of [0, 1]')
+        return round(ratio * 255)
+    raise ValueError('Either ratio or percentage must not be None')
+
+
+def u16le_from(buffer, offset=0):
+    """Read an unsigned 16-bit little-endian integer from `buffer`.
+
+    >>> u16le_from(b'\x45\x05\x03')
+    1349
+    >>> u16le_from(b'\x45\x05\x03', offset=1)
+    773
+    """
+    return int.from_bytes(buffer[offset : offset + 2], byteorder='little')
+
+
 def delta(profile):
     """Compute a profile's Δx and Δy."""
     return [(cur[0]-prev[0], cur[1]-prev[1])
@@ -94,9 +122,16 @@ def normalize_profile(profile, critx):
        (i.e. for every i, i > 1, x[i] - x[i-1] > 0 and y[i] - y[i-1] >= 0)
      - the profile is sorted
      - a (critx, 100) failsafe is enforced
+     - only the first point that sets y := 100 is kept
 
     >>> normalize_profile([(30, 40), (25, 25), (35, 30), (40, 35), (40, 80)], 60)
     [(25, 25), (30, 40), (35, 40), (40, 80), (60, 100)]
+    >>> normalize_profile([(30, 40), (25, 25), (35, 30), (40, 100)], 60)
+    [(25, 25), (30, 40), (35, 40), (40, 100)]
+    >>> normalize_profile([(30, 40), (25, 25), (35, 100), (40, 100)], 60)
+    [(25, 25), (30, 40), (35, 100)]
+    >>> normalize_profile([], 60)
+    [(60, 100)]
     """
     profile = sorted(list(profile) + [(critx, 100)], key=lambda p: (p[0], -p[1]))
     mono = profile[0:1]
@@ -106,6 +141,8 @@ def normalize_profile(profile, critx):
         if y < yb:
             y = yb
         mono.append((x, y))
+        if y == 100:
+            break
     return mono
 
 

@@ -225,6 +225,24 @@ support a visual high-temperature alert configured with
 and
 .BR \-\-alert\-color .
 .
+.SS Corsair H100i Platinum, H115i Platinum
+.SS Corsair H100i PRO XT, H115i PRO XT
+Fan channels: \fIfan[1\(en6]\fR, \fIsync\fR.
+.PP
+Pump mode (\fBinitialize \-\-pump\-mode \fImode\fR): \fIquiet\fR, \fIbalanced\fR (default), \fIextreme\fR.
+.PP
+Lighting channels: \fIsync\fR, \fIled\fR.
+.TS
+l l c c
+----
+l l c c .
+Channel	Mode	#colors (Platinum)	#colors (PRO XT)
+\fIsync\fR/\fIled\fR	\fIoff\fR	0	0
+\fIsync\fR	\fIfixed\fR	3	1
+\fIsync\fR	\fIsuper\-fixed\fR	8	8
+\fIled\fR	\fIsuper\-fixed\fR	24	8
+.TE
+.
 .SS NZXT Kraken X40, X60
 .SS NZXT Kraken X31, X41, X61
 Supports the same modes and options as a Corsair H80i GT (or similar), but
@@ -257,6 +275,44 @@ Mode	logo	ring	#colors
 \fIwater\-cooler\fR	no	yes	0
 \fIloading\fR	no	yes	1
 \fIwings\fR	no	yes	1
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
+\fIfast\fR, \fIfastest\fR.
+.
+.SS NZXT Kraken X53, X63, X73
+.SS NZXT Kraken Z63, Z73
+Cooling channels: \fIpump\fR; (only Z63, Z73:) \fIfan\fR.
+.PP
+Lighting channels: \fIexternal\fR; (only X53, X63, X73:) \fIring\fR, \fIlogo\fR, \fIsync\fR.
+.TS
+l c
+----
+l c .
+Mode	#colors
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIfading\fR	2\(en8
+\fIsuper\-fixed\fR	1\(en40
+\fI(backwards\-)?spectrum\-wave\fR	0
+\fI(backwards\-)?marquee\-[3\-6]\fR	1
+\fIcovering\-(backwards\-)?marquee\fR	1\(en8
+\fIalternating\-[3\-6]\fR	1\(en2
+\fI(backwards\-)?moving\-alternating\-[3\-6]\fR	1\(en2
+\fIpulse\fR	1\(en8
+\fIbreathing\fR	1\(en8
+\fIsuper\-breathing\fR	1\(en40
+\fIcandle\fR	1
+\fIstarry\-night\fR	1
+\fI(backwards\-)?rainbow\-flow\fR	0
+\fI(backwards\-)?super\-rainbow\fR	0
+\fI(backwards\-)?rainbow\-pulse\fR	0
+\fIloading\fR	1
+\fItai\-chi\fR	1\(en2
+\fIwater\-cooler\fR	2
+\fIwings\fR	1
 .TE
 .PP
 When applicable the animation speed can be set with
@@ -350,44 +406,6 @@ Mode	#colors
 \fI(backwards\-)?rainbow\-flow\fR	0
 \fI(backwards\-)?super\-rainbow\fR	0
 \fI(backwards\-)?rainbow\-pulse\fR	0
-\fIwings\fR	1
-.TE
-.PP
-When applicable the animation speed can be set with
-.BI \-\-speed= value ,
-where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
-\fIfast\fR, \fIfastest\fR.
-.
-.SS NZXT Kraken X53, X63, X73
-.SS NZXT Kraken Z63, Z73
-Cooling channels: \fIpump\fR; (only Z63, Z73:) \fIfan\fR.
-.PP
-Lighting channels: \fIexternal\fR; (only X53, X63, X73:) \fIring\fR, \fIlogo\fR, \fIsync\fR.
-.TS
-l c
-----
-l c .
-Mode	#colors
-\fIoff\fR	0
-\fIfixed\fR	1
-\fIfading\fR	2\(en8
-\fIsuper\-fixed\fR	1\(en40
-\fI(backwards\-)?spectrum\-wave\fR	0
-\fI(backwards\-)?marquee\-[3\-6]\fR	1
-\fIcovering\-(backwards\-)?marquee\fR	1\(en8
-\fIalternating\-[3\-6]\fR	1\(en2
-\fI(backwards\-)?moving\-alternating\-[3\-6]\fR	1\(en2
-\fIpulse\fR	1\(en8
-\fIbreathing\fR	1\(en8
-\fIsuper\-breathing\fR	1\(en40
-\fIcandle\fR	1
-\fIstarry\-night\fR	1
-\fI(backwards\-)?rainbow\-flow\fR	0
-\fI(backwards\-)?super\-rainbow\fR	0
-\fI(backwards\-)?rainbow\-pulse\fR	0
-\fIloading\fR	1
-\fItai\-chi\fR	1\(en2
-\fIwater\-cooler\fR	2
 \fIwings\fR	1
 .TE
 .PP
