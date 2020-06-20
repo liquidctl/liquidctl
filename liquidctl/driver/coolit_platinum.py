@@ -122,7 +122,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum SE (experimental)',
+        (0x1B1C, 0x0C19, None, 'Corsair H100i Platinum SE (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
