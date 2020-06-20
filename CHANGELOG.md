@@ -14,7 +14,9 @@ Changelog since 1.3.3:
  - [NZXT E500/E650/E850] Add tentative names for the different +12 V rails
  - [HUE 2] Add `sync` lighting channel
  - Add **experimental support for NZXT Kraken X53, X63 and X73 coolers**
- - Add future support for NZXT Kraken Z63 and Z73 coolers
+ - Add **partial experimental support for NZXT Kraken Z63 and Z73 coolers**
+ - Add **experimental support for Corsair H100i, H100i SE and H115i Platinum coolers**
+ - Add **experimental support for Corsair H100i, H115i and H150i PRO XT coolers**
 ### Changed
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
  - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
