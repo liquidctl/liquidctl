@@ -71,7 +71,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | --- | --- | --- |
 | Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E, Z_</sup> |
 | Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
-| Corsair H100i Platinum, H115i Platinum | [documentation](docs/corsair-platinum-and-pro-xt-coolers.md) | <sup>_E, U_</sup> |
+| Corsair H100i Platinum, H100i Platinum SE, H115i Platinum | [documentation](docs/corsair-platinum-and-pro-xt-coolers.md) | <sup>_E, U_</sup> |
 | Corsair H100i PRO XT, H115i PRO XT, H150i PRO XT | [documentation](corsair-platinum-and-pro-xt-coolers.md) | <sup>_E, U_</sup> |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
 | NZXT Kraken M22 | [documentation](docs/third-generation-krakens.md) | |
