@@ -8,7 +8,6 @@ Supported devices
  - Corsair H115i Platinum
  - Corsair H100i PRO XT
  - Corsair H115i PRO XT
- - Corsair H150i PRO XT
 
 Supported features
 ------------------
@@ -130,8 +129,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
             {'fan_count': 2, 'rgb_fans': False}),
         (0x1B1C, 0x0C21, None, 'Corsair H115i PRO XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
-        (0x1B1C, 0x0C22, None, 'Corsair H150i PRO XT (experimental)',
-            {'fan_count': 1, 'rgb_fans': False}),
     ]
 
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
@@ -179,34 +176,20 @@ class CoolitPlatinumDriver(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
-        status = [
+        assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
+        return [
             ('Liquid temperature', res[8] + res[7] / 255, '°C'),
+            ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
+            ('Fan 2 speed', u16le_from(res, offset=22), 'rpm'),
             ('Pump speed', u16le_from(res, offset=29), 'rpm'),
         ]
-        if len(self._fan_names) == 2:
-            status.extend([
-                ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
-                ('Fan 2 speed', u16le_from(res, offset=22), 'rpm'),
-            ])
-        elif len(self._fan_names) == 1:
-            status.append(
-                ('Fan speed', u16le_from(res, offset=15), 'rpm'),
-            )
-        else:
-            assert False, f'unxpected {len(self._fan_names)} fans to parse'
-        return status
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
 
-        Coolers with two fans allow each to be controlled individually.  Valid
-        channel values for these devices are 'fanN', where N >= 1 is the fan
-        number, and 'fan', to simultaneously configure all fans.  Unconfigured
-        fan channels may default to 100% duty.
-
-        The H150i PRO XT differs from this scheme and only has a single fan
-        channel.  Thus it is more sensible to use 'fan', even though 'fan1' is
-        accepted as well.
+        Valid channel values are 'fanN', where N >= 1 is the fan number, and
+        'fan', to simultaneously configure all fans.  Unconfigured fan channels
+        may default to 100% duty.
         """
         for hw_channel in self._get_hw_fan_channels(channel):
             self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
@@ -216,14 +199,9 @@ class CoolitPlatinumDriver(UsbHidDriver):
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set fan or fans to follow a speed duty profile.
 
-        Coolers with two fans allow each to be controlled individually.  Valid
-        channel values for these devices are 'fanN', where N >= 1 is the fan
-        number, and 'fan', to simultaneously configure all fans.  Unconfigured
-        fan channels may default to 100% duty.
-
-        The H150i PRO XT differs from this scheme and only has a single fan
-        channel.  Thus it is more sensible to use 'fan', even though 'fan1' is
-        accepted as well.
+        Valid channel values are 'fanN', where N >= 1 is the fan number, and
+        'fan', to simultaneously configure all fans.  Unconfigured fan channels
+        may default to 100% duty.
 
         Up to seven (temperature, duty) pairs can be supplied in `profile`,
         with temperatures in Celsius and duty values in percentage.  The last
@@ -319,7 +297,6 @@ class CoolitPlatinumDriver(UsbHidDriver):
             buf[2] |= command
             start_at = 3
         if data:
-            assert len(data) <= _REPORT_LENGTH - start_at, 'data does not fit'
             buf[start_at : start_at + len(data)] = data
         buf[-1] = compute_pec(buf[2:-1])
         LOGGER.debug('write %s', buf.hex())
@@ -333,7 +310,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         return buf
 
     def _send_set_cooling(self):
-        assert len(self._fan_names) <= 2, 'fans would overwrite pump_mode'
+        assert len(self._fan_names) <= 2, 'cannot yet fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
         data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH

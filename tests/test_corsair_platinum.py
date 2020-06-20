@@ -6,9 +6,9 @@ from liquidctl.driver.coolit_platinum import CoolitPlatinumDriver
 from liquidctl.pmbus import compute_pec
 
 
-class _MockPlatinumHid(MockHidapiDevice):
-    def __init__(self, vendor_id=0xffff, product_id=0x0c17, address=r'/generic\#123!&'):
-        super().__init__(vendor_id=vendor_id, product_id=product_id, address=address)
+class _MockH115iPlatinum(MockHidapiDevice):
+    def __init__(self):
+        super().__init__(vendor_id=0xffff, product_id=0x0c17, address=r'/generic\#123!&')
         self.fw_version = (1, 1, 15)
         self.temperature = 30.9
         self.fan1_speed = 1499
@@ -35,7 +35,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
     def setUp(self):
         description = 'Mock H115i Platinum'
         kwargs = {'fan_count': 2, 'rgb_fans': True}
-        self.mock_hid = _MockPlatinumHid(product_id=0x0c15)
+        self.mock_hid = _MockH115iPlatinum()
         self.device = CoolitPlatinumDriver(self.mock_hid, description, **kwargs)
         self.device.connect()
 
@@ -58,7 +58,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
             self.assertEqual(data[-1], compute_pec(data[1:-1]))
 
     def test_get_status(self):
-        temp, pump, fan1, fan2 = self.device.get_status()
+        temp, fan1, fan2, pump = self.device.get_status()
         self.assertAlmostEqual(temp[1], self.mock_hid.temperature, delta=1 / 255)
         self.assertEqual(fan1[1], self.mock_hid.fan1_speed)
         self.assertEqual(fan2[1], self.mock_hid.fan2_speed)
@@ -175,84 +175,3 @@ class CorsairPlatinumTestCase(unittest.TestCase):
     def test_bad_stored_data(self):
         # TODO
         pass
-
-
-class H150iProXtTestCase(CorsairPlatinumTestCase):
-    def setUp(self):
-        description = 'Mock H150i PRO XT'
-        kwargs = {'fan_count': 1, 'rgb_fans': False}
-        self.mock_hid = _MockPlatinumHid(product_id=0x0c22)
-        self.mock_hid.fan2_speed = 0
-        self.device = CoolitPlatinumDriver(self.mock_hid, description, **kwargs)
-        self.device.connect()
-
-    def test_get_status(self):
-        temp, pump, fan = self.device.get_status()
-        self.assertAlmostEqual(temp[1], self.mock_hid.temperature, delta=1 / 255)
-        self.assertEqual(fan[1], self.mock_hid.fan1_speed)
-        self.assertEqual(pump[1], self.mock_hid.pump_speed)
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
-        self.assertEqual(self.mock_hid.sent[0].data[2], 0xff)
-
-    def test_handle_real_statuses(self):
-        samples = [
-            (
-                'ff10111f002100df23000266e80366df0302b2e803b20000008c00008cba0700'
-                '00000000000000ffe803ff00000000000000000000000000000000000000001f'
-            ),
-        ]
-        for sample in samples:
-            self.mock_hid.preload_read(Report(0, bytes.fromhex(sample)))
-            status = self.device.get_status()
-            self.assertEqual(len(status), 3)
-            self.assertNotEqual(status[0][1], self.mock_hid.temperature,
-                                msg='failed sanity check')
-
-    def test_fixed_fan_speeds(self):
-        self.device.set_fixed_speed(channel='fan', duty=42)
-        self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x2)
-        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 42, delta=1 / 2.55)
-        self.device.set_fixed_speed(channel='fan1', duty=84)
-        self.assertAlmostEqual(self.mock_hid.sent[-1].data[0x10] / 2.55, 84, delta=1 / 2.55)
-        self.assertRaises(Exception, self.device.set_fixed_speed, channel='fan2', duty=0)
-
-    def test_custom_fan_profiles(self):
-        self.device.set_speed_profile(channel='fan', profile=iter([(20, 0), (55, 100)]))
-        self.assertEqual(self.mock_hid.sent[-1].data[0x0b], 0x0)
-        self.assertEqual(self.mock_hid.sent[-1].data[0x1d], 7)
-        self.assertEqual(self.mock_hid.sent[-1].data[0x1e:0x2c],
-                         [20, 0, 55, 255] + 5 * [60, 255])
-        self.device.set_speed_profile(channel='fan1', profile=iter([(30, 20), (50, 80)]))
-        self.assertEqual(self.mock_hid.sent[-1].data[0x1e:0x2c],
-                         [30, 51, 50, 204] + 5 * [60, 255])
-        self.assertRaises(Exception, self.device.set_speed_profile,
-                          channel='fan2', profile=[])
-        self.assertRaises(ValueError, self.device.set_speed_profile,
-                          channel='fan', profile=zip(range(10), range(10)))
-
-    def test_address_leds(self):
-        colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
-        encoded = list(range(1, 8 * 3 + 1)) + [0] * 48
-        self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
-
-    def test_address_components(self):
-        colors = [[i + 3, i + 2, i + 1] for i in range(0, 3 * 3, 3)]
-        encoded = [1, 2, 3] * 8 + [0] * 48
-        self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
-
-    def test_address_component_leds(self):
-        colors = [[i + 3, i + 2, i + 1] for i in range(0, 8 * 3, 3)]
-        encoded = list(range(1, 25)) + [0] * 48
-        self.device.set_color(channel='sync', mode='super-fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
