@@ -34,16 +34,16 @@ The cooler reports the liquid temperature and the speeds of all fans and pump.
 # liquidctl status
 Corsair H100i Platinum (experimental)
 ├── Liquid temperature    27.0  °C
+├── Pump speed            2357  rpm
 ├── Fan 1 speed           1386  rpm
-├── Fan 2 speed           1389  rpm
-└── Pump speed            2357  rpm
+└── Fan 2 speed           1389  rpm
 ```
 
 ## Programming the fan speeds
 
-Each fan can be set to either a fixed duty cycle, or a profile consisting of up
-to seven (temperature, duty) pairs.  Temperatures should be given Celsius and
-duty values in percentage.
+Each fan channel can be set to either a fixed duty cycle, or a profile
+consisting of up to seven (temperature, duty) pairs.  Temperatures should be
+given Celsius and duty values in percentage.
 
 Profiles run on the device are only always based on the internal liquid
 temperature probe.  The last point should set the fan to 100% duty cycle, or be
@@ -59,8 +59,12 @@ omitted; in the latter case the fan will be set to max out at 60°C.
                    pairs of temperature (°C) -> duty (%)
 ```
 
-Valid channel values are `fanN`, where N >= 1 is the fan number, and
-`fan`, to simultaneously configure all fans.
+Coolers with two fans allow each to be controlled individually.  Valid channel
+values for these devices are `fanN`, where N >= 1 is the fan number, and `fan`,
+to simultaneously configure all fans.
+
+The H150i PRO XT differs from this scheme and only has a single fan _channel._
+Thus it is more sensible to use `fan`, even though `fan1` is accepted as well.
 
 As mentioned before, unconfigured fan channels may default to 100% duty.
 
