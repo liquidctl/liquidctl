@@ -23,18 +23,20 @@ This driver implements the following features available at the hardware level:
 
 The driver supports 7 color channels and a 'sync' channel. Channel names must
 be specified exactly as shown (upper/lower case matters):
- - IOLED    : This is the LED next to the IO panel
- - LED1     : This is one of two 12V RGB headers
- - PCHLED   : This is the LED on the PCH chip ("Designare" on Vision D)
- - PCILED   : This is an array of LEDs behind the PCI slots on *back side* of motherboard
- - LED2     : This is second 12V RGB header
- - DLED1    : This is one of two 5V addressable RGB headers
- - DLED2    : This is second 5V addressable RGB header
+
+ - ioled    : This is the LED next to the IO panel
+ - led1     : This is one of two 12V RGB headers
+ - pchled   : This is the LED on the PCH chip ("Designare" on Vision D)
+ - pciled   : This is an array of LEDs behind the PCI slots on *back side* of motherboard
+ - led2     : This is second 12V RGB header
+ - dled1    : This is one of two 5V addressable RGB headers
+ - dled2    : This is second 5V addressable RGB header
 
 Each of these channels can be controlled individually. However, channel name 'sync'
 can be used to control all 7 channels at once.
 
 The driver supports 6 color modes:
+
  - Off
  - static
  - pulse
@@ -47,12 +49,21 @@ and DLED2 headers are not currently supported.
 
 For color modes pulse, flash, double-flash and color-cycle, the speed of color change
 is governed by the --speed parameter on command line. It may be set to:
+
  - slowest
  - slower
  - normal (default)
  - faster
  - fastest
  - ludicrous
+
+Caveats
+-------
+On wake-from-sleep, the ITE controller will be reset and all color modes will default
+to static blue. On macOS, the "sleepwatcher" utility can be installed via Homebrew
+along with a script to be run on wake that will issue the necessary liquidctl 
+commands to restore desired lighting effects. Similar solutions may be necessary on
+Windows and Linux.
 
 
 Copyright (C) 2020–2020  CaseySJ
@@ -80,16 +91,16 @@ _ANIMATION_SPEEDS = {
 }
 
 
-class CommonRGBFusionDriver(UsbHidDriver):
+class CommonRGBFusion2Driver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
     def __init__(self, device, description, color_channels, **kwargs):
         """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._color_channels = color_channels
-        print('interface_number ', self.device.hidinfo['interface_number'])
-        print('usage_page ', self.device.hidinfo['usage_page'])
-        print('usage ', self.device.hidinfo['usage'])
+        LOGGER.debug('interface_number %i', self.device.hidinfo['interface_number'])
+        LOGGER.debug('usage_page %i (%s)', self.device.hidinfo['usage_page'], hex(self.device.hidinfo['usage_page']))
+        LOGGER.debug('usage %i (%s)', self.device.hidinfo['usage'], hex(self.device.hidinfo['usage']))
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode."""
@@ -150,15 +161,15 @@ class CommonRGBFusionDriver(UsbHidDriver):
         raise NotImplementedError()
 
 
-class RGBFusionDriver(CommonRGBFusionDriver):
+class RGBFusion2Driver(CommonRGBFusion2Driver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 motherboards."""
 
     SUPPORTED_DEVICES = [
-        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 (experimental)', {
+        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 ITE 0x5702', {
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),
-        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 (experimental)', {
+        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 ITE 0x8297', {
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),
@@ -244,13 +255,13 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         """Instantiate a driver with a device handle."""
         
         color_channels = {
-            'IOLED':  (0x20, 0x01),
-            'LED1':   (0x21, 0x02),
-            'PCHLED': (0x22, 0x04),
-            'PCILED': (0x23, 0x08),
-            'LED2':   (0x24, 0x10),
-            'DLED1':  (0x25, 0x20),
-            'DLED2':  (0x26, 0x40),
+            'ioled':  (0x20, 0x01),
+            'led1':   (0x21, 0x02),
+            'pchled': (0x22, 0x04),
+            'pciled': (0x23, 0x08),
+            'led2':   (0x24, 0x10),
+            'dled1':  (0x25, 0x20),
+            'dled2':  (0x26, 0x40),
         }
         super().__init__(device, description, color_channels, **kwargs)
 
@@ -265,7 +276,7 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         # self.device.clear_enqueued_reports()
         status = []
         # initialize
-        self._write_single(0x60) # 0x60 = Initialize code
+        self._send_onebyte_report(0x60) # 0x60 = Initialize code
         data=self._get_feature_report(self._REPORT_ID)
         if data[0]==self._REPORT_ID and data[1]==0x01:
             num_devices = data[3]
@@ -286,19 +297,19 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         self.device.release()
         return status
 
-    def _write_one_cycle(self):
-        self._write_series()
-        self._write_end_block()
+    def _reset_all_channels(self):
+        self._select_all_channels()
+        self._execute_report()
         
-    def _write_single(self, code):
+    def _send_onebyte_report(self, code):
         self._send_feature_report([self._REPORT_ID, code])
         
-    def _write_series(self):
+    def _select_all_channels(self):
         """Send a series of initializer data packets"""
         for x in range(0x20,0x28):
             self._send_feature_report([self._REPORT_ID, x])
             
-    def _write_end_block(self):
+    def _execute_report(self):
         self._send_feature_report([self._REPORT_ID, 0x28, 0xff])
 
     def get_status(self, **kwargs):
@@ -330,10 +341,10 @@ class RGBFusionDriver(CommonRGBFusionDriver):
         for cname, (adr1, adr2) in selected_channels.items():
             header[1]=adr1
             header[2]=adr2
-            # self._write_series()
-            self._write_single(adr1) # this clears previous setting to allow new setting for that channel
-            self._write_end_block()
+            # self._select_all_channels()
+            self._send_onebyte_report(adr1) # this clears previous setting to allow new setting for that channel
+            self._execute_report()
             self._send_feature_report(header)
-        self._write_end_block() 
+        self._execute_report() 
         self.device.release()
 
