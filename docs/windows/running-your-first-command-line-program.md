@@ -37,6 +37,8 @@ For example, to set the fans to follow the profile defined by the points (25°C
 -> 10%), (30°C -> 50%), (40°C -> 100%):
 
     liquidctl set fan speed 25 10 30 50 40 100
+                            ^^^^^ ^^^^^ ^^^^^^
+                   pairs of temperature (°C) -> duty (%)
 
 _(The profiles run on the device, and therefore can only refer to the internal
 liquid temperature sensor)._
