@@ -55,7 +55,7 @@ Links to specific documentation for each device family can be found in the
 [list of _Supported Devices_].  These will list which specific features and
 attributes are supported by each device, and provide some additional examples.
 
-[list of _Supported Devices_]: ../../README.md#supporte-devices
+[list of _Supported Devices_]: ../../README.md#supported-devices
 
 ## Setting up liquidctl
 
