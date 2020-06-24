@@ -1,15 +1,5 @@
 # Running your first command-line program
 
-_Adapted from a response to a direct message:_
-
-> Hi. How are you? Hope you're staying safe and well. I just wanted to know of
-> there is a windows gui for liquidctrl?
-> I have zero experience with command line stuff and I don't entirely understand
-> it... also most of the guides are from late 2018 or early 2019.
-> And i just bought a x53 kraken.
-
----
-
 The command line is very straightforward.  You have to remember that it's a
 precursor to the GUI, so it's much more simple.
 
@@ -150,7 +140,18 @@ Finally, install libusb, which unfortunately has to be done manually.  The
 libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases)
 (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64)
 `.dll` and `.lib` files should be extracted to the system or python
-installation directory (e.g.  `C:\Windows\System32` or `C:\Python38`).  Note
-that there is a [known issue in PyUSB](https://github.com/pyusb/pyusb/pull/227)
-that causes errors when the devices are released; the solution is to either
-manually patch PyUSB or stick to libusb 1.0.21.
+installation directory (e.g.  `C:\Windows\System32` or `C:\Python38`).
+
+There is a [known issue in PyUSB](https://github.com/pyusb/pyusb/pull/227) that
+causes errors when the devices are released; the solution is to either manually
+patch PyUSB or stick to libusb 1.0.21.
+
+### About this document
+
+This document was originally a response to a direct message:
+
+> Hi. How are you? Hope you're staying safe and well. I just wanted to know of
+> there is a windows gui for liquidctrl?
+> I have zero experience with command line stuff and I don't entirely understand
+> it... also most of the guides are from late 2018 or early 2019.
+> And i just bought a x53 kraken.
