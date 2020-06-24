@@ -1,11 +1,14 @@
 # Running your first command-line program
 
 The command line is very straightforward.  You have to remember that it's a
-precursor to the GUI, so it's much more simple.
+precursor to the GUI, so it's much more simple and explicit than a GUI.
 
 A shell/terminal like Windows Command Prompt or Powershell is just some place
-were you write what you want some programs to do.  You also get a few build-in
+were you write what you want some program to do.  You also get a few build-in
 "special programs" like `cd` (change directory).
+
+And, unlike GUIs, command-line programs simply output their results to the
+terminal they were called from.
 
 I'll get to "how to install" in a bit, but for now let's assume liquidctl has
 already been set up.
@@ -14,11 +17,16 @@ If you want to list all devices, just type and hit enter:
 
     liquidctl list
 
+And this will result in an output that looks similar to:
+
+    Device ID 0: NZXT Smart Device (V1)
+    Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
+
 If you want to list all devices showing a bit more information:
 
     liquidctl list --verbose
 
-If you want to initialize all devices:
+If you want to initialize all devices (which you should!):
 
     liquidctl initialize all
 
@@ -30,11 +38,20 @@ To change say the pump speed to 42%:
 
     liquidctl set pump speed 42
 
-It can get slightly less English-looking in some cases, but still nothing too
-complex.
+This last command didn't show any output.  This is normal: command-line
+programs tend to follow a convention that simplifies chaining programs and
+automating things with scripts: (unless explicitly requested otherwise), only
+output useful information or error messages.
 
-For example, to set the fans to follow the profile defined by the points (25°C
--> 10%), (30°C -> 50%), (40°C -> 100%):
+Some liquidctl commands can get slightly less English-looking than what was
+showed above, but they should still be readable.  For example, to set the fans
+to follow the profile defined by the points (25°C -> 10%), (30°C -> 50%), (40°C
+-> 100%) execute:
+
+    liquidctl set fan speed 25 10 30 50 40 100
+
+While in isolation these numbers are not very self explanatory, they are simply
+the pairs of temperature and corresponding duty values:
 
     liquidctl set fan speed 25 10 30 50 40 100
                             ^^^^^ ^^^^^ ^^^^^^
@@ -44,8 +61,8 @@ _(The profiles run on the device, and therefore can only refer to the internal
 liquid temperature sensor)._
 
 Links to specific documentation for each device family can be found in the
-[list of _Supported Devices_].  These will list which specific features and
-attributes are supported by each device, and provide some additional examples.
+[list of _Supported Devices_], and that will list all features and attributes
+that are supported by each device, with corresponding examples.
 
 [list of _Supported Devices_]: ../../README.md#supported-devices
 
