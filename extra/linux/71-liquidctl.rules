@@ -11,11 +11,11 @@
 # very scientific, I know, but I could not find any documented policy for
 # this), as well as the need to let users overrule these rules.
 #
-# These rules assume a system with a modern versions of systemd/udev, with
-# support for the `uaccess` tag; on older systems the rules can be changed to
-# set GROUP="plugdev" and MODE="0660" instead.  The currently deprecated
-# 'plugdev' group is not used by default to avoid generating warnings on
-# systems that have already removed it.
+# These rules assume a system with modern versions of systemd/udev, that
+# support the `uaccess` tag; on older systems the rules can be changed to set
+# GROUP="plugdev" and MODE="0660" instead.  The currently deprecated 'plugdev'
+# group is not used by default to avoid generating warnings on systems that
+# have already removed it.
 
 # Corsair Hydro H80i GT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c02", TAG+="uaccess"
