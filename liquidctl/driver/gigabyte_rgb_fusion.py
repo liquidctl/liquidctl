@@ -1,4 +1,4 @@
-"""liquidctl drivers for Gigabyte RGB Fusion via ITE Tech USB Device 0x5072
+"""liquidctl driver for Gigabyte RGB Fusion 2.0
 
 RGB Fusion 2.0
 --------------
@@ -9,8 +9,8 @@ the motherboard itself, (b) RGB/ARGB elements on memory modules, and
 (c) RGB/ARGB elements connected to 12V RGB and 5V ARGB headers.
 
 Lighting is controlled on these motherboards via an ITE Tech chip with 
-product ID 0x5072 that is mapped to a USB 2 port. On the Gigabyte Z490 Vision D,
-for example, the lighting controller is mapped to USB port HS12.
+product ID 0x5072 or 0x8297 that is mapped to a USB 2 port. On the Gigabyte Z490
+Vision D, for example, the lighting controller is mapped to USB port HS12.
 
 Driver
 ------
@@ -44,8 +44,8 @@ The driver supports 6 color modes:
  - double-flash
  - color-cycle
  
-The more elaborate Addressable RGB color/animation schemes permissable on DLED1
-and DLED2 headers are not currently supported.
+The more elaborate Addressable RGB color/animation schemes permissable on dled1
+and dled2 headers are not currently supported.
 
 For color modes pulse, flash, double-flash and color-cycle, the speed of color change
 is governed by the --speed parameter on command line. It may be set to:
@@ -64,6 +64,14 @@ to static blue. On macOS, the "sleepwatcher" utility can be installed via Homebr
 along with a script to be run on wake that will issue the necessary liquidctl 
 commands to restore desired lighting effects. Similar solutions may be necessary on
 Windows and Linux.
+
+Acknowledgements
+----------------
+1. Thanks to Jonas Malaco for identifying the need for 'get_report' and 'set_report'
+functions at the USB driver level, and assisting in their implementation.
+
+2. Thanks to SgtSixPack for capturing USB traffic on 0x8297 and testing the driver
+on Windows.
 
 
 Copyright (C) 2020–2020  CaseySJ
@@ -165,11 +173,11 @@ class RGBFusion2Driver(CommonRGBFusion2Driver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 motherboards."""
 
     SUPPORTED_DEVICES = [
-        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 ITE 0x5702', {
+        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 ITE 0x5702 (experimental)', {
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),
-        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 ITE 0x8297', {
+        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 ITE 0x8297 (experimental)', {
             'speed_channel_count': 0,
             'color_channel_count': 7
         }),
