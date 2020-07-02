@@ -412,11 +412,10 @@ This is likely caused by having replaced the original Microsoft Generic HID driv
 
 As before, this is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0 but failed to reattach the original driver.
 
-This can be temporarily solved by manually rebinding the device to the kernel `usb` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
+This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
 
 ```
-echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usb/unbind
-echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usb/bind
+echo '<bus>-<port>:1.0' | sudo tee /sys/bus/usb/drivers/usbhid/bind
 ```
 
 A more permanent solution is to politely ask the authors of the program that is responsible for leaving the kernel driver detached to use `libusb_attach_kernel_driver` or `libusb_set_auto_detach_kernel_driver`.
