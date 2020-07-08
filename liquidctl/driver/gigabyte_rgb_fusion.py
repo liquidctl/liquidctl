@@ -21,16 +21,28 @@ This driver implements the following features available at the hardware level:
  - control of lighting modes and colors
  - reporting of firmware version
 
-The driver supports 7 color channels and a 'sync' channel. Channel names must
-be specified exactly as shown (upper/lower case matters):
 
- - ioled    : This is the LED next to the IO panel
- - led1     : This is one of two 12V RGB headers
- - pchled   : This is the LED on the PCH chip ("Designare" on Vision D)
- - pciled   : This is an array of LEDs behind the PCI slots on *back side* of motherboard
- - led2     : This is second 12V RGB header
- - dled1    : This is one of two 5V addressable RGB headers
- - dled2    : This is second 5V addressable RGB header
+Channel Names
+-------------
+Each lighting channel has a unique numerical address. These numerical addresses
+are not consistent across various Gigabyte motherboards. As much as we would
+like to use descriptive channel names, it's not currently practical to do so.
+Hence, lighting channels are given generic names: led1, led2, etc.
+
+At this time, 7 lighting channels are defined. A 'sync' channel is also provided,
+which applies the specified setting to all lighting channels.
+
+Each user may need to create a table that associates generic channel names to
+specific areas or headers on their motherboard. For example, a map for the Gigabyte
+Z490 Vision D might look like this:
+
+ - led1     : This is the LED next to the IO panel
+ - led2     : This is one of two 12V RGB headers
+ - led3     : This is the LED on the PCH chip ("Designare" on Vision D)
+ - led4     : This is an array of LEDs behind the PCI slots on *back side* of motherboard
+ - led5     : This is second 12V RGB header
+ - led6     : This is one of two 5V addressable RGB headers
+ - led7     : This is second 5V addressable RGB header
 
 Each of these channels can be controlled individually. However, channel name 'sync'
 can be used to control all 7 channels at once.
@@ -263,13 +275,13 @@ class RGBFusion2Driver(CommonRGBFusion2Driver):
         """Instantiate a driver with a device handle."""
         
         color_channels = {
-            'ioled':  (0x20, 0x01),
-            'led1':   (0x21, 0x02),
-            'pchled': (0x22, 0x04),
-            'pciled': (0x23, 0x08),
-            'led2':   (0x24, 0x10),
-            'dled1':  (0x25, 0x20),
-            'dled2':  (0x26, 0x40),
+            'led1': (0x20, 0x01),
+            'led2': (0x21, 0x02),
+            'led3': (0x22, 0x04),
+            'led4': (0x23, 0x08),
+            'led5': (0x24, 0x10),
+            'led6': (0x25, 0x20),
+            'led7': (0x26, 0x40),
         }
         super().__init__(device, description, color_channels, **kwargs)
 
