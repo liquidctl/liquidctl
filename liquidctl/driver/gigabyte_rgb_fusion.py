@@ -294,7 +294,7 @@ class RGBFusion2Driver(UsbHidDriver):
         if mval == 1: # this mode does not support color flashing or pulsing
             header += [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
         else:
-            mode_speeds = RGB_FUSION_SPEEDS[mode]
+            mode_speeds = _RGB_FUSION_SPEEDS[mode]
             animation_speed = mode_speeds[speed]
             header += animation_speed
         header += [0x00, 0x00, cycle, flash, num_flash]
