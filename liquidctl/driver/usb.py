@@ -416,6 +416,23 @@ class HidapiDevice:
         """
         return self.hiddev.write(data)
 
+    def get_feature_report(self, report_id, length):
+        """Get a feature report from a HID device
+        
+        Upon return, the first byte will contain the Report ID, and
+        the report data itself will begin at the second byte (data[1])
+        """
+        return self.hiddev.get_feature_report(report_id, length)
+
+    def send_feature_report(self, data, length):
+        """Send a feature report to a HID device
+        
+        First byte of data must be Report ID.
+        Returns number of bytes sent or -1 on error.
+        """
+        return self.hiddev.send_feature_report(data)
+
+
     @classmethod
     def enumerate(cls, api, vid=None, pid=None):
         infos = api.enumerate(vid or 0, pid or 0)
