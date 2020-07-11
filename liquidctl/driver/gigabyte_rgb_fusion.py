@@ -257,6 +257,8 @@ class RGBFusion2Driver(UsbHidDriver):
         return []
 
     def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set fan speed. This driver does not support fans."""
+    	
         raise NotImplementedError()
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):

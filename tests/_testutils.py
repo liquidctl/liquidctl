@@ -49,3 +49,17 @@ class MockHidapiDevice:
         data = bytes(data)  # ensure data is convertible to bytes
         self.sent.append(Report(data[0], list(data[1:])))
         return len(data) - 1
+
+    def send_feature_report(self, data):
+        data = bytes(data)
+        self.sent.append(Report(data[0], list(data[1:])))
+        return len(data) - 1
+
+    def get_feature_report(self, report_id, length):
+        if self._read:
+            number, data = self._read.popleft()
+            if number:
+                return [number] + list(data)[:length]
+            else:
+                return list(data)[:length]
+        return None
