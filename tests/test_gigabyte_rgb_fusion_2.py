@@ -32,7 +32,7 @@ class GigabyteRGBFusionTestCase(unittest.TestCase):
 
 
     def test_command_format(self):
-        self.mock_hid.preload_real(Report(0, bytes.fromhex(self.initialize_sample)))
+        self.mock_hid.preload_read(Report(0, bytes.fromhex(self.initialize_sample)))
         self.device.initialize()
         # driver does not support get_status
         # self.device.get_status()
@@ -50,7 +50,7 @@ class GigabyteRGBFusionTestCase(unittest.TestCase):
 
 
     def test_initialize_status(self):
-        self.mock_hid.preload_real(Report(0, bytes.fromhex(self.initialize_sample)))
+        self.mock_hid.preload_read(Report(0, bytes.fromhex(self.initialize_sample)))
         (_, fw_version, ) = self.device.initialize()
         self.assertEqual(fw_version[1], '%d.%d.%d.%d' % self.mock_hid.fw_version)
 
