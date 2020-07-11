@@ -9,10 +9,6 @@ class _MockRGBFusion2(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0xffff, product_id=0x5702, address=r'/generic\#123!&')
         self.fw_version = (1, 0, 10, 0)
-        self.temperature = 30.9
-        self.fan1_speed = 1499
-        self.fan2_speed = 1512
-        self.pump_speed = 2702
 
 
 class GigabyteRGBFusionTestCase(unittest.TestCase):
