@@ -1,16 +1,16 @@
-"""liquidctl driver for Gigabyte RGB Fusion 2.0
+"""liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers.
 
 RGB Fusion 2.0
 --------------
-Gigabyte RGB Fusion 2.0 is a lighting controller that supports 12V RGB and
-5V Addressable RGB lighting effects. It is built into motherboards that contain
-the RGB Fusion 2.0 logo, and supports both (a) RGB/ARGB lighting elements on
-the motherboard itself, (b) RGB/ARGB elements on memory modules, and
-(c) RGB/ARGB elements connected to 12V RGB and 5V ARGB headers.
 
-Lighting is controlled on these motherboards via an ITE Tech chip with
-product ID 0x5072 or 0x8297 that is mapped to a USB 2 port. On the Gigabyte Z490
-Vision D, for example, the lighting controller is mapped to USB port HS12.
+RGB Fusion 2.0 is a lighting system that supports 12 V non-addressable RGB and
+5 V addressable ARGB lighting accessories, along side RGB/ARGB memory modules
+and other elements on the motherboard itself.  It is built into motherboards
+that contain the RGB Fusion 2.0 logo, typically from Gigabyte.
+
+These motherboards use one of many possible ITE Tech controller chips, which
+are connected to the host via SMBus or USB, depending on the motherboard/chip
+model.  This driver supports a few of the USB controllers.
 
 Driver
 ------
@@ -21,72 +21,50 @@ This driver implements the following features available at the hardware level:
  - control of lighting modes and colors
  - reporting of firmware version
 
-
-Channel Names
+Channel names
 -------------
-Each lighting channel has a unique numerical address. These numerical addresses
-are not consistent across various Gigabyte motherboards. As much as we would
-like to use descriptive channel names, it's not currently practical to do so.
-Hence, lighting channels are given generic names: led1, led2, etc.
 
-At this time, 7 lighting channels are defined. A 'sync' channel is also provided,
-which applies the specified setting to all lighting channels.
+As much as we would like to use descriptive channel names, currently it is not
+practical to do so, since the correspondence between the hardware channels and
+the corresponding features on the motherboard is not stable.  Hence, lighting
+channels are given generic names: led1, led2, etc.
+
+At this time, 7 lighting channels are defined; a 'sync' channel is also
+provided, which applies the specified setting to all lighting channels.
 
 Each user may need to create a table that associates generic channel names to
-specific areas or headers on their motherboard. For example, a map for the Gigabyte
-Z490 Vision D might look like this:
+specific areas or headers on their motherboard. For example, a map for the
+Gigabyte Z490 Vision D might look like this:
 
- - led1     : This is the LED next to the IO panel
- - led2     : This is one of two 12V RGB headers
- - led3     : This is the LED on the PCH chip ("Designare" on Vision D)
- - led4     : This is an array of LEDs behind the PCI slots on *back side* of motherboard
- - led5     : This is second 12V RGB header
- - led6     : This is one of two 5V addressable RGB headers
- - led7     : This is second 5V addressable RGB header
+ - led1: This is the LED next to the IO panel
+ - led2: This is one of two 12V RGB headers
+ - led3: This is the LED on the PCH chip ("Designare" on Vision D)
+ - led4: This is an array of LEDs behind the PCI slots on *back side* of motherboard
+ - led5: This is second 12V RGB header
+ - led6: This is one of two 5V addressable RGB headers
+ - led7: This is second 5V addressable RGB header
 
-Each of these channels can be controlled individually. However, channel name 'sync'
-can be used to control all 7 channels at once.
+The driver supports 6 color modes: off, static, pulse, flash, double-flash and
+color-cycle.
 
-The driver supports 6 color modes:
+The more elaborate color/animation schemes supported by the motherboard on the
+addressable headers are not currently supported.
 
- - Off
- - static
- - pulse
- - flash
- - double-flash
- - color-cycle
-
-The more elaborate Addressable RGB color/animation schemes permissable on dled1
-and dled2 headers are not currently supported.
-
-For color modes pulse, flash, double-flash and color-cycle, the speed of color change
-is governed by the --speed parameter on command line. It may be set to:
-
- - slowest
- - slower
- - normal (default)
- - faster
- - fastest
- - ludicrous
+For color modes pulse, flash, double-flash and color-cycle, the speed of color
+change is governed by the --speed parameter, one of the possible values:
+slowest, slower, normal (default), faster, fastest or ludicrous.
 
 Caveats
 -------
-On wake-from-sleep, the ITE controller will be reset and all color modes will default
-to static blue. On macOS, the "sleepwatcher" utility can be installed via Homebrew
-along with a script to be run on wake that will issue the necessary liquidctl
-commands to restore desired lighting effects. Similar solutions may be necessary on
-Windows and Linux.
 
-Acknowledgements
-----------------
-1. Thanks to Jonas Malaco for identifying the need for 'get_report' and 'set_report'
-functions at the USB driver level, and assisting in their implementation.
-
-2. Thanks to SgtSixPack for capturing USB traffic on 0x8297 and testing the driver
-on Windows.
-
+On wake-from-sleep, the ITE controller will be reset and all color modes will
+revert to static blue.  On macOS, the "sleepwatcher" utility can be installed
+via Homebrew along with a script to be run on wake that will issue the
+necessary liquidctl commands to restore desired lighting effects.  Similar
+solutions may be used on Windows and Linux.
 
 Copyright (C) 2020–2020  CaseySJ
+Copyright (C) 2020–2020  Jonas Malaco
 Copyright (C) 2018–2020  each contribution's author
 
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -104,7 +82,7 @@ LOGGER = logging.getLogger(__name__)
 _REPORT_ID = 0xcc
 _INIT_CMD = 0x60
 _READ_LENGTH = 64
-_WRITE_LENGTH = 64  # TODO double check, probably 65 (64 + report ID)
+_WRITE_LENGTH = 64  # TODO double check, should probably be 65 (64 + report ID)
 
 _COLOR_CHANNELS = {
     'led1': (0x20, 0x01),
@@ -162,23 +140,23 @@ _ColorMode = namedtuple('_ColorMode',
 _COLOR_MODES = {
     mode.name: mode
     for mode in [
-        _ColorMode('off', 0x01, pulses=False, flash_count=0, cycle_count=0, max_brightness=0,
-                   takes_color=False, speed_values=None),
-        _ColorMode('static', 0x01, pulses=False, flash_count=0, cycle_count=0, max_brightness=90,
-                   takes_color=True, speed_values=None),
-        _ColorMode('pulse', 0x02, pulses=True, flash_count=0, cycle_count=0, max_brightness=90,
-                   takes_color=True, speed_values=_PULSE_SPEEDS),
-        _ColorMode('flash', 0x03, pulses=True, flash_count=1, cycle_count=0, max_brightness=100,
-                   takes_color=True, speed_values=_FLASH_SPEEDS),
+        _ColorMode('off', 0x01, pulses=False, flash_count=0, cycle_count=0,
+                   max_brightness=0, takes_color=False, speed_values=None),
+        _ColorMode('static', 0x01, pulses=False, flash_count=0, cycle_count=0,
+                   max_brightness=90, takes_color=True, speed_values=None),
+        _ColorMode('pulse', 0x02, pulses=True, flash_count=0, cycle_count=0,
+                   max_brightness=90, takes_color=True, speed_values=_PULSE_SPEEDS),
+        _ColorMode('flash', 0x03, pulses=True, flash_count=1, cycle_count=0,
+                   max_brightness=100, takes_color=True, speed_values=_FLASH_SPEEDS),
         _ColorMode('double-flash', 0x03, pulses=True, flash_count=2, cycle_count=0,
                    max_brightness=100, takes_color=True, speed_values=_DOUBLE_FLASH_SPEEDS),
-        _ColorMode('color-cycle', 0x04, pulses=False, flash_count=0, cycle_count=7, max_brightness=100,
-                   takes_color=False, speed_values=_COLOR_CYCLE_SPEEDS),
+        _ColorMode('color-cycle', 0x04, pulses=False, flash_count=0, cycle_count=7,
+                   max_brightness=100, takes_color=False, speed_values=_COLOR_CYCLE_SPEEDS),
     ]
 }
 
 class RGBFusion2Driver(UsbHidDriver):
-    """liquidctl driver for Gigabyte RGB Fusion 2.0 motherboards."""
+    """liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers."""
 
     SUPPORTED_DEVICES = [
         (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 5702 Controller (experimental)', {}),
@@ -223,7 +201,7 @@ class RGBFusion2Driver(UsbHidDriver):
     def get_status(self, **kwargs):
         """Get a status report.
 
-        Currently returns an empty list, but this behavior is not garanteed as
+        Currently returns an empty list, but this behavior is not guaranteed as
         in the future the device may start to report useful information.  A
         non-empty list would contain `(property, value, unit)` tuples.
         """
@@ -231,7 +209,30 @@ class RGBFusion2Driver(UsbHidDriver):
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
-        """Set the color mode."""
+        """Set the color mode for a specific channel.
+
+        Up to seven individual channels are available, named 'led1' through
+        'led7'.  In addition to these, the 'sync' channel can be used to apply
+        the same settings to all channels.
+
+        The table bellow summarizes the available channels.
+
+        | Mode         | Colors required | Speed is customizable |
+        | ------------ | --------------- | --------------------- |
+        | off          |            zero |                    no |
+        | static       |             one |                    no |
+        | pulse        |             one |                   yes |
+        | flash        |             one |                   yes |
+        | double-flash |             one |                   yes |
+        | color-cycle  |            zero |                   yes |
+
+        `colors` should be an iterable of zero or one `[red, blue, green]`
+        triples, where each red/blue/green component is a value in the range
+        0–255.
+
+        `speed`, when supported by the `mode`, can be one of: `slowest`,
+        `slow`, `normal` (default), `faster`, `fastest` or `ludicrous`.
+        """
 
         mode = _COLOR_MODES[mode.lower()]
         colors = iter(colors)
@@ -268,32 +269,38 @@ class RGBFusion2Driver(UsbHidDriver):
         for addr1, addr2 in selected_channels:
             data[1:3] = addr1, addr2
             self._send_feature_report([_REPORT_ID, addr1])  # clear previous settings
-            self._execute_report()  # TODO might not need to clear indivudally since [1]
+            self._execute_report()  # TODO might not need for each clear since [1] is
             self._send_feature_report(data)  # set new settings
-        self._execute_report()  # [1] for setting a single execute is sufficient
+        self._execute_report()  # [1] sufficient to set all channels
         self.device.release()
 
     def _get_feature_report(self, report_id):
-        """Get Feature Report from USB device. Used to query the device."""
         data = self.device.get_feature_report(report_id, _READ_LENGTH)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
         return data
 
     def _send_feature_report(self, data):
-        """Send Feature Report to USB device. Used to command the device."""
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.send_feature_report(data + padding)
 
     def _reset_all_channels(self):
-        """Reset all LED channels. Each channel must be reset before it can be changed.
-        This may be used in the future."""
-        for x in range(0x20,0x28):
+        """Reset all LED channels.
+
+        Each channel must be reset before it can be changed.
+        """
+
+        # TODO double check, this suggests the existence of an eight channel with value 0x27
+        for x in range(0x20, 0x28):
             self._send_feature_report([_REPORT_ID, x])
         self._execute_report()
 
     def _execute_report(self):
-        """After sending new lighting modes to all channels, this must be called
-        to trigger the change."""
+        """Request for the previously sent lighting settings to be applied."""
         self._send_feature_report([_REPORT_ID, 0x28, 0xff])
+
+
+# Acknowledgements by CaseySJ
+#
+# Thanks to SgtSixPack for capturing USB traffic on 0x8297 and testing the driver on Windows.
