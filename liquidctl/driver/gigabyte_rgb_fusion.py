@@ -5,10 +5,10 @@ RGB Fusion 2.0
 Gigabyte RGB Fusion 2.0 is a lighting controller that supports 12V RGB and
 5V Addressable RGB lighting effects. It is built into motherboards that contain
 the RGB Fusion 2.0 logo, and supports both (a) RGB/ARGB lighting elements on
-the motherboard itself, (b) RGB/ARGB elements on memory modules, and 
+the motherboard itself, (b) RGB/ARGB elements on memory modules, and
 (c) RGB/ARGB elements connected to 12V RGB and 5V ARGB headers.
 
-Lighting is controlled on these motherboards via an ITE Tech chip with 
+Lighting is controlled on these motherboards via an ITE Tech chip with
 product ID 0x5072 or 0x8297 that is mapped to a USB 2 port. On the Gigabyte Z490
 Vision D, for example, the lighting controller is mapped to USB port HS12.
 
@@ -55,7 +55,7 @@ The driver supports 6 color modes:
  - flash
  - double-flash
  - color-cycle
- 
+
 The more elaborate Addressable RGB color/animation schemes permissable on dled1
 and dled2 headers are not currently supported.
 
@@ -73,7 +73,7 @@ Caveats
 -------
 On wake-from-sleep, the ITE controller will be reset and all color modes will default
 to static blue. On macOS, the "sleepwatcher" utility can be installed via Homebrew
-along with a script to be run on wake that will issue the necessary liquidctl 
+along with a script to be run on wake that will issue the necessary liquidctl
 commands to restore desired lighting effects. Similar solutions may be necessary on
 Windows and Linux.
 
@@ -92,27 +92,19 @@ Copyright (C) 2018–2020  each contribution's author
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import sys
-import itertools
+from collections import namedtuple
 import logging
+import sys
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
 
+_REPORT_ID = 0xcc
+_INIT_CMD = 0x60
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64  # TODO double check, probably 65 (64 + report ID)
-_REPORT_ID = 0xCC	# RGB Fusion USB Feature Report ID
-_INIT_CMD = 0x60	# Command ID to initialize device
-
-_ANIMATION_SPEEDS = {
-    'slowest':   0x0,
-    'slower':    0x1,
-    'normal':    0x2,
-    'faster':    0x3,
-    'fastest':   0x4,
-    'ludicrous': 0x5,
-}
 
 _COLOR_CHANNELS = {
     'led1': (0x20, 0x01),
@@ -124,16 +116,6 @@ _COLOR_CHANNELS = {
     'led7': (0x26, 0x40),
 }
 
-_COLOR_MODES = {
-    # (mode, cycle, flash/pulse, number of flashes, min bright, max bright, min colors, max colors)
-    'off':                              (0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0, 0),
-    'static':                           (0x01, 0x00, 0x00, 0x00, 0x0f, 0x5a, 1, 1),
-    'pulse':                            (0x02, 0x00, 0x01, 0x00, 0x0f, 0x5a, 1, 1),  
-    'flash':                            (0x03, 0x00, 0x01, 0x01, 0x0f, 0x64, 1, 1),
-    'double-flash':                     (0x03, 0x00, 0x01, 0x02, 0x0f, 0x64, 1, 1),
-    'color-cycle':                      (0x04, 0x07, 0x00, 0x00, 0x0f, 0x64, 0, 0),
-}
-    
 _PULSE_SPEEDS = {
     'slowest':                          (0x40, 0x06, 0x40, 0x06, 0x20, 0x03),
     'slower':                           (0x78, 0x05, 0x78, 0x05, 0xbc, 0x02),
@@ -142,7 +124,7 @@ _PULSE_SPEEDS = {
     'fastest':                          (0x84, 0x03, 0x84, 0x03, 0xc2, 0x01),
     'ludicrous':                        (0x20, 0x03, 0x20, 0x03, 0x90, 0x01),
 }
-    
+
 _FLASH_SPEEDS = {
     'slowest':                          (0x64, 0x00, 0x64, 0x00, 0x60, 0x09),
     'slower':                           (0x64, 0x00, 0x64, 0x00, 0x90, 0x08),
@@ -169,12 +151,30 @@ _COLOR_CYCLE_SPEEDS = {
     'fastest':                          (0x26, 0x02, 0xc2, 0x01, 0x00, 0x00),
     'ludicrous':                        (0xcc, 0x01, 0x68, 0x01, 0x00, 0x00),
 }
-    
-_RGB_FUSION_SPEEDS = {
-    'pulse':                            (_PULSE_SPEEDS),
-    'flash':                            (_FLASH_SPEEDS),
-    'double-flash':                     (_DOUBLE_FLASH_SPEEDS),
-    'color-cycle':                      (_COLOR_CYCLE_SPEEDS),    
+
+_ColorMode = namedtuple('_ColorMode',
+                        [
+                            'name', 'value', 'pulses', 'flash_count', 'cycle_count',
+                            'max_brightness', 'takes_color', 'speed_values'
+                        ],
+                        defaults=[False, 0, 0, 100, True])
+
+_COLOR_MODES = {
+    mode.name: mode
+    for mode in [
+        _ColorMode('off', 0x01, pulses=False, flash_count=0, cycle_count=0, max_brightness=0,
+                   takes_color=False, speed_values=None),
+        _ColorMode('static', 0x01, pulses=False, flash_count=0, cycle_count=0, max_brightness=90,
+                   takes_color=True, speed_values=None),
+        _ColorMode('pulse', 0x02, pulses=True, flash_count=0, cycle_count=0, max_brightness=90,
+                   takes_color=True, speed_values=_PULSE_SPEEDS),
+        _ColorMode('flash', 0x03, pulses=True, flash_count=1, cycle_count=0, max_brightness=100,
+                   takes_color=True, speed_values=_FLASH_SPEEDS),
+        _ColorMode('double-flash', 0x03, pulses=True, flash_count=2, cycle_count=0,
+                   max_brightness=100, takes_color=True, speed_values=_DOUBLE_FLASH_SPEEDS),
+        _ColorMode('color-cycle', 0x04, pulses=False, flash_count=0, cycle_count=7, max_brightness=100,
+                   takes_color=False, speed_values=_COLOR_CYCLE_SPEEDS),
+    ]
 }
 
 class RGBFusion2Driver(UsbHidDriver):
@@ -194,6 +194,7 @@ class RGBFusion2Driver(UsbHidDriver):
         Windows, only one of them is usable.  So HidapiDevice handles matching
         other usages have to be ignored.
         """
+
         if (not sys.platform.startswith('linux')) and (handle.hidinfo['usage'] != _REPORT_ID):
             return
         yield from super().probe(handle, **kwargs)
@@ -204,6 +205,7 @@ class RGBFusion2Driver(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples, containing the
         firmware version and other useful information provided by the hardware.
         """
+
         self._send_feature_report([_REPORT_ID, _INIT_CMD])
         data = self._get_feature_report(_REPORT_ID)
         self.device.release()
@@ -225,66 +227,58 @@ class RGBFusion2Driver(UsbHidDriver):
         in the future the device may start to report useful information.  A
         non-empty list would contain `(property, value, unit)` tuples.
         """
+
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode."""
 
-        mval, cycle, flash, num_flash, min_bright, max_bright, mincolors, maxcolors = _COLOR_MODES[mode.lower()]
-
-        colors = [[b, g, r] for [r, g, b] in colors]
-        if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'
-                             .format(mode, mincolors))
-        elif maxcolors == 0:
-            if colors:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
-            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
-        elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                           mode, maxcolors)
-            colors = colors[:maxcolors]
-        
+        mode = _COLOR_MODES[mode.lower()]
+        colors = iter(colors)
         channel = channel.lower()
+        speed = speed.lower()
+
+        if mode.takes_color:
+            try:
+                r, g, b = next(colors)
+                single_color = (b, g, r)
+            except StopIteration:
+                raise ValueError(f'One color required for mode={mode.name}')
+        else:
+            single_color = (0, 0, 0)
+        remaining = sum(1 for _ in colors)
+        if remaining:
+            LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
+
+        brightness = clamp(100, 0, mode.max_brightness)  # hardcode this for now
+        data = [_REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                  0x00, 0x00, 0x00, mode.value, brightness, 0x00]
+        data += single_color
+        data += [0x00, 0x00, 0x00, 0x00, 0x00]
+        if mode.speed_values:
+            data += mode.speed_values[speed]
+        else:
+            data += [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+        data += [0x00, 0x00, mode.cycle_count, int(mode.pulses), mode.flash_count]
+
         if channel == 'sync':
-            selected_channels = _COLOR_CHANNELS
+            selected_channels = _COLOR_CHANNELS.values()
         else:
-            selected_channels = {channel: _COLOR_CHANNELS[channel]}
-
-        # bright = max_bright # temp place holder; need to get brightness from CLI
-        brightness = 100 # hardcode this for now
-        bright = int(min_bright + ((max_bright - min_bright) * (brightness / 100)))
-        LOGGER.debug('Brightness %i', bright)
-
-        header = [_REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                  0x00, 0x00, 0x00, mval, bright, 0x00]
-        header += list(itertools.chain(*colors))
-        header += [0x00, 0x00, 0x00, 0x00, 0x00]
-        if mval == 1: # this mode does not support color flashing or pulsing
-            header += [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-        else:
-            mode_speeds = _RGB_FUSION_SPEEDS[mode.lower()]
-            animation_speed = mode_speeds[speed.lower()]
-            header += animation_speed
-        header += [0x00, 0x00, cycle, flash, num_flash]
-
-        for cname, (adr1, adr2) in selected_channels.items():
-            header[1]=adr1
-            header[2]=adr2
-            # this clears previous setting to allow new setting for that channel
-            self._send_feature_report([_REPORT_ID, adr1])
+            selected_channels = (_COLOR_CHANNELS[channel],)
+        for addr1, addr2 in selected_channels:
+            data[1:3] = addr1, addr2
+            self._send_feature_report([_REPORT_ID, addr1])  # clear previous settings
             self._execute_report()  # TODO might not need to clear indivudally since [1]
-            self._send_feature_report(header)
+            self._send_feature_report(data)  # set new settings
         self._execute_report()  # [1] for setting a single execute is sufficient
         self.device.release()
 
     def _get_feature_report(self, report_id):
         """Get Feature Report from USB device. Used to query the device."""
-    	
         data = self.device.get_feature_report(report_id, _READ_LENGTH)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
         return data
-        
+
     def _send_feature_report(self, data):
         """Send Feature Report to USB device. Used to command the device."""
         padding = [0x0]*(_WRITE_LENGTH - len(data))
@@ -298,7 +292,7 @@ class RGBFusion2Driver(UsbHidDriver):
         for x in range(0x20,0x28):
             self._send_feature_report([_REPORT_ID, x])
         self._execute_report()
-            
+
     def _execute_report(self):
         """After sending new lighting modes to all channels, this must be called
         to trigger the change."""
