@@ -130,12 +130,9 @@ _COLOR_CYCLE_SPEEDS = {
     'ludicrous':                        (0xcc, 0x01, 0x68, 0x01, 0x00, 0x00),
 }
 
-_ColorMode = namedtuple('_ColorMode',
-                        [
-                            'name', 'value', 'pulses', 'flash_count', 'cycle_count',
-                            'max_brightness', 'takes_color', 'speed_values'
-                        ],
-                        defaults=[False, 0, 0, 100, True])
+_ColorMode = namedtuple('_ColorMode', ['name', 'value', 'pulses', 'flash_count',
+                                       'cycle_count', 'max_brightness', 'takes_color',
+                                       'speed_values'])
 
 _COLOR_MODES = {
     mode.name: mode
