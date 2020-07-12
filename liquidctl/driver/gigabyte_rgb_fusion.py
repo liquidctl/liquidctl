@@ -101,7 +101,7 @@ from liquidctl.driver.usb import UsbHidDriver
 LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
-_WRITE_LENGTH = 64
+_WRITE_LENGTH = 64  # TODO double check, probably 65 (64 + report ID)
 _REPORT_ID = 0xCC	# RGB Fusion USB Feature Report ID
 _INIT_CMD = 0x60	# Command ID to initialize device
 
@@ -273,9 +273,9 @@ class RGBFusion2Driver(UsbHidDriver):
             header[2]=adr2
             # this clears previous setting to allow new setting for that channel
             self._send_feature_report([_REPORT_ID, adr1])
-            self._execute_report()
+            self._execute_report()  # TODO might not need to clear indivudally since [1]
             self._send_feature_report(header)
-        self._execute_report() 
+        self._execute_report()  # [1] for setting a single execute is sufficient
         self.device.release()
 
     def _get_feature_report(self, report_id):
