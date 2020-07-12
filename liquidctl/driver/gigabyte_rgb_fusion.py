@@ -230,7 +230,7 @@ class RGBFusion2Driver(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode."""
 
-        mval, cycle, flash, num_flash, min_bright, max_bright, mincolors, maxcolors = _COLOR_MODES[mode]
+        mval, cycle, flash, num_flash, min_bright, max_bright, mincolors, maxcolors = _COLOR_MODES[mode.lower()]
 
         colors = [[b, g, r] for [r, g, b] in colors]
         if len(colors) < mincolors:
@@ -245,6 +245,7 @@ class RGBFusion2Driver(UsbHidDriver):
                            mode, maxcolors)
             colors = colors[:maxcolors]
         
+        channel = channel.lower()
         if channel == 'sync':
             selected_channels = _COLOR_CHANNELS
         else:
@@ -262,8 +263,8 @@ class RGBFusion2Driver(UsbHidDriver):
         if mval == 1: # this mode does not support color flashing or pulsing
             header += [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
         else:
-            mode_speeds = _RGB_FUSION_SPEEDS[mode]
-            animation_speed = mode_speeds[speed]
+            mode_speeds = _RGB_FUSION_SPEEDS[mode.lower()]
+            animation_speed = mode_speeds[speed.lower()]
             header += animation_speed
         header += [0x00, 0x00, cycle, flash, num_flash]
 
