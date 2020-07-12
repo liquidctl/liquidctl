@@ -29,7 +29,7 @@ class GigabyteRGBFusionTestCase(unittest.TestCase):
         self.assertEqual(len(self.mock_hid.sent), 1 + 22)
         for i, (report, data) in enumerate(self.mock_hid.sent):
             self.assertEqual(report, self.report_id)
-            # TODO no common structure expected in `data` to test here?
+            self.assertEqual(len(data), 63)  # TODO double check, more likely to be 64
 
     def test_get_status(self):
         self.assertEqual(self.device.get_status(), [])
@@ -41,43 +41,97 @@ class GigabyteRGBFusionTestCase(unittest.TestCase):
         self.assertEqual(fw_version[1], '1.0.10.0')
         self.assertEqual(led_channels[1], 7)
 
+    def test_off_with_some_channel(self):
+        colors = [[0xff, 0, 0x80]]  # should be ignored
+        self.device.set_color(channel='led2', mode='off', colors=iter(colors))
+        clear, execute_clear, set_color, execute = self.mock_hid.sent
+        self.assertEqual(clear.data[0], 0x21, "clearing incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x21, 0x02], "incorrect channel")
+        self.assertEqual(set_color.data[10], 0x01, "wrong mode value")
+        self.assertEqual(max(set_color.data[13:16]), 0, "incorrect color")
+        self.assertEqual(max(set_color.data[21:27]), 0, "incorrect speed values")
 
-    def test_address_leds(self):
-        colors = [[255,0,128]]
+    def test_static_with_some_channel(self):
+        colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
+        self.device.set_color(channel='led7', mode='static', colors=iter(colors))
+        clear, execute_clear, set_color, execute = self.mock_hid.sent
+        self.assertEqual(clear.data[0], 0x26, "clearing incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x26, 0x40], "incorrect channel")
+        self.assertEqual(set_color.data[10], 0x01, "wrong mode value")
+        self.assertEqual(set_color.data[13:16], [0x80, 0x00, 0xff], "incorrect color encoding")
+        self.assertEqual(max(set_color.data[21:27]), 0, "incorrect speed values")
+
+    def test_pulse_with_some_channel_and_speed(self):
+        colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
         self.device.set_color(channel='led3', mode='pulse', colors=iter(colors), speed='faster')
-        # check color values
-        self.assertEqual(self.mock_hid.sent[2].data[13], 0x80 )
-        self.assertEqual(self.mock_hid.sent[2].data[14], 0x00 )
-        self.assertEqual(self.mock_hid.sent[2].data[15], 0xff )
-        # check speed values
-        self.assertEqual(self.mock_hid.sent[2].data[21:27], [0xe8, 0x03, 0xe8, 0x03, 0xf4, 0x01] )
-        self.assertEqual(len(self.mock_hid.sent), 4)
+        clear, execute_clear, set_color, execute = self.mock_hid.sent
+        self.assertEqual(clear.data[0], 0x22, "clearing incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x22, 0x04], "incorrect channel")
+        self.assertEqual(set_color.data[10], 0x02, "wrong mode value")
+        self.assertEqual(set_color.data[13:16], [0x80, 0x00, 0xff], "incorrect color encoding")
+        self.assertEqual(set_color.data[21:27], [0xe8, 0x03, 0xe8, 0x03, 0xf4, 0x01],
+                         "incorrect speed values")
 
+    def test_flash_with_some_channel_and_speed(self):
+        colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
+        self.device.set_color(channel='led6', mode='flash', colors=iter(colors), speed='slowest')
+        clear, execute_clear, set_color, execute = self.mock_hid.sent
+        self.assertEqual(clear.data[0], 0x25, "clearing incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x25, 0x20], "incorrect channel")
+        self.assertEqual(set_color.data[10], 0x03, "wrong mode value")
+        self.assertEqual(set_color.data[13:16], [0x80, 0x00, 0xff], "incorrect color encoding")
+        self.assertEqual(set_color.data[21:27], [0x64, 0x00, 0x64, 0x00, 0x60, 0x09],
+                         "incorrect speed values")
 
-    def test_address_components(self):
-        colors = [[255,0,128]]
+    def test_double_flash_with_some_channel_and_speed_and_uppercase(self):
+        colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
+        self.device.set_color(channel='LED5', mode='DOUBLE-FLASH', colors=iter(colors),
+                              speed='LUDICROUS')
+        clear, execute_clear, set_color, execute = self.mock_hid.sent
+        self.assertEqual(clear.data[0], 0x24, "clearing incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x24, 0x10], "incorrect channel")
+        self.assertEqual(set_color.data[10], 0x03, "wrong mode value")
+        self.assertEqual(set_color.data[13:16], [0x80, 0x00, 0xff], "incorrect color encoding")
+        self.assertEqual(set_color.data[21:27], [0x64, 0x00, 0x64, 0x00, 0x40, 0x06],
+                         "incorrect speed values")
+
+    def test_color_cycle_with_some_channel_and_speed(self):
+        colors = [[0xff, 0, 0x80]]  # should be ignored
+        self.device.set_color(channel='led4', mode='color-cycle', colors=iter(colors),
+                              speed='fastest')
+        clear, execute_clear, set_color, execute = self.mock_hid.sent
+        self.assertEqual(clear.data[0], 0x23, "clearing incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x23, 0x08], "incorrect channel")
+        self.assertEqual(set_color.data[10], 0x04, "wrong mode value")
+        self.assertEqual(max(set_color.data[13:16]), 0, "incorrect color")
+        self.assertEqual(set_color.data[21:27], [0x26, 0x02, 0xc2, 0x01, 0x00, 0x00],
+                         "incorrect speed values")
+        # TODO brightness
+
+    def test_common_behavior_in_all_set_color_writes(self):
+        colors = [[0xff, 0, 0x80]]
+        for mode in ['off', 'static', 'pulse', 'flash', 'double-flash', 'color-cycle']:
+            self.mock_hid.sent = deque()
+            self.device.set_color(channel='led1', mode=mode, colors=iter(colors))
+            clear, execute_clear, set_color, execute = self.mock_hid.sent
+            self.assertEqual(clear.data[0], 0x20, "clearing incorrect channel")
+            self.assertEqual(max(clear.data[1:]), 0, "not clearing at all")
+            self.assertEqual(execute_clear.data[0:2], [0x28, 0xff], "incorrect execute payload")
+            self.assertEqual(max(execute_clear.data[2:]), 0, "incorrect execute padding")
+            self.assertEqual(execute.data[0:2], [0x28, 0xff], "incorrect execute payload")
+            self.assertEqual(max(execute.data[2:]), 0, "incorrect execute padding")
+
+    def test_sync_channel(self):
+        colors = [[0xff, 0, 0x80]]
         self.device.set_color(channel='sync', mode='static', colors=iter(colors))
-        # check mode = 1 (static)
-        self.assertEqual(self.mock_hid.sent[2].data[10], 0x01 )
-        # check if 22 commands were sent
-        self.assertEqual(len(self.mock_hid.sent), 22)
+        self.assertEqual(len(self.mock_hid.sent), 22)  # 7*(clear + execute_clear + set) + execute
 
-
-    def test_leds_off(self):
-        self.device.set_color(channel='sync', mode='off', colors=iter([]))
-        # check mode = 1 (static)
-        self.assertEqual(self.mock_hid.sent[2].data[10], 0x01 )
-        self.assertEqual(self.mock_hid.sent[2].data[11], 0x00 )
-        # check if 22 commands were sent
-        self.assertEqual(len(self.mock_hid.sent), 22)
-
-
-    def test_invalid_color_modes(self):
+    def test_invalid_set_color_arguments(self):
+        self.assertRaises(Exception, self.device.set_color, channel='invalid',
+                          mode='off', colors=[])
         self.assertRaises(Exception, self.device.set_color, channel='led1',
                           mode='invalid', colors=[])
         self.assertRaises(Exception, self.device.set_color, channel='led1',
                           mode='static', colors=[])
-        self.assertRaises(Exception, self.device.set_color, channel='sync',
-                          mode='invalid', colors=[])
-        self.assertRaises(Exception, self.device.set_color, channel='invalid',
-                          mode='off', colors=[])
+        self.assertRaises(Exception, self.device.set_color, channel='led1',
+                          mode='pulse', colors=[[0xff, 0, 0x80]], speed='invalid')
