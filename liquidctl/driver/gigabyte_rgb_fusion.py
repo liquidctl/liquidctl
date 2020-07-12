@@ -181,14 +181,8 @@ class RGBFusion2Driver(UsbHidDriver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 motherboards."""
 
     SUPPORTED_DEVICES = [
-        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 ITE 0x5702 (experimental)', {
-            'speed_channel_count': 0,
-            'color_channel_count': 7
-        }),
-        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 ITE 0x8297 (experimental)', {
-            'speed_channel_count': 0,
-            'color_channel_count': 7
-        }),
+        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 5702 Controller (experimental)', {}),
+        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 8297 Controller (experimental)', {}),
     ]
 
     @classmethod
@@ -199,11 +193,6 @@ class RGBFusion2Driver(UsbHidDriver):
         each usage results in a different HID handle and, specifically on
         Windows, only one of them is usable.  So HidapiDevice handles matching
         other usages have to be ignored.
-
-        PyUsbHid handles are also ignored on Mac and Windows since they are not
-        useful either: on Mac OS it is not practical to interact with a HID
-        using libusb, and on Windows libusb wraps an underlying HID handle of
-        unknown usage.
         """
         if (not sys.platform.startswith('linux')) and (handle.hidinfo['usage'] != _REPORT_ID):
             return
@@ -212,44 +201,31 @@ class RGBFusion2Driver(UsbHidDriver):
     def initialize(self, **kwargs):
         """Initialize the device.
 
-        Detects and reports all connected fans and LED accessories, and allows
-        subsequent calls to get_status.
-
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples, containing the
+        firmware version and other useful information provided by the hardware.
         """
-        # self.device.clear_enqueued_reports()
-        status = []
-
-        self._send_feature_report([_REPORT_ID, _INIT_CMD]) # initialize
-        data=self._get_feature_report(_REPORT_ID)
-        if data[0]==_REPORT_ID and data[1]==0x01:
-            num_devices = data[3]
-            ver_major = data[4]
-            ver_minor = data[5]
-            ver_build = data[6]
-            ver_sub = data[7]
-            index = 12  # first letter of device name in 'data'
-            dev_name = ""
-            while data[index] != 0 and index < _READ_LENGTH:
-                dev_name += chr(data[index])
-                index += 1
-
-            status.append(('Name', dev_name, ''))
-            status.append(('Version', '{}.'.format(ver_major)+'{}.'.format(ver_minor)+
-                    '{}.'.format(ver_build)+'{}'.format(ver_sub), ''))
-            status.append(('LED channels', num_devices, ''))
+        self._send_feature_report([_REPORT_ID, _INIT_CMD])
+        data = self._get_feature_report(_REPORT_ID)
         self.device.release()
-        return status
+        assert data[0] == _REPORT_ID and data[1] == 0x01
+
+        null = data.index(0, 12)
+        dev_name = str(bytes(data[12:null]), 'ascii', errors='ignore')
+        fw_version = tuple(data[4:8])
+        return [
+            ('Hardware name', dev_name, ''),
+            ('Firmware version', '%d.%d.%d.%d' % fw_version, ''),
+            ('LED channnels', data[3], '')
+        ]
 
     def get_status(self, **kwargs):
-        """Get a status report. Nothing to report"""
-        
-        return []
+        """Get a status report.
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set fan speed. This driver does not support fans."""
-    	
-        raise NotImplementedError()
+        Currently returns an empty list, but this behavior is not garanteed as
+        in the future the device may start to report useful information.  A
+        non-empty list would contain `(property, value, unit)` tuples.
+        """
+        return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode."""

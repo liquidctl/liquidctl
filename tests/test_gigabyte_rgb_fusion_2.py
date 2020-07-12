@@ -4,54 +4,42 @@ import unittest
 
 from liquidctl.driver.gigabyte_rgb_fusion import RGBFusion2Driver
 
-_INIT_REPLY_SAMPLE = bytes.fromhex(
-    'cc01000701000a00000000004954353730322d47494741425954452056312e30'
-    '2e31302e30000000000102000200010002000100000102000001025700000000'
+_INIT_REPLY_SAMPLE_DATA = bytes.fromhex(
+    '01000701000a00000000004954353730322d47494741425954452056312e30e2'
+    '2e31302e300000000001020002000100020001000001020000010257000000'
 )
-
-
-class _MockRGBFusion2(MockHidapiDevice):
-    def __init__(self):
-        super().__init__(vendor_id=0xffff, product_id=0x5702, address=r'/generic\#123!&')
-        self.fw_version = (1, 0, 10, 0)
+_INIT_REPLY_SAMPLE = Report(0xcc, _INIT_REPLY_SAMPLE_DATA)
 
 
 class GigabyteRGBFusionTestCase(unittest.TestCase):
     def setUp(self):
-        description = 'Mock Gigabyte RGB Fusion 2.0 ITE 0x5702'
-        kwargs = {'speed_channel_count': 0, 'color_channel_count': 7}
-        self.mock_hid = _MockRGBFusion2()
-        self.device = RGBFusion2Driver(self.mock_hid, description, **kwargs)
+        description = 'Mock 5702 Controller'
+        self.mock_hid = MockHidapiDevice()
+        self.device = RGBFusion2Driver(self.mock_hid, description)
         self.device.connect()
         self.report_id = 0xcc
-
 
     def tearDown(self):
         self.device.disconnect()
 
-
     def test_command_format(self):
-        self.mock_hid.preload_read(Report(0xcc, _INIT_REPLY_SAMPLE))
+        self.mock_hid.preload_read(_INIT_REPLY_SAMPLE)
         self.device.initialize()
-        # driver does not support get_status
-        # self.device.get_status()
-        # driver does not support fans:
-        # self.device.set_fixed_speed(channel='fan', duty=100)
-        # self.device.set_speed_profile(channel='fan', profile=[])
         self.device.set_color(channel='sync', mode='off', colors=[])
-        self.assertEqual(len(self.mock_hid.sent), 22)
+        self.assertEqual(len(self.mock_hid.sent), 1 + 22)
         for i, (report, data) in enumerate(self.mock_hid.sent):
             self.assertEqual(report, self.report_id)
-
+            # TODO no common structure expected in `data` to test here?
 
     def test_get_status(self):
-        pass
-
+        self.assertEqual(self.device.get_status(), [])
 
     def test_initialize_status(self):
-        self.mock_hid.preload_read(Report(0xcc, _INIT_REPLY_SAMPLE))
-        (_, fw_version, ) = self.device.initialize()
-        self.assertEqual(fw_version[1], '%d.%d.%d.%d' % self.mock_hid.fw_version)
+        self.mock_hid.preload_read(_INIT_REPLY_SAMPLE)
+        name, fw_version, led_channels = self.device.initialize()
+        self.assertEqual(name[1], "IT5702-GIGABYTE V1.0.10.0")
+        self.assertEqual(fw_version[1], '1.0.10.0')
+        self.assertEqual(led_channels[1], 7)
 
 
     def test_address_leds(self):
