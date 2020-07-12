@@ -65,4 +65,4 @@ class MockHidapiDevice:
         return None
 
     def send_feature_report(self, data):
-        self.write(data)
+        return self.write(data)
