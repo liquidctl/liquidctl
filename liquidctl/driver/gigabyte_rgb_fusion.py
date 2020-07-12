@@ -266,9 +266,8 @@ class RGBFusion2Driver(UsbHidDriver):
         for addr1, addr2 in selected_channels:
             data[1:3] = addr1, addr2
             self._send_feature_report([_REPORT_ID, addr1])  # clear previous settings
-            self._execute_report()  # TODO might not need for each clear since [1] is
-            self._send_feature_report(data)  # set new settings
-        self._execute_report()  # [1] sufficient to set all channels
+            self._send_feature_report(data)                 # send the new settings
+        self._execute_report()
         self.device.release()
 
     def _get_feature_report(self, report_id):
