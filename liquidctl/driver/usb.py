@@ -425,7 +425,7 @@ class HidapiDevice:
         report ID (or 0), and the report data itself will being at the second
         byte.
         """
-        return self.hiddev.get_feature_report(data, report_id, length)
+        return self.hiddev.get_feature_report(report_id, length)
 
     def send_feature_report(self, data):
         """Send feature report to HID.
