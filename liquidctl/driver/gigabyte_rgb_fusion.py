@@ -93,6 +93,7 @@ _COLOR_CHANNELS = {
     'led6': (0x25, 0x20),
     'led7': (0x26, 0x40),
 }
+# note: an eight channel is presumed to exist
 
 _PULSE_SPEEDS = {
     'slowest':                          (0x40, 0x06, 0x40, 0x06, 0x20, 0x03),
@@ -287,7 +288,6 @@ class RGBFusion2Driver(UsbHidDriver):
         Each channel must be reset before it can be changed.
         """
 
-        # TODO double check, this suggests the existence of an eight channel with value 0x27
         for x in range(0x20, 0x28):
             self._send_feature_report([_REPORT_ID, x])
         self._execute_report()
