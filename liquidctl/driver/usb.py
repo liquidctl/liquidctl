@@ -415,6 +415,30 @@ class HidapiDevice:
         """
         return self.hiddev.write(data)
 
+    def get_feature_report(self, report_id, length):
+        """Get feature report that matches `report_id` from HID.
+
+        If the device does not use numbered reports, set `report_id` to 0.
+
+        Unlike `read`, the returned data follows semantics similar to `write`
+        and `send_feature_report`: the first byte will always contain the
+        report ID (or 0), and the report data itself will being at the second
+        byte.
+        """
+        return self.hiddev.get_feature_report(report_id, length)
+
+    def send_feature_report(self, data):
+        """Send feature report to HID.
+
+        The buffer should follow the semantics of `write`.
+
+        > The first byte of the buffer passed to write() should be set to the
+        > report number.  If the device does not use numbered reports, the
+        > first byte should be set to 0. The report data itself should begin
+        > at the second byte.
+        """
+        return self.hiddev.send_feature_report(data)
+
     @classmethod
     def enumerate(cls, api, vid=None, pid=None):
         infos = api.enumerate(vid or 0, pid or 0)
