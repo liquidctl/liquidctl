@@ -262,13 +262,11 @@ class KrakenX3Driver(UsbHidDriver):
     def _read(self):
         data = self.device.read(_READ_LENGTH)
         self.device.release()
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
         return data
 
     def _read_until(self, parsers):
         for _ in range(_MAX_READ_ATTEMPTS):
             msg = self.device.read(_READ_LENGTH)
-            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             prefix = bytes(msg[0:2])
             func = parsers.pop(prefix, None)
             if func:
@@ -279,8 +277,6 @@ class KrakenX3Driver(UsbHidDriver):
 
     def _write(self, data):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
 
     def _write_colors(self, cid, mode, colors, sval):

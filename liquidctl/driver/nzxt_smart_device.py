@@ -166,8 +166,6 @@ class CommonSmartDeviceDriver(UsbHidDriver):
 
     def _write(self, data):
         padding = [0x0]*(self._WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
 
     def _write_colors(self, cid, mode, colors, sval):
@@ -252,7 +250,6 @@ class SmartDeviceDriver(CommonSmartDeviceDriver):
         self.device.clear_enqueued_reports()
         for i, _ in enumerate(self._speed_channels):
             msg = self.device.read(self._READ_LENGTH)
-            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
             status.append(('Fan {}'.format(num), ['—', 'DC', 'PWM'][state], ''))
@@ -439,7 +436,6 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
     def _read_until(self, parsers):
         for _ in range(self._MAX_READ_ATTEMPTS):
             msg = self.device.read(self._READ_LENGTH)
-            LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
             prefix = bytes(msg[0:2])
             func = parsers.pop(prefix, None)
             if func:

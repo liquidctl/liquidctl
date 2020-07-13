@@ -12,7 +12,6 @@ from enum import Enum, unique
 
 LOGGER = logging.getLogger(__name__)
 
-
 HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
 
 
@@ -67,6 +66,25 @@ class Hue2Accessory(Enum):
 
     def __eq__(self, other):
         return self.value == other.value
+
+
+class LazyHexRepr:
+    """Wrap a iterable of bytes with a lazy __repr__ conversion to bytes.
+
+    This is useful for logging, which uses `%` string formatting to lazily
+    generate the messages, only when needed.
+
+    >>> '%r' % LazyHexRepr(b'abc')
+    '61:62:63'
+    """
+    def __init__(self, data, start=None, end=None, sep=':'):
+        self.data = data
+        self.start = start
+        self.end = end
+        self.sep = sep
+
+    def __repr__(self):
+        return bytes(self.data[self.start : self.end]).hex(self.sep)
 
 
 def clamp(value, clampmin, clampmax):

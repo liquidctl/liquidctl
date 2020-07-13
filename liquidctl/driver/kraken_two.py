@@ -248,14 +248,11 @@ class KrakenTwoDriver(UsbHidDriver):
             self.device.clear_enqueued_reports()
         msg = self.device.read(_READ_LENGTH)
         self.device.release()
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         self._firmware_version = (msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
         return msg
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
 
 

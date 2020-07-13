@@ -72,14 +72,10 @@ class SeasonicEDriver(UsbHidDriver):
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
 
     def _read(self):
-        data = self.device.read(_READ_LENGTH)
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
-        return data
+        return self.device.read(_READ_LENGTH)
 
     def _wait(self):
         """Give the device some time and avoid error responses.

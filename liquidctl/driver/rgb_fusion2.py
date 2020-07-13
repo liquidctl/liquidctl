@@ -274,14 +274,10 @@ class RGBFusion2Driver(UsbHidDriver):
         self._execute_report()
 
     def _get_feature_report(self, report_id):
-        data = self.device.get_feature_report(report_id, _READ_LENGTH)
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
-        return data
+        return self.device.get_feature_report(report_id, _READ_LENGTH)
 
     def _send_feature_report(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.send_feature_report(data + padding)
 
     def _execute_report(self):

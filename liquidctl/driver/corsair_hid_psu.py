@@ -149,14 +149,10 @@ class CorsairHidPsuDriver(UsbHidDriver):
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
-        LOGGER.debug('write %s (and %i padding bytes)',
-                     ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.write(data + padding)
 
     def _read(self):
-        msg = self.device.read(_READ_LENGTH)
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
-        return msg
+        return self.device.read(_READ_LENGTH)
 
     def _exec(self, writebit, command, data=None):
         self._write([_SLAVE_ADDRESS | WriteBit(writebit), CMD(command)] + (data or []))

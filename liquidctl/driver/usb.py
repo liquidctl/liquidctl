@@ -65,7 +65,7 @@ except ModuleNotFoundError:
     import hid
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
-
+from liquidctl.util import LazyHexRepr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -275,19 +275,19 @@ class PyUsbDevice:
 
     def read(self, endpoint, length, timeout=None):
         """Read from endpoint."""
-        return self.usbdev.read(endpoint, length, timeout=timeout)
+        data = self.usbdev.read(endpoint, length, timeout=timeout)
+        LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
+        return data
 
     def write(self, endpoint, data, timeout=None):
         """Write to endpoint."""
+        LOGGER.debug('writting %d bytes: %r', len(data), LazyHexRepr(data))
         return self.usbdev.write(endpoint, data, timeout=timeout)
 
-    def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-                      data_or_wLength=None, timeout=None):
+    def ctrl_transfer(self, *args, **kwargs):
         """Submit a contrl transfer."""
-        return self.usbdev.ctrl_transfer(bmRequestType, bRequest,
-                                         wValue=wValue, wIndex=wIndex,
-                                         data_or_wLength=data_or_wLength,
-                                         timeout=timeout)
+        LOGGER.debug('sending control transfer with %r, %r', args, kwargs)
+        return self.usbdev.ctrl_transfer(*args, **kwargs)
 
     @classmethod
     def enumerate(cls, vid=None, pid=None):
@@ -385,8 +385,10 @@ class HidapiDevice:
         and is useful when later reads are not expected to return stale data.
         """
         self.hiddev.set_nonblocking(True)
+        discarded = 0
         while self.hiddev.read(1):
-            pass
+            discard += 1
+        LOGGER.debug('discarded %d previously enqueued reports', discarded)
 
     def read(self, length):
         """Read raw report from HID.
@@ -399,7 +401,9 @@ class HidapiDevice:
         > reports, the report data will begin at the first byte.
         """
         self.hiddev.set_nonblocking(False)
-        return self.hiddev.read(length)
+        data = self.hiddev.read(length)
+        LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
+        return data
 
     def write(self, data):
         """Write raw report to HID.
@@ -411,6 +415,8 @@ class HidapiDevice:
         > first byte should be set to 0. The report data itself should begin
         > at the second byte.
         """
+        LOGGER.debug('writting report 0x%02x with %d bytes: %r', data[0],
+                     len(data) - 1, LazyHexRepr(data, start=1))
         return self.hiddev.write(data)
 
     def get_feature_report(self, report_id, length):
@@ -423,7 +429,10 @@ class HidapiDevice:
         report ID (or 0), and the report data itself will being at the second
         byte.
         """
-        return self.hiddev.get_feature_report(report_id, length)
+        data = self.hiddev.get_feature_report(report_id, length)
+        LOGGER.debug('got feature report 0x%02x with %d bytes: %r', data[0],
+                     len(data) -1, LazyHexRepr(data, start=1))
+        return data
 
     def send_feature_report(self, data):
         """Send feature report to HID.
@@ -435,6 +444,8 @@ class HidapiDevice:
         > first byte should be set to 0. The report data itself should begin
         > at the second byte.
         """
+        LOGGER.debug('sending feature report 0x%02x with %d bytes: %r',
+                     data[0], len(data) - 1, LazyHexRepr(data, start=1))
         return self.hiddev.send_feature_report(data)
 
     @classmethod

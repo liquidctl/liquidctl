@@ -297,12 +297,10 @@ class CoolitPlatinumDriver(UsbHidDriver):
         if data:
             buf[start_at : start_at + len(data)] = data
         buf[-1] = compute_pec(buf[2:-1])
-        LOGGER.debug('write %s', buf.hex())
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
         self.device.release()
-        LOGGER.debug('received %s', buf.hex())
         if compute_pec(buf[1:]):
             LOGGER.warning('response checksum does not match data')
         return buf

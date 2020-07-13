@@ -102,7 +102,6 @@ class CommonAsetekDriver(UsbDriver):
         self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_FLUSH_BUFFERS)
 
     def _write(self, data):
-        LOGGER.debug('write %s', ' '.join(format(i, '02x') for i in data))
         self.device.write(_WRITE_ENDPOINT, data, _WRITE_TIMEOUT)
 
     def _end_transaction_and_read(self):
@@ -115,7 +114,6 @@ class CommonAsetekDriver(UsbDriver):
         approach.
         """
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
-        LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in msg))
         self.device.release()
         return msg
 
