@@ -65,39 +65,41 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Supported devices
 
+The following devices are supported by this version of liquidctl.  See each guide for specific usage instructions and other pertinent information.
+
 ### All-in-one liquid coolers
 
-| Family | Documentation | Notes |
-| --- | --- | --- |
-| Corsair H80i GT, H100i GTX, H110i GTX | [documentation](docs/asetek-690lc.md) | <sup>_E, Z_</sup> |
-| Corsair H80i v2, H100i v2, H115i | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
-| Corsair H100i Platinum, H100i Platinum SE, H115i Platinum | [documentation](docs/corsair-platinum-and-pro-xt-coolers.md) | <sup>_E, U_</sup> |
-| Corsair H100i PRO XT, H115i PRO XT | [documentation](corsair-platinum-and-pro-xt-coolers.md) | <sup>_E, U_</sup> |
-| EVGA CLC 120 (CL12), 240, 280, 360 | [documentation](docs/asetek-690lc.md) | <sup>_Z_</sup> |
-| NZXT Kraken M22 | [documentation](docs/third-generation-krakens.md) | |
-| NZXT Kraken X40, X60 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
-| NZXT Kraken X31, X41, X61 | [documentation](docs/asetek-690lc.md) | <sup>_E, L, Z_</sup> |
-| NZXT Kraken X42, X52, X62, X72 | [documentation](docs/third-generation-krakens.md) | |
-| NZXT Kraken X53, X63, X73 | [documentation](docs/fourth-generation-krakens.md) | <sup>_E, U_</sup> |
-| NZXT Kraken Z63, Z73 | [documentation](docs/fourth-generation-krakens.md) | <sup>_E, U_</sup> |
+| Device family | Usage | Notes |
+|:--- |:---:|:--- |
+| CORSAIR Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc.md) | <sup>_ZE_</sup> |
+| CORSAIR Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc.md) | <sup>_Z_</sup> |
+| CORSAIR Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-and-pro-xt-coolers.md) | <sup>_EU_</sup> |
+| CORSAIR Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-and-pro-xt-coolers.md) | <sup>_EU_</sup> |
+| EVGA CLC 120 (CL12), 240, 280, 360 | [guide](docs/asetek-690lc.md) | <sup>_Z_</sup> |
+| NZXT Kraken M22 | [guide](docs/third-generation-krakens.md) | |
+| NZXT Kraken X40, X60 | [guide](docs/asetek-690lc.md) | <sup>_LZE_</sup> |
+| NZXT Kraken X31, X41, X61 | [guide](docs/asetek-690lc.md) | <sup>_LZE_</sup> |
+| NZXT Kraken X42, X52, X62, X72 | [guide](docs/third-generation-krakens.md) | |
+| NZXT Kraken X53, X63, X73 | [guide](docs/fourth-generation-krakens.md) | <sup>_EU_</sup> |
+| NZXT Kraken Z63, Z73 | [guide](docs/fourth-generation-krakens.md) | <sup>_EU_</sup> |
 
 ### Other parts
 
-| Family | Documentation | Notes |
-| --- | --- | --- |
-| Corsair HX750i, HX850i, HX1000i, HX1200i | [documentation](docs/corsair-hxi-rmi.md) | |
-| Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | |
-| Gigabyte RGB Fusion 2.0 Motherboards | _(lacking documentation)_ | <sup>_E, U_</sup> |
-| NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>_E_</sup> |
-| NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | |
-| NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | |
-| NZXT RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E, U_</sup> |
+| Device family | Usage | Notes |
+|:--- |:---:|:--- |
+| CORSAIR HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi.md) | |
+| CORSAIR RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi.md) | |
+| GIGABYTE RGB Fusion 2.0 Motherboards | | <sup>_EU_</sup> |
+| NZXT E500, E650, E850 (PSUs) | [guide](docs/seasonic-e-series.md) | <sup>_E_</sup> |
+| NZXT Grid+ V3  | [guide](docs/nzxt-smart-device.md) | |
+| NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-smart-device-v2.md) | |
+| NZXT Smart Device | [guide](docs/nzxt-smart-device.md) | |
+| NZXT Smart Device V2 | [guide](docs/nzxt-smart-device-v2.md) | |
+| NZXT RGB & Fan Controller | [guide](docs/nzxt-smart-device-v2.md) | <sup>_EU_</sup> |
 
-<sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
+<sup>_E_</sup> _Experimental and/or partial support._  
 <sup>_U_</sup> _Starting with upcoming liquidctl 1.4.0._  
 
 
