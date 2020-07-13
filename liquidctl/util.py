@@ -87,6 +87,19 @@ class LazyHexRepr:
         return bytes(self.data[self.start : self.end]).hex(self.sep)
 
 
+def rpadlist(list, width, fillitem=0):
+    """Pad `list` with `fillitem` to `width`.
+
+    >>> rpadlist([1, 2, 3], 5)
+    [1, 2, 3, 0, 0]
+    >>> rpadlist([1, 2, 3], 5, fillitem=None)
+    [1, 2, 3, None, None]
+    """
+    pad_width = width - len(list)
+    list.extend([fillitem] * pad_width)
+    return list
+
+
 def clamp(value, clampmin, clampmax):
     """Clamp numeric `value` to interval [`clampmin`, `clampmax`]."""
     clamped = max(clampmin, min(clampmax, value))
