@@ -2,7 +2,7 @@ from _testutils import *
 
 import unittest
 
-from liquidctl.driver.gigabyte_rgb_fusion import RGBFusion2Driver
+from liquidctl.driver.rgb_fusion2 import RGBFusion2Driver
 
 _INIT_REPLY_SAMPLE_DATA = bytes.fromhex(
     '01000701000a00000000004954353730322d47494741425954452056312e30e2'
