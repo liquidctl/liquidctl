@@ -208,8 +208,8 @@ For the latest changes and to contribute back to the project, it is best to clon
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
 $ cd liquidctl
-$ pip install .
-$ python -m liquidctl.cli <args>...
+$ pip3 install .
+$ python3 -m liquidctl.cli <args>...
 ```
 
 _Note: installation into a virtual environment is recommended to avoid conflicts with Python modules installed with Homebrew.  The use of virtual environments is outside the scope of this document.  Their use will also restrict the availability of the liquidctl command to that virtual environment._
