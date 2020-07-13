@@ -93,6 +93,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
 | NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
 | NZXT RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E, U_</sup> |
+| Gigabyte RGB Fusion 2.0 Motherboards | _(lacking documentation)_ | <sup>_E, U_</sup> |
 
 <sup>_E_</sup> _Experimental._  
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
