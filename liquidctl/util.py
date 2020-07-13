@@ -69,13 +69,20 @@ class Hue2Accessory(Enum):
 
 
 class LazyHexRepr:
-    """Wrap a iterable of bytes with a lazy __repr__ conversion to bytes.
+    """Wrap an indexed collection of bytes with a lazy hex __repr__.
 
     This is useful for logging, which uses `%` string formatting to lazily
     generate the messages, only when needed.
 
     >>> '%r' % LazyHexRepr(b'abc')
     '61:62:63'
+
+    Start and end indices may also be specified.
+
+    >>> '%r' % LazyHexRepr(b'abc', start=1)
+    '62:63'
+    >>> '%r' % LazyHexRepr(b'abc', end=-1)
+    '61:62'
     """
     def __init__(self, data, start=None, end=None, sep=':'):
         self.data = data
@@ -84,7 +91,8 @@ class LazyHexRepr:
         self.sep = sep
 
     def __repr__(self):
-        return bytes(self.data[self.start : self.end]).hex(self.sep)
+        hexvals = map(lambda x: '%02x' % x, self.data[self.start : self.end])
+        return self.sep.join(hexvals)
 
 
 def rpadlist(list, width, fillitem=0):
