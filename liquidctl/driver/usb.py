@@ -387,7 +387,7 @@ class HidapiDevice:
         self.hiddev.set_nonblocking(True)
         discarded = 0
         while self.hiddev.read(1):
-            discard += 1
+            discarded += 1
         LOGGER.debug('discarded %d previously enqueued reports', discarded)
 
     def read(self, length):
