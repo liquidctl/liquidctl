@@ -116,6 +116,15 @@ class GigabyteRGBFusionTestCase(unittest.TestCase):
         self.device.set_color(channel='sync', mode='static', colors=iter(colors))
         self.assertEqual(len(self.mock_hid.sent), 8)  # 7*set + execute
 
+    def test_reset_all_channels(self):
+        self.device.reset_all_channels()
+        for addr, report in enumerate(self.mock_hid.sent[:-1], 0x20):
+            self.assertEqual(report.data[0:2], [addr, 0], "invalid payload")
+            self.assertEqual(max(report.data[2:]), 0, "invalid padding")
+        execute = self.mock_hid.sent[-1]
+        self.assertEqual(execute.data[0:2], [0x28, 0xff], "incorrect execute payload")
+        self.assertEqual(max(execute.data[2:]), 0, "incorrect execute padding")
+
     def test_invalid_set_color_arguments(self):
         self.assertRaises(Exception, self.device.set_color, channel='invalid',
                           mode='off', colors=[])

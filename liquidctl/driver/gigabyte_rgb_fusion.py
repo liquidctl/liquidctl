@@ -270,6 +270,12 @@ class RGBFusion2Driver(UsbHidDriver):
         self._execute_report()
         self.device.release()
 
+    def reset_all_channels(self):
+        """Reset all LED channels."""
+        for addr1, _ in _COLOR_CHANNELS.values():
+            self._send_feature_report([_REPORT_ID, addr1, 0])
+        self._execute_report()
+
     def _get_feature_report(self, report_id):
         data = self.device.get_feature_report(report_id, _READ_LENGTH)
         LOGGER.debug('received %s', ' '.join(format(i, '02x') for i in data))
@@ -280,16 +286,6 @@ class RGBFusion2Driver(UsbHidDriver):
         LOGGER.debug('write %s (and %i padding bytes)',
                      ' '.join(format(i, '02x') for i in data), len(padding))
         self.device.send_feature_report(data + padding)
-
-    def _reset_all_channels(self):
-        """Reset all LED channels.
-
-        Each channel must be reset before it can be changed.
-        """
-
-        for x in range(0x20, 0x28):
-            self._send_feature_report([_REPORT_ID, x])
-        self._execute_report()
 
     def _execute_report(self):
         """Request for the previously sent lighting settings to be applied."""
