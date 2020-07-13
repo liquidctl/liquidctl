@@ -19,10 +19,7 @@ Documentation
 
 See: <../../docs/fourth-generation-krakens.md>.
 
-Copyright (C) 2020–2020  Jonas Malaco
-Copyright (C) 2020–2020  Tom Frey
-Copyright (C) 2020–2020  each contribution's author
-
+Copyright (C) 2020–2020  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

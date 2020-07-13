@@ -1,8 +1,6 @@
 """Simple key-value based storage for liquidctl drivers.
 
-Copyright (C) 2019–2020  Jonas Malaco
-Copyright (C) 2019–2020  each contribution's author
-
+Copyright (C) 2019–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -17,9 +17,7 @@ Supported features
  - fan speed control
  - lighing control
 
-Copyright (C) 2020–2020  Jonas Malaco
-Copyright (C) 2020–2020  each contribution's author
-
+Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

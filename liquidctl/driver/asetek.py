@@ -19,8 +19,7 @@ Supported features
  - control of pump and fan speeds
  - control of lighting modes and colors
 
-Copyright (C) 2018–2020  Jonas Malaco
-Copyright (C) 2018–2020  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco and contributors
 
 Incorporates or uses as reference work by Kristóf Jakab, Sean Nelson
 and Chris Griffith.

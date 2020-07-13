@@ -63,10 +63,7 @@ via Homebrew along with a script to be run on wake that will issue the
 necessary liquidctl commands to restore desired lighting effects.  Similar
 solutions may be used on Windows and Linux.
 
-Copyright (C) 2020–2020  CaseySJ
-Copyright (C) 2020–2020  Jonas Malaco
-Copyright (C) 2018–2020  each contribution's author
-
+Copyright (C) 2020–2020  CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

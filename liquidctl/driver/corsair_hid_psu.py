@@ -15,8 +15,7 @@ Supported features
  - fan control
  - +12V single or multi rail OCP
 
-Copyright (C) 2019–2020  Jonas Malaco
-Copyright (C) 2019–2020  each contribution's author
+Copyright (C) 2019–2020  Jonas Malaco and contributors
 
 Port of corsaiRMi by notaz and realies.
 Copyright (c) notaz, 2016

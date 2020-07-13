@@ -21,8 +21,7 @@ reference to the common sufix in the model names (instead of the generation
 number).  This turned out to be a bad idea, but the names are kept for
 backwards compatibility.
 
-Copyright (C) 2018–2020  Jonas Malaco
-Copyright (C) 2018–2020  each contribution's author
+Copyright (C) 2018–2020  Jonas Malaco and contributors
 
 Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier.
 
