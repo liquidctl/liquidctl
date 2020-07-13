@@ -12,7 +12,7 @@ Changelog since 1.3.3:
  - Add **experimental support for the NZXT RGB & Fan Controller** with the SmartDeviceV2Driver
  - Add support for HSV, HSL and explicit RGB color representations
  - [NZXT E500/E650/E850] Add tentative names for the different +12 V rails
- - [HUE 2] Add `sync` lighting channel
+ - [Smart Device V2/HUE 2/HUE 2 Ambient] Add `sync` lighting channel
  - Add **experimental support for NZXT Kraken X53, X63 and X73 coolers**
  - Add **partial experimental support for NZXT Kraken Z63 and Z73 coolers**
  - Add **experimental support for Corsair H100i, H100i SE and H115i Platinum coolers**
