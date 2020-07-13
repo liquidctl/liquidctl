@@ -9,6 +9,9 @@ Usage:
   krakenduty-poc status
   krakenduty-poc --help
   krakenduty-poc --version
+
+Copyright (C) 2018–2020  Jonas Malaco
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 from time import sleep

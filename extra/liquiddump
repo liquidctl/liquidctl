@@ -33,20 +33,8 @@ Examples:
   liquiddump > file.jsonl
   liquiddump | jq -c .
 
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
-
-Copyright (C) 2019  Jonas Malaco
-Copyright (C) 2019  each contribution's author
-
-You should have received a copy of all applicable licenses along with this
-program, in a file called LICENSE.txt.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+Copyright (C) 2019–2020  Jonas Malaco
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import json

@@ -40,6 +40,9 @@ Requirements:
 Changelog:
   0.0.2  MacOS support for iStats; breaking refresh of the CLI and sensor names
   0.0.1  Initial proof-of-concept; system sensors only supported on Linux
+
+Copyright (C) 2018–2020  Jonas Malaco
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import ast
