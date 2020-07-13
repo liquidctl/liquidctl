@@ -137,12 +137,13 @@ To install any release from PyPI, *pip* should be used:
 # pip install liquidctl==<version>
 ```
 
-For the latest changes and to contribute back to the project, it is best to clone the source code repository and install liquidctl from your local copy:
+For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
 $ cd liquidctl
-# python setup.py install
+$ python -m liquidctl.cli <args>...
+# pip install .
 ```
 
 _Note: in systems that default to Python 2, replace `pip` and `python` by `pip3` and `python3`._  
@@ -169,12 +170,13 @@ To install any release from PyPI, *pip* should be used:
 > pip install liquidctl==<version>
 ```
 
-For the latest changes and to contribute back to the project, it is best to clone the source code repository and install liquidctl from your local copy:
+For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
 > git clone https://github.com/jonasmalacofilho/liquidctl
 > cd liquidctl
-> python setup.py install
+> pip install .
+> python -m liquidctl.cli <args>...
 ```
 
 _¹ See [How to use libusb under Windows](https://github.com/libusb/libusb/wiki/FAQ#how-to-use-libusb-under-windows) for more information._
@@ -200,12 +202,13 @@ $ pip3 install liquidctl
 $ pip3 install liquidctl==<version>
 ```
 
-To contribute back to the project, it is best to clone the source code repository and install liquidctl from your local copy:
+For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
 $ cd liquidctl
-$ python3 setup.py install
+$ pip install .
+$ python -m liquidctl.cli <args>...
 ```
 
 _Note: installation into a virtual environment is recommended to avoid conflicts with Python modules installed with Homebrew.  The use of virtual environments is outside the scope of this document.  Their use will also restrict the availability of the liquidctl command to that virtual environment._
