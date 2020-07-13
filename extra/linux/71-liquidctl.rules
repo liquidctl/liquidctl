@@ -92,6 +92,12 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uacc
 # Corsair RM1000i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0d", TAG+="uaccess"
 
+# Gigabyte RGB Fusion 2.0 5702 Controller
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uaccess"
+
+# Gigabyte RGB Fusion 2.0 8297 Controller
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="8297", TAG+="uaccess"
+
 # NZXT E500
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="5911", TAG+="uaccess"
 
@@ -118,9 +124,3 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2006", TAG+="uacc
 
 # NZXT RGB & Fan Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2009", TAG+="uaccess"
-
-# Gigabyte RGB Fusion 2.0 5702 Controller
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uaccess"
-
-# Gigabyte RGB Fusion 2.0 8297 Controller
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="8297", TAG+="uaccess"
