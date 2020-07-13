@@ -1,7 +1,5 @@
 # Corsair HXi and RMi series PSUs
 
-**Support for these devices is still experimental.**
-
 ## Initialization
 
 It is necessary to initialize the device once it has been powered on.
@@ -21,7 +19,7 @@ The PSU is able to report monitoring data about its own hardware and basic elect
 
 ```
 # liquidctl status
-Device 0, Corsair RM650i (experimental)
+Device 0, Corsair RM650i
 Current uptime                        3:43:54
 Total uptime                 9 days, 11:43:54
 Temperature 1                            50.0  °C

@@ -22,6 +22,7 @@ Changelog since 1.3.3:
  - [Kraken X42/X52/X62/X72] Increase resolution of fan and pump profiles
  - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
  - Use hidapi for HIDs on Windows
+ - [Corsair HXi/RMi PSUs] Mark as no longer experimental
  - Improve the documentation
 ### Fixed
  - [HUE 2] Add missing identifiers for some HUE2 accessories (#95; #109)

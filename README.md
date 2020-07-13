@@ -85,8 +85,8 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 | Family | Documentation | Notes |
 | --- | --- | --- |
-| Corsair HX750i, HX850i, HX1000i, HX1200i | [documentation](docs/corsair-hxi-rmi.md) | <sup>_E_</sup> |
-| Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | <sup>_E_</sup> |
+| Corsair HX750i, HX850i, HX1000i, HX1200i | [documentation](docs/corsair-hxi-rmi.md) | |
+| Corsair RM650i, RM750i, RM850i, RM1000i | [documentation](docs/corsair-hxi-rmi.md) | |
 | Gigabyte RGB Fusion 2.0 Motherboards | _(lacking documentation)_ | <sup>_E, U_</sup> |
 | NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |

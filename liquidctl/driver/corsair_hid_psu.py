@@ -76,14 +76,14 @@ class CorsairHidPsuDriver(UsbHidDriver):
     """liquidctl driver for Corsair HID PSUs."""
 
     SUPPORTED_DEVICES = [
-        (0x1b1c, 0x1c05, None, 'Corsair HX750i (experimental)', {}),
-        (0x1b1c, 0x1c06, None, 'Corsair HX850i (experimental)', {}),
-        (0x1b1c, 0x1c07, None, 'Corsair HX1000i (experimental)', {}),
-        (0x1b1c, 0x1c08, None, 'Corsair HX1200i (experimental)', {}),
-        (0x1b1c, 0x1c0a, None, 'Corsair RM650i (experimental)', {}),
-        (0x1b1c, 0x1c0b, None, 'Corsair RM750i (experimental)', {}),
-        (0x1b1c, 0x1c0c, None, 'Corsair RM850i (experimental)', {}),
-        (0x1b1c, 0x1c0d, None, 'Corsair RM1000i (experimental)', {}),
+        (0x1b1c, 0x1c05, None, 'Corsair HX750i', {}),
+        (0x1b1c, 0x1c06, None, 'Corsair HX850i', {}),
+        (0x1b1c, 0x1c07, None, 'Corsair HX1000i', {}),
+        (0x1b1c, 0x1c08, None, 'Corsair HX1200i', {}),
+        (0x1b1c, 0x1c0a, None, 'Corsair RM650i', {}),
+        (0x1b1c, 0x1c0b, None, 'Corsair RM750i', {}),
+        (0x1b1c, 0x1c0c, None, 'Corsair RM850i', {}),
+        (0x1b1c, 0x1c0d, None, 'Corsair RM1000i', {}),
     ]
 
     def initialize(self, single_12v_ocp=False, **kwargs):
