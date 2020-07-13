@@ -23,6 +23,7 @@ Changelog since 1.3.3:
  - [extra/krakencurve-poc] Refresh syntax and sensor names; get CPU temperature on macOS with iStats
  - Use hidapi for HIDs on Windows
  - [Corsair HXi/RMi PSUs] Mark as no longer experimental
+ - [Smart Device V2/HUE 2/HUE 2 Ambient] Mark as no longer experimental
  - Improve the documentation
 ### Fixed
  - [HUE 2] Add missing identifiers for some HUE2 accessories (#95; #109)

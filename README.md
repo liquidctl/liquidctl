@@ -90,9 +90,9 @@ NZXT Kraken X (X42, X52, X62 or X72)
 | Gigabyte RGB Fusion 2.0 Motherboards | _(lacking documentation)_ | <sup>_E, U_</sup> |
 | NZXT E500, E650, E850 | [documentation](docs/seasonic-e-series.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3 | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
+| NZXT HUE 2, HUE 2 Ambient | [documentation](docs/nzxt-smart-device-v2.md) | |
 | NZXT Smart Device | [documentation](docs/nzxt-smart-device.md) | |
-| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E_</sup> |
+| NZXT Smart Device V2 | [documentation](docs/nzxt-smart-device-v2.md) | |
 | NZXT RGB & Fan Controller | [documentation](docs/nzxt-smart-device-v2.md) | <sup>_E, U_</sup> |
 
 <sup>_E_</sup> _Experimental._  

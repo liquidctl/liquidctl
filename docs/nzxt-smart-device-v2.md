@@ -37,7 +37,7 @@ After powering on from Mechanical Off, or if there have been hardware changes, t
 
 ```
 # liquidctl initialize
-NZXT Smart Device V2 (experimental)
+NZXT Smart Device V2
 ├── Firmware version                      1.5.0  
 ├── LED 1 accessory 1    HUE 2 LED Strip 300 mm  
 ├── LED 1 accessory 2    HUE 2 Underglow 200 mm  
@@ -55,7 +55,7 @@ The device can report fan information for each channel and the noise level at th
 
 ```
 # liquidctl status
-NZXT Smart Device V2 (experimental)
+NZXT Smart Device V2
 ├── Fan 2 duty                              42  %
 ├── Fan 2 speed                            934  rpm
 └── Noise level                             62  dB

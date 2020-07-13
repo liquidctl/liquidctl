@@ -296,15 +296,15 @@ class SmartDeviceV2Driver(CommonSmartDeviceDriver):
     """liquidctl driver for the NZXT Smart Device V2, NZXT HUE 2 and NZXT HUE 2 Ambient."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x2006, None, 'NZXT Smart Device V2 (experimental)', {
+        (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x2001, None, 'NZXT HUE 2 (experimental)', {
+        (0x1e71, 0x2001, None, 'NZXT HUE 2', {
             'speed_channel_count': 0,
             'color_channel_count': 4
         }),
-        (0x1e71, 0x2002, None, 'NZXT HUE 2 Ambient (experimental)', {
+        (0x1e71, 0x2002, None, 'NZXT HUE 2 Ambient', {
             'speed_channel_count': 0,
             'color_channel_count': 2
         }),
