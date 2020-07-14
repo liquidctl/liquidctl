@@ -23,7 +23,8 @@ backwards compatibility.
 
 Copyright (C) 2018–2020  Jonas Malaco and contributors
 
-Incorporates work by leaty, KsenijaS, Alexander Tong and Jens Neumaier.
+Incorporates work by leaty, Ksenija Stanojevic, Alexander Tong and Jens
+Neumaier.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 """

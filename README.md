@@ -452,9 +452,9 @@ You are also encouraged to contribute to the documentation and to these examples
 liquidctl – monitor and control liquid coolers and other devices.  
 Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey and contributors
 
-liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens
-Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies
-and Thomas Pircher.
+liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
+Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
+Pircher.
 
 Depending on how it is packaged, it might also bundle copies of
 python, hidapi, libusb, cython-hidapi, pyusb and docopt.

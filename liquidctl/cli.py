@@ -53,8 +53,9 @@ Examples:
 
 Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey and contributors
 
-liquidctl incorporates work by leaty, KsenijaS, Alexander Tong, Jens Neumaier,
-Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas Pircher.
+liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
+Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
+Pircher.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
