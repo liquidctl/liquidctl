@@ -480,7 +480,7 @@ file.
 
 ## Related projects (2020 edition)
 
-### [CalcProggramer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
+### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 
 Open-source graphical interface to control many different types of RGB devices.
 
