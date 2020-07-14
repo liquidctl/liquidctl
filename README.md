@@ -60,7 +60,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 7.  [Troubleshooting](#troubleshooting)
 8.  [Additional documentation](#additional-documentation)
 9.  [License](#license)
-10. [Related projects](#related-projects)
+10. [Related projects](#related-projects-2020-edition)
 
 
 ## Supported devices
@@ -478,26 +478,20 @@ file.
 [SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
 
 
-## Related projects
+## Related projects (2020 edition)
 
-### [jonasmalacofilho/liquidctl-device-data](https://github.com/jonasmalacofilho/liquidctl-device-data)
+### [CalcProggramer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 
-Device information for developing and maintaining liquidctl, including USB descriptions, traffic captures and protocol analyses.
+Open-source graphical interface to control many different types of RGB devices.
 
 ### [jonasmalacofilho/liquidtux](https://github.com/jonasmalacofilho/liquidtux)
 
-Ongoing work on Linux kernel _hwmon_ drivers for some of the devices supported by liquidctl.  This allows standard monitoring tools (e.g. lm-sensors or tools built on top of it) to read the sensors in these devices.
+Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allows standard monitoring tools (for example lm-sensors, or tools built on top of it) to read sensor data from Kraken X42/X52/X62/X72 coolers and the Smart Device (V1).
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
-Command-line tool to control Corsair all-in-one liquid coolers and other devices.
+Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl.
 
-### [jaksi/leviathan](https://github.com/jaksi/leviathan) and [brkalmar/leviathan](https://github.com/brkalmar/leviathan)
+### [jonasmalacofilho/liquidctl-device-data](https://github.com/jonasmalacofilho/liquidctl-device-data)
 
-Linux kernel device drivers for second and third generation NZXT Kraken X coolers.
-
-### [KsenijaS/krakenx](https://github.com/KsenijaS/krakenx)
-
-A related cross-plataform interface for controlling third generation NZXT Kraken X coolers.
-
-_A special thanks to all krakenx contributors; this project would not exist were not for it._
+Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyses.
