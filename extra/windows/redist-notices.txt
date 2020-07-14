@@ -15,7 +15,7 @@ liquidctl executables for Windows bundle the following projects:
 Applicable disclaimers, original licenses, and links for the source code of
 each project are provided bellow.
 
-================================================================================
+===============================================================================
 
 liquidctl – monitor and control liquid coolers and other devices.
 https://github.com/jonasmalacofilho/liquidctl
@@ -26,23 +26,22 @@ liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
 Pircher.
 
-Depending on how it is packaged, it might also bundle copies of
-python, hidapi, libusb, cython-hidapi, pyusb and docopt.
+Depending on how it is packaged, it might also bundle copies of python, hidapi,
+libusb, cython-hidapi, pyusb and docopt.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <https://www.gnu.org/licenses/>.
 
-================================================================================
+===============================================================================
 
 pyinstaller – https://www.pyinstaller.org/
 
@@ -67,7 +66,7 @@ files. (The General Public License restrictions do apply in other respects;
 for example, they cover modification of the files, and distribution when
 not linked into a combine executable.)
 
-================================================================================
+===============================================================================
 
 python – https://python.org
 
@@ -115,7 +114,7 @@ Copyright © 2001-2019 Python Software Foundation; All Rights Reserved
 8. By copying, installing or otherwise using Python 3.6.8, Licensee agrees
    to be bound by the terms and conditions of this License Agreement.
 
-================================================================================
+===============================================================================
 
 docopt – https://github.com/docopt/docopt
 
@@ -143,7 +142,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-================================================================================
+===============================================================================
 
 pyusb – https://github.com/pyusb/pyusb
 
@@ -174,7 +173,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 OF SUCH DAMAGE.
 
-================================================================================
+===============================================================================
 
 libusb-1.0 – https://github.com/libusb/libusb
 
@@ -203,7 +202,7 @@ Lesser General Public License for more details.
 The GNU Lesser General Public License, version 2.1, can be found at:
 	https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 
-================================================================================
+===============================================================================
 
 cython-hidapi – https://github.com/trezor/cython-hidapi
 
@@ -219,7 +218,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-================================================================================
+===============================================================================
 
 hidapi – https://github.com/signal11/hidapi
 
