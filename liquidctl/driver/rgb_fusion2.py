@@ -182,7 +182,7 @@ class RGBFusion2Driver(UsbHidDriver):
         self._send_feature_report([_REPORT_ID, _INIT_CMD])
         data = self._get_feature_report(_REPORT_ID)
         self.device.release()
-        assert data[0] == _REPORT_ID and data[1] == 0x01
+        assert data[0] in (_REPORT_ID, 0) and data[1] == 0x01
 
         null = data.index(0, 12)
         dev_name = str(bytes(data[12:null]), 'ascii', errors='ignore')
