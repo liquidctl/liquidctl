@@ -53,15 +53,12 @@ class MockHidapiDevice:
     def get_feature_report(self, report_id, length):
         if self._read:
             try:
-                report = next(filter(lambda x: x.number == report_id, self._read))
+                report = next(filter(lambda x: not x.number or x.number == report_id, self._read))
                 number, data = report
                 self._read.remove(report)
             except StopIteration:
                 return None
-            if number:
-                return [number] + list(data)[:length]
-            else:
-                return list(data)[:length]
+            return [number] + list(data)[:length]
         return None
 
     def send_feature_report(self, data):
