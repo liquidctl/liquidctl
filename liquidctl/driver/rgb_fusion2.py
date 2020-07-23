@@ -190,7 +190,6 @@ class RGBFusion2Driver(UsbHidDriver):
         return [
             ('Hardware name', dev_name, ''),
             ('Firmware version', '%d.%d.%d.%d' % fw_version, ''),
-            ('LED channels', data[3], '')
         ]
 
     def get_status(self, **kwargs):

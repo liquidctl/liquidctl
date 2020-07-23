@@ -4,23 +4,21 @@ import unittest
 
 from liquidctl.driver.rgb_fusion2 import RGBFusion2Driver
 
+# Sample data for 5702 controller from a Gigabyte Z490 Vision D
 _INIT_5702_DATA = bytes.fromhex(
     '01000701000a00000000004954353730322d47494741425954452056312e30e2'
     '2e31302e300000000001020002000100020001000001020000010257000000'
 )
 _INIT_5702_SAMPLE = Report(0xcc, _INIT_5702_DATA)
-_INIT_8297_DATA1 = bytes.fromhex(
-    '010001010006000000000049543832393742582d474258353730000000000000'
-    '00000000000000000000000200010002000100000102000001978200000000'
-    # https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-662979628
-)
-_INIT_8297_SAMPLE1 = Report(0x00, _INIT_8297_DATA1)
-_INIT_8297_DATA2 = bytes.fromhex(
+
+# Sample data for 8297 controller from a Gigabyte X570 Aorus Elite rev 1.0
+# (the extra data byte [beyond what we request] is probably a Windows thing)
+# https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663247422
+_INIT_8297_DATA = bytes.fromhex(
     '010001010006000000000049543832393742582d474258353730000000000000'
     '0000000000000000000000020001000200010000010200000197820000000061'
-    # https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663247422
 )
-_INIT_8297_SAMPLE2 = Report(0x00, _INIT_8297_DATA2)
+_INIT_8297_SAMPLE = Report(0x00, _INIT_8297_DATA)
 
 
 class Controller5702TestCase(unittest.TestCase):
@@ -48,10 +46,9 @@ class Controller5702TestCase(unittest.TestCase):
 
     def test_initialize_status(self):
         self.mock_hid.preload_read(_INIT_5702_SAMPLE)
-        name, fw_version, led_channels = self.device.initialize()
+        name, fw_version = self.device.initialize()
         self.assertEqual(name[1], "IT5702-GIGABYTE V1.0.10.0")
         self.assertEqual(fw_version[1], '1.0.10.0')
-        self.assertEqual(led_channels[1], 7)
 
     def test_off_with_some_channel(self):
         colors = [[0xff, 0, 0x80]]  # should be ignored
@@ -156,12 +153,9 @@ class Controller8297TestCase(unittest.TestCase):
         self.report_id = 0xcc
 
     def test_initialize_status(self):
-        self.mock_hid.preload_read(_INIT_8297_SAMPLE1)
-        self.mock_hid.preload_read(_INIT_8297_SAMPLE2)
-        for i in range(2):
-            name, fw_version, led_channels = self.device.initialize()
-            self.assertEqual(name[1], "IT8297BX-GBX570")
-            self.assertEqual(fw_version[1], '1.0.6.0')
-            self.assertEqual(led_channels[1], 1)
+        self.mock_hid.preload_read(_INIT_8297_SAMPLE)
+        name, fw_version = self.device.initialize()
+        self.assertEqual(name[1], "IT8297BX-GBX570")
+        self.assertEqual(fw_version[1], '1.0.6.0')
 
     # other tests skipped, see Controller5702TestCase
