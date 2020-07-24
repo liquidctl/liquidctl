@@ -78,9 +78,8 @@ from liquidctl.util import clamp
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_ID = 0xcc
+_REPORT_BYTE_LENGTH = 63
 _INIT_CMD = 0x60
-_READ_LENGTH = 64
-_WRITE_LENGTH = 64  # TODO double check, should probably be 65 (64 + report ID)
 
 _COLOR_CHANNELS = {
     'led1': (0x20, 0x01),
@@ -183,6 +182,8 @@ class RGBFusion2Driver(UsbHidDriver):
         self._send_feature_report([_REPORT_ID, _INIT_CMD])
         data = self._get_feature_report(_REPORT_ID)
         self.device.release()
+        # be tolerant: 8297 controllers support report IDs yet return 0 in the
+        # first byte, which is out of spec
         assert data[0] in (_REPORT_ID, 0) and data[1] == 0x01
 
         null = data.index(0, 12)
@@ -283,10 +284,10 @@ class RGBFusion2Driver(UsbHidDriver):
         self._execute_report()
 
     def _get_feature_report(self, report_id):
-        return self.device.get_feature_report(report_id, _READ_LENGTH)
+        return self.device.get_feature_report(report_id, _REPORT_BYTE_LENGTH)
 
     def _send_feature_report(self, data):
-        padding = [0x0]*(_WRITE_LENGTH - len(data))
+        padding = [0x0]*(_REPORT_BYTE_LENGTH + 1 - len(data))
         self.device.send_feature_report(data + padding)
 
     def _execute_report(self):

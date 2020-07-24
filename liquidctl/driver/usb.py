@@ -431,7 +431,7 @@ class HidapiDevice:
         """
         data = self.hiddev.get_feature_report(report_id, length)
         LOGGER.debug('got feature report 0x%02x with %d bytes: %r', data[0],
-                     len(data) -1, LazyHexRepr(data, start=1))
+                     len(data) - 1, LazyHexRepr(data, start=1))
         return data
 
     def send_feature_report(self, data):

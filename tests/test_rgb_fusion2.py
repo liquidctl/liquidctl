@@ -12,13 +12,14 @@ _INIT_5702_DATA = bytes.fromhex(
 _INIT_5702_SAMPLE = Report(0xcc, _INIT_5702_DATA)
 
 # Sample data for 8297 controller from a Gigabyte X570 Aorus Elite rev 1.0
-# (the extra data byte [beyond what we request] is probably a Windows thing)
+# (the extra data byte was received on Windows because we requested 64 bytes
+# but the HID descriptor specifies that the report has 63 × 8 bits)
 # https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663247422
 _INIT_8297_DATA = bytes.fromhex(
     '010001010006000000000049543832393742582d474258353730000000000000'
     '0000000000000000000000020001000200010000010200000197820000000061'
 )
-_INIT_8297_SAMPLE = Report(0x00, _INIT_8297_DATA)
+_INIT_8297_SAMPLE = Report(0xcc, _INIT_8297_DATA)
 
 
 class Controller5702TestCase(unittest.TestCase):
@@ -144,10 +145,23 @@ class Controller5702TestCase(unittest.TestCase):
         self.assertRaises(Exception, self.device.set_color, channel='led1',
                           mode='pulse', colors=[[0xff, 0, 0x80]], speed='invalid')
 
+
+class Mock8297HidInterface(MockHidapiDevice):
+    def get_feature_report(self, report_id, length):
+        """Get a feature report emulating out of spec behavior of the device.
+
+        Sets the report ID in the response to zero.
+        """
+
+        data = super().get_feature_report(report_id, length)
+        data[0] = 0
+        return data
+
+
 class Controller8297TestCase(unittest.TestCase):
     def setUp(self):
         description = 'Mock 8297 Controller'
-        self.mock_hid = MockHidapiDevice()
+        self.mock_hid = Mock8297HidInterface()
         self.device = RGBFusion2Driver(self.mock_hid, description)
         self.device.connect()
         self.report_id = 0xcc
