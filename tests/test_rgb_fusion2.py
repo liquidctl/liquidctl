@@ -37,7 +37,7 @@ class Controller5702TestCase(unittest.TestCase):
         self.mock_hid.preload_read(_INIT_5702_SAMPLE)
         self.device.initialize()
         self.device.set_color(channel='sync', mode='off', colors=[])
-        self.assertEqual(len(self.mock_hid.sent), 1 + 8)
+        self.assertEqual(len(self.mock_hid.sent), 1 + 8 + 1)
         for i, (report, data) in enumerate(self.mock_hid.sent):
             self.assertEqual(report, self.report_id)
             self.assertEqual(len(data), 63)  # TODO double check, more likely to be 64
@@ -53,9 +53,9 @@ class Controller5702TestCase(unittest.TestCase):
 
     def test_off_with_some_channel(self):
         colors = [[0xff, 0, 0x80]]  # should be ignored
-        self.device.set_color(channel='led2', mode='off', colors=iter(colors))
+        self.device.set_color(channel='led8', mode='off', colors=iter(colors))
         set_color, execute = self.mock_hid.sent
-        self.assertEqual(set_color.data[0:2], [0x21, 0x02], "incorrect channel")
+        self.assertEqual(set_color.data[0:2], [0x27, 0x80], "incorrect channel")
         self.assertEqual(set_color.data[10], 0x01, "wrong mode value")
         self.assertEqual(max(set_color.data[13:16]), 0, "incorrect color")
         self.assertEqual(max(set_color.data[21:27]), 0, "incorrect speed values")
@@ -124,7 +124,7 @@ class Controller5702TestCase(unittest.TestCase):
     def test_sync_channel(self):
         colors = [[0xff, 0, 0x80]]
         self.device.set_color(channel='sync', mode='static', colors=iter(colors))
-        self.assertEqual(len(self.mock_hid.sent), 8)  # 7*set + execute
+        self.assertEqual(len(self.mock_hid.sent), 8 + 1)  # 8 × set + execute
 
     def test_reset_all_channels(self):
         self.device.reset_all_channels()

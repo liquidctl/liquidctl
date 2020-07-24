@@ -29,7 +29,7 @@ practical to do so, since the correspondence between the hardware channels and
 the corresponding features on the motherboard is not stable.  Hence, lighting
 channels are given generic names: led1, led2, etc.
 
-At this time, 7 lighting channels are defined; a 'sync' channel is also
+At this time, eight lighting channels are defined; a 'sync' channel is also
 provided, which applies the specified setting to all lighting channels.
 
 Each user may need to create a table that associates generic channel names to
@@ -43,6 +43,7 @@ Gigabyte Z490 Vision D might look like this:
  - led5: This is second 12V RGB header
  - led6: This is one of two 5V addressable RGB headers
  - led7: This is second 5V addressable RGB header
+ - led8: Not in use
 
 The driver supports 6 color modes: off, static, pulse, flash, double-flash and
 color-cycle.
@@ -89,8 +90,8 @@ _COLOR_CHANNELS = {
     'led5': (0x24, 0x10),
     'led6': (0x25, 0x20),
     'led7': (0x26, 0x40),
+    'led8': (0x27, 0x80),
 }
-# note: an eight channel is presumed to exist
 
 _PULSE_SPEEDS = {
     'slowest':                          (0x40, 0x06, 0x40, 0x06, 0x20, 0x03),
@@ -208,8 +209,8 @@ class RGBFusion2Driver(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel.
 
-        Up to seven individual channels are available, named 'led1' through
-        'led7'.  In addition to these, the 'sync' channel can be used to apply
+        Up to eight individual channels are available, named 'led1' through
+        'led8'.  In addition to these, the 'sync' channel can be used to apply
         the same settings to all channels.
 
         The table bellow summarizes the available channels.
@@ -295,6 +296,6 @@ class RGBFusion2Driver(UsbHidDriver):
         self._send_feature_report([_REPORT_ID, 0x28, 0xff])
 
 
-# Acknowledgements by CaseySJ
+# Acknowledgments:
 #
 # Thanks to SgtSixPack for capturing USB traffic on 0x8297 and testing the driver on Windows.
