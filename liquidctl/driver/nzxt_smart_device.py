@@ -103,6 +103,7 @@ import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp, Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
 LOGGER = logging.getLogger(__name__)
@@ -163,6 +164,10 @@ class CommonSmartDeviceDriver(UsbHidDriver):
             LOGGER.info('setting %s duty to %i%%', cname, duty)
             self._write_fixed_duty(cid, duty)
         self.device.release()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Not Supported by this device."""
+        raise NotSupportedByDevice()
 
     def _write(self, data):
         padding = [0x0]*(self._WRITE_LENGTH - len(data))

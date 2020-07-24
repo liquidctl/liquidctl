@@ -33,6 +33,7 @@ import itertools
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp, normalize_profile, interpolate_profile
 
 LOGGER = logging.getLogger(__name__)
@@ -153,7 +154,7 @@ class KrakenTwoDriver(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel."""
         if not self.supports_lighting:
-            raise NotImplementedError()
+            raise NotSupportedByDevice()
         if mode == 'super':
             LOGGER.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
@@ -200,7 +201,7 @@ class KrakenTwoDriver(UsbHidDriver):
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
         if not self.supports_cooling_profiles:
-            raise NotImplementedError()
+            raise NotSupportedByDevice()
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         # due to a firmware limitation the same set of temperatures must be
         # used on both channels; we reduce the number of writes by trimming the
@@ -218,7 +219,7 @@ class KrakenTwoDriver(UsbHidDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
-            raise NotImplementedError()
+             raise NotSupportedByDevice()
         elif self.supports_cooling_profiles:
             self.set_speed_profile(channel, [(0, duty), (59, duty), (60, 100), (100, 100)])
         else:
@@ -227,7 +228,7 @@ class KrakenTwoDriver(UsbHidDriver):
     def set_instantaneous_speed(self, channel, duty, **kwargs):
         """Set channel to speed, but do not ensure persistence."""
         if not self.supports_cooling:
-            raise NotImplementedError()
+            raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
         LOGGER.info('setting %s PWM duty to %i%%', channel, duty)
@@ -255,5 +256,3 @@ class KrakenTwoDriver(UsbHidDriver):
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
-
-

@@ -32,6 +32,7 @@ import logging
 import usb
 
 from liquidctl.driver.usb import UsbDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import clamp
 
@@ -368,6 +369,10 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         duty = clamp(duty, dmin, dmax)
         self._data.store_int('{}_duty'.format(channel), duty)
         self._set_all_fixed_speeds()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice
 
 
 class CorsairAsetekDriver(AsetekDriver):

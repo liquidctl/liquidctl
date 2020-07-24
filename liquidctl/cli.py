@@ -73,6 +73,7 @@ import sys
 from docopt import docopt
 
 from liquidctl.driver import *
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
@@ -305,6 +306,10 @@ def main():
                 _device_set_color(dev, args, **opts)
             else:
                 raise Exception('Not sure what to do')
+        except NotSupportedByDevice:
+            raise SystemExit(f'Error: operation not supported by {dev.description}')
+        except NotSupportedByDriver:
+            raise SystemExit(f'Error: operation not supported by driver for {dev.description}')
         except:
             LOGGER.exception('Unexpected error with %s', dev.description)
             sys.exit(1)

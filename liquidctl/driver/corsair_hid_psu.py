@@ -31,6 +31,7 @@ from datetime import timedelta
 from enum import Enum
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.pmbus import CommandCode as CMD
 from liquidctl.pmbus import WriteBit, linear_to_float
 from liquidctl.util import clamp
@@ -146,6 +147,14 @@ class CorsairHidPsuDriver(UsbHidDriver):
         LOGGER.info('setting fan PWM duty to %i%%', duty)
         self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
         self.device.release()
+
+    def set_color(self, channel, mode, colors, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
 
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))

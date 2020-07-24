@@ -72,6 +72,7 @@ import logging
 import sys
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp
 
 LOGGER = logging.getLogger(__name__)
@@ -200,6 +201,7 @@ class RGBFusion2Driver(UsbHidDriver):
         non-empty list would contain `(property, value, unit)` tuples.
         """
 
+        LOGGER.info(f'Status reports not available from {dev.description}')
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
@@ -265,6 +267,14 @@ class RGBFusion2Driver(UsbHidDriver):
             self._send_feature_report(data)
         self._execute_report()
         self.device.release()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
 
     def reset_all_channels(self):
         """Reset all LED channels."""
