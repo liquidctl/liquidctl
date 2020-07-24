@@ -231,8 +231,6 @@ def _gen_version():
     extra = None
     try:
         from liquidctl.extraversion import __extraversion__
-        if not __extraversion__:
-            raise ValueError()
         if __extraversion__['editable']:
             extra = ['editable']
         elif __extraversion__['dist_name'] and __extraversion__['dist_package']:
@@ -274,12 +272,12 @@ def main():
         no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
         compat = list(find_liquidctl_devices(**no_filters))
         if device_id < 0 or device_id >= len(compat):
-            raise IndexError('Device ID out of bounds')
+            raise SystemExit('Error: device ID out of bounds')
         if filter_count:
             # check that --device matches other filter criteria
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
-                raise IndexError('Device ID does not match remaining selection criteria')
+                raise SystemExit('Error: device ID does not match remaining selection criteria')
             LOGGER.warning('mixing --device <id> with other filters is not recommended; '
                            'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
@@ -289,9 +287,9 @@ def main():
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
-        raise SystemExit('Too many devices, filter or select one (see: liquidctl --help)')
+        raise SystemExit('Error: too many devices, filter or select one (see: liquidctl --help)')
     elif len(selected) == 0:
-        raise SystemExit('No devices matches available drivers and selection criteria')
+        raise SystemExit('Error: no devices matches available drivers and selection criteria')
 
     for dev in selected:
         LOGGER.debug('device: %s', dev.description)
