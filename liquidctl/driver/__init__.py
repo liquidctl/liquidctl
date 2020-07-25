@@ -18,6 +18,8 @@ Copyright (C) 2018–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import sys
+
 import liquidctl.driver.asetek
 import liquidctl.driver.corsair_hid_psu
 import liquidctl.driver.hydro_platinum
@@ -59,3 +61,11 @@ def find_liquidctl_devices(pick=None, **kwargs):
 __all__ = [
     'find_liquidctl_devices',
 ]
+
+# deprecated aliases
+kraken_two = kraken2
+
+# allow old driver imports to continue to work by manually placing these into
+# the module cache, so import liquidctl.driver.foo does not need to
+# check the filesystem for foo
+sys.modules['liquidctl.driver.kraken_two'] = kraken_two
