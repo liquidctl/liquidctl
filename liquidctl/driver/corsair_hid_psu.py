@@ -73,7 +73,7 @@ class FanControlMode(Enum):
         return self.name.capitalize()
 
 
-class CorsairHidPsuDriver(UsbHidDriver):
+class CorsairHidPsu(UsbHidDriver):
     """liquidctl driver for Corsair HID PSUs."""
 
     SUPPORTED_DEVICES = [
@@ -187,3 +187,7 @@ class CorsairHidPsuDriver(UsbHidDriver):
         """Get timedelta with `command`."""
         secs = int.from_bytes(self._exec(WriteBit.READ, command)[2:], byteorder='little')
         return timedelta(seconds=secs)
+
+
+# deprecated aliases
+CorsairHidPsuDriver = CorsairHidPsu
