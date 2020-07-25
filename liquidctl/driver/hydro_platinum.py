@@ -114,7 +114,7 @@ def _quoted(*names):
     return ', '.join(map(repr, names))
 
 
-class CoolitPlatinumDriver(UsbHidDriver):
+class HydroPlatinum(UsbHidDriver):
     """liquidctl driver for Corsair Platinum and PRO XT coolers."""
 
     SUPPORTED_DEVICES = [
