@@ -104,3 +104,6 @@ Each color can be specified using any of the [supported formats](../README.md#su
 
 Animations are not supported at the hardware level, and require successive
 invocations of the commands shown above, or use of the liquidctl APIs.
+
+Note: lighting control of PRO XT devices is experimental and requires the
+`--unsafe pro_xt_lighting` flag to be supplied on the command line.

@@ -102,7 +102,7 @@ _PARSE_ARG = {
     '--single-12v-ocp': bool,
     '--pump-mode': str,
     '--legacy-690lc': bool,
-    '--unsafe': lambda x: x.split(','),
+    '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
 }

@@ -15,7 +15,7 @@ Supported features
  - general monitoring
  - pump speed control
  - fan speed control
- - lighing control
+ - lighting control (Platinum only)
 
 Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -92,6 +92,7 @@ def _sequence(storage):
     In the protocol the sequence number is usually shifted left by 3 bits, and
     a shifted sequence will look like: 8, 16, 24... 232, 240, 248, 8, 16, 24...
     """
+
     while True:
         seq = storage.load('sequence', of_type=int, default=0) % 31 + 1
         storage.store('sequence', seq)
@@ -161,6 +162,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
         res = self._send_set_cooling()
         fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
@@ -187,6 +189,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
         'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
         """
+
         for hw_channel in self._get_hw_fan_channels(channel):
             self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
             self._data.store(f'{hw_channel}_duty', duty)
@@ -210,7 +213,7 @@ class CoolitPlatinumDriver(UsbHidDriver):
             self._data.store(f'{hw_channel}_profile', profile)
         self._send_set_cooling()
 
-    def set_color(self, channel, mode, colors, **kwargs):
+    def set_color(self, channel, mode, colors, unsafe=None, **kwargs):
         """Set the color of each LED.
 
         In reality the device does not have the concept of different channels
@@ -241,7 +244,14 @@ class CoolitPlatinumDriver(UsbHidDriver):
         | led      | off         | synchronized |        0 |      0 |
         | led      | fixed       | synchronized |        1 |      1 |
         | led      | super-fixed | independent  |       24 |     16 |
+
+        Note: lighting control of PRO XT devices is experimental and requires
+        the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
         """
+
+        if 'PRO XT' in self.description and not (unsafe and 'pro_xt_lighting' in unsafe):
+            LOGGER.warning('Lighting control of PRO XT devices is experimental and only enabled with the `pro_xt_lighting` unsafe flag')
+
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
         self._check_color_args(channel, mode, colors)
         if mode == 'off':
