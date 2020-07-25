@@ -92,7 +92,7 @@ _WRITE_ENDPOINT = 0x1
 _WRITE_LENGTH = 65
 
 
-class KrakenTwoDriver(UsbHidDriver):
+class Kraken2(UsbHidDriver):
     """liquidctl driver for third generation NZXT Kraken X and M liquid coolers."""
 
     DEVICE_KRAKENX = 'Kraken X'
@@ -256,3 +256,7 @@ class KrakenTwoDriver(UsbHidDriver):
     def _write(self, data):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
+
+
+# deprecated aliases
+KrakenTwoDriver = Kraken2

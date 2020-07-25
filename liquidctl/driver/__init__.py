@@ -19,10 +19,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import liquidctl.driver.asetek
-import liquidctl.driver.hydro_platinum
 import liquidctl.driver.corsair_hid_psu
+import liquidctl.driver.hydro_platinum
+import liquidctl.driver.kraken2
 import liquidctl.driver.kraken3
-import liquidctl.driver.kraken_two
 import liquidctl.driver.nzxt_smart_device
 import liquidctl.driver.rgb_fusion2
 import liquidctl.driver.seasonic
