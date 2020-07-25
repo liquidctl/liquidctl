@@ -85,7 +85,7 @@ _UNKNOWN_OPEN_VALUE = 0xFFFF
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
 
 
-class CommonAsetekDriver(UsbDriver):
+class _CommonAsetekDriver(UsbDriver):
     """Common fuctions of fifth generation Asetek devices."""
 
     def _configure_flow_control(self, clear_to_send):
@@ -175,7 +175,7 @@ class CommonAsetekDriver(UsbDriver):
         super().disconnect(**kwargs)
 
 
-class AsetekDriver(CommonAsetekDriver):
+class Modern690Lc(_CommonAsetekDriver):
     """liquidctl driver for modern fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
@@ -276,7 +276,7 @@ class AsetekDriver(CommonAsetekDriver):
         self._end_transaction_and_read()
 
 
-class LegacyAsetekDriver(CommonAsetekDriver):
+class Legacy690Lc(_CommonAsetekDriver):
     """liquidctl driver for legacy fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
@@ -375,7 +375,7 @@ class LegacyAsetekDriver(CommonAsetekDriver):
         raise NotSupportedByDevice
 
 
-class CorsairAsetekDriver(AsetekDriver):
+class Hydro690Lc(Modern690Lc):
     """liquidctl driver for Corsair-branded fifth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
@@ -397,3 +397,9 @@ class CorsairAsetekDriver(AsetekDriver):
         if mode == 'rainbow':
             raise KeyError('Unsupported lighting mode {}'.format(mode))
         super().set_color(channel, mode, colors, **kwargs)
+
+
+# deprecated aliases
+AsetekDriver = Modern690Lc
+LegacyAsetekDriver = Legacy690Lc
+CorsairAsetekDriver = Hydro690Lc
