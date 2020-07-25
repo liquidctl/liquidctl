@@ -63,7 +63,7 @@ __all__ = [
 ]
 
 # deprecated aliases
-kraken_two = kraken2
+import liquidctl.driver.kraken2 as kraken_two
 
 # allow old driver imports to continue to work by manually placing these into
 # the module cache, so import liquidctl.driver.foo does not need to
