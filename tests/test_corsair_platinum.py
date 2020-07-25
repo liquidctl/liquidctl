@@ -48,7 +48,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.device.get_status()
         self.device.set_fixed_speed(channel='fan', duty=100)
         self.device.set_speed_profile(channel='fan', profile=[])
-        self.device.set_color(channel='sync', mode='off', colors=[])
+        self.device.set_color(channel='led', mode='off', colors=[])
         self.assertEqual(len(self.mock_hid.sent), 6)
         for i, (report, data) in enumerate(self.mock_hid.sent):
             self.assertEqual(report, 0)
@@ -82,7 +82,7 @@ class CorsairPlatinumTestCase(unittest.TestCase):
             status = self.device.get_status()
             self.assertEqual(len(status), 4)
             self.assertNotEqual(status[0][1], self.mock_hid.temperature,
-                                msg='failed sanity check')
+                                msg='failed preload soundness check')
 
     def test_initialize_status(self):
         (fw_version, ) = self.device.initialize()
@@ -137,19 +137,10 @@ class CorsairPlatinumTestCase(unittest.TestCase):
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
         self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
 
-    def test_address_components(self):
-        colors = [[i + 3, i + 2, i + 1] for i in range(0, 3 * 3, 3)]
-        encoded = [1, 2, 3] * 8 + [4, 5, 6] * 8 + [7, 8, 9] * 8
-        self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
-
-    def test_address_component_leds(self):
-        colors = [[i + 3, i + 2, i + 1] for i in range(0, 8 * 3, 3)]
-        encoded = list(range(1, 25)) * 3
-        self.device.set_color(channel='sync', mode='super-fixed', colors=iter(colors))
+    def test_synchronize(self):
+        colors = [[3, 2, 1]]
+        encoded = [1, 2, 3] * 24
+        self.device.set_color(channel='led', mode='fixed', colors=iter(colors))
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
         self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
@@ -157,17 +148,12 @@ class CorsairPlatinumTestCase(unittest.TestCase):
 
     def test_leds_off(self):
         self.device.set_color(channel='led', mode='off', colors=iter([]))
-        self.device.set_color(channel='sync', mode='off', colors=iter([]))
-        self.assertEqual(len(self.mock_hid.sent), 4)
+        self.assertEqual(len(self.mock_hid.sent), 2)
         for _, data in self.mock_hid.sent:
             self.assertEqual(data[2:62], [0] * 60)
 
     def test_invalid_color_modes(self):
         self.assertRaises(Exception, self.device.set_color, channel='led',
-                          mode='invalid', colors=[])
-        self.assertRaises(Exception, self.device.set_color, channel='led',
-                          mode='fixed', colors=[])
-        self.assertRaises(Exception, self.device.set_color, channel='sync',
                           mode='invalid', colors=[])
         self.assertRaises(Exception, self.device.set_color, channel='invalid',
                           mode='off', colors=[])

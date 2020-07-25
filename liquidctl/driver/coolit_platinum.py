@@ -131,14 +131,12 @@ class CoolitPlatinumDriver(UsbHidDriver):
 
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
         super().__init__(device, description, **kwargs)
-        self._component_count = 1 + fan_count * rgb_fans
+        self._led_count = 16 + 4 * fan_count * rgb_fans
         self._fan_names = [f'fan{i + 1}' for i in range(fan_count)]
-        self._maxcolors = {
-            ('led', 'super-fixed'): self._component_count * 8,
+        self._mincolors = {
+            ('led', 'super-fixed'): 1,
+            ('led', 'fixed'): 1,
             ('led', 'off'): 0,
-            ('sync', 'fixed'): self._component_count,
-            ('sync', 'super-fixed'): 8,
-            ('sync', 'off'): 0,
         }
         # the following fields are only initialized in connect()
         self._data = None
@@ -219,46 +217,39 @@ class CoolitPlatinumDriver(UsbHidDriver):
         or modes, but this driver provides a few for convenience.  Animations
         still require successive calls to this API.
 
-        The 'led' channel can be used to address individual LEDs.  The only
-        supported mode for this channel is 'super-fixed', and each color in
-        `colors` is applied to one individual LED, successively.  This is
-        closest to how the device works.
+        The 'led' channel can be used to address individual LEDs, and supports
+        the 'super-fixed', 'fixed' and 'off' modes.
 
-        The 'sync' channel considers that the individual LEDs are associated
-        with components, and provides two distinct convenience modes: 'fixed'
-        allows each component to be set to a different color, which is applied
-        to all LEDs on that component; very differently, 'super-fixed' allows
-        each individual LED to have a different color, but all components are
-        made to repeat the same pattern.
+        In 'super-fixed' mode, each color in `colors` is applied to one
+        individual LED, successively.  LEDs for which no color has been
+        specified default to off/solid black.  This is closest to how the
+        device works.
 
-        Both channels additionally support an 'off' mode, which is equivalent
-        to setting all LEDs to off/solid black.
+        In 'fixed' mode, all LEDs are set to the first color taken from
+        `colors`.  The `off` mode is equivalent to calling this function with
+        'fixed' and a single solid black color in `colors`.
 
-        `colors` should be an iterable of one or more `[red, blue, green]`
-        triples, where each red/blue/green component is a value in the range
-        0–255.  LEDs for which no color has been specified will default to
-        off/solid black.
+        The `colors` argument should be an iterable of one or more `[red, blue,
+        green]` triples, where each red/blue/green component is a value in the
+        range 0–255.
 
         The table bellow summarizes the available channels, modes, and their
-        associated maximum number of colors.
+        associated maximum number of colors for each device family.
 
-        | Channel  | Mode        | LEDs         | Components   | Platinum | PRO XT |
-        | -------- | ----------- | ------------ | ------------ | -------- | ------ |
-        | sync/led | off         | all off      | all off      |        0 |      0 |
-        | sync     | fixed       | synchronized | independent  |        3 |      1 |
-        | sync     | super-fixed | independent  | synchronized |        8 |      8 |
-        | led      | super-fixed | independent  | independent  |       24 |      8 |
+        | Channel  | Mode        | LEDs         | Platinum | PRO XT |
+        | -------- | ----------- | ------------ | -------- | ------ |
+        | led      | off         | synchronized |        0 |      0 |
+        | led      | fixed       | synchronized |        1 |      1 |
+        | led      | super-fixed | independent  |       24 |     16 |
         """
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
-        maxcolors = self._check_color_args(channel, mode, colors)
+        self._check_color_args(channel, mode, colors)
         if mode == 'off':
             expanded = []
         elif (channel, mode) == ('led', 'super-fixed'):
-            expanded = colors[:maxcolors]
-        elif (channel, mode) == ('sync', 'fixed'):
-            expanded = list(itertools.chain(*([color] * 8 for color in colors[:maxcolors])))
-        elif (channel, mode) == ('sync', 'super-fixed'):
-            expanded = (colors[:8] + [[0, 0, 0]] * (8 - len(colors))) * self._component_count
+            expanded = colors[:self._led_count]
+        elif (channel, mode) == ('led', 'fixed'):
+            expanded = list(itertools.chain(*([color] * self._led_count for color in colors[:1])))
         else:
             assert False, 'assumed unreacheable'
         data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
@@ -267,12 +258,15 @@ class CoolitPlatinumDriver(UsbHidDriver):
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
 
     def _check_color_args(self, channel, mode, colors):
-        maxcolors = self._maxcolors.get((channel, mode))
-        if maxcolors is None:
-            raise ValueError('Unsupported (channel, mode), should be one of: {_quoted(*self._maxcolors)}')
-        if len(colors) > maxcolors:
-            LOGGER.warning('too many colors, dropping to %d', maxcolors)
-        return maxcolors
+        try:
+            mincolors = self._mincolors[(channel, mode)]
+        except KeyError:
+            raise ValueError(f'Unsupported (channel, mode) pair, should be one of: {_quoted(*self._mincolors)}')
+        if len(colors) < mincolors:
+            raise ValueError(f'At least {mincolors} required for {_quoted((channel, mode))}')
+        if len(colors) > mincolors:
+            LOGGER.warning('too many colors, dropping to %d', mincolors)
+        return mincolors
 
     def _get_hw_fan_channels(self, channel):
         channel = channel.lower()

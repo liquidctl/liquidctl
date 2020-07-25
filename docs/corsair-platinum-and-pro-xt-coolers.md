@@ -73,43 +73,34 @@ In reality these coolers do not have the concept of different channels or
 modes, but liquidctl provides a few for convenience.
 
 The table bellow summarizes the available channels, modes, and their associated
-maximum number of colors.
+maximum number of colors for each device family.
 
 | Channel  | Mode        | LEDs         | Components   | Platinum | PRO XT |
 | -------- | ----------- | ------------ | ------------ | -------- | ------ |
-| sync/led | off         | all off      | all off      |        0 |      0 |
-| sync     | fixed       | synchronized | independent  |        3 |      1 |
-| sync     | super-fixed | independent  | synchronized |        8 |      8 |
-| led      | super-fixed | independent  | independent  |       24 |      8 |
+| led      | off         | synchronized | all off      |        0 |      0 |
+| led      | fixed       | synchronized | independent  |        1 |      1 |
+| led      | super-fixed | independent  | independent  |       24 |     16 |
 
-The `led` channel can be used to address individual LEDs.  The only supported
-mode for this channel is `super-fixed`, and each color supplied on the command
-line is applied to one individual LED, successively.  This is closest to how
-the device works.
+The `led` channel can be used to address individual LEDs, and supports the
+`super-fixed`, `fixed` and `off` modes.
 
-The `sync` channel considers that the individual LEDs are associated with
-components, and provides two distinct convenience modes: `fixed` allows each
-component to be set to a different color, which is applied to all LEDs on that
-component; very differently, `super-fixed` allows each individual LED to have a
-different color, but all components are made to repeat the same pattern.
+In `super-fixed` mode, each color supplied on the command line is applied to
+one individual LED, successively.  LEDs for which no color has been specified
+default to off/solid black.  This is closest to how the device works.
 
-Both channels additionally support an `off` mode, which is equivalent to
-setting all LEDs to off/solid black.
+In `fixed` mode, all LEDs are set to a single color supplied on the command
+line.  The `off` mode is simply an alias for `fixed 000000`.
 
 ```
 # liquidctl set led color off
-# liquidctl set sync color off
-
-# liquidctl set sync color fixed ff8000 00ff80 8000ff
-# liquidctl set sync color super-fixed "hsv(0,85,70)" "hsv(45,85,70)" "hsv(90,85,70)" "hsv(135,85,70)" "hsv(180,85,70)" "hsv(225,85,70)" "hsv(270,85,70)" "hsv(315,85,70)"
+# liquidctl set led color fixed ff8000
+# liquidctl set led color fixed "hsv(90,85,70)"
 # liquidctl set led color super-fixed <up to 24 colors>
                 ^^^       ^^^^^^^^^^^ ^
               channel        mode     colors...
 ```
 
-Colors can be specified using any of the [supported
-formats](../README.md#supported-color-specification-formats).  LEDs for which
-no color has been specified will default to off/solid black.
+Each color can be specified using any of the [supported formats](../README.md#supported-color-specification-formats).
 
 Animations are not supported at the hardware level, and require successive
 invocations of the commands shown above, or use of the liquidctl APIs.
