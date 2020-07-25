@@ -20,16 +20,16 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import sys
 
-import liquidctl.driver.asetek
-import liquidctl.driver.corsair_hid_psu
-import liquidctl.driver.hydro_platinum
-import liquidctl.driver.kraken2
-import liquidctl.driver.kraken3
-import liquidctl.driver.nzxt_smart_device
-import liquidctl.driver.rgb_fusion2
-import liquidctl.driver.seasonic
-
 from liquidctl.driver.base import BaseBus, find_all_subclasses
+
+from liquidctl.driver import asetek
+from liquidctl.driver import corsair_hid_psu
+from liquidctl.driver import hydro_platinum
+from liquidctl.driver import kraken2
+from liquidctl.driver import kraken3
+from liquidctl.driver import nzxt_smart_device
+from liquidctl.driver import rgb_fusion2
+from liquidctl.driver import seasonic
 
 
 def find_liquidctl_devices(pick=None, **kwargs):
