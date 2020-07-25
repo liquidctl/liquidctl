@@ -15,8 +15,8 @@ class _MockPsuDevice(MockHidapiDevice):
 
 class CorsairHidPsuTestCase(unittest.TestCase):
     def setUp(self):
-        self.mock_usb = _MockPsuDevice()
-        self.device = CorsairHidPsu(self.mock_usb, 'Mock Corsair HID PSU')
+        self.mock_hid = _MockPsuDevice()
+        self.device = CorsairHidPsu(self.mock_hid, 'Mock Corsair HID PSU')
         self.device.connect()
 
     def tearDown(self):
