@@ -62,10 +62,7 @@ __all__ = [
     'find_liquidctl_devices',
 ]
 
-# deprecated aliases
-import liquidctl.driver.kraken2 as kraken_two
-
 # allow old driver imports to continue to work by manually placing these into
 # the module cache, so import liquidctl.driver.foo does not need to
 # check the filesystem for foo
-sys.modules['liquidctl.driver.kraken_two'] = kraken_two
+sys.modules['liquidctl.driver.kraken_two'] = kraken2
