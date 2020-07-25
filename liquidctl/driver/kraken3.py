@@ -147,7 +147,7 @@ _ANIMATION_SPEEDS = {
 }
 
 
-class KrakenX3Driver(UsbHidDriver):
+class KrakenX3(UsbHidDriver):
     """liquidctl driver for model X fourth-generation coolers from NZXT."""
 
     SUPPORTED_DEVICES = [
@@ -336,7 +336,7 @@ class KrakenX3Driver(UsbHidDriver):
             self._write(header + color + footer)
 
 
-class KrakenZ3Driver(KrakenX3Driver):
+class KrakenZ3(KrakenX3):
     """liquidctl driver for model Z fourth-generation coolers from NZXT."""
 
     SUPPORTED_DEVICES = [
