@@ -297,7 +297,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
         self._write([0x2, 0x4d, cid, 0, duty])
 
 
-class SmartDeviceV2(_CommonSmartDeviceDriver):
+class SmartDevice2(_CommonSmartDeviceDriver):
     """liquidctl driver for the NZXT Smart Device V2, NZXT HUE 2 and NZXT HUE 2 Ambient."""
 
     SUPPORTED_DEVICES = [
@@ -492,4 +492,4 @@ class SmartDeviceV2(_CommonSmartDeviceDriver):
 # backwards compatibility
 NzxtSmartDeviceDriver = SmartDevice
 SmartDeviceDriver = SmartDevice
-SmartDeviceV2Driver = SmartDeviceV2
+SmartDeviceV2Driver = SmartDevice2
