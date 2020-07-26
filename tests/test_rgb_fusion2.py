@@ -1,8 +1,7 @@
-from _testutils import *
-
 import unittest
-
+from collections import deque
 from liquidctl.driver.rgb_fusion2 import RGBFusion2Driver
+from _testutils import MockHidapiDevice, Report
 
 # Sample data for 5702 controller from a Gigabyte Z490 Vision D
 _INIT_5702_DATA = bytes.fromhex(

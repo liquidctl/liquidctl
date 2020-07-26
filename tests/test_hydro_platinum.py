@@ -1,9 +1,7 @@
-from _testutils import *
-
 import unittest
-
 from liquidctl.driver.hydro_platinum import HydroPlatinum
 from liquidctl.pmbus import compute_pec
+from _testutils import MockHidapiDevice, Report
 
 
 class _H115iPlatinumDevice(MockHidapiDevice):

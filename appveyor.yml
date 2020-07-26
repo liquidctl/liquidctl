@@ -47,6 +47,9 @@ install:
   - cmd: C:\Python36-x64\python -m pip freeze | find "PyInstaller" >> extra\windows\included.txt
   - cmd: echo libusb %LIBUSB_VERSION% >> extra\windows\included.txt
   - cmd: C:\Python36-x64\python --version >> extra\windows\included.txt
+  # run unit tests and module doctests
+  - cmd: C:\Python36-x64\python -m pip install pytest
+  - cmd: C:\Python36-x64\python -m pytest
 
 build_script:
   - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
@@ -63,9 +66,7 @@ after_build:
   - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
 
 test_script:
-  - cmd: liquidctl.exe --version
-  - cmd: liquidctl.exe list --verbose
-  - cmd: liquidctl.exe list --hid hid --verbose
+  - cmd: liquidctl.exe list --verbose --debug
 
 artifacts:
   - path: "*.zip"
