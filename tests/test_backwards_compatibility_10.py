@@ -39,8 +39,8 @@ class Pre11KrakenApisUsedByGkraken(unittest.TestCase):
         self.device.disconnect()
 
     def test_connect_as_initialize(self):
-        # depreacted behavior in favor of connect()
-        self.device.initialize()  # used by GKraken
+        # deprecated behavior in favor of connect()
+        self.device.initialize()
 
     def test_deprecated_super_mode(self):
         # deprecated in favor of super-fixed, super-breathing and super-wave
