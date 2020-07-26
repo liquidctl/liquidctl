@@ -23,7 +23,7 @@ def get_runtime_dirs(appname='liquidctl'):
     Directories are returned in order of preference.
     """
     if sys.platform == 'win32':
-        dirs = [os.path.join(os.getenv('ProgramData'), appname)]
+        dirs = [os.path.join(os.getenv('TEMP'), appname)]
     elif sys.platform == 'darwin':
         dirs = [os.path.join('~/Library/Caches', appname)]
     else:
