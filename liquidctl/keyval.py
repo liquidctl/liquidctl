@@ -25,7 +25,7 @@ def get_runtime_dirs(appname='liquidctl'):
     if sys.platform == 'win32':
         dirs = [os.path.join(os.getenv('ProgramData'), appname)]
     elif sys.platform == 'darwin':
-        dirs = [os.path.join('/Library/Application Support', appname)]
+        dirs = [os.path.join('~/Library/Caches', appname)]
     else:
         # threat all other platforms as *nix and conform to XDG basedir spec
         dirs = []
