@@ -26,7 +26,7 @@ def get_runtime_dirs(appname='liquidctl'):
         dirs = [os.path.join(os.getenv('TEMP'), appname)]
     elif sys.platform == 'darwin':
         dirs = [os.path.join('~/Library/Caches', appname)]
-    else:
+    elif sys.platform == 'linux':
         # threat all other platforms as *nix and conform to XDG basedir spec
         dirs = []
         if XDG_RUNTIME_DIR:
@@ -38,6 +38,8 @@ def get_runtime_dirs(appname='liquidctl'):
         if os.path.isdir('/var/run'):
             dirs.append(os.path.join('/var/run', appname))
         assert dirs, 'Could not get a suitable place to store runtime data'
+    else:
+        dirs = [os.path.join('/tmp', appname)]
     return dirs
 
 
