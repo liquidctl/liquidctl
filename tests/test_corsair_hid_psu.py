@@ -10,7 +10,7 @@ class _MockPsuDevice(MockHidapiDevice):
         reply = bytearray(64)
         if data[1] in [_CORSAIR_12V_OCP_MODE, _CORSAIR_FAN_CONTROL_MODE]:
             reply[2] = 1  # just a valid mode
-        self.preload_read(Report(0, reply))  # ignore report IDs for now
+        self.preload_read(Report(reply[0], reply[1:]))
 
 
 class CorsairHidPsuTestCase(unittest.TestCase):
@@ -26,3 +26,4 @@ class CorsairHidPsuTestCase(unittest.TestCase):
         """A few reasonable example calls do not raise exceptions."""
         self.device.initialize()
         status = self.device.get_status()
+        self.device.set_fixed_speed(channel='fan', duty=50)
