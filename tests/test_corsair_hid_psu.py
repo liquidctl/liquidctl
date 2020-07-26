@@ -10,7 +10,7 @@ class _MockPsuDevice(MockHidapiDevice):
         reply = bytearray(64)
         if data[1] in [_CORSAIR_12V_OCP_MODE, _CORSAIR_FAN_CONTROL_MODE]:
             reply[2] = 1  # just a valid mode
-        self.preload_read(Report(reply[0], reply[1:]))
+        self.preload_read(Report(0, reply))  # ignore report ID for now
 
 
 class CorsairHidPsuTestCase(unittest.TestCase):
