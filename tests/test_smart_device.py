@@ -7,8 +7,8 @@ class SmartDeviceTestCase(unittest.TestCase):
     def setUp(self):
         self.mock_hid = MockHidapiDevice()
         self.device = SmartDevice(self.mock_hid, 'Mock Smart Device',
-                               speed_channel_count=3,
-                               color_channel_count=1)
+                                  speed_channel_count=3,
+                                  color_channel_count=1)
         self.device.connect()
 
     def tearDown(self):
