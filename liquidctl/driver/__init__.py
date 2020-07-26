@@ -27,9 +27,9 @@ from liquidctl.driver import corsair_hid_psu
 from liquidctl.driver import hydro_platinum
 from liquidctl.driver import kraken2
 from liquidctl.driver import kraken3
-from liquidctl.driver import smart_device
+from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
-from liquidctl.driver import seasonic
+from liquidctl.driver import smart_device
 
 
 def find_liquidctl_devices(pick=None, **kwargs):
@@ -67,3 +67,4 @@ __all__ = [
 # check the filesystem for foo
 sys.modules['liquidctl.driver.kraken_two'] = kraken2
 sys.modules['liquidctl.driver.nzxt_smart_device'] = smart_device
+sys.modules['liquidctl.driver.seasonic'] = nzxt_epsu
