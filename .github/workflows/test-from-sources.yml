@@ -35,7 +35,7 @@ jobs:
     - name: Run unit tests and module doctests
       run: |
         pip install pytest
-        pytest
+        XDG_RUNTIME_DIR=.tests_rundir pytest
     - name: Install and run the resulting executable
       run: |
         pip install .
