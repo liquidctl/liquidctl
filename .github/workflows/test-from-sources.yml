@@ -18,22 +18,22 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Run the doctests
-      shell: bash
-      run: |
-        python -m doctest liquidctl/{pmbus,util}.py
-    - name: Install additional system dependencies (Linux)
+    - name: Install system dependencies (Linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y libusb-1.0-0-dev libudev-dev
-    - name: Install additional system dependencies (macOS)
+    - name: Install system dependencies (macOS)
       if: matrix.os == 'macOS-latest'
       run: |
         brew install libusb
-    - name: Run unit tests and module doctests
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
+        python setup.py egg_info
+        pip install -r liquidctl.egg-info/requires.txt
+    - name: Run unit tests and module doctests
+      run: |
         pip install pytest
         pytest
     - name: Install and run the resulting executable
