@@ -9,6 +9,11 @@ from liquidctl.util import HUE2_MAX_ACCESSORIES_IN_CHANNEL as MAX_ACCESSORIES
 
 from _testutils import MockHidapiDevice, Report
 
+# https://github.com/jonasmalacofilho/liquidctl/issues/160#issuecomment-664044103
+_SAMPLE_STATUS = bytes.fromhex(
+    '7502200036000b51535834353320012101a80635350000000000000000000000'
+    '0000000000000000000000000000000000000000000000000000000000000000'
+)
 
 class _MockKrakenDevice(MockHidapiDevice):
     def __init__(self, raw_led_channels):
@@ -25,7 +30,7 @@ class _MockKrakenDevice(MockHidapiDevice):
             if self.raw_led_channels > 1:
                 reply[15 + 1 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_RING.value
                 reply[15 + 2 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_LOGO.value
-        self.preload_read(Report(reply[0], reply[1:]))
+        self.preload_read(Report(0, reply))
 
 
 class KrakenX3TestCase(unittest.TestCase):
@@ -39,11 +44,16 @@ class KrakenX3TestCase(unittest.TestCase):
     def tearDown(self):
         self.device.disconnect()
 
+    def test_parses_status_fields(self):
+        self.mock_hid.preload_read(Report(0, _SAMPLE_STATUS))
+        temperature, pump_speed, pump_duty = self.device.get_status()
+        assert temperature == ('Liquid temperature', 33.1, '°C')
+        assert pump_speed == ('Pump speed', 1704, 'rpm')
+        assert pump_duty == ('Pump duty', 53, '%')
+
     def test_not_totally_broken(self):
-        """A few reasonable example calls do not raise exceptions."""
+        """Reasonable example calls to untested APIs do not raise exceptions."""
         infos = self.device.initialize()
-        self.mock_hid.preload_read(Report(0, bytes(63)))
-        status = self.device.get_status()
         self.device.set_color(channel='ring', mode='fixed', colors=iter([[3, 2, 1]]),
                               speed='fastest')
         self.device.set_speed_profile(channel='pump',
@@ -63,9 +73,9 @@ class KrakenZ3TestCase(unittest.TestCase):
         self.device.disconnect()
 
     def test_not_totally_broken(self):
-        """A few reasonable example calls do not raise exceptions."""
+        """Reasonable example calls to untested APIs do not raise exceptions."""
         infos = self.device.initialize()
-        self.mock_hid.preload_read(Report(0, bytes(63)))
+        self.mock_hid.preload_read(Report(0, _SAMPLE_STATUS))
         status = self.device.get_status()
         self.device.set_speed_profile(channel='fan',
                                       profile=iter([(20, 20), (30, 50), (40, 100)]))
