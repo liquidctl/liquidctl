@@ -297,8 +297,8 @@ class Legacy690Lc(_CommonAsetekDriver):
 
     def connect(self, **kwargs):
         super().connect(**kwargs)
-        ids = '{:04x}_{:04x}'.format(self.vendor_id, self.product_id)
-        loc = '{}_{}'.format(self.bus, '.'.join(map(str, self.port)))
+        ids = 'vid{:04x}_pid{:04x}'.format(self.vendor_id, self.product_id)
+        loc = 'bus{}_port{}'.format(self.bus, '_'.join(map(str, self.port)))
         self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
 
     def _set_all_fixed_speeds(self):

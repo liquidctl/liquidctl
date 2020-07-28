@@ -4,10 +4,8 @@ Copyright (C) 2019–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import base64
 import logging
 import os
-import re
 import sys
 import tempfile
 
@@ -45,18 +43,13 @@ def get_runtime_dirs(appname='liquidctl'):
 
 class _FilesystemBackend:
     def _sanitize(self, key):
-        if isinstance(key, int):
-            return str(key)
-        if isinstance(key, str):
-            if self._safe.match(key):
-                return key
-            key = bytes(key, encoding='utf-8')
-        if isinstance(key, bytes):
-            return base64.urlsafe_b64encode(key).decode()
-        raise TypeError('key must be int, str or bytes')
+        if not isinstance(key, str):
+            raise TypeError('key must str')
+        if not key.isidentifier():
+            raise ValueError('key must be valid Python identifier')
+        return key
 
     def __init__(self, key_prefixes):
-        self._safe = re.compile(r'^\w[\w.]+$', flags=re.ASCII)
         key_prefixes = map(self._sanitize, key_prefixes)
         # compute read and write dirs from base runtime dirs: the first base
         # dir is selected for writes and prefered for reads
