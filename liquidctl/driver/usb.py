@@ -372,7 +372,7 @@ class HidapiDevice:
 
     def close(self):
         """NOOP."""
-        pass
+        self.hiddev.close()
 
     def clear_enqueued_reports(self):
         """Clear already enqueued incoming reports.
