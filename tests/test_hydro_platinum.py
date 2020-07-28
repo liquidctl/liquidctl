@@ -3,11 +3,11 @@ from liquidctl.driver.hydro_platinum import HydroPlatinum
 from liquidctl.pmbus import compute_pec
 from _testutils import MockHidapiDevice, Report
 
-_SAMPLE_PATH = (b'IOService:/AppleACPIPlatformExpert/PCI0@0/AppleACPIPCI/XHC@14/XH'
-                b'C@14000000/HS11@14a00000/USB2.0 Hub@14a00000/AppleUSB20InternalH'
-                b'ub@14a00000/AppleUSB20HubPort@14a10000/USB2.0 Hub@14a10000/Apple'
-                b'USB20Hub@14a10000/AppleUSB20HubPort@14a12000/H100i Platinum@14a1'
-                b'2000/IOUSBHostInterface@0/AppleUserUSBHostHIDDevice+Win\\#!&')
+_SAMPLE_PATH = (r'IOService:/AppleACPIPlatformExpert/PCI0@0/AppleACPIPCI/XHC@14/XH'
+                r'C@14000000/HS11@14a00000/USB2.0 Hub@14a00000/AppleUSB20InternalH'
+                r'ub@14a00000/AppleUSB20HubPort@14a10000/USB2.0 Hub@14a10000/Apple'
+                r'USB20Hub@14a10000/AppleUSB20HubPort@14a12000/H100i Platinum@14a1'
+                r'2000/IOUSBHostInterface@0/AppleUserUSBHostHIDDevice+Win\\#!&3142')
 _WIN_MAX_PATH = 260  # Windows API should be the bottleneck
 
 class _H115iPlatinumDevice(MockHidapiDevice):
@@ -164,6 +164,7 @@ class HydroPlatinumTestCase(unittest.TestCase):
 
     def test_short_enough_storage_path(self):
         assert len(self.device._data._backend._write_dir) < _WIN_MAX_PATH;
+        assert self.device._data._backend._write_dir.endswith('3142')
 
     def test_bad_stored_data(self):
         # TODO

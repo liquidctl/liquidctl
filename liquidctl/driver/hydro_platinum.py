@@ -152,7 +152,7 @@ class HydroPlatinum(UsbHidDriver):
         # these can be quite long on Windows and macOS, so only take the
         # numbers, since they are likely the only parts that vary between two
         # devices of the same model
-        loc = 'loc' + '_'.join((num.decode() for num in re.findall(b'\\d+', self.address)))
+        loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
         self._data = RuntimeStorage(key_prefixes=[ids, loc])
         self._sequence = _sequence(self._data)
 
