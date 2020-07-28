@@ -384,9 +384,12 @@ class HidapiDevice:
         This method quickly reads and discards any already enqueued reports,
         and is useful when later reads are not expected to return stale data.
         """
-        self.hiddev.set_nonblocking(True)
+        if self.hiddev.set_nonblocking(True) == 0:
+            timeout_ms = 0  # use hid_read; wont block because call succeeded
+        else:
+            timeout_ms = 1  # smallest timeout forwarded to hid_read_timeout
         discarded = 0
-        while self.hiddev.read(1):
+        while self.hiddev.read(max_length=1, timeout_ms=timeout_ms):
             discarded += 1
         LOGGER.debug('discarded %d previously enqueued reports', discarded)
 
