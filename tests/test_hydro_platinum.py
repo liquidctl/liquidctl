@@ -6,7 +6,7 @@ from _testutils import MockHidapiDevice, Report
 
 class _H115iPlatinumDevice(MockHidapiDevice):
     def __init__(self):
-        super().__init__(vendor_id=0xffff, product_id=0x0c17, address=r'/generic\#123!&')
+        super().__init__(vendor_id=0xffff, product_id=0x0c17, address=b'/generic\#123!&/hid3port42')
         self.fw_version = (1, 1, 15)
         self.temperature = 30.9
         self.fan1_speed = 1499
