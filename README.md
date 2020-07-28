@@ -105,13 +105,13 @@ The following devices are supported by this version of liquidctl.  See each guid
 
 ## Installing on Linux
 
-Packages are available for certain Linux distributions and package managers:
+Packages for liquidctl are available for certain Linux distributions and package managers:
 
  - Alpine Linux: [liquidctl](https://pkgs.alpinelinux.org/packages?name=liquidctl)
  - ArchLinux/Manjaro: [liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
  - Fedora: [liquidctl](https://src.fedoraproject.org/rpms/liquidctl)
 
-Alternatively, it is possible to install liquidctl from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
+On other distributions, or when more control is desired, liquidctl can be installed from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
 
 | Dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
@@ -122,16 +122,17 @@ Alternatively, it is possible to install liquidctl from PyPI or directly from th
 | PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
 
-Setuptools and, optionally, pip are needed to manually install liquidctl:
+Setuptools and, optionally, pip and pytest are needed to locally test and manually install liquidctl:
 
 | Dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
 | setuptools | python-setuptools | python3-setuptools | python3-setuptools |
 | pip (optional) | python-pip | python3-pip | python3-pip |
+| pytest (optional) | python-pytest | pytest | python3-pytest |
 
-If cython-hidapi is to be installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
+If cython-hidapi is installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
 
-To install any release from PyPI, *pip* should be used:
+To install a release from PyPI, *pip* should be used:
 
 ```
 # pip install liquidctl
@@ -143,11 +144,12 @@ For the latest changes and to contribute back to the project, it is best to clon
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
 $ cd liquidctl
+$ pytest  # optional step
 $ python -m liquidctl.cli <args>...
 # pip install .
 ```
 
-_Note: in systems that default to Python 2, replace `pip` and `python` by `pip3` and `python3`._  
+_Note: in systems that default to Python 2, use `pip3`, `python3` and `pytest-3`._  
 
 
 ## Installing on Windows
@@ -156,9 +158,9 @@ A pre-built executable for the last stable version is available in [liquidctl-1.
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
-Products that cannot use the generic Microsoft HID Driver require another driver that is compatible with libusb: for the specific devices that are affected see the notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can be easily set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for other devices will likely cause them to disapear from liquidctl.
+Products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disapear from liquidctl.
 
-The pre-built executables can be used as is by calling them from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that becomes true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
+The pre-built executables can be directly used from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that is true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
 
 _Alternatively to the pre-built executable,_ it is possible to install liquidctl from PyPI or directly from the source code repository.  Pre-build liquidctl executables for Windows already include Python and libusb, but when installing from PyPI or the sources both of these will need to be manually set up.
 
@@ -176,8 +178,8 @@ For the latest changes and to contribute back to the project, it is best to clon
 ```
 > git clone https://github.com/jonasmalacofilho/liquidctl
 > cd liquidctl
-> pip install .
 > python -m liquidctl.cli <args>...
+> pip install .
 ```
 
 _¹ See [How to use libusb under Windows](https://github.com/libusb/libusb/wiki/FAQ#how-to-use-libusb-under-windows) for more information._
@@ -185,7 +187,7 @@ _¹ See [How to use libusb under Windows](https://github.com/libusb/libusb/wiki/
 
 ## Installing on macOS
 
-liquidctl is available on Homebrew, and installing liquidctl using it is straightforward.
+liquidctl is available on Homebrew, and that is the preferred method of installing it.
 
 ```
 $ brew install liquidctl
@@ -208,8 +210,8 @@ For the latest changes and to contribute back to the project, it is best to clon
 ```
 $ git clone https://github.com/jonasmalacofilho/liquidctl
 $ cd liquidctl
-$ pip3 install .
 $ python3 -m liquidctl.cli <args>...
+$ pip3 install .
 ```
 
 _Note: installation into a virtual environment is recommended to avoid conflicts with Python modules installed with Homebrew.  The use of virtual environments is outside the scope of this document.  Their use will also restrict the availability of the liquidctl command to that virtual environment._
@@ -217,11 +219,11 @@ _Note: installation into a virtual environment is recommended to avoid conflicts
 
 ## Introducing the command-line interface
 
-The complete list of commands and options can be found in `liquidctl --help`, on in the man page, but the following topics cover the most common operations in the command-line interface.
+The complete list of commands and options can be found in `liquidctl --help` and in the man page, but the following topics cover the most common operations.
 
-Brackets `[ ]`, parenthesis `( )`, less-than/greater-than `< >` and ellipsis `...` are used to describe optional, required, positional and repeating elements.  Example commands are prefixed with a number sign `#`, which also serves to indicate that on Linux root permissions might be required.
+Brackets `[ ]`, parenthesis `( )`, less than/greater than `< >` and ellipsis `...` are used to describe, respectively, optional, required, positional and repeating elements.  Example commands are prefixed with a number sign `#`, which also serves to indicate that on Linux root permissions (or suitable udev rules) may be required.
 
-The `--verbose` option will print some extra information, like automatically made adjustments to the user provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
+The `--verbose` option will print some extra information, like automatically made adjustments to user-provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
 
 _Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG=debug` or/and `LIBUSB_DEBUG=4` environment variables._
 
@@ -235,7 +237,7 @@ Device ID 0: NZXT Smart Device (V1)
 Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
-In case more than one supported device is found, the desired one can be selected with `--match <substring>`, where `<substring>` matches part of the desired device's description using a case insensitive comparison.
+In case more than one supported device is found, one them can be selected with `--match <substring>`, where `<substring>` matches part of the desired device's description using a case insensitive comparison.
 
 ```
 # liquidctl --match kraken list
@@ -249,11 +251,11 @@ More device properties can be show by passing `--verbose` to `liquidctl list`.  
 Device ID 0: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
-Ambiguities for any given filter can be solved with `--pick <number>`.  Devices can also be selected with `--device <ID>`, but these are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal variance in enumeration order.
+Ambiguities for any given filter can be solved with `--pick <number>`.  Devices can also be selected with `--device <ID>`, but these IDs are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal variance in enumeration order.
 
 ### Initializing and interacting with devices
 
-Devices will usually need to be initialized before they can be used, though each device has its own requirements and limitations.  This and other information specific to a particular device will appear on the documentation linked in the [supported devices](#supported-devices) section.
+Devices will usually need to be initialized before they can be used, though each device has its own requirements and limitations.  This and other information specific to a particular device will appear on the documentation linked from the [supported devices](#supported-devices) section.
 
 Devices can be initialized individually or all at once.
 
@@ -274,14 +276,13 @@ Fan and pump speeds can be set to fixed values or, if the device supports them, 
 # liquidctl [options] set <channel> speed <percentage>
 ```
 
-Lighting is controlled in a similar fashion and, again, the specific documentation for each device will list the available channels, modes and additional options.
+Lighting is controlled in a similar fashion.  The specific documentation for each device will list the available channels, modes and additional options.
 
 ```
 # liquidctl [options] set <channel> color <mode> [<color>] ...
 ```
 
 ### Supported color specification formats
-
 
 When configuring lighting effects, colors can be specified in different representations and formats:
 
@@ -309,11 +310,11 @@ On Linux it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape se
 
 In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough, and some specifics about this are given in the following sections.
 
-If you need more control for some really ambitious automation, you can also write a Python program that calls the driver APIs directly.
+For even more flexibility, you can also write a Python program that calls the driver APIs directly.
 
 ### Set up Linux using systemd
 
-On systems running Linux and Systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences and save the result to `/etc/system.d/system/liquidcfg.service`.
+On systems running Linux and Systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences.  Save it to `/etc/system.d/system/liquidcfg.service`.
 
 ```
 [Unit]
@@ -330,20 +331,21 @@ ExecStart=liquidctl set logo color spectrum-wave
 WantedBy=default.target
 ```
 
-The unit can be started manually or set to automatically run during boot using standard Systemd tools:
+After reloading the configuration, the new unit can be started manually or set to automatically run during boot using standard Systemd tools.
 
 ```
+# systemctl daemon-reload
 # systemctl start liquidcfg
 # systemctl enable liquidcfg
 ```
 
-If necessary, it is also possible to have the service unit explicitly wait for the device to be available: [Making systemd units wait for devices](docs/linux/making-systemd-units-wait-for-devices).
-
 A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which includes dynamic adjustments of the lighting depending on the time of day.
+
+If necessary, it is also possible to have the service unit explicitly wait for the device to be available: see [making systemd units wait for devices](docs/linux/making-systemd-units-wait-for-devices).
 
 ### Set up Windows using Task Scheduler
 
-The configuration of devices can be automated by writing a batch file and setting up a new task for (every) log on, using Windows Task Scheduler.  The batch file can be really simple and only needs to contain the invocations of liquidctl that would otherwise be done manually.
+The configuration of devices can be automated by writing a batch file and setting up a new task for (every) login using Windows Task Scheduler.  The batch file can be really simple and only needs to contain the invocations of liquidctl that would otherwise be done manually.
 
 ```batchfile
 liquidctl set pump speed 90
@@ -362,7 +364,7 @@ As an alternative to using Task Scheduler, the batch file can simply be placed i
 
 ### Set up macOS using launchd
 
-You can use a shell script and launchd to automatically configure your devices upon logging in.
+You can use a shell script and launchd to automatically configure your devices during login.
 
 Create a script in `/usr/local/bin/liquidcfg.sh` and make it executable; it should contain the calls to liquidctl necessary to initialize and configure your devices.
 
@@ -402,7 +404,7 @@ Afterwards, create a new global daemon in `/Library/LaunchDaemons/local.liquidcf
 
 It is important to adjust the location of Python 3 framework in the PATH environment variable above.  launchd agents use the system profile and thus will by default only find the Apple-provided Python 2.7 and its packages.
 
-You can enable and disable the agent with `launchctl load|unload ~/Library/LaunchAgents/local.liquidcfg.plist`.  Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.
+You can enable and disable the agent with `launchctl load|unload /Library/LaunchDaemons/local.liquidcfg.plist`.  Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.
 
 A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/post_install/pump_control).
 
@@ -411,11 +413,11 @@ A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.co
 
 ### Device not listed (Windows)
 
-This is likely caused by having replaced the original Microsoft Generic HID driver for a USB HID.  If the device in question is not marked in [Supported devices](#supported-devices) as requiring a special driver, try uninstalling the custom driver.
+This is likely caused by having replaced the standard driver of a USB HID.  If the device in question is not marked in [Supported devices](#supported-devices) as requiring a special driver, try uninstalling the custom driver.
 
 ### Device not listed (Linux)
 
-As before, this is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0 but failed to reattach the original driver.
+This is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0, but failed to reattach the original driver before terminating.
 
 This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
 
@@ -433,7 +435,7 @@ Alternatively to running liquidctl as root (or with `sudo`), you can install the
 
 ### Other problems
 
-If your problem is not listed here, try searching the [issues](https://github.com/jonasmalacofilho/liquidctl/issues).  If no issue matches your problem, if you still need help, or if you have found a bug, please open one.
+If your problem is not listed here, try searching the [issues](https://github.com/jonasmalacofilho/liquidctl/issues).  If no issue matches your problem, you still need help, or you have found a bug, please open one.
 
 When commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.
 
@@ -490,8 +492,8 @@ Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allo
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
-Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl.
+Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl, and joining them is a great way to get involved.
 
 ### [jonasmalacofilho/liquidctl-device-data](https://github.com/jonasmalacofilho/liquidctl-device-data)
 
-Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyses.
+Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyzes.
