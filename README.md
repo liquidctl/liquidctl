@@ -71,10 +71,10 @@ The following devices are supported by this version of liquidctl.  See each guid
 
 | Device family | Usage | Notes |
 |:--- |:---:|:--- |
-| CORSAIR Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc.md) | <sup>_ZE_</sup> |
-| CORSAIR Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc.md) | <sup>_Z_</sup> |
-| CORSAIR Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-and-pro-xt-coolers.md) | <sup>_EU_</sup> |
-| CORSAIR Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-and-pro-xt-coolers.md) | <sup>_EU_</sup> |
+| Corsair Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc.md) | <sup>_ZE_</sup> |
+| Corsair Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc.md) | <sup>_Z_</sup> |
+| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-and-pro-xt-coolers.md) | <sup>_EU_</sup> |
+| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-and-pro-xt-coolers.md) | <sup>_EU_</sup> |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [guide](docs/asetek-690lc.md) | <sup>_Z_</sup> |
 | NZXT Kraken M22 | [guide](docs/third-generation-krakens.md) | |
 | NZXT Kraken X40, X60 | [guide](docs/asetek-690lc.md) | <sup>_LZE_</sup> |
@@ -87,9 +87,9 @@ The following devices are supported by this version of liquidctl.  See each guid
 
 | Device family | Usage | Notes |
 |:--- |:---:|:--- |
-| CORSAIR HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi.md) | |
-| CORSAIR RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi.md) | |
-| GIGABYTE RGB Fusion 2.0 Motherboards | | <sup>_EU_</sup> |
+| Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi.md) | |
+| Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi.md) | |
+| Gigabyte RGB Fusion 2.0 Motherboards | | <sup>_EU_</sup> |
 | NZXT E500, E650, E850 (PSUs) | [guide](docs/seasonic-e-series.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3  | [guide](docs/nzxt-smart-device.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-smart-device-v2.md) | |
