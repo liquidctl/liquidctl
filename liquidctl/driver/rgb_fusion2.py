@@ -151,7 +151,7 @@ _COLOR_MODES = {
     ]
 }
 
-class RGBFusion2Driver(UsbHidDriver):
+class RgbFusion2(UsbHidDriver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers."""
 
     SUPPORTED_DEVICES = [

@@ -1,6 +1,6 @@
 import unittest
 from collections import deque
-from liquidctl.driver.rgb_fusion2 import RGBFusion2Driver
+from liquidctl.driver.rgb_fusion2 import RgbFusion2
 from _testutils import MockHidapiDevice, Report
 
 # Sample data for 5702 controller from a Gigabyte Z490 Vision D
@@ -25,7 +25,7 @@ class Controller5702TestCase(unittest.TestCase):
     def setUp(self):
         description = 'Mock 5702 Controller'
         self.mock_hid = MockHidapiDevice()
-        self.device = RGBFusion2Driver(self.mock_hid, description)
+        self.device = RgbFusion2(self.mock_hid, description)
         self.device.connect()
         self.report_id = 0xcc
 
@@ -161,7 +161,7 @@ class Controller8297TestCase(unittest.TestCase):
     def setUp(self):
         description = 'Mock 8297 Controller'
         self.mock_hid = Mock8297HidInterface()
-        self.device = RGBFusion2Driver(self.mock_hid, description)
+        self.device = RgbFusion2(self.mock_hid, description)
         self.device.connect()
         self.report_id = 0xcc
 
