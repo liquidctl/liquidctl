@@ -1,6 +1,6 @@
 '\" t
 .nr is_macos 0
-.TH LIQUIDCTL 8 2019\-11\-17 "liquidctl" "System Manager's Manual"
+.TH LIQUIDCTL 8 2020\-07\-28 "liquidctl" "System Manager's Manual"
 .
 .SH NAME
 liquidctl \- monitor and control liquid coolers and other devices
@@ -62,10 +62,11 @@ identifiers and addresses that can also be used to select specific devices.
 These can be better suited for certain use cases, such as non-interactive
 scripts.
 .PP
-\fBliquidctl initialize\fR prepares a device for later commands.  Most devices
-must be initialized after every boot.  Unless finer control is required, all
-devices can be initialized at once with \fBliquidctl initialize all\fR.  Some
-devices may output some information at this stage.
+\fBliquidctl initialize\fR prepares a device for later commands, and most
+devices must be initialized after every boot or when resuming from a suspended
+state.  Unless finer control is required, all devices can be initialized at
+once with \fBliquidctl initialize all\fR.  Some devices may output some
+information at this stage.
 .PP
 \fBliquidctl status\fR displays the status of all devices that match the
 provided filtering options.
@@ -142,20 +143,23 @@ Color used by the visual high temperature alert.
 .
 .SS Other options
 .TP
+.B \-\-single\-12v\-ocp
+Enable single rail +12V OCP.
+.TP
+.B \-\-pump\-mode= mode
+Set the pump mode.
+.TP
+.B \-\-legacy\-690lc
+Use Asetek 690LC in legacy mode (old Krakens).
+.TP
+.B \-\-unsafe= features
+Comman-separated bleeding-edge features to enable.
+.TP
 .B \-v\fR, \fP\-\-verbose
 Output additional information.
 .TP
 .B \-g\fR, \fB\-\-debug
 Show debug information on \fIstderr\fR.
-.TP
-.BI \-\-hid= module
-Override API for USB HIDs: usb, hid or hidraw.
-.TP
-.B \-\-legacy\-690lc
-Use Asetek 690LC in legacy mode (old Krakens).
-.TP
-.B \-\-single-12v-ocp
-Enable single rail +12V OCP.
 .TP
 .B \-\-version
 Display the version number.
@@ -169,11 +173,11 @@ Show the embedded help.
 .SH FILES
 .TP
 .ie \n[is_macos]
-.I /Library/Application Support/liquidctl/*
+.I ~/Library/Caches/liquidctl/*
 .el
-.IR $XDG_RUNTIME_DIR/liquidctl/* ,\  /var/run/liquidctl/*
+.IR $XDG_RUNTIME_DIR/liquidctl/* ,\  /var/run/liquidctl/* ,\  /tmp/liquidctl/*
 Internal data used by some drivers.
-.\" e.g. LegacyAsetekDriver
+.\" e.g. RuntimeStorage for Legacy690Lc and HydroPlatinum
 .
 .SH EXAMPLE
 .SY liquidctl
@@ -237,10 +241,9 @@ l l c c
 ----
 l l c c .
 Channel	Mode	#colors (Platinum)	#colors (PRO XT)
-\fIsync\fR/\fIled\fR	\fIoff\fR	0	0
-\fIsync\fR	\fIfixed\fR	3	1
-\fIsync\fR	\fIsuper\-fixed\fR	8	8
-\fIled\fR	\fIsuper\-fixed\fR	24	8
+\fIled\fR	\fIoff\fR	0	0
+\fIled\fR	\fIfixed\fR	1	1
+\fIled\fR	\fIsuper\-fixed\fR	24	16
 .TE
 .
 .SS NZXT Kraken X40, X60
