@@ -51,6 +51,11 @@ class MockHidapiDevice:
                 self._read.remove(report)
             except StopIteration:
                 return None
+            # length dictates the size of the buffer, and if it's not large
+            # enough "ioctl (GFEATURE): Value too large for defined data type"
+            # may happen on Linux; see:
+            # https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-665119675
+            assert length >= len(data) + 1, 'buffer not large enough for received report'
             return [number] + list(data)[:length]
         return None
 

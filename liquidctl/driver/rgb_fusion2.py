@@ -187,7 +187,7 @@ class RgbFusion2(UsbHidDriver):
         assert data[0] in (_REPORT_ID, 0) and data[1] == 0x01
 
         null = data.index(0, 12)
-        dev_name = str(bytes(data[12:null]), 'ascii', errors='ignore')
+        dev_name = str(bytes(data[12:null]), 'ascii', errors='replace')
         fw_version = tuple(data[4:8])
         return [
             ('Hardware name', dev_name, ''),
@@ -283,7 +283,7 @@ class RgbFusion2(UsbHidDriver):
         self._execute_report()
 
     def _get_feature_report(self, report_id):
-        return self.device.get_feature_report(report_id, _REPORT_BYTE_LENGTH)
+        return self.device.get_feature_report(report_id, _REPORT_BYTE_LENGTH + 1)
 
     def _send_feature_report(self, data):
         padding = [0x0]*(_REPORT_BYTE_LENGTH + 1 - len(data))

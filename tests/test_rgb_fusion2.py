@@ -4,21 +4,21 @@ from liquidctl.driver.rgb_fusion2 import RgbFusion2
 from _testutils import MockHidapiDevice, Report
 
 # Sample data for 5702 controller from a Gigabyte Z490 Vision D
+# https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663213956
 _INIT_5702_DATA = bytes.fromhex(
-    '01000701000a00000000004954353730322d47494741425954452056312e30e2'
-    '2e31302e300000000001020002000100020001000001020000010257000000'
+    'cc01000701000a00000000004954353730322d47494741425954452056312e30'
+    '2e31302e30000000000102000200010002000100000102000001025700000000'
 )
-_INIT_5702_SAMPLE = Report(0xcc, _INIT_5702_DATA)
+_INIT_5702_SAMPLE = Report(_INIT_5702_DATA[0], _INIT_5702_DATA[1:])
 
 # Sample data for 8297 controller from a Gigabyte X570 Aorus Elite rev 1.0
-# (the extra data byte was received on Windows because we requested 64 bytes
-# but the HID descriptor specifies that the report has 63 × 8 bits)
 # https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663247422
+# (note: original data had a trailing 0x61 byte, but that seems to be an artifact)
 _INIT_8297_DATA = bytes.fromhex(
-    '010001010006000000000049543832393742582d474258353730000000000000'
-    '0000000000000000000000020001000200010000010200000197820000000061'
+    '00010001010006000000000049543832393742582d4742583537300000000000'
+    '0000000000000000000000000200010002000100000102000001978200000000'
 )
-_INIT_8297_SAMPLE = Report(0xcc, _INIT_8297_DATA)
+_INIT_8297_SAMPLE = Report(_INIT_8297_DATA[0], _INIT_8297_DATA[1:])
 
 
 class Controller5702TestCase(unittest.TestCase):
@@ -147,14 +147,8 @@ class Controller5702TestCase(unittest.TestCase):
 
 class Mock8297HidInterface(MockHidapiDevice):
     def get_feature_report(self, report_id, length):
-        """Get a feature report emulating out of spec behavior of the device.
-
-        Sets the report ID in the response to zero.
-        """
-
-        data = super().get_feature_report(report_id, length)
-        data[0] = 0
-        return data
+        """Get a feature report emulating out of spec behavior of the device."""
+        return super().get_feature_report(0, length)
 
 
 class Controller8297TestCase(unittest.TestCase):
