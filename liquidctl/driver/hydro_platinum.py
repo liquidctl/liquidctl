@@ -1,21 +1,12 @@
-"""liquidctl driver for Corsair Platinum and PRO XT coolers.
+"""liquidctl drivers for Corsair Hydro Platinum and PRO XT liquid coolers.
 
-Supported devices
------------------
+Supported devices:
 
- - Corsair H100i Platinum
- - Corsair H100i Platinum SE
- - Corsair H115i Platinum
- - Corsair H100i PRO XT
- - Corsair H115i PRO XT
-
-Supported features
-------------------
-
- - general monitoring
- - pump speed control
- - fan speed control
- - lighting control (Platinum only)
+- Corsair H100i Platinum
+- Corsair H100i Platinum SE
+- Corsair H115i Platinum
+- Corsair H100i PRO XT
+- Corsair H115i PRO XT
 
 Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -31,7 +22,6 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profile
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +106,7 @@ def _quoted(*names):
 
 
 class HydroPlatinum(UsbHidDriver):
-    """liquidctl driver for Corsair Platinum and PRO XT coolers."""
+    """Corsair Hydro Platinum or PRO XT liquid cooler."""
 
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
@@ -179,6 +169,7 @@ class HydroPlatinum(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
         assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
         return [
@@ -213,6 +204,7 @@ class HydroPlatinum(UsbHidDriver):
         point should set the fan to 100% duty cycle, or be omitted; in the
         latter case the fan will be set to max out at 60°C.
         """
+
         profile = list(profile)
         for hw_channel in self._get_hw_fan_channels(channel):
             self._data.store(f'{hw_channel}_mode', _FanMode.CUSTOM_PROFILE.value)

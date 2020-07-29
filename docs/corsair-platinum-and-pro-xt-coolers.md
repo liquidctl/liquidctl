@@ -1,4 +1,4 @@
-# Corsair Platinum and PRO XT all-in-one liquid coolers
+# Corsair Hydro Platinum and PRO XT all-in-one liquid coolers
 
 ## Initializing the device and setting the pump mode
 
@@ -42,10 +42,10 @@ Corsair H100i Platinum (experimental)
 ## Programming the fan speeds
 
 Each fan can be set to either a fixed duty cycle, or a profile consisting of up
-to seven (temperature, duty) pairs.  Temperatures should be given Celsius and
-duty values in percentage.
+to seven (temperature, duty) pairs.  Temperatures should be given in Celsius
+and duty values in percentage.
 
-Profiles run on the device are only always based on the internal liquid
+Profiles run on the device and are always based on the internal liquid
 temperature probe.  The last point should set the fan to 100% duty cycle, or be
 omitted; in the latter case the fan will be set to max out at 60°C.
 
