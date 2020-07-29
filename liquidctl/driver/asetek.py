@@ -1,23 +1,12 @@
-"""liquidctl drivers for fifth generation Asetek AIO liquid coolers.
+"""Drivers for fifth generation Asetek 690LC liquid coolers.
 
-Supported devices
------------------
+Supported devices:
 
- - EVGA CLC (120 CL12, 240, 280 or 360); modern generic Asetek 690LC
- - NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
- - NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
- - Corsair H80i GT, H100i GTX or H110i GTX
- - Corsair H80i v2, H100i v2 or H115i
-
-Supported features
-------------------
-
- - initialization
- - connection and transaction life cycle
- - reporting of firmware version
- - monitoring of pump and fan speeds, and of liquid temperature
- - control of pump and fan speeds
- - control of lighting modes and colors
+- EVGA CLC (120 CL12, 240, 280 or 360); modern generic Asetek 690LC
+- NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
+- NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
+- Corsair H80i GT, H100i GTX or H110i GTX
+- Corsair H80i v2, H100i v2 or H115i
 
 Copyright (C) 2018–2020  Jonas Malaco and contributors
 
@@ -86,10 +75,10 @@ _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIP
 
 
 class _CommonAsetekDriver(UsbDriver):
-    """Common fuctions of fifth generation Asetek devices."""
+    """Common methods for Asetek 690LC devices."""
 
     def _configure_flow_control(self, clear_to_send):
-        """Set the software Clear to Send flow control policy for device."""
+        """Set the software clear-to-send flow control policy for device."""
         LOGGER.debug('set clear to send = %s', clear_to_send)
         if clear_to_send:
             self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
@@ -110,10 +99,11 @@ class _CommonAsetekDriver(UsbDriver):
 
         According to the official documentation, as well as Craig's open-source
         implementation (libSiUSBXp), it should be necessary to check the queue
-        size and read data in chunks.  However, leviathan and its derivatives
-        seem to work fine without this complexity; we currently try the same
-        approach.
+        size and read the data in chunks.  However, leviathan and its
+        derivatives seem to work fine without this complexity; we also
+        successfully follow this approach.
         """
+
         msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
         self.device.release()
         return msg
@@ -149,7 +139,9 @@ class _CommonAsetekDriver(UsbDriver):
     def connect(self, **kwargs):
         """Connect to the device.
 
-        Enables the device to send data to the host."""
+        Enables the device to send data to the host.
+        """
+
         super().connect(**kwargs)
         self._configure_flow_control(clear_to_send=True)
 
@@ -164,19 +156,20 @@ class _CommonAsetekDriver(UsbDriver):
 
         Implementation note: unlike SI_Close is supposed to do,¹ do not send
         _USBXPRESS_NOT_CLEAR_TO_SEND to the device.  This allows one program to
-        disconnect without sotping reads from another.
+        disconnect without stopping reads from another.
 
         Surrounding device.read() with _USBXPRESS_[NOT_]CLEAR_TO_SEND would
         make more sense, but there seems to be a yet unknown minimum delay
-        necessary for that to work well.
+        necessary for that to work reliably.
 
         ¹ https://github.com/craigshelley/SiUSBXp/blob/master/SiUSBXp.c
         """
+
         super().disconnect(**kwargs)
 
 
 class Modern690Lc(_CommonAsetekDriver):
-    """liquidctl driver for modern fifth generation Asetek coolers."""
+    """Driver for modern fifth generation Asetek 690LC coolers."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
@@ -193,6 +186,7 @@ class Modern690Lc(_CommonAsetekDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         self._begin_transaction()
         self._write([_CMD_LUID, 0, 0, 0])
         msg = self._end_transaction_and_read()
@@ -277,7 +271,7 @@ class Modern690Lc(_CommonAsetekDriver):
 
 
 class Legacy690Lc(_CommonAsetekDriver):
-    """liquidctl driver for legacy fifth generation Asetek coolers."""
+    """Driver for legacy fifth generation Asetek 690LC coolers."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X) (experimental)', {}),
@@ -321,6 +315,7 @@ class Legacy690Lc(_CommonAsetekDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         msg = self._set_all_fixed_speeds()
         firmware = '{}.{}.{}.{}'.format(*tuple(msg[0x17:0x1b]))
         return [
@@ -376,7 +371,7 @@ class Legacy690Lc(_CommonAsetekDriver):
 
 
 class Hydro690Lc(Modern690Lc):
-    """liquidctl driver for Corsair-branded fifth generation Asetek coolers."""
+    """Driver for Corsair-branded fifth generation Asetek 690LC coolers."""
 
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),
@@ -394,6 +389,7 @@ class Hydro690Lc(Modern690Lc):
         return super().probe(handle, legacy_690lc=False, **kwargs)
 
     def set_color(self, channel, mode, colors, **kwargs):
+        """Set the color mode for a specific channel."""
         if mode == 'rainbow':
             raise KeyError('Unsupported lighting mode {}'.format(mode))
         super().set_color(channel, mode, colors, **kwargs)

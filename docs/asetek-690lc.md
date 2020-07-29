@@ -2,14 +2,14 @@
 
 Several products are available that are based on the same Asetek 690LC base design:
 
- - Current models:
-    * EVGA CLC 120 (CLC12), 240, 280 and 360
-    * Corsair H80i v2, H100i v2 and H115i
-    * Corsair H80i GT, H100i GTX and H110i GTX
- - Legacy designs:
-    * NZXT Kraken X40, X60, X31, X41, X51 and X61
+- Current models:
+  * EVGA CLC 120 (CLC12), 240, 280 and 360
+  * Corsair H80i v2, H100i v2 and H115i
+  * Corsair H80i GT, H100i GTX and H110i GTX
+- Legacy designs:
+  * NZXT Kraken X40, X60, X31, X41, X51 and X61
 
-**Note: a different kernel driver is necessary on Windows (see: [Installing on Windows](https://github.com/jonasmalacofilho/liquidctl#installing-on-windows)).**
+**Note: a custom kernel driver is necessary on Windows (see: [Installing on Windows](https://github.com/jonasmalacofilho/liquidctl#installing-on-windows)).**
 
 **Note: when dealing with legacy Krakens the `--legacy-690lc` flag should be supplied on all invocations of liquidctl.**
 
@@ -63,7 +63,7 @@ There's a single lighting channel `logo`.  The first light mode â€“ 'rainbow' â€
 
 *Note: the 'rainbow' lighting mode is currently only supported by EVGA units.*
 
-The 'fading' mode supports specifying the `--time-per-color` in seconds.  The defaults are 1 and 5 seconds per color, for modern and legacy coolers respectively.
+The 'fading' mode supports specifying the `--time-per-color` in seconds.  The defaults are 1 and 5 seconds per color for, respectively, modern and legacy coolers.
 
 ```
 # liquidctl set logo color fading ff8000 00ff80
