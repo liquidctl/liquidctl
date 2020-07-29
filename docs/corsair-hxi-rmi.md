@@ -4,12 +4,11 @@
 
 It is necessary to initialize the device once it has been powered on.
 
-
 ```
 # liquidctl initialize
 ```
 
-The +12V rails normally function in multiple-rail mode, and `initialize` will by default reset the PSU to that mode; single-rail mode can be selected by passing `--single-12v-ocp` to `initialize`.
+The +12V rails normally functions in multiple-rail mode, and `initialize` will by default reset the PSU to that behavior.  Single-rail mode can be optionally selected by passing `--single-12v-ocp` to `initialize`.
 
 _Note: changing the +12V OCP mode is currently an experimental feature._
 

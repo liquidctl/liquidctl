@@ -1,19 +1,9 @@
-"""liquidctl driver for Corsair HID PSUs.
+"""Driver for Corsair HXi and RMi series power supply units.
 
-Supported devices
------------------
+Supported devices;
 
- - Corsair HXi (HX750i, HX850i, HX1000i and HX1200i)
- - Corsair RMi (RM650i, RM750i, RM850i and RM1000i)
-
-Supported features
-------------------
-
- - general device monitoring
- - electrical input monitoring
- - electrical output monitoring
- - fan control
- - +12V single or multi rail OCP
+- Corsair HXi (HX750i, HX850i, HX1000i and HX1200i)
+- Corsair RMi (RM650i, RM750i, RM850i and RM1000i)
 
 Copyright (C) 2019–2020  Jonas Malaco and contributors
 
@@ -63,6 +53,7 @@ class OCPMode(Enum):
     def __str__(self):
         return self.name.capitalize().replace('_', ' ')
 
+
 class FanControlMode(Enum):
     """Fan control mode."""
 
@@ -74,7 +65,7 @@ class FanControlMode(Enum):
 
 
 class CorsairHidPsu(UsbHidDriver):
-    """liquidctl driver for Corsair HID PSUs."""
+    """Driver for Corsair HXi and RMi series power supply units."""
 
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x1c05, None, 'Corsair HX750i', {}),
@@ -95,6 +86,7 @@ class CorsairHidPsu(UsbHidDriver):
         Note: replies before calling this function appear to follow the
         pattern <address> <cte 0xfe> <zero> <zero> <padding...>.
         """
+
         self.device.clear_enqueued_reports()
         self._write([0xfe, 0x03])  # not well understood
         self._read()
@@ -113,6 +105,7 @@ class CorsairHidPsu(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         self.device.clear_enqueued_reports()
         ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         if ret[1] == 0xfe:
