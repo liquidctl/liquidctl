@@ -207,7 +207,6 @@ class KrakenX3(UsbHidDriver):
                 assert found_ring and found_logo, "Pump ring and/or logo were not detected"
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
-        self.device.release()
         return sorted(status)
 
     def get_status(self, **kwargs):
@@ -240,7 +239,6 @@ class KrakenX3(UsbHidDriver):
             colors = colors[:maxcolors]
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval)
-        self.device.release()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
@@ -253,7 +251,6 @@ class KrakenX3(UsbHidDriver):
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
                         duty, temp)
         self._write(header + interp)
-        self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
@@ -261,7 +258,6 @@ class KrakenX3(UsbHidDriver):
 
     def _read(self):
         data = self.device.read(_READ_LENGTH)
-        self.device.release()
         return data
 
     def _read_until(self, parsers):

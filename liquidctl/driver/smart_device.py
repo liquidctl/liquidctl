@@ -151,7 +151,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             colors = colors[:maxcolors]
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval)
-        self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
@@ -163,7 +162,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             duty = clamp(duty, dmin, dmax)
             LOGGER.info('setting %s duty to %i%%', cname, duty)
             self._write_fixed_duty(cid, duty)
-        self.device.release()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not Supported by this device."""
@@ -243,7 +241,6 @@ class SmartDevice(_CommonSmartDeviceDriver):
         """
         self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
         self._write([0x1, 0x5d])  # start reporting
-        self.device.release()
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -275,7 +272,6 @@ class SmartDevice(_CommonSmartDeviceDriver):
                     status.append(('LED accessory type', ltype, ''))
                     status.append(('LED count (total)', lcount*lsize, ''))
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
-        self.device.release()
         return sorted(status)
 
     def _write_colors(self, cid, mode, colors, sval):
@@ -410,7 +406,6 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                                    Hue2Accessory(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
-        self.device.release()
         return sorted(status)
 
     def get_status(self, **kwargs):
@@ -435,7 +430,6 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
         self.device.clear_enqueued_reports()
         self._read_until({b'\x67\x02': parse_fan_info})
-        self.device.release()
         return sorted(status)
 
     def _read_until(self, parsers):

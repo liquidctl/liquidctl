@@ -362,14 +362,6 @@ class HidapiDevice:
         """Connect to the device."""
         self.hiddev.open_path(self.hidinfo['path'])
 
-    def claim(self):
-        """NOOP."""
-        pass
-
-    def release(self):
-        """NOOP."""
-        pass
-
     def close(self):
         """NOOP."""
         self.hiddev.close()

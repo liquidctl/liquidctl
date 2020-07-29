@@ -13,15 +13,13 @@ class MockHidapiDevice:
                  serial_number=None, bus=None, address=None):
         self.vendor_id = vendor_id
         self.product_id = product_id
-        self.release_numer = release_number
+        self.release_number = release_number
         self.serial_number = serial_number
         self.bus = bus
         self.address = address
         self.port = None
 
         self.open = noop
-        self.claim = noop
-        self.release = noop
         self.close = noop
         self.clear_enqueued_reports = noop
 

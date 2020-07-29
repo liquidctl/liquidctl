@@ -44,14 +44,6 @@ def test_opens(dev, monkeypatch):
     assert opened
 
 
-def test_claims(dev):
-    dev.claim()
-
-
-def test_releases(dev):
-    dev.release()
-
-
 def test_closes(dev, monkeypatch):
     opened = True
 

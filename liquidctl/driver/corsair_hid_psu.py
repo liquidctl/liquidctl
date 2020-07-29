@@ -98,7 +98,6 @@ class CorsairHidPsu(UsbHidDriver):
         if self._get_fan_control_mode() != FanControlMode.HARDWARE:
             LOGGER.info('resetting fan control to hardware mode')
             self._set_fan_control_mode(FanControlMode.HARDWARE)
-        self.device.release()
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -128,7 +127,6 @@ class CorsairHidPsu(UsbHidDriver):
             status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
-        self.device.release()
         LOGGER.warning('reading the +12V OCP mode is an experimental feature')
         return status
 
@@ -139,7 +137,6 @@ class CorsairHidPsu(UsbHidDriver):
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
         LOGGER.info('setting fan PWM duty to %i%%', duty)
         self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
-        self.device.release()
 
     def set_color(self, channel, mode, colors, **kwargs):
         """Not supported by this device."""

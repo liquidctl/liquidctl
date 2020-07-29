@@ -172,7 +172,6 @@ class Kraken2(UsbHidDriver):
             logo = [leds[0][1], leds[0][0], leds[0][2]]
             ring = list(itertools.chain(*leds[1:]))
             self._write([0x2, 0x4c, byte2, mval, byte4] + logo + ring)
-        self.device.release()
 
     def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
         colors = list(colors)
@@ -214,7 +213,6 @@ class Kraken2(UsbHidDriver):
             LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
-        self.device.release()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
@@ -233,7 +231,6 @@ class Kraken2(UsbHidDriver):
         duty = clamp(duty, dmin, dmax)
         LOGGER.info('setting %s PWM duty to %i%%', channel, duty)
         self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
-        self.device.release()
 
     @property
     def supports_cooling_profiles(self):
@@ -249,7 +246,6 @@ class Kraken2(UsbHidDriver):
         if clear_first:
             self.device.clear_enqueued_reports()
         msg = self.device.read(_READ_LENGTH)
-        self.device.release()
         self._firmware_version = (msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
         return msg
 

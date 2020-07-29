@@ -182,7 +182,6 @@ class RgbFusion2(UsbHidDriver):
 
         self._send_feature_report([_REPORT_ID, _INIT_CMD])
         data = self._get_feature_report(_REPORT_ID)
-        self.device.release()
         # be tolerant: 8297 controllers support report IDs yet return 0 in the
         # first byte, which is out of spec
         assert data[0] in (_REPORT_ID, 0) and data[1] == 0x01
@@ -268,7 +267,6 @@ class RgbFusion2(UsbHidDriver):
             data[1:3] = addr1, addr2
             self._send_feature_report(data)
         self._execute_report()
-        self.device.release()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""

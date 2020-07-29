@@ -302,7 +302,6 @@ class HydroPlatinum(UsbHidDriver):
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
-        self.device.release()
         if compute_pec(buf[1:]):
             LOGGER.warning('response checksum does not match data')
         return buf
