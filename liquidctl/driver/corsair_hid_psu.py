@@ -1,6 +1,6 @@
-"""Driver for Corsair HXi and RMi series power supply units.
+"""liquidctl drivers for Corsair HXi and RMi series power supply units.
 
-Supported devices;
+Supported devices:
 
 - Corsair HXi (HX750i, HX850i, HX1000i and HX1200i)
 - Corsair RMi (RM650i, RM750i, RM850i and RM1000i)
@@ -65,7 +65,7 @@ class FanControlMode(Enum):
 
 
 class CorsairHidPsu(UsbHidDriver):
-    """Driver for Corsair HXi and RMi series power supply units."""
+    """Corsair HXi or RMi series power supply unit."""
 
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x1c05, None, 'Corsair HX750i', {}),

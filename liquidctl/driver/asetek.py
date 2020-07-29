@@ -1,4 +1,4 @@
-"""Drivers for fifth generation Asetek 690LC liquid coolers.
+"""liquidctl drivers for fifth generation Asetek 690LC liquid coolers.
 
 Supported devices:
 
@@ -169,7 +169,7 @@ class _CommonAsetekDriver(UsbDriver):
 
 
 class Modern690Lc(_CommonAsetekDriver):
-    """Driver for modern fifth generation Asetek 690LC coolers."""
+    """Modern fifth generation Asetek 690LC cooler."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
@@ -271,7 +271,7 @@ class Modern690Lc(_CommonAsetekDriver):
 
 
 class Legacy690Lc(_CommonAsetekDriver):
-    """Driver for legacy fifth generation Asetek 690LC coolers."""
+    """Legacy fifth generation Asetek 690LC cooler."""
 
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X) (experimental)', {}),
@@ -371,7 +371,7 @@ class Legacy690Lc(_CommonAsetekDriver):
 
 
 class Hydro690Lc(Modern690Lc):
-    """Driver for Corsair-branded fifth generation Asetek 690LC coolers."""
+    """Corsair-branded fifth generation Asetek 690LC cooler."""
 
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),
