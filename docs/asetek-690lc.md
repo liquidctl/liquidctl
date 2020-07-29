@@ -4,8 +4,8 @@ Several products are available that are based on the same Asetek 690LC base desi
 
 - Current models:
   * EVGA CLC 120 (CLC12), 240, 280 and 360
-  * Corsair H80i v2, H100i v2 and H115i
-  * Corsair H80i GT, H100i GTX and H110i GTX
+  * Corsair Hydro H80i v2, H100i v2 and H115i
+  * Corsair Hydro H80i GT, H100i GTX and H110i GTX
 - Legacy designs:
   * NZXT Kraken X40, X60, X31, X41, X51 and X61
 
