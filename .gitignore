@@ -1,7 +1,5 @@
 *.egg-info
 .krakenduty-poc
-.tox
-.vscode
 __pycache__
 build
 dist
