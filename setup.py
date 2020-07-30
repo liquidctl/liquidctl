@@ -88,11 +88,12 @@ setuptools.setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='cross-platform cli driver corsair evga nzxt liquid-cooler fan-controller '
-             'power-supply led-controller kraken smart-device',
+             'power-supply led-controller kraken smart-device hue2 gigabyte',
     project_urls={
-        'Suported devices': SUPPORTED_URL,
+        'Supported devices': SUPPORTED_URL,
         'Documentation': DOC_URL,
         'Changelog': CHANGES_URL,
     },
