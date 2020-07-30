@@ -89,7 +89,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 |:--- |:---:|:--- |
 | Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
 | Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb_fusion2-guide.md) | <sup>_EU_</sup> |
+| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_EU_</sup> |
 | NZXT E500, E650, E850 (PSUs) | [guide](docs/nzxt-e-series-psu-guide.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3  | [guide](docs/nzxt-smart-device-v1-guide.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
