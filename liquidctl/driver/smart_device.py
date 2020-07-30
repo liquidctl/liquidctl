@@ -131,11 +131,11 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode.
 
-        Only available for the Smart Device V1/V2.
+        Only supported by Smart Device V1/V2 and HUE 2 controllers.
         """
 
         if not self._color_channels:
-            raise NotImplementedError()
+            raise NotSupportedByDevice()
         cid = self._color_channels[channel]
         _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
