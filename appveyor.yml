@@ -56,9 +56,11 @@ build_script:
 
 after_build:
   - cmd: mkdir %DIST_PACKAGE%\docs
+  - cmd: mkdir %DIST_PACKAGE%\docs\windows
   - cmd: copy liquidctl.exe %DIST_PACKAGE%\
   - cmd: copy README.md %DIST_PACKAGE%\
   - cmd: copy docs\*.md %DIST_PACKAGE%\docs\
+  - cmd: copy docs\windows\*.md %DIST_PACKAGE%\docs\windows\
   - cmd: copy LICENSE.txt %DIST_PACKAGE%\
   - cmd: copy extra\windows\redist-notices.txt %DIST_PACKAGE%\COPYRIGHT.txt
   - cmd: copy extra\windows\included.txt %DIST_PACKAGE%\included.txt
