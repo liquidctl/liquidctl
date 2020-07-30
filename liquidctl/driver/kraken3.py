@@ -1,23 +1,9 @@
-"""liquidctl driver for fourth-generation NZXT Kraken X and Z liquid coolers.
+"""liquidctl drivers for fourth-generation NZXT Kraken X and Z liquid coolers.
 
-Supported devices
------------------
+Supported devices:
 
- - [✓] NZXT Kraken X (X53, X63 and Z73)
- - [·] NZXT Kraken Z (Z63 and Z73)
-
-Supported features
-------------------
-
- - [✓] general monitoring
- - [✓] pump/fan speed control
- - [✓] hardware-supported LED animations
- - [ ] OLED screen control (only Z models)
-
-Documentation
--------------
-
-See: <../../docs/fourth-generation-krakens.md>.
+- NZXT Kraken X (X53, X63 and Z73)
+- NZXT Kraken Z (Z63 and Z73); no OLED screen control yet
 
 Copyright (C) 2020–2020  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -42,6 +28,7 @@ _MAX_READ_ATTEMPTS = 12
 _SPEED_CHANNELS_KRAKENX = {
     'pump': (0x1, 20, 100),
 }
+
 # Available speed channels for model Z coolers
 # name -> (channel_id, min_duty, max_duty)
 # TODO adjust min duty values to what the firmware enforces
@@ -49,6 +36,7 @@ _SPEED_CHANNELS_KRAKENZ = {
     'pump': (0x1, 20, 100),
     'fan': (0x2, 0, 100),
 }
+
 _CRITICAL_TEMPERATURE = 59
 
 # Available color channels and IDs for model X coolers
@@ -58,12 +46,14 @@ _COLOR_CHANNELS_KRAKENX = {
     'logo': 0b100,
     'sync': 0b111
 }
+
 # Available color channels and IDs for model Z coolers
 _COLOR_CHANNELS_KRAKENZ = {
     'external': 0b001,
 }
+
 # Available LED channel modes/animations
-# name -< (mode, size/variant, speed scale, min colors, max colors)
+# name -> (mode, size/variant, speed scale, min colors, max colors)
 # FIXME any point in a one-color *alternating* or tai-chi animations?
 # FIXME are all modes really supported by all channels? (this is better because
 #       of synchronization, but it's not how the previous generation worked, so
@@ -113,6 +103,7 @@ _COLOR_MODES = {
     'water-cooler':                         (0x0f, 0x00,  6, 2, 2),
     'wings':                                (None, 0x00, 11, 1, 1),
 }
+
 # A static value per channel that is somehow related to animation time and
 # synchronization, although the specific mechanism is not yet understood.
 # Could require information from `initialize`, but more testing is required.
@@ -122,6 +113,7 @@ _STATIC_VALUE = {
     0b100: 1,
     0b111: 40,  # may result in long all-off intervals (FIXME?)
 }
+
 # Speed scale/timing bytes
 # scale -> (slowest, slow, normal, fast, fastest)
 _SPEED_VALUE = {
@@ -138,6 +130,7 @@ _SPEED_VALUE = {
     10: ([0x37, 0x00], [0x28, 0x00], [0x19, 0x00], [0x0a, 0x00], [0x00, 0x00]),
     11: ([0x6e, 0x00], [0x53, 0x00], [0x39, 0x00], [0x2e, 0x00], [0x20, 0x00]),
 }
+
 _ANIMATION_SPEEDS = {
     'slowest': 0x0,
     'slower': 0x1,
@@ -148,7 +141,7 @@ _ANIMATION_SPEEDS = {
 
 
 class KrakenX3(UsbHidDriver):
-    """liquidctl driver for model X fourth-generation coolers from NZXT."""
+    """Fourth-generation Kraken X liquid cooler."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {
@@ -165,10 +158,10 @@ class KrakenX3(UsbHidDriver):
     def initialize(self, **kwargs):
         """Initialize the device.
 
-        Reports the current firmware of the device.
-
-        Returns a list of (key, value, unit) tuples.
+        Reports the current firmware of the device.  Returns a list of (key,
+        value, unit) tuples.
         """
+
         self.device.clear_enqueued_reports()
         # request static infos
         self._write([0x10, 0x01])  # firmware info
@@ -214,6 +207,7 @@ class KrakenX3(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         self.device.clear_enqueued_reports()
         msg = self._read()
         return [
@@ -333,7 +327,7 @@ class KrakenX3(UsbHidDriver):
 
 
 class KrakenZ3(KrakenX3):
-    """liquidctl driver for model Z fourth-generation coolers from NZXT."""
+    """Fourth-generation Kraken Z liquid cooler."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z63 or Z73) (experimental)', {
@@ -347,6 +341,7 @@ class KrakenZ3(KrakenX3):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         self.device.clear_enqueued_reports()
         self._write([0x74, 0x01])
         msg = self._read()

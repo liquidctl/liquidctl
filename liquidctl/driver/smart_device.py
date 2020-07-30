@@ -133,6 +133,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 
         Only available for the Smart Device V1/V2.
         """
+
         if not self._color_channels:
             raise NotImplementedError()
         cid = self._color_channels[channel]
@@ -179,7 +180,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 
 
 class SmartDevice(_CommonSmartDeviceDriver):
-    """liquidctl driver for the NZXT Smart Device (V1) and Grid+ V3."""
+    """NZXT Smart Device (V1) or Grid+ V3."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x1714, None, 'NZXT Smart Device (V1)', {
@@ -239,6 +240,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
         Detects all connected fans and LED accessories, and allows subsequent
         calls to get_status.
         """
+
         self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
         self._write([0x1, 0x5d])  # start reporting
 
@@ -247,6 +249,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
+
         status = []
         noise = []
         self.device.clear_enqueued_reports()
@@ -294,7 +297,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
 
 class SmartDevice2(_CommonSmartDeviceDriver):
-    """liquidctl driver for the NZXT Smart Device V2, NZXT HUE 2 and NZXT HUE 2 Ambient."""
+    """NZXT HUE 2 lighting and, optionally, fan controller."""
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {
@@ -380,6 +383,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
+
         self.device.clear_enqueued_reports()
         # initialize
         update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
@@ -413,6 +417,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
+
         if not self._speed_channels:
             return []
         status = []

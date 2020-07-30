@@ -1,4 +1,4 @@
-"""liquidctl driver for third generation NZXT Kraken X and M liquid coolers.
+"""liquidctl drivers for third generation NZXT Kraken X and M liquid coolers.
 
 Kraken X (X42, X52, X62 and X72)
 --------------------------------
@@ -12,14 +12,6 @@ Kraken M22
 The Kraken M22 shares similar RGB funcionality to the X models of the same
 generation, but has no liquid temperature sensor and no hability to report or
 set fan or pump speeds.
-
-Naming
-------
-
-The module and driver were named "kraken_two" and "KrakenTwoDriver" in
-reference to the common sufix in the model names (instead of the generation
-number).  This turned out to be a bad idea, but the names are kept for
-backwards compatibility.
 
 Copyright (C) 2018–2020  Jonas Malaco and contributors
 
@@ -42,12 +34,15 @@ _SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'fan':   (0x80, 25, 100),
     'pump':  (0xc0, 50, 100),
 }
+
 _CRITICAL_TEMPERATURE = 60
+
 _COLOR_CHANNELS = {
     'sync':     0x0,
     'logo':     0x1,
     'ring':     0x2,
 }
+
 _COLOR_MODES = {
     # (byte3/mode, byte2/reverse, byte4/modifier, min colors, max colors, only ring)
     'off':                           (0x00, 0x00, 0x00, 0, 0, False),
@@ -79,6 +74,7 @@ _COLOR_MODES = {
     'super-wave':                    (0x0d, 0x00, 0x00, 1, 8, True),  # independent ring leds
     'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 8, True),  # independent ring leds
 }
+
 _ANIMATION_SPEEDS = {
     'slowest':  0x0,
     'slower':   0x1,
@@ -86,6 +82,7 @@ _ANIMATION_SPEEDS = {
     'faster':   0x3,
     'fastest':  0x4,
 }
+
 _READ_ENDPOINT = 0x81
 _READ_LENGTH = 64
 _WRITE_ENDPOINT = 0x1
@@ -93,7 +90,7 @@ _WRITE_LENGTH = 65
 
 
 class Kraken2(UsbHidDriver):
-    """liquidctl driver for third generation NZXT Kraken X and M liquid coolers."""
+    """Third generation NZXT Kraken X or M liquid cooler."""
 
     DEVICE_KRAKENX = 'Kraken X'
     DEVICE_KRAKENM = 'Kraken M'
@@ -139,6 +136,7 @@ class Kraken2(UsbHidDriver):
 
         Returns a list of (key, value, unit) tuples.
         """
+
         msg = self._read()
         firmware = '{}.{}.{}'.format(*self._firmware_version)
         if self.device_type == self.DEVICE_KRAKENM:

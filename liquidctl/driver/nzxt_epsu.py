@@ -1,17 +1,13 @@
-"""liquidctl driver for Seasonic PSUs.
+"""liquidctl driver for NZXT E-series PSUs.
 
-Supported devices
------------------
+Supported devices: NZXT E500, E650 and E850.
 
- - NZXT E500, E650 and E850
+Features:
 
-Supported features
-------------------
-
- - […] general device monitoring
- - [✓] electrical output monitoring
- - [ ] fan control
- - [ ] 12V multirail configuration
+- electrical output monitoring: complete
+- general device monitoring: partial
+- fan control: missing
+- 12V multiple rail configuration: missing
 
 Copyright (C) 2019–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -37,7 +33,7 @@ _RAILS = ['+12V peripherals', '+12V EPS/ATX12V', '+12V motherboard/PCI-e', '+5V 
 
 
 class NzxtEPsu(UsbHidDriver):
-    """liquidctl driver for Seasonic E-series PSUs."""
+    """NZXT E-series power supply unit."""
 
     SUPPORTED_DEVICES = [
         (0x7793, 0x5911, None, 'NZXT E500 (experimental)', {}),
@@ -48,8 +44,9 @@ class NzxtEPsu(UsbHidDriver):
     def initialize(self, **kwargs):
         """Initialize the device.
 
-        Aparently not required.
+        Apparently not required.
         """
+
         pass
 
     def get_status(self, **kwargs):
@@ -57,6 +54,7 @@ class NzxtEPsu(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         self.device.clear_enqueued_reports()
         fw_human, fw_cam = self._get_fw_versions()
         status = [
@@ -96,6 +94,7 @@ class NzxtEPsu(UsbHidDriver):
         microcontroller.  It is possible that it isn't just used for a "dumb"
         PMBus/HID bridge, requiring time to be left for other tasks.
         """
+
         time.sleep(_MIN_DELAY)
 
     def _exec_read(self, cmd, data_len):

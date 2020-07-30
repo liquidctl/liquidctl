@@ -1,10 +1,10 @@
-# Third generation NZXT coolers
+# Third-generation NZXT liquid coolers
 
 ## NZXT Kraken X42, X52, X62, X72
 
-The Kraken X42, X52, X62 and X72 compose the third generation of liquid coolers by NZXT.  These devices are manufactured by Asetek and house fifth generation Asetek pumps, plus secondary PCBs specially designed by NZXT for enhanced control and lighting.
+The Kraken X42, X52, X62 and X72 are the third generation of Kraken X liquid coolers by NZXT.  These devices are manufactured by Asetek and house fifth generation Asetek pumps, plus secondary PCBs specially designed by NZXT for enhanced control and lighting.
 
-They incorporate customizable fan and pump speed control with PWM, a liquid temperature probe in the block and addressable RGB lighting.  The coolers are powered directly by the power supply unit.
+They incorporate customizable fan and pump speed control with PWM, a liquid temperature probe in the block and addressable RGB lighting.  The coolers are powered directly from the power supply unit.
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The cooler also reports fan and pump speed and liquid temperature via USB; pump speed can also be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
