@@ -31,28 +31,28 @@ install:
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v%LIBUSB_VERSION%/libusb-%LIBUSB_VERSION%.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
   # python build and package tools
-  - cmd: C:\Python36-x64\python -m pip install --upgrade pip setuptools --ignore-installed
+  - cmd: C:\Python38-x64\python -m pip install --upgrade pip setuptools --ignore-installed
   # specific pyusb version and patch
   # (patch dual licensed under BSD3, see https://github.com/pyusb/pyusb/pull/227#issuecomment-554752137)
   - cmd: git clone --branch v1.0.2 --depth 1 https://github.com/pyusb/pyusb && cd pyusb
   - cmd: git apply ..\extra\windows\0001-Fix-203-libusb-sometimes-cleaned-up-too-early.patch
   - cmd: git apply ..\extra\windows\9999-Add-local-version.patch
-  - cmd: C:\Python36-x64\python -m pip install . && cd .. && rmdir /q /s pyusb
+  - cmd: C:\Python38-x64\python -m pip install . && cd .. && rmdir /q /s pyusb
   # remaining dependencies
-  - cmd: C:\Python36-x64\python setup.py install
+  - cmd: C:\Python38-x64\python setup.py install
   # generate list of packages that will be included
-  - cmd: C:\Python36-x64\python -m pip freeze | find /V "virtualenv" > extra\windows\included.txt
+  - cmd: C:\Python38-x64\python -m pip freeze | find /V "virtualenv" > extra\windows\included.txt
   # install pyinstaller last to not pollute included.txt with its dependencies
-  - cmd: C:\Python36-x64\python -m pip install pyinstaller
-  - cmd: C:\Python36-x64\python -m pip freeze | find "PyInstaller" >> extra\windows\included.txt
+  - cmd: C:\Python38-x64\python -m pip install pyinstaller
+  - cmd: C:\Python38-x64\python -m pip freeze | find "PyInstaller" >> extra\windows\included.txt
   - cmd: echo libusb %LIBUSB_VERSION% >> extra\windows\included.txt
-  - cmd: C:\Python36-x64\python --version >> extra\windows\included.txt
+  - cmd: C:\Python38-x64\python --version >> extra\windows\included.txt
   # run unit tests and module doctests
-  - cmd: C:\Python36-x64\python -m pip install pytest
-  - cmd: C:\Python36-x64\python -m pytest
+  - cmd: C:\Python38-x64\python -m pip install pytest
+  - cmd: C:\Python38-x64\python -m pytest
 
 build_script:
-  - cmd: C:\Python36-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
+  - cmd: C:\Python38-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --distpath .
 
 after_build:
   - cmd: mkdir %DIST_PACKAGE%\docs
