@@ -1,68 +1,9 @@
 """liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers.
 
-RGB Fusion 2.0
---------------
+Supported controllers:
 
-RGB Fusion 2.0 is a lighting system that supports 12 V non-addressable RGB and
-5 V addressable ARGB lighting accessories, along side RGB/ARGB memory modules
-and other elements on the motherboard itself.  It is built into motherboards
-that contain the RGB Fusion 2.0 logo, typically from Gigabyte.
-
-These motherboards use one of many possible ITE Tech controller chips, which
-are connected to the host via SMBus or USB, depending on the motherboard/chip
-model.  This driver supports a few of the USB controllers.
-
-Driver
-------
-
-This driver implements the following features available at the hardware level:
-
- - initialization
- - control of lighting modes and colors
- - reporting of firmware version
-
-Channel names
--------------
-
-As much as we would like to use descriptive channel names, currently it is not
-practical to do so, since the correspondence between the hardware channels and
-the corresponding features on the motherboard is not stable.  Hence, lighting
-channels are given generic names: led1, led2, etc.
-
-At this time, eight lighting channels are defined; a 'sync' channel is also
-provided, which applies the specified setting to all lighting channels.
-
-Each user may need to create a table that associates generic channel names to
-specific areas or headers on their motherboard. For example, a map for the
-Gigabyte Z490 Vision D might look like this:
-
- - led1: This is the LED next to the IO panel
- - led2: This is one of two 12V RGB headers
- - led3: This is the LED on the PCH chip ("Designare" on Vision D)
- - led4: This is an array of LEDs behind the PCI slots on *back side* of motherboard
- - led5: This is second 12V RGB header
- - led6: This is one of two 5V addressable RGB headers
- - led7: This is second 5V addressable RGB header
- - led8: Not in use
-
-The driver supports 6 color modes: off, static, pulse, flash, double-flash and
-color-cycle.
-
-The more elaborate color/animation schemes supported by the motherboard on the
-addressable headers are not currently supported.
-
-For color modes pulse, flash, double-flash and color-cycle, the speed of color
-change is governed by the --speed parameter, one of the possible values:
-slowest, slower, normal (default), faster, fastest or ludicrous.
-
-Caveats
--------
-
-On wake-from-sleep, the ITE controller will be reset and all color modes will
-revert to static blue.  On macOS, the "sleepwatcher" utility can be installed
-via Homebrew along with a script to be run on wake that will issue the
-necessary liquidctl commands to restore desired lighting effects.  Similar
-solutions may be used on Windows and Linux.
+ - ITE 5702: found in Gigabyte Z490 Vision D and other motherboards
+ - ITE 8297: found in Gigabyte Z570 Aorus Elite and other motherboards
 
 Copyright (C) 2020–2020  CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
