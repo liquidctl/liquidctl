@@ -1,4 +1,5 @@
 # Fourth-generation NZXT liquid coolers
+_Driver API and source code available in [`liquidctl.driver.kraken3`](../liquidctl/driver/kraken3.py)._
 
 The fourth-generation of NZXT Kraken coolers is composed by X models—featuring the familiar infinity mirror—and Z models—replacing the infinity mirror with an OLED screen.
 

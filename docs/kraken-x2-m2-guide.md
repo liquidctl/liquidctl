@@ -1,4 +1,5 @@
 # Third-generation NZXT liquid coolers
+_Driver API and source code available in [`liquidctl.driver.kraken2`](../liquidctl/driver/kraken2.py)._
 
 ## NZXT Kraken X42, X52, X62, X72
 

@@ -1,4 +1,5 @@
 # Corsair Hydro Platinum and PRO XT all-in-one liquid coolers
+_Driver API and source code available in [`liquidctl.driver.hydro_platinum`](../liquidctl/driver/hydro_platinum.py)._
 
 ## Initializing the device and setting the pump mode
 

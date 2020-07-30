@@ -1,4 +1,5 @@
 # NZXT HUE 2 and Smart Device V2 controllers
+_Driver API and source code available in [`liquidctl.driver.smart_device`](../liquidctl/driver/smart_device.py)._
 
 The NZXT HUE 2 lighting system is a refresh of the original HUE+.  The main improvement is the ability to mix Aer RGB 2 fans and HUE 2 lighting accessories (e.g. HUE 2 LED strip, HUE 2 Underglow, HUE 2 Cable Comb) in a channel.  HUE+ devices, including the original Aer RGB fans, are also supported, but HUE 2 components cannot be mixed with HUE+ components in the same channel.
 

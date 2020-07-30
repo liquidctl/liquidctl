@@ -1,4 +1,5 @@
 # NZXT Smart Device (V1) and Grid+ V3
+_Driver API and source code available in [`liquidctl.driver.smart_device`](../liquidctl/driver/smart_device.py)._
 
 The Smart Device is a fan and LED controller that ships with the H200i, H400i, H500i and H700i cases.
 

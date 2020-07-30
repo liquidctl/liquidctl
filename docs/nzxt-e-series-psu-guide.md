@@ -1,4 +1,5 @@
 # NZXT E-series PSUs
+_Driver API and source code available in [`liquidctl.driver.nzxt_epsu`](../liquidctl/driver/nzxt_epsu.py)._
 
 ## Initialization
 

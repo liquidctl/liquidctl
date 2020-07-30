@@ -1,4 +1,5 @@
 # Corsair HXi and RMi series PSUs
+_Driver API and source code available in [`liquidctl.driver.corsair_hid_psu`](../liquidctl/driver/corsair_hid_psu.py)._
 
 ## Initialization
 

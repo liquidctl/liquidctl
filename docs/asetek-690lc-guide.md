@@ -1,4 +1,5 @@
 # Asetek 690LC liquid coolers
+_Driver API and source code available in [`liquidctl.driver.asetek`](../liquidctl/driver/asetek.py)._
 
 Several products are available that are based on the same Asetek 690LC base design:
 
