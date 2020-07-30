@@ -59,9 +59,9 @@ class Controller5702TestCase(unittest.TestCase):
         self.assertEqual(max(set_color.data[13:16]), 0, "incorrect color")
         self.assertEqual(max(set_color.data[21:27]), 0, "incorrect speed values")
 
-    def test_static_with_some_channel(self):
+    def test_fixed_with_some_channel(self):
         colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
-        self.device.set_color(channel='led7', mode='static', colors=iter(colors))
+        self.device.set_color(channel='led7', mode='fixed', colors=iter(colors))
         set_color, execute = self.mock_hid.sent
         self.assertEqual(set_color.data[0:2], [0x26, 0x40], "incorrect channel")
         self.assertEqual(set_color.data[10], 0x01, "wrong mode value")
@@ -113,7 +113,7 @@ class Controller5702TestCase(unittest.TestCase):
 
     def test_common_behavior_in_all_set_color_writes(self):
         colors = [[0xff, 0, 0x80]]
-        for mode in ['off', 'static', 'pulse', 'flash', 'double-flash', 'color-cycle']:
+        for mode in ['off', 'fixed', 'pulse', 'flash', 'double-flash', 'color-cycle']:
             self.mock_hid.sent = deque()
             self.device.set_color(channel='led1', mode=mode, colors=iter(colors))
             set_color, execute = self.mock_hid.sent
@@ -122,7 +122,7 @@ class Controller5702TestCase(unittest.TestCase):
 
     def test_sync_channel(self):
         colors = [[0xff, 0, 0x80]]
-        self.device.set_color(channel='sync', mode='static', colors=iter(colors))
+        self.device.set_color(channel='sync', mode='fixed', colors=iter(colors))
         self.assertEqual(len(self.mock_hid.sent), 8 + 1)  # 8 × set + execute
 
     def test_reset_all_channels(self):
@@ -140,7 +140,7 @@ class Controller5702TestCase(unittest.TestCase):
         self.assertRaises(Exception, self.device.set_color, channel='led1',
                           mode='invalid', colors=[])
         self.assertRaises(Exception, self.device.set_color, channel='led1',
-                          mode='static', colors=[])
+                          mode='fixed', colors=[])
         self.assertRaises(Exception, self.device.set_color, channel='led1',
                           mode='pulse', colors=[[0xff, 0, 0x80]], speed='invalid')
 

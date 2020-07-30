@@ -79,7 +79,7 @@ _COLOR_MODES = {
     for mode in [
         _ColorMode('off', 0x01, pulses=False, flash_count=0, cycle_count=0,
                    max_brightness=0, takes_color=False, speed_values=None),
-        _ColorMode('static', 0x01, pulses=False, flash_count=0, cycle_count=0,
+        _ColorMode('fixed', 0x01, pulses=False, flash_count=0, cycle_count=0,
                    max_brightness=90, takes_color=True, speed_values=None),
         _ColorMode('pulse', 0x02, pulses=True, flash_count=0, cycle_count=0,
                    max_brightness=90, takes_color=True, speed_values=_PULSE_SPEEDS),
@@ -158,7 +158,7 @@ class RgbFusion2(UsbHidDriver):
         | Mode         | Colors required | Speed is customizable |
         | ------------ | --------------- | --------------------- |
         | off          |            zero |                    no |
-        | static       |             one |                    no |
+        | fixed        |             one |                    no |
         | pulse        |             one |                   yes |
         | flash        |             one |                   yes |
         | double-flash |             one |                   yes |
@@ -171,6 +171,10 @@ class RgbFusion2(UsbHidDriver):
         `speed`, when supported by the `mode`, can be one of: `slowest`,
         `slow`, `normal` (default), `faster`, `fastest` or `ludicrous`.
         """
+
+        if mode.lower() == 'static':
+            # TODO if today > 30 August 2020: remove this custom error
+            raise ValueError("This mode was renamed to 'fixed' before the 1.4.0 release, to be consistent with other devices")
 
         mode = _COLOR_MODES[mode.lower()]
         colors = iter(colors)

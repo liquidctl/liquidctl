@@ -26,7 +26,7 @@ Gigabyte RGB Fusion 2.0 5702 Controller (experimental)
 
 ## Lighting
 
-The controllers support six color modes: `off`, `static`, `pulse`, `flash`,
+The controllers support six color modes: `off`, `fixed`, `pulse`, `flash`,
 `double-flash` and `color-cycle`.
 
 As much as we would prefer to use descriptive channel names, currently it is
@@ -39,7 +39,7 @@ provided, which applies the specified setting to all lighting channels.
 
 ```
 # liquidctl set sync color off
-# liquidctl set led1 color static 350017
+# liquidctl set led1 color fixed 350017
 # liquidctl set led2 color pulse ff2608
 # liquidctl set led3 color flash 350017
 # liquidctl set led4 color double-flash 350017
@@ -73,7 +73,7 @@ Gigabyte Z490 Vision D might look like this:
 ## More on resuming from sleep states
 
 On wake-from-sleep, the ITE controller will be reset and all color modes will
-revert to static blue.
+revert to fixed blue.
 
 On macOS, the "sleepwatcher" utility can be installed via Homebrew along with a
 script to be run on wake that will issue the necessary liquidctl commands to
