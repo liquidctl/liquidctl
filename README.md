@@ -73,8 +73,8 @@ The following devices are supported by this version of liquidctl.  See each guid
 |:--- |:---:|:--- |
 | Corsair Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc-guide.md) | <sup>_ZE_</sup> |
 | Corsair Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
-| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-and-pro-xt-guide.md) | <sup>_EU_</sup> |
-| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-and-pro-xt-guide.md) | <sup>_EU_</sup> |
+| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_EU_</sup> |
+| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-pro-xt-guide.md) | <sup>_EU_</sup> |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
 | NZXT Kraken M22 | [guide](docs/kraken-x2-m2-guide.md) | |
 | NZXT Kraken X40, X60 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
