@@ -154,7 +154,7 @@ _Note: in systems that default to Python 2, use `pip3`, `python3` and `pytest-3`
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.3.3-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.3.3/liquidctl-1.3.3-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.4.0-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.4.0/liquidctl-1.4.0-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 

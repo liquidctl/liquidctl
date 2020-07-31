@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.4.0] – Unreleased
+## [1.4.0] – 2020-07-31
 _Summary for the 1.4.0 release: fourth-generation NZXT Kraken coolers, Corsair
 Platinum and PRO XT coolers, select Gigabyte RGB Fusion 2.0 motherboards,
 additional color formats, improved fan and pump profiles in third-generation
