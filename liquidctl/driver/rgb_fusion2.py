@@ -2,8 +2,8 @@
 
 Supported controllers:
 
- - ITE 5702: found in Gigabyte Z490 Vision D and other motherboards
- - ITE 8297: found in Gigabyte Z570 Aorus Elite and other motherboards
+- ITE 5702: found in Gigabyte Z490 Vision D (USB device)
+- ITE 8297: found in Gigabyte X570 Aorus Elite (USB device)
 
 Copyright (C) 2020–2020  CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
