@@ -44,6 +44,11 @@ Changelog since 1.3.3:
  - Deprecate and ignore `--hid` override for API selection
 ### Removed
  - Remove the PyUsbHid device backend for HIDs
+### Checksums
+```
+250b7665b19b0c5d9ae172cb162bc920734eba720f3e337eb84409077c582966  liquidctl-1.4.0-bin-windows-x86_64.zip
+b35e6f297e67f9e145794bb57b88c626ef2bfd97e7fbb5b098f3dbf9ae11213e  liquidctl-1.4.0.tar.gz
+```
 
 
 ## [1.3.3] – 2020-02-18
