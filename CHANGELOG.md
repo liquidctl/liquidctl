@@ -1,7 +1,10 @@
 # Changelog
 
 ## [1.4.0] – Unreleased
-_Tentative summary for the 1.4.0 release: fourth-generation Krakens, Corsair Platinum and PRO XT coolers, additional color formats, improved fan and pump profiles in third-generation Krakens, and other improvements._
+_Summary for the 1.4.0 release: fourth-generation NZXT Kraken coolers, Corsair
+Platinum and PRO XT coolers, select Gigabyte RGB Fusion 2.0 motherboards,
+additional color formats, improved fan and pump profiles in third-generation
+Krakens, and other improvements._
 
 Changelog since 1.3.3:
 ### Added
@@ -15,18 +18,28 @@ Changelog since 1.3.3:
  - Add `sync` lighting channel to HUE 2 devices
  - Add tentative names for the different +12 V rails of NZXT E-series PSUs
  - Add +uaccess udev rules for Linux distributions and users
- - [extra] Add more general `yoda` script for software-based fan/pump control (superseeds `krakencurve-poc`)
+ - Add `--pump-mode` option to `initialize` (Corsair Platinum/PRO XT coolers)
+ - Add `--unsafe` option to enable additional bleeding-edge features
+ - Add a test suite
+ - [extra] Add more general `yoda` script for software-based fan/pump control (supersedes `krakencurve-poc`)
 ### Changed
  - Increase resolution of fan and pump profiles in Kraken X42/X52/X62/X72 coolers
  - Use hidapi to communicate with HIDs on Windows
+ - Switch to specific NotSupportedByDevice and NotSupportedByDriver errors
+ - Store runtime data on non-Linux systems in ~/Library/Caches (macOS), %TEMP% (Windows) or /tmp (Unix)
  - Mark Corsair HXi/RMi PSUs as no longer experimental
  - Mark Smart Device V2 and HUE 2 controllers as no longer experimental
+ - Switch to a consistent module, driver and guide naming scheme (aliases are kept for backwards compatibility)
  - Improve the documentation
  - [extra] Refresh `krakencurve-poc` syntax and sensor names, and get CPU temperature on macOS with iStats
 ### Fixed
  - Add missing identifiers for some HUE2 accessories (#95; #109)
  - Fix CAM-like decoding of firmware version in NZXT E-series PSUs (#46, comment)
  - Use a bitmask to select the lighting channel in HUE 2 devices (#109)
+ - Close the underlying cython-hidapi `device`
+ - Don't allow `HidapiDevice.clear_enqueued_reports` to block
+ - Don't allow `HidapiDevice.address` to fail with non-Unicode paths
+ - Store each runtime data value atomically
 ### Deprecated
  - Deprecate and ignore `--hid` override for API selection
 ### Removed
