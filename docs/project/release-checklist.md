@@ -14,10 +14,12 @@
 
 ## Test
 
+ - with `"$(liquidctl --version) = "liquidclt v<version>"`...
  - [ ] Run unit and doc tests: `pytest`
+ - [ ] Run my setup scripts: `liquidcfg && liquiddyncfg`
  - [ ] Run old HW tests: `extra/old-tests/asetek_*` and `extra/old-tests/kraken_two`
- - [ ] Test krakenduty: `extra/krakenduty-poc status`
- - [ ] Test krakencurve: `extra/krakencurve-poc control --use-psutil --fan-sensor 'coretemp:Package id 0' '(25,50),(35,100)' '(25,35),(35,60),(60,100)' --verbose`
+ - [ ] Test krakenduty: `extra/krakenduty-poc train && extra/krakenduty-poc status`
+ - [ ] Test krakencurve: `extra/krakencurve-poc control --fan-sensor coretemp.package_id_0 --pump '(25,50),(35,100)' --fan '(25,35),(35,60),(60,100)' --verbose`
  - [ ] Test yoda: `extra/yoda --match kraken control pump with '(20,50),(50,100)' on coretemp.package_id_0 and fan with '(20,25),(34,100)' on _internal.liquid --verbose`
  - [ ] Test liquiddump: `extra/liquiddump | jq -c .`
  - [ ] Test krakenx (git): `colctl --mode fading --color_count 2 --color0 192,32,64 --color1 246,11,21 --fan_speed "(30, 100), (40, 100)" --pump_speed "(30, 100), (40, 100)"`
@@ -25,20 +27,10 @@
 ## Source distribution
 
  - [ ] Tag HEAD as `v<version>` with short summary annotation
- - [ ] Make sure `liquidctl/extraversion.py` makes sense
  - [ ] Push HEAD and `v<version>` tag
  - [ ] Check all CI statuses (pytest, flake8 linting, and `list --verbose`)
  - [ ] Generate the source distribution: `python setup.py sdist`
  - [ ] Check that all necessary files are in `dist/liquidctl-<version>.tar.gz` and that generated `extraversion.py` makes sense
-
-## Packaging: ArchLinux
-
- - [ ] Update and build liquidctl with local `local://<...>/liquidctl/dist/liquidctl-<version>tar.gz`
- - [ ] Test my personal setup: `liquidcfg` and `liquiddyncfg`
-
-## Packaging: Windows
-
- - [ ] Test AppVeyor build of `v<version>` on my Windows system (version, status, and my custom setup)
 
 ## Release
 
