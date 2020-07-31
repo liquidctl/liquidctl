@@ -25,8 +25,8 @@ Changelog since 1.3.3:
 ### Changed
  - Increase resolution of fan and pump profiles in Kraken X42/X52/X62/X72 coolers
  - Use hidapi to communicate with HIDs on Windows
- - Switch to specific NotSupportedByDevice and NotSupportedByDriver errors
- - Store runtime data on non-Linux systems in ~/Library/Caches (macOS), %TEMP% (Windows) or /tmp (Unix)
+ - Use specific errors when features are not supported by the device or the driver
+ - Store runtime data on non-Linux systems in `~/Library/Caches` (macOS), `%TEMP%` (Windows) or `/tmp` (Unix)
  - Mark Corsair HXi/RMi PSUs as no longer experimental
  - Mark Smart Device V2 and HUE 2 controllers as no longer experimental
  - Switch to a consistent module, driver and guide naming scheme (aliases are kept for backwards compatibility)
