@@ -73,15 +73,15 @@ The following devices are supported by this version of liquidctl.  See each guid
 |:--- |:---:|:--- |
 | Corsair Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc-guide.md) | <sup>_ZE_</sup> |
 | Corsair Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
-| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_EU_</sup> |
-| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-pro-xt-guide.md) | <sup>_EU_</sup> |
+| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_E_</sup> |
+| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](corsair-platinum-pro-xt-guide.md) | <sup>_E_</sup> |
 | EVGA CLC 120 (CL12), 240, 280, 360 | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
 | NZXT Kraken M22 | [guide](docs/kraken-x2-m2-guide.md) | |
 | NZXT Kraken X40, X60 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
 | NZXT Kraken X31, X41, X61 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
 | NZXT Kraken X42, X52, X62, X72 | [guide](docs/kraken-x2-m2-guide.md) | |
-| NZXT Kraken X53, X63, X73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_EU_</sup> |
-| NZXT Kraken Z63, Z73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_EU_</sup> |
+| NZXT Kraken X53, X63, X73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
+| NZXT Kraken Z63, Z73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
 
 ### Other parts
 
@@ -89,18 +89,18 @@ The following devices are supported by this version of liquidctl.  See each guid
 |:--- |:---:|:--- |
 | Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
 | Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_EU_</sup> |
+| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_E_</sup> |
 | NZXT E500, E650, E850 (PSUs) | [guide](docs/nzxt-e-series-psu-guide.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3  | [guide](docs/nzxt-smart-device-v1-guide.md) | |
 | NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
 | NZXT Smart Device | [guide](docs/nzxt-smart-device-v1-guide.md) | |
 | NZXT Smart Device V2 | [guide](docs/nzxt-hue2-guide.md) | |
-| NZXT RGB & Fan Controller | [guide](docs/nzxt-hue2-guide.md) | <sup>_EU_</sup> |
+| NZXT RGB & Fan Controller | [guide](docs/nzxt-hue2-guide.md) | <sup>_E_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
 <sup>_E_</sup> _Experimental and/or partial support._  
-<sup>_U_</sup> _Starting with upcoming liquidctl 1.4.0._  
+<!--<sup>_U_</sup> _Starting with upcoming liquidctl <version>._  -->
 
 
 ## Installing on Linux
