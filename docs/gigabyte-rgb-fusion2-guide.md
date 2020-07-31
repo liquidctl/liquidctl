@@ -10,10 +10,10 @@ These motherboards use one of many possible ITE Tech controller chips, which
 are connected to the host via SMBus or USB, depending on the motherboard/chip
 model.
 
-A couple of controllers are currently supported:
+A couple of USB controllers are currently supported:
 
-- ITE 5702: found in Gigabyte Z490 Vision D (USB device)
-- ITE 8297: found in Gigabyte X570 Aorus Elite (USB device)
+- ITE 5702: found in Gigabyte Z490 Vision D
+- ITE 8297: found in Gigabyte X570 Aorus Elite
 
 ## Initialization
 
