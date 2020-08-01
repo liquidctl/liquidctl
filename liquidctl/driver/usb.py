@@ -183,9 +183,9 @@ class UsbHidDriver(BaseUsbDriver):
         # compatibility with v1.1.0 drivers, which could be directly
         # instantiated with a usb.core.Device
         if isinstance(device, usb.core.Device):
-            LOGGER.warning('deprecated: device must be HidapiDevice, not PyUSB handle')
-            LOGGER.warning('deprecated: PyUSB no longer supported for HID devices')
-            LOGGER.warning('deprecated: switch to find_supported_devices or pass HidapiDevice')
+            clname = self.__class__.__name__
+            LOGGER.warning('constructing a %s instance from a usb.core.Device has been deprecated, '
+                           'use %s.find_supported_devices() or pass a HidapiDevice handle', clname, clname)
             usbdev = device
             hidinfo = next(info for info in hid.enumerate(usbdev.idVendor, usbdev.idProduct)
                            if info['serial_number'] == usbdev.serial_number)
