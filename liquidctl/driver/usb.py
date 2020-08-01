@@ -412,7 +412,12 @@ class HidapiDevice:
         """
         LOGGER.debug('writting report 0x%02x with %d bytes: %r', data[0],
                      len(data) - 1, LazyHexRepr(data, start=1))
-        return self.hiddev.write(data)
+        res = self.hiddev.write(data)
+        if res < 0:
+                raise OSError('Could not write to device')
+        if res != len(data):
+            LOGGER.debug('wrote %d total bytes, expected %d', res, len(data))
+        return res
 
     def get_feature_report(self, report_id, length):
         """Get feature report that matches `report_id` from HID.
@@ -441,7 +446,12 @@ class HidapiDevice:
         """
         LOGGER.debug('sending feature report 0x%02x with %d bytes: %r',
                      data[0], len(data) - 1, LazyHexRepr(data, start=1))
-        return self.hiddev.send_feature_report(data)
+        res = self.hiddev.send_feature_report(data)
+        if res < 0:
+                raise OSError('Could not send feature report to device')
+        if res != len(data):
+            LOGGER.debug('sent %d total bytes, expected %d', res, len(data))
+        return res
 
     @classmethod
     def enumerate(cls, api, vid=None, pid=None):
