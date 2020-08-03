@@ -356,7 +356,6 @@ class Legacy690Lc(_CommonAsetekDriver):
         else:
             raise KeyError('Unsupported lighting mode {}'.format(mode))
         self._end_transaction_and_read()
-        self._set_all_fixed_speeds()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
