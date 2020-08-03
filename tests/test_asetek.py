@@ -1,4 +1,5 @@
 import unittest
+from collections import deque
 from liquidctl.driver.asetek import Modern690Lc, Legacy690Lc, Hydro690Lc
 from _testutils import noop
 
@@ -17,12 +18,22 @@ class _Mock690LcDevice():
         self.claim = noop
         self.release = noop
         self.close = noop
-        self.clear_enqueued_reports = noop
-        self.ctrl_transfer = noop
-        self.write = noop
+
+        self._reset_sent()
 
     def read(self, endpoint, length, timeout=None):
         return [0] * length
+
+    def write(self, endpoint, data, timeout=None):
+        self._sent_xfers.append(('write', endpoint, data))
+
+    def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
+                      data_or_wLength=None, timeout=None):
+        self._sent_xfers.append(('ctrl_transfer', bmRequestType, bRequest,
+                                 wValue, wIndex, data_or_wLength))
+
+    def _reset_sent(self):
+        self._sent_xfers = deque()
 
 
 class Modern690LcTestCase(unittest.TestCase):
@@ -46,6 +57,20 @@ class Modern690LcTestCase(unittest.TestCase):
                                profile=iter([(20, 20), (30, 50), (40, 100)]))
         self.device.set_fixed_speed(channel='pump', duty=50)
 
+    def test_begin_transaction(self):
+        self.mock_usb._reset_sent()
+
+        self.device.get_status()
+
+        (begin, _) = self.mock_usb._sent_xfers
+        xfer_type, bmRequestType, bRequest, wValue, wIndex, datalen = begin
+        assert xfer_type == 'ctrl_transfer'
+        assert bRequest == 2
+        assert bmRequestType == 0x40
+        assert wValue == 1
+        assert wIndex == 0
+        assert datalen == None
+
 
 class Legacy690LcTestCase(unittest.TestCase):
     def setUp(self):
@@ -65,3 +90,21 @@ class Legacy690LcTestCase(unittest.TestCase):
                        alert_color=[90, 80, 10])
         self.device.set_fixed_speed(channel='fan', duty=80)
         self.device.set_fixed_speed(channel='pump', duty=50)
+
+    def test_matches_leviathan_updates(self):
+        self.device.initialize()
+        self.device.set_fixed_speed(channel='pump', duty=50)
+
+        self.mock_usb._reset_sent()
+        self.device.set_color(channel='led', mode='fading', colors=[[0, 0, 255], [0, 255, 0]],
+                              time_per_color=1, alert_threshold=60, alert_color=[0, 0, 0])
+        _begin, (color_msgtype, color_ep, color_data) = self.mock_usb._sent_xfers
+        assert color_msgtype == 'write'
+        assert color_ep == 2
+        assert color_data[0:12] == [0x10, 0, 0, 255, 0, 255, 0, 0, 0, 0, 0x3c, 1]
+
+        self.mock_usb._reset_sent()
+        self.device.set_fixed_speed(channel='fan', duty=50)
+        _begin, pump_message, fan_message = self.mock_usb._sent_xfers
+        assert pump_message == ('write', 2, [0x13, 50])
+        assert fan_message == ('write', 2, [0x12, 50])
