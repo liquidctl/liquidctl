@@ -121,14 +121,6 @@ You also easily write a custom script to do some analyses or test hypothesis on 
 
 [script I used when working the Platinum coolers]: https://github.com/jonasmalacofilho/liquidctl-device-data/blob/master/Corsair%20H115i%20RGB%20Platinum/analyze.py
 
-## Porting code from OpenCorsairLink
-
-Since the H110i GT is supported by OpenCorsairLink, you should consider that code as a starting point.  But I still encourage you to (re)decode the protocol yourself.
-
-In this [comment] I go over how to port a driver from OCL, specifically focusing on the driver for this family of CoolIT coolers.
-
-[comment]: https://github.com/jonasmalacofilho/liquidctl/issues/129#issuecomment-640258429
-
 ## Notes
 
 _¹ There are Bluetooth HIDs, but these obviously aren't very relevant here._
