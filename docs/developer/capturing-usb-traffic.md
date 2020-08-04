@@ -16,7 +16,7 @@ application.
 ## Capturing USB traffic on a native Windows host
 
 Get [Wireshark].  During the Wireshark setup, enable the installation of
-USBPCap for experimental capturing of USB traffic.  Reboot.
+USBPcap for experimental capturing of USB traffic.  Reboot.
 
 To capture some USB traffic, start Wireshark, double click the USBPcap1
 interface to start capturing all traffic on it, and proceed to [Finding the
