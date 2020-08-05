@@ -23,8 +23,7 @@ from liquidctl.pmbus import linear_to_float
 
 LOGGER = logging.getLogger(__name__)
 
-_READ_LENGTH = 64
-_WRITE_LENGTH = 64
+_REPORT_LENGTH = 64
 _MIN_DELAY = 0.0025
 _ATTEMPTS = 3
 
@@ -81,11 +80,13 @@ class NzxtEPsu(UsbHidDriver):
         raise NotSupportedByDevice()
 
     def _write(self, data):
-        padding = [0x0]*(_WRITE_LENGTH - len(data))
-        self.device.write(data + padding)
+        assert len(data) <= _REPORT_LENGTH
+        packet = bytearray(1 + _REPORT_LENGTH)
+        packet[1 : 1 + len(data)] = data  # device doesn't use numbered reports
+        self.device.write(packet)
 
     def _read(self):
-        return self.device.read(_READ_LENGTH)
+        return self.device.read(_REPORT_LENGTH)
 
     def _wait(self):
         """Give the device some time and avoid error responses.
