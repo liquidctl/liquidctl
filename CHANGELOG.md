@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+Changelog since 1.4.0:
+### Changed
+ - Improve the documentation
+ - Improve the test suite
+### Fixed
+ - Don't use report IDs when writing to NZXT E-series PSUs (#166)
+ - Recognize and raise Hidapi write errors
+ - Use a mocked device to test backwards compatibility with liquidctl 1.1.0
+
+
 ## [1.4.0] – 2020-07-31
 _Summary for the 1.4.0 release: fourth-generation NZXT Kraken coolers, Corsair
 Platinum and PRO XT coolers, select Gigabyte RGB Fusion 2.0 motherboards,
