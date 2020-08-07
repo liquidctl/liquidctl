@@ -154,7 +154,7 @@ _Note: in systems that default to Python 2, use `pip3`, `python3` and `pytest-3`
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.4.0-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.4.0/liquidctl-1.4.0-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.4.1-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.4.1/liquidctl-1.4.1-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
@@ -287,9 +287,6 @@ Lighting is controlled in a similar fashion.  The specific documentation for eac
 When configuring lighting effects, colors can be specified in different representations and formats:
 
  - as an implicit hexadecimal RGB triple: e.g. `ff7f3f`
-
-_Starting with upcoming liquidctl 1.4.0:_
-
  - as an explicit RGB triple: e.g. `rgb(255, 127, 63)`
  - as a HSV (hue‑saturation‑value) triple: e.g. `hsv(20, 75, 100)`
     * hue ∊ [0, 360] (degrees); saturation, value ∊ [0, 100] (percent)

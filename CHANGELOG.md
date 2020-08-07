@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.1] – 2020-08-07
+_Summary for the 1.4.1 release: fix a regression with NZXT E-series PSUs, an
+unreliable test case, and some ignored Hidapi errors; also make a few other
+small improvements to the documentation and test suite._
 
 Changelog since 1.4.0:
 ### Changed
