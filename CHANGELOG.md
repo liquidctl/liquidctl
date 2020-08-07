@@ -13,6 +13,11 @@ Changelog since 1.4.0:
  - Don't use report IDs when writing to NZXT E-series PSUs (#166)
  - Recognize and raise Hidapi write errors
  - Use a mocked device to test backwards compatibility with liquidctl 1.1.0
+### Checksums
+```
+895e55fd70e1fdfe3b2941d9139b91ffc4e902a469b077e810c35979dbe1cfdf  liquidctl-1.4.1-bin-windows-x86_64.zip
+59a3bc65b3f3e71a5714224401fe6e95dfdee591a1d6f4392bc4e6d6ad72ff8d  liquidctl-1.4.1.tar.gz
+```
 
 
 ## [1.4.0] – 2020-07-31
