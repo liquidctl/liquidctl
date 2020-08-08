@@ -20,7 +20,7 @@ ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b20
 These new device units can then be added as dependencies to the service unit.
 
 ```
-# /etc/systemd./system/liquidcfg.service
+# /etc/systemd/system/liquidcfg.service
 [Unit]
 Description=AIO startup service
 Requires=dev-kraken.device
