@@ -1,5 +1,5 @@
 [Unit]
-Description=Liquidctl Fan Control
+Description=liquidctl Fan Control
 After=liquidcfg.service
 
 [Service]
