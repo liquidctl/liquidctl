@@ -311,7 +311,7 @@ For even more flexibility, you can also write a Python program that calls the dr
 
 ### Set up Linux using systemd
 
-On systems running Linux and Systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences.  Save it to `/etc/system.d/system/liquidcfg.service`.
+On systems running Linux and systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences.  Save it to `/etc/systemd/system/liquidcfg.service`.
 
 ```
 [Unit]
@@ -328,7 +328,7 @@ ExecStart=liquidctl set logo color spectrum-wave
 WantedBy=default.target
 ```
 
-After reloading the configuration, the new unit can be started manually or set to automatically run during boot using standard Systemd tools.
+After reloading the configuration, the new unit can be started manually or set to automatically run during boot using standard systemd tools.
 
 ```
 # systemctl daemon-reload

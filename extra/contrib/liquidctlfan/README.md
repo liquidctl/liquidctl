@@ -71,7 +71,7 @@ If it is not desired to pass parameters, all parameters can be stored permanentl
 #SYSLOG="enable"
 ###########################################################
 ```
-## Systemd
+## systemd
 In the directory systemd you will find the unit file.
 Copy the file with root access liquidctlfan.service into /etc/systemd/system.
 
