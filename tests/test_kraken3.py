@@ -14,6 +14,11 @@ _SAMPLE_STATUS = bytes.fromhex(
     '7502200036000b51535834353320012101a80635350000000000000000000000'
     '0000000000000000000000000000000000000000000000000000000000000000'
 )
+# https://github.com/jonasmalacofilho/liquidctl/issues/160#issue-665781804
+_FAULTY_STATUS = bytes.fromhex(
+    '7502200036000b5153583435332001ffffcc0a64640000000000000000000000'
+    '0000000000000000000000000000000000000000000000000000000000000000'
+)
 
 class _MockKrakenDevice(MockHidapiDevice):
     def __init__(self, raw_led_channels):
@@ -50,6 +55,12 @@ class KrakenX3TestCase(unittest.TestCase):
         assert temperature == ('Liquid temperature', 33.1, '°C')
         assert pump_speed == ('Pump speed', 1704, 'rpm')
         assert pump_duty == ('Pump duty', 53, '%')
+
+    def test_warns_if_faulty_temperature(self):
+        self.mock_hid.preload_read(Report(0, _FAULTY_STATUS))
+        with self.assertLogs(level='WARNING') as cm:
+            self.device.get_status()
+        self.assertIn('unexpected temperature reading', ''.join(cm.output))
 
     def test_not_totally_broken(self):
         """Reasonable example calls to untested APIs do not raise exceptions."""
