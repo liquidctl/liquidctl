@@ -56,12 +56,10 @@ class _FilesystemBackend:
         self._read_dirs = [os.path.join(x, *key_prefixes) for x in get_runtime_dirs()]
         self._write_dir = self._read_dirs[0]
         os.makedirs(self._write_dir, exist_ok=True)
-        if XDG_RUNTIME_DIR and os.path.commonpath([XDG_RUNTIME_DIR, self._write_dir]):
+        if sys.platform == 'linux':
             # set the sticky bit to prevent removal during cleanup
             os.chmod(self._write_dir, 0o1700)
-            LOGGER.debug('data in %s (within XDG_RUNTIME_DIR)', self._write_dir)
-        else:
-            LOGGER.debug('data in %s', self._write_dir)
+        LOGGER.debug('data in %s', self._write_dir)
 
     def load(self, key):
         for base in self._read_dirs:
