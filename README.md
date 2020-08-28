@@ -110,6 +110,7 @@ Packages for liquidctl are available for certain Linux distributions and package
  - Alpine Linux: [liquidctl](https://pkgs.alpinelinux.org/packages?name=liquidctl)
  - ArchLinux/Manjaro: [liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
  - Fedora: [liquidctl](https://src.fedoraproject.org/rpms/liquidctl)
+ - Gentoo: [app-misc/liquidctl<sup>GURU</sup>](https://cgit.gentoo.org/repo/proj/guru.git/tree/app-misc/liquidctl)
 
 On other distributions, or when more control is desired, liquidctl can be installed from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
 
