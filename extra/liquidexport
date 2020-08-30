@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+import logging
+import sys
+import time
+
+import liquidctl.cli as _borrow
+import usb
+
+from docopt import docopt
+from liquidctl.driver import *
+
+from prometheus_client import start_http_server
+from prometheus_client.core import GaugeMetricFamily, REGISTRY
+
+import re
+
+LOGGER = logging.getLogger(__name__)
+
+
+def gauge_name_sanitize(name):
+    name = re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+    name = name.replace(" ", "_")
+    return name
+
+
+class LiquidCollector(object):
+    def __init__(self, args):
+        self.description = 'liquidctl exported metrics'
+        self.args = args
+
+    def collect(self):
+        labels = ['device', 'sensor', 'unit']
+        g = GaugeMetricFamily('liquidctl', self.description, labels=labels)
+        for d in devs:
+            d.connect()
+            try:
+                get_status = d.get_status()
+                for metric in get_status:
+                    # Exclude string values like 'firmware'
+                    if isinstance(metric[1], (int, float, complex)) and not isinstance(metric[1], bool):
+                        sanitized_name = gauge_name_sanitize(metric[0])
+                        label_values = [d.description, sanitized_name, metric[2]]
+                        g.add_metric(label_values, value=metric[1])
+            except usb.core.USBError as err:
+                LOGGER.warning('Failed to read from the device, possibly serving stale data')
+                LOGGER.debug(err, exc_info=True)
+            d.disconnect()
+        yield g
+
+
+if __name__ == '__main__':
+    args = docopt(__doc__, version='0.1.0')
+    frwd = _borrow._make_opts(args)
+    devs = list(find_liquidctl_devices(**frwd))
+    update_interval = float(args['--interval'])
+
+    if args['--debug']:
+        args['--verbose'] = True
+        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+    elif args['--verbose']:
+        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        sys.tracebacklimit = 0
+
+    REGISTRY.register(LiquidCollector(args))
+
+    port = 8098
+    start_http_server(port)
+    LOGGER.info('Server started on port %(port)s', {'port': port})
+
+    try:
+        while True:
+            time.sleep(update_interval)
+    except KeyboardInterrupt:
+        LOGGER.info('Canceled by user')
