@@ -1,4 +1,48 @@
 #!/usr/bin/env python3
+"""liquidexport – host a metrics HTTP endpoint with Prometheus formatted data from liquidctl
+
+This is an experimental script that collects stats from liquidctl and exposes them as a http://localhost:8098/metrics
+endpoint in the Prometheus text format.
+See: https://prometheus.io/docs/instrumenting/exposition_formats/#text-format-example
+
+Example metric with labels:
+# HELP liquidctl liquidctl exported metrics
+# TYPE liquidctl gauge
+liquidctl{device="NZXT Kraken X (X42, X52, X62 or X72)",sensor="liquid_temperature",unit="°C"} 33.6
+
+Usage:
+  liquidexport [options]
+  liquidexport --help
+  liquidexport --version
+
+Options:
+  --interval <seconds>    Update interval in seconds [default: 2]
+  --hid <module>          Override API for USB HIDs: usb, hid or hidraw
+  --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
+  --match <name>          Filter devices by name
+  --vendor <id>           Filter devices by vendor id
+  --product <id>          Filter devices by product id
+  --release <number>      Filter devices by release number
+  --serial <number>       Filter devices by serial number
+  --bus <bus>             Filter devices by bus
+  --address <address>     Filter devices by address in bus
+  --usb-port <port>       Filter devices by USB port in bus
+  --pick <number>         Pick among many results for a given filter
+  --port <number>         Port for the HTTP /metrics endpoint
+  -v, --verbose           Output additional information
+  -g, --debug             Show debug information on stderr
+  --version               Display the version number
+  --help                  Show this message
+
+Examples:
+  liquidexport
+  liquidexport --product 0xb200
+  liquidexport --interval 0.5
+
+Copyright (C) 2020  Alex Berryman
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
+
 import logging
 import sys
 import time
@@ -36,11 +80,14 @@ class LiquidCollector(object):
             try:
                 get_status = d.get_status()
                 for metric in get_status:
-                    # Exclude string values like 'firmware'
+                    # Only allow numerical stats and exclude string values like "firmware='6.3.3'"
                     if isinstance(metric[1], (int, float, complex)) and not isinstance(metric[1], bool):
                         sanitized_name = gauge_name_sanitize(metric[0])
                         label_values = [d.description, sanitized_name, metric[2]]
                         g.add_metric(label_values, value=metric[1])
+                        LOGGER.debug(
+                            '{}: {} as {} with labels {}'.format(d.description, metric, sanitized_name,
+                                                                 '/'.join(label_values)))
             except usb.core.USBError as err:
                 LOGGER.warning('Failed to read from the device, possibly serving stale data')
                 LOGGER.debug(err, exc_info=True)
@@ -65,9 +112,13 @@ if __name__ == '__main__':
 
     REGISTRY.register(LiquidCollector(args))
 
-    port = 8098
+    if args['--port']:
+        port = int(args['--port'])
+    else:
+        port = 8098
+
     start_http_server(port)
-    LOGGER.info('Server started on port %(port)s', {'port': port})
+    LOGGER.debug('Server started on port {}'.format(port))
 
     try:
         while True:
