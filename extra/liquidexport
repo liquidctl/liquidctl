@@ -63,9 +63,9 @@ class LiquidCollector(object):
             try:
                 get_status = d.get_status()
                 for metric in get_status:
-                    unit = metric[2]
                     sanitized_name = gauge_name_sanitize(metric[0])
                     sample_value = metric[1]
+                    unit = metric[2]
 
                     if isinstance(sample_value, timedelta):
                         # cast timedelta into seconds and override the supplied unit
