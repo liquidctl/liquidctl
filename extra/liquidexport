@@ -77,9 +77,23 @@ class LiquidCollector(object):
         yield g
 
 
+def _make_opts(args):
+    opts = {}
+    for arg, val in args.items():
+        if val is not None and arg in _PARSE_ARG:
+            opt = arg.replace('--', '').replace('-', '_')
+            opts[opt] = _PARSE_ARG[arg](val)
+    return opts
+
+
+_PARSE_ARG = {
+    '--legacy-690lc': bool
+}
+
 if __name__ == '__main__':
     args = docopt(__doc__, version='0.1.0')
-    devs = list(find_liquidctl_devices())
+    opts = _make_opts(args)
+    devs = list(find_liquidctl_devices(**opts))
 
     if args['--debug']:
         args['--verbose'] = True
