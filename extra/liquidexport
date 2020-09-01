@@ -16,19 +16,8 @@ Usage:
   liquidexport --version
 
 Options:
-  --interval <seconds>    Update interval in seconds [default: 2]
-  --hid <module>          Override API for USB HIDs: usb, hid or hidraw
   --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
-  --match <name>          Filter devices by name
-  --vendor <id>           Filter devices by vendor id
-  --product <id>          Filter devices by product id
-  --release <number>      Filter devices by release number
-  --serial <number>       Filter devices by serial number
-  --bus <bus>             Filter devices by bus
-  --address <address>     Filter devices by address in bus
-  --usb-port <port>       Filter devices by USB port in bus
-  --pick <number>         Pick among many results for a given filter
-  --port <number>         Port for the HTTP /metrics endpoint
+  --server-port <number>  Port for the HTTP /metrics endpoint
   -v, --verbose           Output additional information
   -g, --debug             Show debug information on stderr
   --version               Display the version number
@@ -44,19 +33,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
+import re
 import sys
 import time
-
-import liquidctl.cli as _borrow
 import usb
 
 from docopt import docopt
 from liquidctl.driver import *
-
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY
-
-import re
 
 LOGGER = logging.getLogger(__name__)
 
@@ -66,9 +51,8 @@ def gauge_name_sanitize(name):
 
 
 class LiquidCollector(object):
-    def __init__(self, args):
+    def __init__(self):
         self.description = 'liquidctl exported metrics'
-        self.args = args
 
     def collect(self):
         labels = ['device', 'sensor', 'unit']
@@ -95,9 +79,7 @@ class LiquidCollector(object):
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='0.1.0')
-    frwd = _borrow._make_opts(args)
-    devs = list(find_liquidctl_devices(**frwd))
-    update_interval = float(args['--interval'])
+    devs = list(find_liquidctl_devices())
 
     if args['--debug']:
         args['--verbose'] = True
@@ -108,10 +90,10 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.WARNING, format='%(message)s')
         sys.tracebacklimit = 0
 
-    REGISTRY.register(LiquidCollector(args))
+    REGISTRY.register(LiquidCollector())
 
-    if args['--port']:
-        port = int(args['--port'])
+    if args['--server-port']:
+        port = int(args['--server-port'])
     else:
         port = 8098
 
@@ -120,6 +102,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            time.sleep(update_interval)
+            # Keep HTTP server alive in a loop
+            time.sleep(2)
     except KeyboardInterrupt:
         LOGGER.info('Canceled by user')
