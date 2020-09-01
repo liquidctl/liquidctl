@@ -33,7 +33,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-import re
 import sys
 import time
 import usb
@@ -41,7 +40,8 @@ import usb
 from docopt import docopt
 from liquidctl.driver import *
 from prometheus_client import start_http_server
-from prometheus_client.core import GaugeMetricFamily, REGISTRY
+from prometheus_client.core import GaugeMetricFamily, REGISTRY, InfoMetricFamily
+from datetime import timedelta
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,33 +57,47 @@ class LiquidCollector(object):
     def collect(self):
         labels = ['device', 'sensor', 'unit']
         g = GaugeMetricFamily('liquidctl', self.description, labels=labels)
+        i = InfoMetricFamily('liquidctl', self.description, labels=['device'])
         for d in devs:
             d.connect()
             try:
                 get_status = d.get_status()
                 for metric in get_status:
-                    # Only allow numerical stats and exclude string values like "firmware='6.3.3'"
-                    if isinstance(metric[1], (int, float, complex)) and not isinstance(metric[1], bool):
-                        sanitized_name = gauge_name_sanitize(metric[0])
-                        label_values = [d.description, sanitized_name, metric[2]]
-                        g.add_metric(label_values, value=metric[1])
+                    unit = metric[2]
+                    sanitized_name = gauge_name_sanitize(metric[0])
+                    sample_value = metric[1]
+
+                    if isinstance(sample_value, timedelta):
+                        # cast timedelta into seconds and override the supplied unit
+                        sample_value = sample_value.seconds
+                        unit = 'seconds'
+
+                    if unit != '':
+                        label_values = [d.description, sanitized_name, unit]
+                        g.add_metric(label_values, value=sample_value)
                         LOGGER.debug(
-                            '{}: {} as {} with labels {}'.format(d.description, metric, sanitized_name,
-                                                                 '/'.join(label_values)))
+                            '%s: %s as GaugeMetric %s labels %s' %
+                            (d.description, metric, sanitized_name, '/'.join(label_values)))
+                    else:
+                        i.add_metric([d.description], value={sanitized_name: sample_value})
+                        LOGGER.debug(
+                            '%s: %s InfoMetric labeled with %s => %s' %
+                            (d.description, metric, sanitized_name, sample_value))
             except usb.core.USBError as err:
                 LOGGER.warning('Failed to read from the device, possibly serving stale data')
                 LOGGER.debug(err, exc_info=True)
             d.disconnect()
         yield g
+        yield i
 
 
-def _make_opts(args):
-    opts = {}
-    for arg, val in args.items():
+def _make_opts(arguments):
+    options = {}
+    for arg, val in arguments.items():
         if val is not None and arg in _PARSE_ARG:
             opt = arg.replace('--', '').replace('-', '_')
-            opts[opt] = _PARSE_ARG[arg](val)
-    return opts
+            options[opt] = _PARSE_ARG[arg](val)
+    return options
 
 
 _PARSE_ARG = {
@@ -107,12 +121,12 @@ if __name__ == '__main__':
     REGISTRY.register(LiquidCollector())
 
     if args['--server-port']:
-        port = int(args['--server-port'])
+        server_port = int(args['--server-port'])
     else:
-        port = 8098
+        server_port = 8098
 
-    start_http_server(port)
-    LOGGER.debug('Server started on port {}'.format(port))
+    start_http_server(server_port)
+    LOGGER.debug('Server started on port %s' % server_port)
 
     try:
         while True:
