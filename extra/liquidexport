@@ -12,8 +12,6 @@ liquidctl{device="NZXT Kraken X (X42, X52, X62 or X72)",sensor="liquid_temperatu
 
 Usage:
   liquidexport [options]
-  liquidexport --help
-  liquidexport --version
 
 Options:
   --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
