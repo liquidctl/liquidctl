@@ -73,13 +73,13 @@ class LiquidCollector(object):
                         label_values = [d.description, sanitized_name, unit]
                         g.add_metric(label_values, value=sample_value)
                         LOGGER.debug(
-                            '%s: %s as GaugeMetric %s labels %s' %
-                            (d.description, metric, sanitized_name, '/'.join(label_values)))
+                            '%s: %s as GaugeMetric %s labels %s',
+                            d.description, metric, sanitized_name, '/'.join(label_values))
                     else:
                         i.add_metric([d.description], value={sanitized_name: sample_value})
                         LOGGER.debug(
-                            '%s: %s InfoMetric labeled with %s => %s' %
-                            (d.description, metric, sanitized_name, sample_value))
+                            '%s: %s InfoMetric labeled with %s => %s',
+                            d.description, metric, sanitized_name, sample_value)
             except usb.core.USBError as err:
                 LOGGER.warning('Failed to read from the device, possibly serving stale data')
                 LOGGER.debug(err, exc_info=True)
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         server_port = 8098
 
     start_http_server(server_port)
-    LOGGER.debug('Server started on port %s' % server_port)
+    LOGGER.debug('Server started on port %s', server_port)
 
     try:
         while True:
