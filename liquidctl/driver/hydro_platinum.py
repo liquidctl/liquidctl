@@ -273,7 +273,7 @@ class HydroPlatinum(UsbHidDriver):
     def _check_color_args(self, channel, mode, colors):
         try:
             mincolors = self._mincolors[(channel, mode)]
-            maxcolors = self._maxcolors[(channel, mode}]
+            maxcolors = self._maxcolors[(channel, mode)]
         except KeyError:
             raise ValueError(f'Unsupported (channel, mode) pair, should be one of: {_quoted(*self._mincolors)}')
         if len(colors) < mincolors:
