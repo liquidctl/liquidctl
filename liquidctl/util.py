@@ -280,7 +280,7 @@ def color_from_str(x):
         return list(map(lambda b: round(b*255), colorsys.hls_to_rgb(h/360, l/100, s/100)))
     elif len(x) == 6:
         return list(bytes.fromhex(x))
-    elif len(x) == 8 and x[0:2] == '0x':
+    elif len(x) == 8 and (x[0:2] == '0x' or x[0:2] == '0X'):
         return list(bytes.fromhex(x[2:]))
     else:
         raise ValueError(f'Cannot parse color: {x}')
