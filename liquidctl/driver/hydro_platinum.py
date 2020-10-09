@@ -130,6 +130,11 @@ class HydroPlatinum(UsbHidDriver):
             ('led', 'fixed'): 1,
             ('led', 'off'): 0,
         }
+        self._maxcolors = {
+            ('led', 'super-fixed'): self._led_count,
+            ('led', 'fixed'): 1,
+            ('led', 'off'): 0,
+        }
         # the following fields are only initialized in connect()
         self._data = None
         self._sequence = None
@@ -268,13 +273,15 @@ class HydroPlatinum(UsbHidDriver):
     def _check_color_args(self, channel, mode, colors):
         try:
             mincolors = self._mincolors[(channel, mode)]
+            maxcolors = self._maxcolors[(channel, mode)]
         except KeyError:
             raise ValueError(f'Unsupported (channel, mode) pair, should be one of: {_quoted(*self._mincolors)}')
         if len(colors) < mincolors:
             raise ValueError(f'At least {mincolors} required for {_quoted((channel, mode))}')
-        if len(colors) > mincolors:
-            LOGGER.warning('too many colors, dropping to %d', mincolors)
-        return mincolors
+        if len(colors) > maxcolors:
+            LOGGER.warning('too many colors, dropping to %d', maxcolors)
+            return maxcolors
+        return len(colors)
 
     def _get_hw_fan_channels(self, channel):
         channel = channel.lower()
