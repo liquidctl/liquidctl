@@ -13,9 +13,9 @@ Usage:
 Device selection options (see: list -v):
   -m, --match <substring>     Filter devices by description substring
   -n, --pick <number>         Pick among many results for a given filter
-  --vendor <id>               Filter devices by vendor id
-  --product <id>              Filter devices by product id
-  --release <number>          Filter devices by release number
+  --vendor <id>               Filter devices by vendor id (hex value)
+  --product <id>              Filter devices by product id (hex value)
+  --release <number>          Filter devices by release number (hex value)
   --serial <number>           Filter devices by serial number
   --bus <bus>                 Filter devices by bus
   --address <address>         Filter devices by address in bus
@@ -83,9 +83,9 @@ from liquidctl.version import __version__
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
 #  - and avoid unintentional conflicts with target function arguments
 _PARSE_ARG = {
-    '--vendor': lambda x: int(x, 0),
-    '--product': lambda x: int(x, 0),
-    '--release': lambda x: int(x, 0),
+    '--vendor': lambda x: int(x, 16),
+    '--product': lambda x: int(x, 16),
+    '--release': lambda x: int(x, 16),
     '--serial': str,
     '--bus': str,
     '--address': str,
