@@ -225,6 +225,8 @@ def color_from_str(x):
     [255, 127, 63]
     >>> color_from_str('0xfF7f3f')
     [255, 127, 63]
+    >>> color_from_str('0XfF7f3f')
+    [255, 127, 63]
     >>> color_from_str('Rgb(255, 127, 63)')
     [255, 127, 63]
     >>> color_from_str('Hsv(20, 75, 100)')
@@ -236,6 +238,10 @@ def color_from_str(x):
     Traceback (most recent call last):
         ...
     ValueError: Cannot parse color: fF7f3f1f
+    >>> color_from_str('0bff00ff')
+    Traceback (most recent call last):
+        ...
+    ValueError: Cannot parse color: 0bff00ff
     >>> color_from_str('rgb()')
     Traceback (most recent call last):
         ...
