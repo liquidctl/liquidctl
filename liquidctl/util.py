@@ -216,12 +216,14 @@ def color_from_str(x):
 
     The input string can be encoded in several formats:
 
-     - ffffff: hexadecimal RGB implicit tuple
+     - ffffff: hexadecimal RGB implicit tuple (with or without the prefix '0x')
      - rgb(255, 255, 255): explicit RGB, R,G,B ∊ [0, 255]
      - hsv(360, 100, 100): explicit HSV, H ∊ [0, 360], SV ∊ [0, 100]
      - hsl(360, 100, 100): explicit HSL, H ∊ [0, 360], SV ∊ [0, 100]
 
     >>> color_from_str('fF7f3f')
+    [255, 127, 63]
+    >>> color_from_str('0xfF7f3f')
     [255, 127, 63]
     >>> color_from_str('Rgb(255, 127, 63)')
     [255, 127, 63]
@@ -278,5 +280,7 @@ def color_from_str(x):
         return list(map(lambda b: round(b*255), colorsys.hls_to_rgb(h/360, l/100, s/100)))
     elif len(x) == 6:
         return list(bytes.fromhex(x))
+    elif len(x) == 8 and x[0:2] == '0x':
+        return list(bytes.fromhex(x[2:]))
     else:
         raise ValueError(f'Cannot parse color: {x}')
