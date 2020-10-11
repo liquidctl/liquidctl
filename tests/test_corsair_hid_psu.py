@@ -7,10 +7,13 @@ from _testutils import MockHidapiDevice, Report
 
 class _MockPsuDevice(MockHidapiDevice):
     def write(self, data):
+        super().write(data)
+        data = data[1:]  # skip unused report ID
+
         reply = bytearray(64)
         if data[1] in [_CORSAIR_12V_OCP_MODE, _CORSAIR_FAN_CONTROL_MODE]:
             reply[2] = 1  # just a valid mode
-        self.preload_read(Report(0, reply))  # ignore report ID for now
+        self.preload_read(Report(0, reply))
 
 
 class CorsairHidPsuTestCase(unittest.TestCase):
@@ -26,4 +29,9 @@ class CorsairHidPsuTestCase(unittest.TestCase):
         """A few reasonable example calls do not raise exceptions."""
         self.device.initialize()
         status = self.device.get_status()
-        self.device.set_fixed_speed(channel='fan', duty=50)
+
+    def test_dont_inject_report_ids(self):
+        status = self.device.set_fixed_speed(channel='fan', duty=50)
+        report_id, report_data = self.mock_hid.sent[0]
+        assert report_id == 0
+        assert len(report_data) == 64
