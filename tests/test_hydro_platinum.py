@@ -14,6 +14,7 @@ class _H115iPlatinumDevice(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0xffff, product_id=0x0c17, address=_SAMPLE_PATH)
         self.fw_version = (1, 1, 15)
+        self.fw_string = "1.1.15"
         self.temperature = 30.9
         self.fan1_speed = 1499
         self.fan2_speed = 1512
@@ -62,11 +63,12 @@ class HydroPlatinumTestCase(unittest.TestCase):
             self.assertEqual(data[-1], compute_pec(data[1:-1]))
 
     def test_get_status(self):
-        temp, fan1, fan2, pump = self.device.get_status()
+        temp, fan1, fan2, pump, firmware = self.device.get_status()
         self.assertAlmostEqual(temp[1], self.mock_hid.temperature, delta=1 / 255)
         self.assertEqual(fan1[1], self.mock_hid.fan1_speed)
         self.assertEqual(fan2[1], self.mock_hid.fan2_speed)
         self.assertEqual(pump[1], self.mock_hid.pump_speed)
+        self.assertEqual(firmware[1], self.mock_hid.fw_string)
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0)
         self.assertEqual(self.mock_hid.sent[0].data[2], 0xff)
 
@@ -84,13 +86,13 @@ class HydroPlatinumTestCase(unittest.TestCase):
         for sample in samples:
             self.mock_hid.preload_read(Report(0, bytes.fromhex(sample)))
             status = self.device.get_status()
-            self.assertEqual(len(status), 4)
+            self.assertEqual(len(status), 5)
             self.assertNotEqual(status[0][1], self.mock_hid.temperature,
                                 msg='failed preload soundness check')
 
     def test_initialize_status(self):
         (fw_version, ) = self.device.initialize()
-        self.assertEqual(fw_version[1], '%d.%d.%d' % self.mock_hid.fw_version)
+        self.assertEqual(fw_version[1], self.mock_hid.fw_string)
 
     def test_common_cooling_prefix(self):
         self.device.initialize(pump_mode='extreme')
