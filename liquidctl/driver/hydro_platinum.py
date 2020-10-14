@@ -176,12 +176,15 @@ class HydroPlatinum(UsbHidDriver):
         """
 
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
+
+        fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
         assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
         return [
             ('Liquid temperature', res[8] + res[7] / 255, '°C'),
             ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
             ('Fan 2 speed', u16le_from(res, offset=22), 'rpm'),
             ('Pump speed', u16le_from(res, offset=29), 'rpm'),
+            ('Firmware version', '%d.%d.%d' % fw_version, ''),
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
