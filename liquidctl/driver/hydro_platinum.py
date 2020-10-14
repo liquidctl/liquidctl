@@ -163,17 +163,9 @@ class HydroPlatinum(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-
-        # These hex strings are currently magic values that work but Im not quite sure why.
-        d1 = bytes.fromhex("0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff")
-        d2 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff")
-        d3 = bytes.fromhex("28292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4fffffffffffffffffffffffffffffffffffffffffff")
         
-        # Send the magic messages to enable setting the LEDs to statuC values
-        self._send_command(None, 0b001, data=d1)
-        self._send_command(None, 0b010, data=d2)
-        self._send_command(None, 0b011, data=d3)
-
+        # set the flag so the LED command will need to be set again
+        self._data.store('leds_enabled', 0)
 
         self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
         res = self._send_set_cooling()
@@ -185,15 +177,6 @@ class HydroPlatinum(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-
-
-        d1 = bytes.fromhex("0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff")
-        d2 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff")
-        d3 = bytes.fromhex("28292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4fffffffffffffffffffffffffffffffffffffffffff")
-
-        self._send_command(None, 0b001, data=d1)
-        self._send_command(None, 0b010, data=d2)
-        self._send_command(None, 0b011, data=d3)
 
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
         assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
@@ -275,6 +258,20 @@ class HydroPlatinum(UsbHidDriver):
         if 'PRO XT' in self.description and not (unsafe and 'pro_xt_lighting' in unsafe):
             LOGGER.warning('Lighting control of PRO XT devices is experimental and only enabled with the `pro_xt_lighting` unsafe flag')
 
+
+        if self._data.load('leds_enabled', of_type=int, default=0) == 0:
+
+            # These hex strings are currently magic values that work but Im not quite sure why.
+            d1 = bytes.fromhex("0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff")
+            d2 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff")
+            d3 = bytes.fromhex("28292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4fffffffffffffffffffffffffffffffffffffffffff")
+
+            # Send the magic messages to enable setting the LEDs to statuC values
+            self._send_command(None, 0b001, data=d1)
+            self._send_command(None, 0b010, data=d2)
+            self._send_command(None, 0b011, data=d3)
+            self._data.store('leds_enabled', 1
+
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
         self._check_color_args(channel, mode, colors)
         if mode == 'off':
@@ -288,7 +285,7 @@ class HydroPlatinum(UsbHidDriver):
         data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
         data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:])))
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
-        #self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
+        self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
 
     def _check_color_args(self, channel, mode, colors):
         try:
@@ -314,7 +311,7 @@ class HydroPlatinum(UsbHidDriver):
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
         buf = bytearray(_REPORT_LENGTH + 1)
-        buf[1] = _WRITE_PREFIX
+        buf[1] =_WRITE_PREFIX
         buf[2] = next(self._sequence) << 3
         if feature is not None:
             buf[2] |= feature
