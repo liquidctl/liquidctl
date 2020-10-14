@@ -260,7 +260,6 @@ class HydroPlatinum(UsbHidDriver):
 
 
         if self._data.load('leds_enabled', of_type=int, default=0) == 0:
-
             # These hex strings are currently magic values that work but Im not quite sure why.
             d1 = bytes.fromhex("0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff")
             d2 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff")
@@ -270,7 +269,7 @@ class HydroPlatinum(UsbHidDriver):
             self._send_command(None, 0b001, data=d1)
             self._send_command(None, 0b010, data=d2)
             self._send_command(None, 0b011, data=d3)
-            self._data.store('leds_enabled', 1
+            self._data.store('leds_enabled', 1)
 
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
         self._check_color_args(channel, mode, colors)
@@ -311,7 +310,7 @@ class HydroPlatinum(UsbHidDriver):
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
         buf = bytearray(_REPORT_LENGTH + 1)
-        buf[1] =_WRITE_PREFIX
+        buf[1] = _WRITE_PREFIX
         buf[2] = next(self._sequence) << 3
         if feature is not None:
             buf[2] |= feature
