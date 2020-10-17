@@ -100,13 +100,13 @@ Filter devices by case insensitive substring of device description.
 Pick among many results for a given filter.
 .TP
 .BI \-\-vendor= id
-Filter devices by vendor id.
+Filter devices by hexadecimal vendor id.
 .TP
 .BI \-\-product= id
-Filter devices by product id.
+Filter devices by hexadecimal product id.
 .TP
 .BI \-\-release= number
-Filter devices by release number.
+Filter devices by hexadecimal release number.
 .TP
 .BI \-\-serial= number
 Filter devices by serial number.
@@ -187,7 +187,7 @@ Internal data used by some drivers.
 .SY liquidctl
 .BI \-\-match\  kraken\  set\  pump\  speed\  90
 .SY liquidctl
-.BI \-\-product\  0x170e\  set\  led\  color\  fading
+.BI \-\-product\  170e\  set\  led\  color\  fading
 .I 350017 ff2608
 .SY liquidctl
 .B status
