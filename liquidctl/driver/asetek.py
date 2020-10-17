@@ -181,6 +181,32 @@ class Modern690Lc(_CommonAsetekDriver):
             return
         yield from super().probe(handle, **kwargs)
 
+    def downgrade_to_legacy(self):
+        """Take the device handle and return a new Legacy690Lc instance for it.
+
+        This method returns a new instance that takes the device handle from
+        `self`.  Because of this, the caller should immediately discard `self`,
+        as it is no longer valid to call any of its methods or access any of
+        its properties.
+
+        While it is sometimes possible to downgrade a device that has seen
+        modern traffic since it booted, this will generally not work.
+        Additionally, no attempt to disconnect from the device is made while
+        downgrading the instance.
+
+        Thus, callers are strongly advised to only call this function before
+        connecting to the device from this instance and, in fact, before
+        calling any other methods at all on the device, from any instance.
+
+        Finally, this method is not yet considered stable and its signature
+        and/or behavior may change.  Callers should follow the development of
+        liquidctl and the stabilization of this API.
+        """
+        legacy = Legacy690Lc(self.device, self._description)
+        self.device = None
+        self._description = None
+        return legacy
+
     def get_status(self, **kwargs):
         """Get a status report.
 
