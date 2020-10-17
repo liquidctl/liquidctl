@@ -287,7 +287,7 @@ Lighting is controlled in a similar fashion.  The specific documentation for eac
 
 When configuring lighting effects, colors can be specified in different representations and formats:
 
- - as an implicit hexadecimal RGB triple: e.g. `ff7f3f`
+ - as an implicit hexadecimal RGB triple, either with or without the `0x` prefix: e.g. `ff7f3f`
  - as an explicit RGB triple: e.g. `rgb(255, 127, 63)`
  - as a HSV (hue‑saturation‑value) triple: e.g. `hsv(20, 75, 100)`
     * hue ∊ [0, 360] (degrees); saturation, value ∊ [0, 100] (percent)
