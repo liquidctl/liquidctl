@@ -167,6 +167,9 @@ class HydroPlatinum(UsbHidDriver):
         self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
         res = self._send_set_cooling()
         fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
+        if fw_version < (1, 1, 0):
+            # see: #201 ("Fan settings affects Fan 1 only and disables fan2")
+            LOGGER.warning('Outdated and possibly unsupported firmware version')
         return [('Firmware version', '%d.%d.%d' % fw_version, '')]
 
     def get_status(self, **kwargs):
