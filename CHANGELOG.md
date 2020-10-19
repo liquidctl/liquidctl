@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+Changelog since 1.4.1:
+### Added
+ - Add `Modern690Lc.downgrade_to_legacy` (unstable API)
+### Changed
+ - Accept hexadecimal inputs regardless of a `0x` prefix
+ - Warn on faulty temperature readings from Kraken X3 coolers
+ - Warn on Hydro Platinum/PRO XT firmware versions that are may be too old
+ - Update PyInstaller used for the Windows executable
+ - Update PyUSB bundled with the Windows executable
+ - Improve the documentation
+### Fixed
+ - Fix data path on mac OS
+ - Fix check of maximum number of colors in Hydro Platinum super-fixed mode
+ - Fix HID writes to Corsair HXi/RMi power supplies on Windows
+
+
 ## [1.4.1] – 2020-08-07
 _Summary for the 1.4.1 release: fix a regression with NZXT E-series PSUs, an
 unreliable test case, and some ignored Hidapi errors; also make a few other
