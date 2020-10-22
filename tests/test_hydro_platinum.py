@@ -42,13 +42,33 @@ class HydroPlatinumTestCase(unittest.TestCase):
         self.mock_hid = _H115iPlatinumDevice()
         self.device = HydroPlatinum(self.mock_hid, description, **kwargs)
         self.device.connect()
+        self.device._data.store('leds_enabled', 0)
 
     def tearDown(self):
         self.device.disconnect()
 
     def test_command_format(self):
         self.device._data.store('sequence', None)
+        self.device._data.store('leds_enabled', 0)
         self.device.initialize()
+        self.device.get_status()
+        self.device.set_fixed_speed(channel='fan', duty=100)
+        self.device.set_speed_profile(channel='fan', profile=[])
+        self.device.set_color(channel='led', mode='off', colors=[])
+        self.assertEqual(len(self.mock_hid.sent), 9)
+        for i, (report, data) in enumerate(self.mock_hid.sent):
+            self.assertEqual(report, 0)
+            self.assertEqual(len(data), 64)
+            self.assertEqual(data[0], 0x3f)
+            self.assertEqual(data[1] >> 3, i + 1)
+            self.assertEqual(data[-1], compute_pec(data[1:-1]))
+
+
+    def test_command_format_enabled(self):
+        # test that the led enable messages are not sent if they are sent again
+        self.device._data.store('sequence', None)
+        self.device.initialize()
+        self.device._data.store('leds_enabled', 1)
         self.device.get_status()
         self.device.set_fixed_speed(channel='fan', duty=100)
         self.device.set_speed_profile(channel='fan', profile=[])
@@ -60,6 +80,7 @@ class HydroPlatinumTestCase(unittest.TestCase):
             self.assertEqual(data[0], 0x3f)
             self.assertEqual(data[1] >> 3, i + 1)
             self.assertEqual(data[-1], compute_pec(data[1:-1]))
+
 
     def test_get_status(self):
         temp, fan1, fan2, pump = self.device.get_status()
@@ -89,8 +110,11 @@ class HydroPlatinumTestCase(unittest.TestCase):
                                 msg='failed preload soundness check')
 
     def test_initialize_status(self):
+        
+        self.device._data.store('leds_enabled', 1)
         (fw_version, ) = self.device.initialize()
         self.assertEqual(fw_version[1], '%d.%d.%d' % self.mock_hid.fw_version)
+        self.assertEqual(self.device._data.load('leds_enabled', of_type=int, default=1), 0)
 
     def test_common_cooling_prefix(self):
         self.device.initialize(pump_mode='extreme')
@@ -136,24 +160,34 @@ class HydroPlatinumTestCase(unittest.TestCase):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
         encoded = list(range(1, 24 * 3 + 1))
         self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
+        self.assertEqual(len(self.mock_hid.sent), 5) # 3 for enable, 2 for off
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b001)
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b010)
+        self.assertEqual(self.mock_hid.sent[2].data[1] & 0b111, 0b011)
+        self.assertEqual(self.mock_hid.sent[3].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[3].data[2:62], encoded[:60])
+        self.assertEqual(self.mock_hid.sent[4].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[4].data[2:14], encoded[60:])
 
     def test_synchronize(self):
         colors = [[3, 2, 1]]
         encoded = [1, 2, 3] * 24
         self.device.set_color(channel='led', mode='fixed', colors=iter(colors))
-        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b100)
-        self.assertEqual(self.mock_hid.sent[0].data[2:62], encoded[:60])
-        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b101)
-        self.assertEqual(self.mock_hid.sent[1].data[2:14], encoded[60:])
+        self.assertEqual(len(self.mock_hid.sent), 5) # 3 for enable, 2 for off
+
+        self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b001)
+        self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b010)
+        self.assertEqual(self.mock_hid.sent[2].data[1] & 0b111, 0b011)
+
+        self.assertEqual(self.mock_hid.sent[3].data[1] & 0b111, 0b100)
+        self.assertEqual(self.mock_hid.sent[3].data[2:62], encoded[:60])
+        self.assertEqual(self.mock_hid.sent[4].data[1] & 0b111, 0b101)
+        self.assertEqual(self.mock_hid.sent[4].data[2:14], encoded[60:])
 
     def test_leds_off(self):
         self.device.set_color(channel='led', mode='off', colors=iter([]))
-        self.assertEqual(len(self.mock_hid.sent), 2)
-        for _, data in self.mock_hid.sent:
+        self.assertEqual(len(self.mock_hid.sent), 5) # 3 for enable, 2 for off
+        for _, data in self.mock_hid.sent[3:5]:
             self.assertEqual(data[2:62], [0] * 60)
 
     def test_invalid_color_modes(self):
