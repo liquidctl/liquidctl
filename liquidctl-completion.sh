@@ -1,4 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# This is a bash completion script for liquidctl 
+# to enable this completion place this file in /etc/bash_completion.d/ (note this locatio may be system dependant_ 
+# you can also enable this manually by sourcing this file in your ~/.bashrc file `source path/to/this` 
+#
+# Created by: Marshall Asch
+# updated: October 22, 2020
+
+
 
 # logging method
 _e() { echo "$1" >> log; }
