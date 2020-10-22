@@ -4,8 +4,11 @@
 # to enable this completion place this file in /etc/bash_completion.d/ (note this locatio may be system dependant_ 
 # you can also enable this manually by sourcing this file in your ~/.bashrc file `source path/to/this` 
 #
-# Created by: Marshall Asch
-# updated: October 22, 2020
+#
+# Copyright (C) 2020-2020 Marshall Asch 
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+
 
 
 
