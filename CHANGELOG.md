@@ -8,6 +8,7 @@ X3 drivers.._
 Changelog since 1.4.1:
 ### Added
  - Add `Modern690Lc.downgrade_to_legacy` (unstable API)
+ - Added a bash completion script for tab completion
 ### Changed
  - Accept hexadecimal inputs regardless of a `0x` prefix
  - Warn on faulty temperature readings from Kraken X3 coolers
@@ -15,6 +16,7 @@ Changelog since 1.4.1:
  - Update PyInstaller used for the Windows executable
  - Update PyUSB version bundled with the Windows executable
  - Improve the documentation
+ - Updated installation instructions for the manpage
 ### Fixed
  - Fix data path on mac OS
  - Only set the sticky bit for data directories on Linux
