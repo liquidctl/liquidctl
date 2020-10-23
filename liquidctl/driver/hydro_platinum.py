@@ -261,6 +261,17 @@ class HydroPlatinum(UsbHidDriver):
         if 'PRO XT' in self.description and not (unsafe and 'pro_xt_lighting' in unsafe):
             LOGGER.warning('Lighting control of PRO XT devices is experimental and only enabled with the `pro_xt_lighting` unsafe flag')
 
+        channel, mode, colors = channel.lower(), mode.lower(), list(colors)
+        self._check_color_args(channel, mode, colors)
+        if mode == 'off':
+            expanded = []
+        elif (channel, mode) == ('led', 'super-fixed'):
+            expanded = colors[:self._led_count]
+        elif (channel, mode) == ('led', 'fixed'):
+            expanded = list(itertools.chain(*([color] * self._led_count for color in colors[:1])))
+        else:
+            assert False, 'assumed unreacheable'
+        
 
         if self._data.load('leds_enabled', of_type=int, default=0) == 0:
             # These hex strings are currently magic values that work but Im not quite sure why.
@@ -274,16 +285,6 @@ class HydroPlatinum(UsbHidDriver):
             self._send_command(None, 0b011, data=d3)
             self._data.store('leds_enabled', 1)
 
-        channel, mode, colors = channel.lower(), mode.lower(), list(colors)
-        self._check_color_args(channel, mode, colors)
-        if mode == 'off':
-            expanded = []
-        elif (channel, mode) == ('led', 'super-fixed'):
-            expanded = colors[:self._led_count]
-        elif (channel, mode) == ('led', 'fixed'):
-            expanded = list(itertools.chain(*([color] * self._led_count for color in colors[:1])))
-        else:
-            assert False, 'assumed unreacheable'
         data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
         data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:])))
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
