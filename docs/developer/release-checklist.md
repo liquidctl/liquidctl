@@ -27,16 +27,22 @@
 
 ## Source distribution
 
- - [ ] Tag HEAD as `v<version>` with short summary annotation
+ - [ ] Tag HEAD with `git tag -as v<version>` and short summary annotation (signed)
  - [ ] Push HEAD and `v<version>` tag
  - [ ] Check all CI statuses (pytest, flake8 linting, and `list --verbose`)
  - [ ] Generate the source distribution: `python setup.py sdist`
  - [ ] Check that all necessary files are in `dist/liquidctl-<version>.tar.gz` and that generated `extraversion.py` makes sense
+ - [ ] Sign the source distribution: `gpg --detach-sign -a dist/liquidctl-<version>.tar.gz`
+
+## Binary distribution for Windows
+
+ - [ ] Download and check artifact built by AppVeyor
+ - [ ] Sign the artifact: `gpg --detach-sign -a dist/liquidctl-<version>-bin-windows-x86_64.zip`
 
 ## Release
 
- - [ ] Upload: `twine upload dist/liquidctl-<version>.tar.gz`
- - [ ] Upgrade the `v<version>` tag on GitHub to a release (with sdist and Windows build)
+ - [ ] Upload: `twine upload dist/liquidctl-<version>.tar.gz{,.asc}`
+ - [ ] Upgrade the `v<version>` tag on GitHub to a release (with sdist, Windows artifact, and corresponding GPG signatures)
  - [ ] Update the HEAD changelog with the release file SHA256 sums
 
 ## Post release
