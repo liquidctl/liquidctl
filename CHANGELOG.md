@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.2] – 2020-11-01
+_Summary for the 1.4.2 release: standardized hexadecimal parsing in the CLI;
+fixes for Windows and mac OS; improvements to Hydro Platinum/PRO XT and Kraken
+X3 drivers.._
 
 Changelog since 1.4.1:
 ### Added
@@ -10,12 +13,14 @@ Changelog since 1.4.1:
  - Warn on faulty temperature readings from Kraken X3 coolers
  - Warn on Hydro Platinum/PRO XT firmware versions that are may be too old
  - Update PyInstaller used for the Windows executable
- - Update PyUSB bundled with the Windows executable
+ - Update PyUSB version bundled with the Windows executable
  - Improve the documentation
 ### Fixed
  - Fix data path on mac OS
+ - Only set the sticky bit for data directories on Linux
  - Fix check of maximum number of colors in Hydro Platinum super-fixed mode
  - Fix HID writes to Corsair HXi/RMi power supplies on Windows
+ - Ensure Hydro Platinum/PRO XT is in static LEDs hardware mode
 
 
 ## [1.4.1] – 2020-08-07
