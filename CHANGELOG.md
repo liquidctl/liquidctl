@@ -21,6 +21,11 @@ Changelog since 1.4.1:
  - Fix check of maximum number of colors in Hydro Platinum super-fixed mode
  - Fix HID writes to Corsair HXi/RMi power supplies on Windows
  - Ensure Hydro Platinum/PRO XT is in static LEDs hardware mode
+### Checksums
+```
+83517ccb06cfdda556bc585a6a45edfcb5a21e38dbe270454ac97639d463e96d  dist/liquidctl-1.4.2-bin-windows-x86_64.zip
+39da5f5bcae1cbd91e42e78fdb19f4f03b6c1a585addc0b268e0c468e76f1a3c  dist/liquidctl-1.4.2.tar.gz
+```
 
 
 ## [1.4.1] – 2020-08-07
