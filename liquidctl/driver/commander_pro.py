@@ -33,7 +33,7 @@ _CMD_GET_TEMP = 0x11
 _CMD_GET_VOLTS = 0x12
 _CMD_GET_FAN_MODES = 0x20
 _CMD_GET_FAN_RPM = 0x21
-
+_CMD_SET_FAN_DUTY = 0x23
 
 _TEMP1_MASK = 0b0001
 _TEMP2_MASK = 0b0010
@@ -88,10 +88,10 @@ _FAN_MODE_PWM = 0x02
 #    if missing > 0:
 #        normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
 #    return normal
-#
-#
-#def _quoted(*names):
-#    return ', '.join(map(repr, names))
+
+
+def _quoted(*names):
+    return ', '.join(map(repr, names))
 
 
 class CommanderPro(UsbHidDriver):
@@ -107,6 +107,9 @@ class CommanderPro(UsbHidDriver):
         
         # the following fields are only initialized in connect()
         self._data = None
+        self._fan_names = [f'fan{i+1}' for i in range(fan_count)]
+
+
 
     def connect(self, **kwargs):
         """Connect to the device."""
@@ -271,6 +274,19 @@ class CommanderPro(UsbHidDriver):
 
         return speed
 
+
+    def _get_hw_fan_channels(self, channel):
+        """This will get a list of all the fan channels that the command should be sent to
+        It will look up the name of the fan channel given and return a list of the real fan number
+        """
+        channel = channel.lower()
+        if channel == 'fan':
+            return [i for i in range(len(self._fan_names))]
+        elif channel in self._fan_names:
+            return [self._fan_names.index(channel)]
+        else:
+            raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
 
@@ -284,15 +300,15 @@ class CommanderPro(UsbHidDriver):
         messages (or 1 per enabled fan)
         """
 
-        # send command, fan num, duty percent
+        if duty < 0 or duty > 100:
+            raise ValueError(f'Invalid duty. Fan duty {duty} must be between 0% and 100%')
 
-        # old
-        #for hw_channel in self._get_hw_fan_channels(channel):
-        #    self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
-        #    self._data.store(f'{hw_channel}_duty', duty)
-        #self._send_set_cooling()
+        fan_channels = self._get_hw_fan_channels(channel)
 
-        raise NotImplementedError('Not yet implemented')
+        for fan in fan_channels:
+            mode = self._data.load(f'fan{fan+1}_mode', of_type=int, default=0)
+            if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
+                self._send_command(_CMD_SET_FAN_DUTY,[fan, duty])
 
 
     def set_speed_profile(self, channel, profile, **kwargs):
