@@ -25,6 +25,7 @@ from liquidctl.driver.base import BaseBus, find_all_subclasses
 from liquidctl.driver import asetek
 from liquidctl.driver import corsair_hid_psu
 from liquidctl.driver import hydro_platinum
+from liquidctl.driver import commander_pro
 from liquidctl.driver import kraken2
 from liquidctl.driver import kraken3
 from liquidctl.driver import nzxt_epsu
