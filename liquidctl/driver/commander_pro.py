@@ -378,7 +378,6 @@ class CommanderPro(UsbHidDriver):
             mode = self._data.load(f'fan{fan+1}_mode', of_type=int, default=0)
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 buf[0] = fan
-                print(f'fan: {fan}, temp: {buf[1]}')
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
 
