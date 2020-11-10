@@ -34,7 +34,7 @@ _CMD_GET_VOLTS = 0x12
 _CMD_GET_FAN_MODES = 0x20
 _CMD_GET_FAN_RPM = 0x21
 _CMD_SET_FAN_DUTY = 0x23
-
+_CMD_SET_FAN_PROFILE = 0x25
 _TEMP1_MASK = 0b0001
 _TEMP2_MASK = 0b0010
 _TEMP3_MASK = 0b0100
@@ -44,6 +44,24 @@ _TEMP4_MASK = 0b1000
 _FAN_MODE_DISCONNECTED = 0x00
 _FAN_MODE_DC = 0x01
 _FAN_MODE_PWM = 0x02
+
+
+_PROFILE_LENGTH = 6
+_CRITICAL_TEMPERATURE = 60
+_MAX_FAN_RPM = 5000             # I have no idea if this is a good value or not
+
+
+# FAN TYPES
+
+# SP RGB - 100% = 1540     - 1 led
+# SP RGB PRO - 100% = 1540 - 8 leds
+# HD RGB - 800 - 1725      - 12 leds
+# LL RGB - 600 - 1500      - 16 leds
+# QL RGB - 525 - 1500      - 34 leds
+# AF      - 1400
+# ML RGB - 400 - 2400      - 4 leds
+
+
 
 ## old values (remove)
 #_FEATURE_COOLING = 0b000
@@ -78,16 +96,16 @@ _FAN_MODE_PWM = 0x02
 #    def _missing_(cls, value):
 #        LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
 #        return _FanMode.FIXED_DUTY
-#
-#def _prepare_profile(original):
-#    clamped = ((temp, clamp(duty, 0, 100)) for temp, duty in original)
-#    normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE)
-#    missing = _PROFILE_LENGTH - len(normal)
-#    if missing < 0:
-#        raise ValueError(f'Too many points in profile (remove {-missing})')
-#    if missing > 0:
-#        normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
-#    return normal
+
+def _prepare_profile(original):
+    clamped = ((temp, clamp(duty, 0, _MAX_FAN_RPM)) for temp, duty in original)
+    normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE, _MAX_FAN_RPM)
+    missing = _PROFILE_LENGTH - len(normal)
+    if missing < 0:
+        raise ValueError(f'Too many points in profile (remove {-missing})')
+    if missing > 0:
+        normal += missing * [(_CRITICAL_TEMPERATURE, _MAX_FAN_RPM)]
+    return normal
 
 
 def _quoted(*names):
@@ -300,9 +318,7 @@ class CommanderPro(UsbHidDriver):
         messages (or 1 per enabled fan)
         """
 
-        if duty < 0 or duty > 100:
-            raise ValueError(f'Invalid duty. Fan duty {duty} must be between 0% and 100%')
-
+        duty = clamp(duty, 0, 100)
         fan_channels = self._get_hw_fan_channels(channel)
 
         for fan in fan_channels:
@@ -332,17 +348,38 @@ class CommanderPro(UsbHidDriver):
         # 6 2-byte big endian temps (celsius * 100), then 6 2-byte big endian rpms 
         # need to figure out how to find out what the max rpm is for the given fan
 
-        # old
-        #profile = list(profile)
-        #for hw_channel in self._get_hw_fan_channels(channel):
-        #    self._data.store(f'{hw_channel}_mode', _FanMode.CUSTOM_PROFILE.value)
-        #    self._data.store(f'{hw_channel}_profile', profile)
-        #self._send_set_cooling()
+        profile = list(profile)
+        profile = _prepare_profile(profile)
+
+        # fan_type = kwargs['fan_type'] # need to make sure this is set
+        temp_sensor = kwargs.get('temp_sensor', 1) # need to make sure this is set and in range 1-4 or ext
+        temp_sensor = clamp(temp_sensor, 1, 4) 
+
+        # generate the  profile in the correct format, 6 temp, 6 speeds
+
+        buf = bytearray(26)
+        buf[1] = temp_sensor-1 # 0  # use temp sensor 1 
+
+        for i,entry in enumerate(profile):
+            temp = entry[0]*100
+            rpm  = entry[1]
+
+            # convert both values to 2 byte big endian values
+            buf[2 + i*2] = temp.to_bytes(2, byteorder='big')[0]
+            buf[2 + i*2 + 1] = temp.to_bytes(2, byteorder='big')[1]
+            buf[2 + i*2 + 12] = rpm.to_bytes(2, byteorder='big')[0]
+            buf[2 + i*2 + 12 + 1] = rpm.to_bytes(2, byteorder='big')[1]
 
 
 
-        raise NotImplementedError('Not yet implemented')
+        fan_channels = self._get_hw_fan_channels(channel)
 
+        for fan in fan_channels:
+            mode = self._data.load(f'fan{fan+1}_mode', of_type=int, default=0)
+            if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
+                buf[0] = fan
+                print(f'fan: {fan}, temp: {buf[1]}')
+                self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
 
     def set_color(self, channel, mode, colors, unsafe=None, **kwargs):

@@ -4,7 +4,7 @@ Usage:
   liquidctl [options] list
   liquidctl [options] initialize [all]
   liquidctl [options] status
-  liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
+  liquidctl [options] set <channel> speed (<temperature> <percentage|rpm>) ...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl --help
@@ -35,6 +35,7 @@ Other device options:
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
   --non-volatile              Store on non-volatile controller memory
   --unsafe <features>         Comma-separated bleeding-edge features to enable
+  --temp-sensor <number>      The tempature sensor number for the Commander Pro 
 
 Other interface options:
   -v, --verbose               Output additional information
@@ -99,6 +100,7 @@ _PARSE_ARG = {
     '--time-off': int,
     '--alert-threshold': int,
     '--alert-color': color_from_str,
+    '--temp-sensor': int,
 
     '--single-12v-ocp': bool,
     '--pump-mode': str,
