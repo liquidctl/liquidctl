@@ -28,6 +28,10 @@ Animation options (devices/modes can support zero or more):
   --time-off <value>          Time to wait with the LED turned off (seconds)
   --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
+  --brightness <percentage>   How bright the LED channel should be
+  --direction <string>        If the pattern should move forward or backwords. [default: forward]
+  --led-type <string>         The type of device that is connected
+  --channel <number>          The actual led channel for the comander pro
 
 Other device options:
   --single-12v-ocp            Enable single rail +12V OCP
@@ -101,6 +105,12 @@ _PARSE_ARG = {
     '--alert-threshold': int,
     '--alert-color': color_from_str,
     '--temp-sensor': int,
+    '--direction': str,
+    '--brightness': int,
+    '--num-devices': int,
+    '--led-type': str,
+    '--channel': str,
+
 
     '--single-12v-ocp': bool,
     '--pump-mode': str,

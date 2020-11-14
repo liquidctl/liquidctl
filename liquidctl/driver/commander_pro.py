@@ -35,11 +35,6 @@ _CMD_GET_FAN_MODES = 0x20
 _CMD_GET_FAN_RPM = 0x21
 _CMD_SET_FAN_DUTY = 0x23
 _CMD_SET_FAN_PROFILE = 0x25
-_TEMP1_MASK = 0b0001
-_TEMP2_MASK = 0b0010
-_TEMP3_MASK = 0b0100
-_TEMP4_MASK = 0b1000
-
 
 _FAN_MODE_DISCONNECTED = 0x00
 _FAN_MODE_DC = 0x01
@@ -50,6 +45,19 @@ _PROFILE_LENGTH = 6
 _CRITICAL_TEMPERATURE = 60
 _MAX_FAN_RPM = 5000             # I have no idea if this is a good value or not
 
+_MODES = {
+    'rainbow': 0x00,
+    'color_shift': 0x01,
+    'color_pulse': 0x02,
+    'color_wave': 0x03,
+    'fixed': 0x04,
+    #'tempature': 0x05,    # ignore this
+    'visor': 0x06,
+    'marquee': 0x07,
+    'blink': 0x08,
+    'sequential': 0x09,
+    'rainbow2': 0x0A,
+}
 
 # FAN TYPES
 
@@ -117,15 +125,16 @@ class CommanderPro(UsbHidDriver):
 
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C10, None, 'Corsair Commander Pro (experimental)',
-            {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
+            {'fan_count': 6, 'led_count': 6, 'temp_probs': 4, 'led_channels': 2}),
     ]
 
-    def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
+    def __init__(self, device, description, fan_count, led_count, temp_probs, led_channels, **kwargs):
         super().__init__(device, description, **kwargs)
         
         # the following fields are only initialized in connect()
         self._data = None
         self._fan_names = [f'fan{i+1}' for i in range(fan_count)]
+        self._led_names = [f'led{i+1}' for i in range(led_count)]
 
 
 
@@ -156,34 +165,25 @@ class CommanderPro(UsbHidDriver):
         bootloader_version = (res[1], res[2])               # is it possible for there to be a third value?
         
         res = self._send_command(_CMD_GET_TEMP_CONFIG)
-        
-        temp1_con = res[1] == 0x01
-        temp2_con = res[2] == 0x01
-        temp3_con = res[3] == 0x01
-        temp4_con = res[4] == 0x01
+       
+        temp_connected = res[1:5]
 
-        connected_temp_sensors = temp4_con << 3 | temp3_con << 2 | temp2_con << 1 | temp1_con 
-        self._data.store('temp_sensors_connected', connected_temp_sensors)
+        self._data.store('temp_sensors_connected', temp_connected)
 
         # get the information about how the fans are connected, probably want to save this for later
         res = self._send_command(_CMD_GET_FAN_MODES)
         fanModes = res[1:7]
 
-        self._data.store('fan1_mode', fanModes[0])
-        self._data.store('fan2_mode', fanModes[1])
-        self._data.store('fan3_mode', fanModes[2])
-        self._data.store('fan4_mode', fanModes[3])
-        self._data.store('fan5_mode', fanModes[4])
-        self._data.store('fan6_mode', fanModes[5])
+        self._data.store('fan_modes', fanModes)
 
 
         return [
             ('Firmware version', '%d.%d.%d' % fw_version, ''),
             ('Bootloader version', '%d.%d' % bootloader_version, ''),
-            ('Temp sensor 1', 'Connected' if temp1_con else 'Not Connected', ''),
-            ('Temp sensor 2', 'Connected' if temp2_con else 'Not Connected', ''),
-            ('Temp sensor 3', 'Connected' if temp3_con else 'Not Connected', ''),
-            ('Temp sensor 4', 'Connected' if temp4_con else 'Not Connected', ''),
+            ('Temp sensor 1', 'Connected' if temp_connected[0] else 'Not Connected', ''),
+            ('Temp sensor 2', 'Connected' if temp_connected[1] else 'Not Connected', ''),
+            ('Temp sensor 3', 'Connected' if temp_connected[2] else 'Not Connected', ''),
+            ('Temp sensor 4', 'Connected' if temp_connected[3] else 'Not Connected', ''),
             ('Fan 1 Mode', self._get_fan_mode_description(fanModes[0]), ''),
             ('Fan 2 Mode', self._get_fan_mode_description(fanModes[1]), ''),
             ('Fan 3 Mode', self._get_fan_mode_description(fanModes[2]), ''),
@@ -211,25 +211,15 @@ class CommanderPro(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        connected_temp_sensors = self._data.load('temp_sensors_connected', of_type=int, default=0)
+        connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*4) 
 
-        fan_modes = [0]*6
-        for i in range(6):
-            fan_modes[i] = self._data.load(f'fan{i+1}_mode', of_type=int, default=0)
+        fan_modes = self._data.load('fan_modes', default=[0]*6)
 
         # get the tempature sensor values
         temp = [0]*4
-        if connected_temp_sensors & _TEMP1_MASK == _TEMP1_MASK:
-            temp[0] = self._get_temp(1)
-
-        if connected_temp_sensors & _TEMP2_MASK == _TEMP2_MASK:
-            temp[1] = self._get_temp(2)
-
-        if connected_temp_sensors & _TEMP3_MASK == _TEMP3_MASK:
-            temp[2] = self._get_temp(3)
-
-        if connected_temp_sensors & _TEMP4_MASK == _TEMP4_MASK:
-            temp[3] = self._get_temp(4)
+        for num, enabled in enumerate(connected_temp_sensors):
+            if enabled:
+                temp[num] = self._get_temp(num)
 
         # get the real power supply voltages
         res = self._send_command(_CMD_GET_VOLTS, [0])
@@ -267,13 +257,13 @@ class CommanderPro(UsbHidDriver):
     def _get_temp(self, sensor_num):
         """This will get the tempature in degrees celsius for the specified temp sensor.
 
-        sensor number MUST be in range of 1-4
+        sensor number MUST be in range of 0-3
         """
-        if sensor_num < 1 or sensor_num > 4:
-            raise ValueError(f'sensor_num {sensor_num} invalid, must be between 1 and 4')
+        if sensor_num < 0 or sensor_num > 3:
+            raise ValueError(f'sensor_num {sensor_num} invalid, must be between 0 and 3')
 
 
-        res = self._send_command(_CMD_GET_TEMP, [sensor_num - 1])
+        res = self._send_command(_CMD_GET_TEMP, [sensor_num])
         temp = u16be_from(res, offset=1) / 100
 
         return temp
@@ -304,6 +294,18 @@ class CommanderPro(UsbHidDriver):
             return [self._fan_names.index(channel)]
         else:
             raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+
+    def _get_hw_led_channels(self, channel):
+        """This will get a list of all the led channels that the command should be sent to
+        It will look up the name of the led channel given and return a list of the real led device number
+        """
+        channel = channel.lower()
+        if channel == 'led':
+            return [i for i in range(len(self._led_names))]
+        elif channel in self._led_names:
+            return [self._led_names.index(channel)]
+        else:
+            raise ValueError(f'Unknown channel, should be one of: {_quoted("led", *self._led_names)}')
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -381,7 +383,7 @@ class CommanderPro(UsbHidDriver):
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
 
-    def set_color(self, channel, mode, colors, unsafe=None, **kwargs):
+    def set_color(self, channel, mode_str, colors, unsafe=None, **kwargs):
         """Set the color of each LED.
 
         In reality the device does not have the concept of different channels
@@ -417,51 +419,76 @@ class CommanderPro(UsbHidDriver):
         the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
         """
 
+        # Channel parameter is actually the device number, 1-6 or all
+        # brightness is the brighness to set default 100%
+        # direction is `forward` or `backward` default forward
+        # num_leds is the number of leds per device. effect group. dependign on the effect you want
+        #               This is what you might want to change and not the channel number
+        # random or alternating is determined by the number of colors specified
+        # speed is `fast`, `medium` or `slow` default fast
+        # 
 
-        # Need to find a way to determine what types of devices are connected and how many leds that they have and what channel they are on
-        # maybe do this as part of initilization? (inform fan channel and num and type of LED)
-        # also in initilization perhaps also say what types of fans are connected to each fan port? (optional becuase this info is saved to hardware)
+        colors = list(colors)
+        expanded = colors[:3]
+        c = itertools.chain(*((r, g, b) for r, g, b in expanded))
+        colors = list(c)
+
+        brightness = kwargs.get('brightness', 100)
+        direction = kwargs.get('direction', 'forward').lower()
+        speed = kwargs.get('speed', 'fast').lower()
+        led_channel = kwargs.get('channel', 1)
+        leds_per_device = kwargs.get('led_type', 1);
+        channel = channel.lower()
+        mode = mode_str.lower()
+
+
         
-        # 2 channels, led1 led2
-        # brightness flag (percentage) - this is a seperate command that is sent
-        # can set some hardware modes, and can set static colors
 
-        # icue seems to be able to set led orders for effects, need to look into that. 
+        brightness = clamp(brightness, 0, 100)
+        direction = 0x01 if direction == 'forward' else 0x00
+        speed = 0x02 if speed == 'slow' else 0x01 if speed == 'medium' else 0x00
+        led_channel = clamp(led_channel, 1, 2) - 1
+        leds_per_device = clamp(leds_per_device, 0, 32)
+        mode = _MODES.get(mode, -1)
+
+        if mode == -1:
+            raise ValueError(f'Mode "{mode_str}" is not valid')
+
+        devices = self._get_hw_led_channels(channel)
+        random_colors = 0x00 if len(colors) != 0 else 0x01 
+
+        self._send_command(0x37);               # clear group ?
+        self._send_command(0x34);               # clear led ?
+        self._send_command(0x39, [led_channel, brightness]); # brightness
+        self._send_command(0x38, [led_channel, 0x01]); # group setting ?
+
+        # generate the LED set command, keep all the LED's the same if only one channel is being set.
+        alldevices = self._get_hw_led_channels('led')
+        for device in alldevices:
+            if device in devices:
+                config = [led_channel, device, leds_per_device, mode, speed, direction, random_colors, 0xff] + colors
+                devices.remove(device)
+                self._data.store(f'led_value{led_channel}{device}', config)
+            else:
+                config = self._data.load(f'led_value{led_channel}{device}', [])
+
+            if len(config) != 0:
+                self._send_command(0x35, config );
 
 
-        #if 'PRO XT' in self.description and not (unsafe and 'pro_xt_lighting' in unsafe):
-        #    LOGGER.warning('Lighting control of PRO XT devices is experimental and only enabled with the `pro_xt_lighting` unsafe flag')
 
-        #channel, mode, colors = channel.lower(), mode.lower(), list(colors)
-        #self._check_color_args(channel, mode, colors)
-        #if mode == 'off':
-        #    expanded = []
-        #elif (channel, mode) == ('led', 'super-fixed'):
-        #    expanded = colors[:self._led_count]
-        #elif (channel, mode) == ('led', 'fixed'):
-        #    expanded = list(itertools.chain(*([color] * self._led_count for color in colors[:1])))
-        #else:
-        #    assert False, 'assumed unreacheable'
-        #
+        self._send_command(0x33, [0xff]);
 
-        #if self._data.load('leds_enabled', of_type=int, default=0) == 0:
-        #    # These hex strings are currently magic values that work but Im not quite sure why.
-        #    d1 = bytes.fromhex("0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff")
-        #    d2 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff")
-        #    d3 = bytes.fromhex("28292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4fffffffffffffffffffffffffffffffffffffffffff")
 
-        #    # Send the magic messages to enable setting the LEDs to statuC values
-        #    self._send_command(None, 0b001, data=d1)
-        #    self._send_command(None, 0b010, data=d2)
-        #    self._send_command(None, 0b011, data=d3)
-        #    self._data.store('leds_enabled', 1)
 
-        #data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
-        #data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:])))
-        #self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
-        #self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
 
-        raise NotImplementedError('Not yet implemented')
+
+        # send 37 - set led's ?
+        # send 34 - clear?
+        # send 39 - set brightness [ 0x38, channel, brightness, 0x00 ... ]
+        # send 38 - magic message [ 0x38, 0x00, 0x01, 0x00 ... ]
+        # send 35 X times, - [ 0x35, channel, fan num, type, mode, speed, direction, alternating or random, 0xFF, r1,g1,b1, r2,g2,b2, r3,g3,b3, tmp1, tmp1, tmp2, tmp2. tmp3. tmp3. 0x00] temp big endian
+        # send 33 - done [ 0x33, 0xFF, 0x00 ...]
 
 
     def _send_command(self, command, data=None):
