@@ -18,9 +18,14 @@ application.
 Get [Wireshark].  During the Wireshark setup, enable the installation of
 USBPcap for experimental capturing of USB traffic.  Reboot.
 
+You may have to run Wireshark as root to be able to capture USB traffic.
+Alternatively you can give the your normal user permissions to capture traffic by
+adding your self to the `wireshark` group and granting yourself read permissions on the `/dev/usbmon*` devices.
+Some extra steps may be needed, you can follow the instructions [here](https://wiki.wireshark.org/CaptureSetup/USB).
+Note you may need to logout and login agin for these changes to take effect.
+
 To capture some USB traffic, start Wireshark, double click the USBPcap1
-interface to start capturing all traffic on it, and proceed to [Finding the
-target device].
+interface to start capturing all traffic on it, and proceed to [Finding the target device](#finding-the-target-device).
 
 _If you have more than one USBPcap interface, you may need to look for the
 target devices in each of them._
@@ -28,7 +33,17 @@ target devices in each of them._
 ## Capturing USB traffic on Linux
 _and capturing USB traffic in a Windows VM, through the Linux host_
 
-To be written.
+The general steps are as follows:
+There are a number of different virtualization tools you can use, such as [virt-manager](https://virt-manager.org/) a front
+end for [kvm/qemu](https://www.qemu.org/), [virtualbox](https://www.virtualbox.org/), and many more. You can google how
+to do the specific tasks for the one you wish to use.
+
+1. Create a windows VM using your favourite virtual machine manager
+2. Install the software to control the device
+3. Start Wireshark to capture the traffic
+3. Pass the usb device through to the virtual machine
+4. Start changing settings using the app and watch the messages appear in the Wireshark interface.
+5. Success!
 
 ## Finding the target device
 [Finding the target device](#finding-the-target-device)
@@ -78,7 +93,15 @@ truncate the long fields that are of our interest.
 
 ## Next steps
 
-To be written.
+Once you have your usb capture (probably in a `pcapng` format). You may find it easer to look at the data outside
+of Wireshark since Wireshark sometimes limits the number of bytes shown to fewer then the amount you want to look at.
+
+I generally like to use `tshark`, one of the cli tools that comes with Wireshark to extract the only the fields I care about
+so that I can easily only show the fields I can about and can use other bash commands to separate the fields and remove
+some of the extraneous messages (for example Corsair iCue sends a get status message every second which I am generally not
+interested in).
+
+Next steps would be to take a look at (analyzing USB protocols)[techniques-for-analyzing-usb-protocols.md]
 
 [Wireshark]: https://www.wireshark.org
 [USBPcap]: https://desowin.org/usbpcap/
