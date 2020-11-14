@@ -20,6 +20,8 @@ Another way to find the device address, which can be useful when dealing with ol
 
 Next, I would add a few custom columns: `usb.data_fragment` for data sent in control transfers, and `usb.capdata` for data exchanged in the other types of transfers.
 
+_Update: the latest versions of Wireshark have improved HID decoding capabilities, and HID data may also appear in `usbhid.data`._
+
 Wireshark actually works one level of abstraction bellow what I called a transfer, with USB request blocks (URBs), so there's a lot of uninteresting entries in the captured data.  You can reduce this by ignoring URBs without any data_fragment or capdata, since only in a few cases these are useful in understanding the protocol.
 
 Most of the protocol we need to implement lies in these two Wireshark fields.  In interrupt or bulk transfers all data is this `capdata`, the rest is just USB metadata.  Control transfers do need to be inspected more carefully, but their use outside of HIDs is very rare (Asetek 690LC coolers being one example).
