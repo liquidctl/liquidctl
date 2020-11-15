@@ -18,12 +18,6 @@ application.
 Get [Wireshark].  During the Wireshark setup, enable the installation of
 USBPcap for experimental capturing of USB traffic.  Reboot.
 
-You may have to run Wireshark as root to be able to capture USB traffic.
-Alternatively you can give the your normal user permissions to capture traffic by
-adding your self to the `wireshark` group and granting yourself read permissions on the `/dev/usbmon*` devices.
-Some extra steps may be needed, you can follow the instructions [here](https://wiki.wireshark.org/CaptureSetup/USB).
-Note you may need to logout and login agin for these changes to take effect.
-
 To capture some USB traffic, start Wireshark, double click the USBPcap1
 interface to start capturing all traffic on it, and proceed to [Finding the target device](#finding-the-target-device).
 
@@ -32,6 +26,14 @@ target devices in each of them._
 
 ## Capturing USB traffic on Linux
 _and capturing USB traffic in a Windows VM, through the Linux host_
+
+You will need to install [Wireshark] from your favorite package manager.
+
+You may have to run Wireshark as root to be able to capture USB traffic.
+Alternatively you can give the your normal user permissions to capture traffic by
+adding your self to the `wireshark` group and granting yourself read permissions on the `/dev/usbmon*` devices.
+Some extra steps may be needed, you can follow the instructions [here](https://wiki.wireshark.org/CaptureSetup/USB).
+Note you may need to logout and login agin for these changes to take effect.
 
 The general steps are as follows:
 There are a number of different virtualization tools you can use, such as [virt-manager](https://virt-manager.org/) a front
