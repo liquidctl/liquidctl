@@ -322,9 +322,10 @@ class CommanderPro(UsbHidDriver):
 
         duty = clamp(duty, 0, 100)
         fan_channels = self._get_hw_fan_channels(channel)
+        fan_modes = self._data.load('fan_modes', default=[0]*6)
 
         for fan in fan_channels:
-            mode = self._data.load(f'fan{fan+1}_mode', of_type=int, default=0)
+            mode = fan_modes[fan]
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 self._send_command(_CMD_SET_FAN_DUTY,[fan, duty])
 
@@ -375,9 +376,10 @@ class CommanderPro(UsbHidDriver):
 
 
         fan_channels = self._get_hw_fan_channels(channel)
+        fan_modes = self._data.load('fan_modes', default=[0]*6)
 
         for fan in fan_channels:
-            mode = self._data.load(f'fan{fan+1}_mode', of_type=int, default=0)
+            mode = fan_modes[fan]
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 buf[0] = fan
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
