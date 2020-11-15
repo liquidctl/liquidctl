@@ -123,6 +123,20 @@ You also easily write a custom script to do some analyses or test hypothesis on 
 
 [script I used when working the Platinum coolers]: https://github.com/jonasmalacofilho/liquidctl-device-data/blob/master/Corsair%20H115i%20RGB%20Platinum/analyze.py
 
+
+
+Alternatively you can use:
+
+tshark -r <filename>.pcapng  -2 -e "frame.number" -e "usb.data_fragment" -e "usb.capdata" -Tfields  > dump.txt
+
+
+To pull out only the frame number, data_fragment, and capdata fields and output them in to a txt file.
+The frame number field is really usefull for if you have a seperate text description file that had a
+description of what commands got set to the device and arround what frame number the message corresponds to.
+(you can write down the number of one of the bottom messages shown in the wireshark console while the command is being sent)
+
+
+
 ## Notes
 
 _¹ There are Bluetooth HIDs, but these obviously aren't very relevant here._
