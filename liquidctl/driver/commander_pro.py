@@ -430,6 +430,15 @@ class CommanderPro(UsbHidDriver):
         # speed is `fast`, `medium` or `slow` default fast
         # 
 
+
+        # a special mode to clear the current led settings.
+        # this is usefull if the the user wants to use a led mode for multiple devices
+        if mode == "clear":
+            for i in range(2):
+                for j in range(6):
+                    self._data.store(f'led_value{i}{j}', None)
+            return
+
         colors = list(colors)
         expanded = colors[:3]
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
