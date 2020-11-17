@@ -130,6 +130,13 @@ class BaseDriver:
         """
         raise NotImplementedError()
 
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, *args):
+        self.disconnect()
+
 
 class BaseBus:
     """Base bus API."""
