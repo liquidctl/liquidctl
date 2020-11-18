@@ -30,7 +30,7 @@ Animation options (devices/modes can support zero or more):
   --alert-color <color>       Color used by the visual high temperature alert
   --brightness <percentage>   How bright the LED channel should be
   --direction <string>        If the pattern should move forward or backwords. [default: forward]
-  --led-type <string>         The type of device that is connected
+  --led-type <number>         The type of device that is connected
   --channel <number>          The actual led channel for the comander pro
 
 Other device options:
@@ -108,7 +108,7 @@ _PARSE_ARG = {
     '--direction': str,
     '--brightness': int,
     '--num-devices': int,
-    '--led-type': str,
+    '--led-type': int,
     '--channel': str,
 
 

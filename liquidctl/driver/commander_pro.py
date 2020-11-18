@@ -433,7 +433,7 @@ class CommanderPro(UsbHidDriver):
 
         # a special mode to clear the current led settings.
         # this is usefull if the the user wants to use a led mode for multiple devices
-        if mode == "clear":
+        if mode_str == "clear":
             for i in range(2):
                 for j in range(6):
                     self._data.store(f'led_value{i}{j}', None)
@@ -483,7 +483,7 @@ class CommanderPro(UsbHidDriver):
             else:
                 config = self._data.load(f'led_value{led_channel}{device}', [])
 
-            if len(config) != 0:
+            if config != None and len(config) != 0:
                 self._send_command(0x35, config );
 
 
