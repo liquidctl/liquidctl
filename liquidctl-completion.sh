@@ -153,6 +153,14 @@ _liquidctl_main() {
         esac
 
 
+    # This will handle auto completing arguments even if they are given at the end of the command
+    case "$cur" in
+        -*)
+            COMPREPLY=($(compgen -W "$options_with_args $boolean_options" -- "$cur"))
+            return
+            ;;
+    esac
+
     local i=1 cmd
 
   # find the subcommand - first word after the flags
@@ -262,12 +270,51 @@ _liquidctl_set_command ()
 
 _liquidctl_set_fan ()
 {
-    COMPREPLY="speed"
+    local i=1 found=0
+
+    # find the sub command (either a fan or an led to set)
+    while [[ $i -lt $COMP_CWORD ]]; do
+        local s="${COMP_WORDS[i]}"
+ 
+        if [[ "$s" = "speed" ]]; then
+            found=1
+            break
+        fi
+
+        (( i++ ))
+    done
+
+    # check if it is a fan or an LED that is being set
+    if [[ $found  =  1 ]]; then
+        COMPREPLY=""
+    else
+        COMPREPLY="speed"
+    fi
 }
 
 _liquidctl_set_led ()
 {
-    COMPREPLY="color"
+
+    local i=1 found=0
+
+    # find the sub command (either a fan or an led to set)
+    while [[ $i -lt $COMP_CWORD ]]; do
+        local s="${COMP_WORDS[i]}"
+        if [[ "$s" = "color" ]]; then
+            found=1
+            break
+        fi
+
+        (( i++ ))
+    done
+
+    # check if it is a fan or an LED that is being set
+    if [[ $found = 1 ]]; then
+        COMPREPLY=""
+    else
+        COMPREPLY="color"
+    fi
+
 }
 
 
