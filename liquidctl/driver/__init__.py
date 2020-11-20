@@ -31,6 +31,14 @@ from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
 
+if sys.platform == 'linux':
+    try:
+        import smbus
+
+        from liquidctl.driver import nvidia
+    except ModuleNotFoundError:
+        pass
+
 
 def find_liquidctl_devices(pick=None, **kwargs):
     """Find devices and instantiate corresponding liquidctl drivers.
