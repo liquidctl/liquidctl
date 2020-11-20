@@ -32,10 +32,16 @@ if sys.platform == 'linux':
             drivers = sorted(find_all_subclasses(SmbusDriver),
                              key=lambda x: (x.__module__, x.__name__))
 
+            devices = Path('/sys/bus/i2c/devices')
+            if not devices.exists():
+                _LOGGER.debug('skipping %s, /sys/bus/i2c/devices not available',
+                              self.__class__.__name__)
+                return
+
             _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                           ', '.join(map(lambda x: x.__name__, drivers)))
 
-            for i2c_dev in Path('/sys/bus/i2c/devices').iterdir():
+            for i2c_dev in devices.iterdir():
                 i2c_bus = LinuxI2cBus(i2c_dev)
 
                 if bus and bus != i2c_bus.name:
