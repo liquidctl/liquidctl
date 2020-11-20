@@ -147,7 +147,8 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
 
         print(f'├── Vendor ID: {dev.vendor_id:#06x}')
         print(f'├── Product ID: {dev.product_id:#06x}')
-        print(f'├── Release number: {dev.release_number:#06x}')
+        if dev.release_number:
+            print(f'├── Release number: {dev.release_number:#06x}')
         try:
             if dev.serial_number:
                 print(f'├── Serial number: {dev.serial_number}')
