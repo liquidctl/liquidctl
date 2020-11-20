@@ -169,10 +169,10 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             port = '.'.join(map(str, dev.port))
             print(f'├── Port: {port}')
 
-        print(f'└── Driver: {type(dev).__name__} using module {dev.device.api.__name__}')
+        print(f'└── Driver: {type(dev).__name__}')
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            LOGGER.debug('hierarchy: %s; %s', ', '.join(driver_hier[1:]), type(dev.device).__name__)
+            LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
 
         for msg in warnings:
             LOGGER.warning(msg)
