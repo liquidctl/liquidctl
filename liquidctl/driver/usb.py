@@ -494,8 +494,9 @@ class HidapiDevice:
 
 
 class HidapiBus(BaseBus):
-    def find_devices(self, vendor=None, product=None, bus=None, address=None, **kwargs):
-        """Find compatible USB HID devices."""
+    def find_devices(self, vendor=None, product=None, bus=None, address=None,
+                     usb_port=None, **kwargs):
+        """Find compatible HID devices."""
         handles = HidapiDevice.enumerate(hid, vendor, product)
         drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
         LOGGER.debug('searching %s (api=%s, drivers=[%s])', self.__class__.__name__, hid.__name__,
@@ -504,6 +505,8 @@ class HidapiBus(BaseBus):
             if bus and handle.bus != bus:
                 continue
             if address and handle.address != address:
+                continue
+            if usb_port and handle.port != usb_port:
                 continue
             LOGGER.debug('probing drivers for device %04x:%04x', handle.vendor_id,
                          handle.product_id)
