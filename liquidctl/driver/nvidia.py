@@ -21,14 +21,19 @@ _NVIDIA_GTX_1080 = 0x1b80
 class EvgaPascal(SmbusDriver):
     """Tenth-series (Pascal) NVIDIA graphics card from EVGA."""
 
+    ADDRESS = 0x49
+    REG_MODE = 0xc
+    REG_RED = 0x9
+    REG_BLUE = 0xa
+    REG_GREEN = 0xb
+
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
         GTX_1080_FTW = 0x6286
-        ADDRESS = 0x49
 
         if (vendor and vendor != _EVGA) \
-                or (address and int(address, base=16) != ADDRESS) \
+                or (address and int(address, base=16) != cls.ADDRESS) \
                 or smbus.subsystem_vendor != _EVGA \
                 or smbus.vendor != _NVIDIA \
                 or smbus.driver != 'nvidia' \
@@ -48,9 +53,35 @@ class EvgaPascal(SmbusDriver):
                 continue
 
             dev = cls(smbus, desc, vendor_id=_EVGA, product_id=GTX_1080_FTW,
-                      address=ADDRESS)
+                      address=cls.ADDRESS)
             _LOGGER.debug('instanced driver for %s', desc)
             yield dev
+
+    def get_status(self, verbose=False, unsafe=None, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        # only RGB lighting information can be fetched for now; as that isn't
+        # super interesting, only enable it in verbose mode
+
+        if not verbose:
+            return []
+
+        if not (unsafe and 'evga_pascal' in unsafe):
+            _LOGGER.warning('Device requires `evga_pascal` unsafe flag')
+            return []
+
+        mode = self._smbus.read_byte_data(self.ADDRESS, self.REG_MODE)
+        red = self._smbus.read_byte_data(self.ADDRESS, self.REG_RED)
+        blue = self._smbus.read_byte_data(self.ADDRESS, self.REG_BLUE)
+        green = self._smbus.read_byte_data(self.ADDRESS, self.REG_GREEN)
+
+        return [
+            ('Mode', mode, ''),
+            ('Color', f'#{red:02x}{blue:02x}{green:02x}', ''),
+        ]
 
     def set_color(self, channel, mode, colors, save=False, **kwargs):
         """Set the lighting mode, when applicable, color.
@@ -59,15 +90,6 @@ class EvgaPascal(SmbusDriver):
         """
 
         pass
-
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
-        _LOGGER.info(f'Status reports not available from {self.description}')
-        return []
 
     def initialize(self, **kwargs):
         """Initialize the device."""
