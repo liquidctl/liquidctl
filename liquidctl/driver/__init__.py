@@ -32,8 +32,6 @@ from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
 
 if sys.platform == 'linux':
-    import smbus
-
     from liquidctl.driver import nvidia
 
 
