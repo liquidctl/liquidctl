@@ -56,4 +56,4 @@ Each color can be specified using any of the [supported formats](../README.md#su
 
 
 Note: control of device is experimental and requires the
-`--unsafe smbus`, and the `--unsage rog_strix` flags to be supplied on the command line for all commands.
+`--unsafe smbus`, and the `--unsage rog_turing` flags to be supplied on the command line for all commands.

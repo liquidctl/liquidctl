@@ -15,8 +15,8 @@ _LOGGER = logging.getLogger(__name__)
 _NVIDIA = 0x10de                # vendor
 _ASUS = 0x1043                  # subsystem vendor
 
-_ROG_RTX_2080_TI = 0x1e07       # device id
-_RTX_2080_TI = 0x866a       # subsystem device
+_RTX_2080_TI_REV_A = 0x1e07           # device id NOTE: 0x1E04 is also a possible value see https://www.nv-drivers.eu/nvidia-all-devices.html
+_ROG_RTX_2080_TI = 0x866a       # subsystem device
 
 
 
@@ -56,6 +56,8 @@ class RogTuring(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
+        unsafe = kwargs.get('unsafe', None)
+
         if (vendor and vendor != _ASUS) \
                 or (address and int(address, base=16) not in cls.ADDRESSES) \
                 or smbus.parent_subsystem_vendor != _ASUS \
@@ -65,7 +67,7 @@ class RogTuring(SmbusDriver):
             return
 
         supported = [
-            (_ROG_RTX_2080_TI, _RTX_2080_TI, "ASUS ROG RTX 2080ti (experimental)"),
+            (_RTX_2080_TI_REV_A, _ROG_RTX_2080_TI, "ASUS ROG RTX 2080ti Rev A. (experimental)"),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
@@ -75,6 +77,13 @@ class RogTuring(SmbusDriver):
                     or smbus.parent_device != dev_id \
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
+            
+            if not (unsafe and 'rog_turing' in unsafe):
+                dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
+                        address=0x2a)   # default picked the address that works for my device
+                _LOGGER.debug(f'Assuming driver {desc} was found')
+                yield dev
+                return 
 
             for address in cls.ADDRESSES:
                 val1=0
@@ -88,7 +97,7 @@ class RogTuring(SmbusDriver):
                     _LOGGER.debug(f'Device not found at {address}')
 
                 if val1 << 8 | val2 == cls._ASUS_GPU_MAGIC_VALUE:
-                    dev = cls(smbus, desc, vendor_id=_ASUS, product_id=_RTX_2080_TI,
+                    dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
                         address=address)
                     _LOGGER.debug(f'instanced driver for {desc} at address {address}')
                     yield dev
@@ -105,8 +114,8 @@ class RogTuring(SmbusDriver):
         if not verbose:
             return []
 
-        if not (unsafe and 'rog_strix' in unsafe):
-            _LOGGER.warning('Device requires `rog_strix` unsafe flag')
+        if not (unsafe and 'rog_turing' in unsafe):
+            _LOGGER.warning('Device requires `rog_turing` unsafe flag')
             return []
 
         mode =  self._smbus.read_byte_data(self._address, self.REG_MODE)
@@ -142,6 +151,10 @@ class RogTuring(SmbusDriver):
         The settings configured on the device are persistant acrross restarts.
 
         """
+
+        if not (unsafe and 'rog_turing' in unsafe):
+            _LOGGER.warning('Device requires `rog_turing` unsafe flag')
+            return 
 
         colors = list(colors)
         
