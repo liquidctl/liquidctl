@@ -17,7 +17,7 @@ _Note: the verbose flag is needed to get the color information_
 # liquidctl status -v
 
 ASUS ROG RTX 2080ti (experimental)
-├── Mode           1
+├── Mode       Fixed
 └── Color    #ff0000
 ```
 
