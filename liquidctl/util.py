@@ -288,11 +288,11 @@ def color_from_str(x):
     elif xl.startswith('hsl('):
         h, s, l = parse_triple(x[3:], (360, 100, 100))
         return list(map(lambda b: round(b*255), colorsys.hls_to_rgb(h/360, l/100, s/100)))
-    elif len(x) == 7 and x.startswith('#'):
-        return list(bytes.fromhex(x[1:]))
     elif len(x) == 6:
         return list(bytes.fromhex(x))
-    elif len(x) == 8 and (x[0:2] == '0x' or x[0:2] == '0X'):
+    elif len(x) == 7 and x.startswith('#'):
+        return list(bytes.fromhex(x[1:]))
+    elif len(x) == 8 and xl.startswith('0x'):
         return list(bytes.fromhex(x[2:]))
     else:
         raise ValueError(f'Cannot parse color: {x}')
