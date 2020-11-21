@@ -136,23 +136,23 @@ if sys.platform == 'linux':
             return self._try_sysfs_read('name')
 
         @property
-        def vendor(self):
+        def parent_vendor(self):
             return self._try_sysfs_read_hex('device/vendor')
 
         @property
-        def device(self):
+        def parent_device(self):
             return self._try_sysfs_read_hex('device/device')
 
         @property
-        def subsystem_vendor(self):
+        def parent_subsystem_vendor(self):
             return self._try_sysfs_read_hex('device/subsystem_vendor')
 
         @property
-        def subsystem_device(self):
+        def parent_subsystem_device(self):
             return self._try_sysfs_read_hex('device/subsystem_device')
 
         @property
-        def driver(self):
+        def parent_driver(self):
             try:
                 return Path(os.readlink(self._i2c_dev.joinpath('device/driver'))).name
             except FileNotFoundError:
@@ -171,10 +171,11 @@ if sys.platform == 'linux':
 
             return f'{self.__class__.__name__}: name: {self.name!r}, ' \
                    f'description: {self.description!r}, ' \
-                   f'vendor: {hexid(self.vendor)}, device: {hexid(self.device)}, ' \
-                   f'subsystem_vendor: {hexid(self.subsystem_vendor)}, ' \
-                   f'subsystem_device: {hexid(self.subsystem_device)}, ' \
-                   f'driver: {self.driver!r}'
+                   f'parent_vendor: {hexid(self.parent_vendor)}, ' \
+                   f'parent_device: {hexid(self.parent_device)}, ' \
+                   f'parent_subsystem_vendor: {hexid(self.parent_subsystem_vendor)}, ' \
+                   f'parent_subsystem_device: {hexid(self.parent_subsystem_device)}, ' \
+                   f'parent_driver: {self.parent_driver!r}'
 
         def _try_sysfs_read(self, *sub, default=None):
             try:

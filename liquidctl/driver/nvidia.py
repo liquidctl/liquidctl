@@ -53,9 +53,9 @@ class EvgaPascal(SmbusDriver):
 
         if (vendor and vendor != _EVGA) \
                 or (address and int(address, base=16) != cls.ADDRESS) \
-                or smbus.subsystem_vendor != _EVGA \
-                or smbus.vendor != _NVIDIA \
-                or smbus.driver != 'nvidia' \
+                or smbus.parent_subsystem_vendor != _EVGA \
+                or smbus.parent_vendor != _NVIDIA \
+                or smbus.parent_driver != 'nvidia' \
                 or release or serial:  # will never match: always None
             return
 
@@ -66,8 +66,8 @@ class EvgaPascal(SmbusDriver):
         for (dev_id, sub_dev_id, desc) in supported:
             if (product and product != sub_dev_id) \
                     or (match and match.lower() not in desc.lower()) \
-                    or smbus.subsystem_device != sub_dev_id \
-                    or smbus.device != dev_id \
+                    or smbus.parent_subsystem_device != sub_dev_id \
+                    or smbus.parent_device != dev_id \
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
 
