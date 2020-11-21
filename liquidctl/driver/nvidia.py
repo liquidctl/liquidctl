@@ -31,22 +31,17 @@ class EvgaPascal(SmbusDriver):
     PERSIST = 0xe5
 
     @unique
-    class Mode(Enum):
-        OFF = 0b000
-        FIXED = 0b001
-        RAINBOW = 0b010
-        BREATHING = 0b101
+    class Mode(bytes, Enum):
+        def __new__(cls, value, required_colors):
+            obj = bytes.__new__(cls, [value])
+            obj._value_ = value
+            obj.required_colors = required_colors
+            return obj
 
-        @classmethod
-        def _missing_(cls, value):
-            _LOGGER.debug('falling back to OFF for Mode(%s)', value)
-            return Mode.OFF
-
-        @property
-        def required_colors(self):
-            if self.value & 0b001:
-                return 1
-            return 0
+        OFF = (0b000, 0)
+        FIXED = (0b001, 1)
+        RAINBOW = (0b010, 0)
+        BREATHING = (0b101, 1)
 
         def __str__(self):
             return self.name.capitalize()
@@ -131,15 +126,18 @@ class EvgaPascal(SmbusDriver):
         """
 
         channel = 'led'
-        mode = self.Mode[mode.upper()]
         colors = list(colors)
 
-        required_colors = mode.required_colors
-        if len(colors) < required_colors:
-            raise ValueError(f'Mode {mode} requires {required_colors} colors')
-        elif len(colors) > required_colors:
-            _LOGGER.debug('too many colors, dropping to %d', required_colors)
-            colors = colors[:required_colors]
+        try:
+            mode = self.Mode[mode.upper()]
+        except KeyError:
+            raise ValueError(f'Invalid mode: {mode!r}') from None
+
+        if len(colors) < mode.required_colors:
+            raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
+        elif len(colors) > mode.required_colors:
+            _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
+            colors = colors[:mode.required_colors]
 
         self._smbus.write_byte_data(self.ADDRESS, self.REG_MODE, mode.value)
 
