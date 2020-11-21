@@ -123,6 +123,7 @@ if sys.platform == 'linux':
             """Close the I²C connection."""
             if self._smbus:
                 self._smbus.close()
+                self._smbus = None
 
         @property
         def name(self):
