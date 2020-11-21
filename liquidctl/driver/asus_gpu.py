@@ -83,7 +83,7 @@ class RogTuring(SmbusDriver):
                     smbus.open()
                     val1 = smbus.read_byte_data(address, 0x20)
                     val2 = smbus.read_byte_data(address, 0x21)
-                    #smbus.disconnect()
+                    smbus.close()
                 except:
                     _LOGGER.debug(f'Device not found at {address}')
 
@@ -118,7 +118,7 @@ class RogTuring(SmbusDriver):
             mode = 0
 
         mode = self.Mode(mode)
-        status = [('Mode', mode, '')]
+        status = [('Mode', str(mode), '')]
 
         if mode.required_colors > 0:
             status.append(('Color', f'#{red:02x}{blue:02x}{green:02x}', ''))
