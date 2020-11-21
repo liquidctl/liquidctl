@@ -33,6 +33,7 @@ from liquidctl.driver import smart_device
 
 if sys.platform == 'linux':
     from liquidctl.driver import nvidia
+    from liquidctl.driver import asus_gpu
 
 
 def find_liquidctl_devices(pick=None, **kwargs):
