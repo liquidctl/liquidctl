@@ -227,6 +227,8 @@ def color_from_str(x):
     [255, 127, 63]
     >>> color_from_str('0XfF7f3f')
     [255, 127, 63]
+    >>> color_from_str('#fF7f3f')
+    [255, 127, 63]
     >>> color_from_str('Rgb(255, 127, 63)')
     [255, 127, 63]
     >>> color_from_str('Hsv(20, 75, 100)')
@@ -275,15 +277,19 @@ def color_from_str(x):
                 raise ValueError(f'Expected value in range [0, {maxvalue}]: {value} in {x}')
         return literal
 
-    if x.lower().startswith('rgb('):
+    xl = x.lower()
+
+    if xl.startswith('rgb('):
         r, g, b = parse_triple(x[3:], (255, 255, 255))
         return [r, g, b]
-    elif x.lower().startswith('hsv('):
+    elif xl.startswith('hsv('):
         h, s, v = parse_triple(x[3:], (360, 100, 100))
         return list(map(lambda b: round(b*255), colorsys.hsv_to_rgb(h/360, s/100, v/100)))
-    elif x.lower().startswith('hsl('):
+    elif xl.startswith('hsl('):
         h, s, l = parse_triple(x[3:], (360, 100, 100))
         return list(map(lambda b: round(b*255), colorsys.hls_to_rgb(h/360, l/100, s/100)))
+    elif len(x) == 7 and x.startswith('#'):
+        return list(bytes.fromhex(x[1:]))
     elif len(x) == 6:
         return list(bytes.fromhex(x))
     elif len(x) == 8 and (x[0:2] == '0x' or x[0:2] == '0X'):
