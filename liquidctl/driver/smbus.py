@@ -16,8 +16,16 @@ from liquidctl.util import LazyHexRepr
 
 _LOGGER = logging.getLogger(__name__)
 
+
 if sys.platform == 'linux':
-    from smbus import SMBus
+
+    # smbus is an optional dependency
+    try:
+        import smbus
+    except ModuleNotFoundError:
+        SMBus = None
+    else:
+        from smbus import SMBus
 
 
     class LinuxI2c(BaseBus):
@@ -27,16 +35,22 @@ if sys.platform == 'linux':
             """Find compatible SMBus devices."""
 
             if usb_port:
-                return  # an USB port implies the bus is USB
+                # a usb_port filter implies an USB bus
+                return
 
-            drivers = sorted(find_all_subclasses(SmbusDriver),
-                             key=lambda x: (x.__module__, x.__name__))
+            if not SMBus:
+                _LOGGER.debug('skipping %s, smbus package not available',
+                              self.__class__.__name__)
+                return
 
             devices = Path('/sys/bus/i2c/devices')
             if not devices.exists():
-                _LOGGER.debug('skipping %s, /sys/bus/i2c/devices not available',
-                              self.__class__.__name__)
+                _LOGGER.debug('skipping %s, %s not available',
+                              self.__class__.__name__, devices)
                 return
+
+            drivers = sorted(find_all_subclasses(SmbusDriver),
+                             key=lambda x: (x.__module__, x.__name__))
 
             _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                           ', '.join(map(lambda x: x.__name__, drivers)))
