@@ -12,7 +12,6 @@ import os
 import sys
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
-from liquidctl.util import LazyHexRepr
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,11 +20,9 @@ if sys.platform == 'linux':
 
     # smbus is an optional dependency
     try:
-        import smbus
+        from smbus import SMBus
     except ModuleNotFoundError:
         SMBus = None
-    else:
-        from smbus import SMBus
 
 
     class LinuxI2c(BaseBus):
@@ -203,7 +200,7 @@ class SmbusDriver(BaseDriver):
         if sys.platform != 'linux':
             return []
 
-        devs = filter(lambda x: type(x) == cls, LinuxI2c.find_devices(**kwargs))
+        devs = filter(lambda x: isinstance(x, cls), LinuxI2c.find_devices(**kwargs))
         return list(devs)
 
     def __init__(self, smbus, description, vendor_id=None, product_id=None,
