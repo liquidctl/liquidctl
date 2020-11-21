@@ -1,6 +1,6 @@
 """Base SMBus bus and driver APIs.
 
-Only implemented for Linux.
+For now, these are unstable APIs, and only Linux is supported.
 
 Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -17,7 +17,7 @@ from liquidctl.util import LazyHexRepr
 _LOGGER = logging.getLogger(__name__)
 
 if sys.platform == 'linux':
-    import smbus
+    from smbus import SMBus
 
 
     class LinuxI2c(BaseBus):
@@ -42,6 +42,9 @@ if sys.platform == 'linux':
                           ', '.join(map(lambda x: x.__name__, drivers)))
 
             for i2c_dev in devices.iterdir():
+                if not i2c_dev.name.startswith('i2c-'):
+                    continue  # wont have a matching /dev/i2c-* file
+
                 i2c_bus = LinuxI2cBus(i2c_dev)
 
                 if bus and bus != i2c_bus.name:
@@ -54,20 +57,53 @@ if sys.platform == 'linux':
     class LinuxI2cBus:
         """A Linux I²C device, which is itself an I²C bus.
 
-        Should not be instantiated directly; `LinuxI2c.find_devices` should be
-        used instead.
+        Should not be instantiated directly; use `LinuxI2c.find_devices`
+        instead.
 
-        This type also does *not* extend `BaseBus`, due to how buses are
-        automatically discovered by `liquidctl.find_liquidctl_devices`.
+        This type mimics the `smbus.SMBus` read/write/close APIs.  However,
+        `open` does not take any parameters, and not all APIs are available.
         """
+
+        # note: this is not a liquidctl BaseBus, as that would cause
+        # find_liquidctl_devices to try to directly instantiate it
 
         def __init__(self, i2c_dev):
             self._i2c_dev = i2c_dev
+            self._smbus = None
+
+            assert i2c_dev.name.startswith('i2c-')
+            self._number = int(i2c_dev.name[4:])
 
         def find_devices(self, drivers, **kwargs):
             """Probe drivers and find compatible devices in this bus."""
             for drv in drivers:
                 yield from drv.probe(self, **kwargs)
+
+        def open(self):
+            """Open the I²C bus."""
+            if not self._smbus:
+                self._smbus = SMBus(self._number)
+
+        def read_byte(self, address):
+            """Read a single byte from a device."""
+            return self._smbus.read_byte(address)
+
+        def read_byte_data(self, address, register):
+            """Read a single byte from a designated register."""
+            return self._smbus.read_byte_data(address, register)
+
+        def write_byte(self, address, value):
+            """Write a single byte from a device."""
+            return self._smbus.write_byte(address, value)
+
+        def write_byte_data(self, address, register, value):
+            """Write a single byte from a designated register."""
+            return self._smbus.write_byte_data(address, register, value)
+
+        def close(self):
+            """Close the I²C connection."""
+            if self._smbus:
+                self._smbus.close()
 
         @property
         def name(self):
@@ -75,23 +111,23 @@ if sys.platform == 'linux':
 
         @property
         def description(self):
-            return self._try_read('name')
+            return self._try_sysfs_read('name')
 
         @property
         def vendor(self):
-            return self._try_read_hex('device/vendor')
+            return self._try_sysfs_read_hex('device/vendor')
 
         @property
         def device(self):
-            return self._try_read_hex('device/device')
+            return self._try_sysfs_read_hex('device/device')
 
         @property
         def subsystem_vendor(self):
-            return self._try_read_hex('device/subsystem_vendor')
+            return self._try_sysfs_read_hex('device/subsystem_vendor')
 
         @property
         def subsystem_device(self):
-            return self._try_read_hex('device/subsystem_device')
+            return self._try_sysfs_read_hex('device/subsystem_device')
 
         @property
         def driver(self):
@@ -118,13 +154,13 @@ if sys.platform == 'linux':
                    f'subsystem_device: {hexid(self.subsystem_device)}, ' \
                    f'driver: {self.driver!r}'
 
-        def _try_read(self, *sub, default=None):
+        def _try_sysfs_read(self, *sub, default=None):
             try:
                 return self._i2c_dev.joinpath(*sub).read_text().rstrip()
             except FileNotFoundError:
                 return default
 
-        def _try_read_hex(self, *sub, default=None):
+        def _try_sysfs_read_hex(self, *sub, default=None):
             try:
                 return int(self._i2c_dev.joinpath(*sub).read_text(), base=16)
             except FileNotFoundError:
@@ -135,7 +171,7 @@ class SmbusDriver(BaseDriver):
     """Base driver class for SMBus devices."""
 
     @classmethod
-    def probe(cls, i2c_bus, **kwargs):
+    def probe(cls, smbus, **kwargs):
         raise NotImplementedError()
 
     @classmethod
@@ -157,13 +193,16 @@ class SmbusDriver(BaseDriver):
         self._product_id = product_id
         self._address = address
 
-    def connect(self, **kwargs):
+    def connect(self, unsafe=None, **kwargs):
         """Connect to the device."""
-        pass
+        if not (unsafe and 'smbus' in unsafe):
+            _LOGGER.warning('SMBus support requires the `smbus` unsafe flag')
+            return
+        self._smbus.open()
 
     def disconnect(self, **kwargs):
         """Disconnect from the device."""
-        pass
+        self._smbus.close()
 
     @property
     def description(self):
