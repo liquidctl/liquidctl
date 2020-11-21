@@ -4,6 +4,7 @@ Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+from enum import Enum, unique
 import logging
 import re
 
@@ -24,8 +25,31 @@ class EvgaPascal(SmbusDriver):
     ADDRESS = 0x49
     REG_MODE = 0xc
     REG_RED = 0x9
-    REG_BLUE = 0xa
-    REG_GREEN = 0xb
+    REG_GREEN = 0xa
+    REG_BLUE = 0xb
+    REG_PERSIST = 0x23
+    PERSIST = 0xe5
+
+    @unique
+    class Mode(Enum):
+        OFF = 0b000
+        FIXED = 0b001
+        RAINBOW = 0b010
+        BREATHING = 0b101
+
+        @classmethod
+        def _missing_(cls, value):
+            _LOGGER.debug('falling back to OFF for Mode(%s)', value)
+            return Mode.OFF
+
+        @property
+        def required_colors(self):
+            if self.value & 0b001:
+                return 1
+            return 0
+
+        def __str__(self):
+            return self.name.capitalize()
 
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
@@ -73,23 +97,64 @@ class EvgaPascal(SmbusDriver):
             _LOGGER.warning('Device requires `evga_pascal` unsafe flag')
             return []
 
-        mode = self._smbus.read_byte_data(self.ADDRESS, self.REG_MODE)
-        red = self._smbus.read_byte_data(self.ADDRESS, self.REG_RED)
-        blue = self._smbus.read_byte_data(self.ADDRESS, self.REG_BLUE)
-        green = self._smbus.read_byte_data(self.ADDRESS, self.REG_GREEN)
+        mode = self.Mode(self._smbus.read_byte_data(self.ADDRESS, self.REG_MODE))
+        status = [('Mode', mode, '')]
 
-        return [
-            ('Mode', mode, ''),
-            ('Color', f'#{red:02x}{blue:02x}{green:02x}', ''),
-        ]
+        if mode.required_colors > 0:
+            r = self._smbus.read_byte_data(self.ADDRESS, self.REG_RED)
+            g = self._smbus.read_byte_data(self.ADDRESS, self.REG_GREEN)
+            b = self._smbus.read_byte_data(self.ADDRESS, self.REG_BLUE)
+            status.append(('Color', f'{r:02x}{g:02x}{b:02x}', ''))
 
-    def set_color(self, channel, mode, colors, save=False, **kwargs):
-        """Set the lighting mode, when applicable, color.
+        return status
 
-        TODO more details.
+    def set_color(self, channel, mode, colors, non_volatile=False, **kwargs):
+        """Set the RGB lighting mode and, when applicable, color.
+
+        The table bellow summarizes the available channels, modes and their
+        associated number of required colors.
+
+        | Channel  | Mode      | Required colors |
+        | -------- | --------- | --------------- |
+        | led      | off       |               0 |
+        | led      | fixed     |               1 |
+        | led      | breathing |               1 |
+        | led      | rainbow   |               0 |
+
+        The settings configured on the device are normally volatile, and are
+        cleared whenever the graphics card is powered down.
+
+        It is possible to store them in non-volatile controller memory by
+        passing `non_volatile=True`.  But as this memory has some unknown yet
+        limited maximum number of write cycles, volatile settings are
+        preferable, if the use case allows for them.
         """
 
-        pass
+        channel = 'led'
+        mode = self.Mode[mode.upper()]
+        colors = list(colors)
+
+        required_colors = mode.required_colors
+        if len(colors) < required_colors:
+            raise ValueError(f'Mode {mode} requires {required_colors} colors')
+        elif len(colors) > required_colors:
+            _LOGGER.debug('too many colors, dropping to %d', required_colors)
+            colors = colors[:required_colors]
+
+        self._smbus.write_byte_data(self.ADDRESS, self.REG_MODE, mode.value)
+
+        for r, g, b in colors:
+            self._smbus.write_byte_data(self.ADDRESS, self.REG_RED, r)
+            self._smbus.write_byte_data(self.ADDRESS, self.REG_GREEN, g)
+            self._smbus.write_byte_data(self.ADDRESS, self.REG_BLUE, b)
+
+        if non_volatile:
+            # the following write always fails, but nonetheless induces persistence
+            try:
+                self._smbus.write_byte_data(self.ADDRESS, self.REG_PERSIST, self.PERSIST)
+            except OSError as err:
+                _LOGGER.debug('expected OSError when writing to REG_PERSIST: %s', err)
+                pass
 
     def initialize(self, **kwargs):
         """Initialize the device."""

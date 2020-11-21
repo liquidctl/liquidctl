@@ -33,6 +33,7 @@ Other device options:
   --single-12v-ocp            Enable single rail +12V OCP
   --pump-mode <mode>          Set the pump mode (certain Corsair coolers)
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
+  --non-volatile              Store on non-volatile controller memory
   --unsafe <features>         Comma-separated bleeding-edge features to enable
 
 Other interface options:
@@ -102,6 +103,7 @@ _PARSE_ARG = {
     '--single-12v-ocp': bool,
     '--pump-mode': str,
     '--legacy-690lc': bool,
+    '--non-volatile': bool,
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
