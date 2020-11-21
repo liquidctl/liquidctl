@@ -135,7 +135,8 @@ class EvgaPascal(SmbusDriver):
 
         if len(colors) < mode.required_colors:
             raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
-        elif len(colors) > mode.required_colors:
+
+        if len(colors) > mode.required_colors:
             _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
             colors = colors[:mode.required_colors]
 
@@ -152,7 +153,6 @@ class EvgaPascal(SmbusDriver):
                 self._smbus.write_byte_data(self.ADDRESS, self.REG_PERSIST, self.PERSIST)
             except OSError as err:
                 _LOGGER.debug('expected OSError when writing to REG_PERSIST: %s', err)
-                pass
 
     def initialize(self, **kwargs):
         """Initialize the device."""
