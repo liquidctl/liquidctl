@@ -56,11 +56,11 @@ class RogTuring(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
-        if (vendor and vendor != _NVIDIA) \
+        if (vendor and vendor != _ASUS) \
                 or (address and int(address, base=16) not in cls.ADDRESSES) \
-                or smbus.subsystem_vendor != _ASUS \
-                or smbus.vendor != _NVIDIA \
-                or smbus.driver != 'nvidia' \
+                or smbus.parent_subsystem_vendor != _ASUS \
+                or smbus.parent_vendor != _NVIDIA \
+                or smbus.parent_driver != 'nvidia' \
                 or release or serial:  # will never match: always None
             return
 
@@ -71,8 +71,8 @@ class RogTuring(SmbusDriver):
         for (dev_id, sub_dev_id, desc) in supported:
             if (product and product != sub_dev_id) \
                     or (match and match.lower() not in desc.lower()) \
-                    or smbus.subsystem_device != sub_dev_id \
-                    or smbus.device != dev_id \
+                    or smbus.parent_subsystem_device != sub_dev_id \
+                    or smbus.parent_device != dev_id \
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
 
@@ -128,7 +128,19 @@ class RogTuring(SmbusDriver):
     def set_color(self, channel, mode, colors, save=False, **kwargs):
         """Set the lighting mode, when applicable, color.
 
-        TODO more details.
+        The table bellow summarizes the available channels, modes and their
+        associated number of required colors.
+        
+        | Channel  | Mode      | Required colors |
+        | -------- | --------- | --------------- |
+        | led      | off       |               0 |
+        | led      | fixed     |               1 |
+        | led      | flash     |               1 |
+        | led      | breathing |               1 |
+        | led      | rainbow   |               0 |
+       
+        The settings configured on the device are persistant acrross restarts.
+
         """
 
         colors = list(colors)
@@ -146,12 +158,17 @@ class RogTuring(SmbusDriver):
             _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
             colors = colors[:mode.required_colors]
 
-
-        self._smbus.write_byte_data(self._address, self.REG_MODE, mode.value)
-        for r, g, b in colors:
-            self._smbus.write_byte_data(self._address, self.REG_RED, r)
-            self._smbus.write_byte_data(self._address, self.REG_GREEN, g)
-            self._smbus.write_byte_data(self._address, self.REG_BLUE, b)
+        if mode == self.Mode.OFF:
+            self._smbus.write_byte_data(self._address, self.REG_MODE, self.Mode.FIXED.value)
+            self._smbus.write_byte_data(self._address, self.REG_RED, 0x00)
+            self._smbus.write_byte_data(self._address, self.REG_GREEN, 0x00)
+            self._smbus.write_byte_data(self._address, self.REG_BLUE, 0x00)
+        else:
+            self._smbus.write_byte_data(self._address, self.REG_MODE, mode.value)
+            for r, g, b in colors:
+                self._smbus.write_byte_data(self._address, self.REG_RED, r)
+                self._smbus.write_byte_data(self._address, self.REG_GREEN, g)
+                self._smbus.write_byte_data(self._address, self.REG_BLUE, b)
 
 
     def initialize(self, **kwargs):
