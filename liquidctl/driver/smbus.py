@@ -86,18 +86,26 @@ if sys.platform == 'linux':
 
         def read_byte(self, address):
             """Read a single byte from a device."""
-            return self._smbus.read_byte(address)
+            value = self._smbus.read_byte(address)
+            _LOGGER.debug('read byte @ 0x%02x: 0x%02x', address, value)
+            return value
 
         def read_byte_data(self, address, register):
             """Read a single byte from a designated register."""
-            return self._smbus.read_byte_data(address, register)
+            value = self._smbus.read_byte_data(address, register)
+            _LOGGER.debug('read byte data @ 0x%02x:0x%02x: 0x%02x', address,
+                          register, value)
+            return value
 
         def write_byte(self, address, value):
             """Write a single byte from a device."""
+            _LOGGER.debug('writing byte @ 0x%02x: 0x%02x', address, value)
             return self._smbus.write_byte(address, value)
 
         def write_byte_data(self, address, register, value):
             """Write a single byte from a designated register."""
+            _LOGGER.debug('writing byte data @ 0x%02x:0x%02x: 0x%02x', address,
+                          register, value)
             return self._smbus.write_byte_data(address, register, value)
 
         def close(self):
