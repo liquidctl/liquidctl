@@ -96,6 +96,20 @@ _liquidctl_main() {
     --pump-mode
     --unsafe
     "
+
+
+    # generate options list and remove any flag that has already been given
+    # note this will note remove the short and long versions
+    options=($options_with_args $boolean_options)
+    for i in "${!options[@]}";
+    do
+        if [[ "${COMP_WORDS[@]}" =~ "${options[i]}" ]]; then
+            unset 'options[i]'
+        fi
+    done;
+    options=$(echo "${options[@]}")
+
+
     
     # This part will check if it is currently completing a flag 
     local previous=$3
@@ -156,7 +170,7 @@ _liquidctl_main() {
     # This will handle auto completing arguments even if they are given at the end of the command
     case "$cur" in
         -*)
-            COMPREPLY=($(compgen -W "$options_with_args $boolean_options" -- "$cur"))
+            COMPREPLY=($(compgen -W "$options" -- "$cur"))
             return
             ;;
     esac
@@ -184,7 +198,7 @@ _liquidctl_main() {
   if [[ "$i" -eq "$COMP_CWORD" ]]
   then
 
-      COMPREPLY=($(compgen -W "$commands $options_with_args $boolean_options" -- "$cur"))
+      COMPREPLY=($(compgen -W "$commands $options" -- "$cur"))
       return # return early if we're still completing the 'current' command
   fi
 
