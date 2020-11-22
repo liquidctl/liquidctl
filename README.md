@@ -130,6 +130,7 @@ On other distributions, or when more control is desired, liquidctl can be instal
 | docopt | python-docopt | python3-docopt | python3-docopt |
 | PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
+| smbus (optional) | i2c-tools | python3-i2c-tools | python3-smbus |
 
 Setuptools and, optionally, pip and pytest are needed to locally test and manually install liquidctl:
 
