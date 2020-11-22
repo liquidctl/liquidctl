@@ -10,6 +10,8 @@ import logging
 from ast import literal_eval
 from enum import Enum, unique
 
+from liquidctl.error import UnsafeFeaturesNotEnabled
+
 LOGGER = logging.getLogger(__name__)
 
 HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
@@ -296,3 +298,51 @@ def color_from_str(x):
         return list(bytes.fromhex(x[2:]))
     else:
         raise ValueError(f'Cannot parse color: {x}')
+
+
+def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
+    """Check if unsafe feature requirements are met.
+
+    Unstable.
+
+    Checks if the requirements in the positional arguments (`*reqs`) are all
+    met by the `unsafe` string list of enabled features.
+
+    >>> check_unsafe('foo', unsafe='foo,bar')
+    True
+    >>> check_unsafe('foo', 'bar', unsafe='foo,bar')
+    True
+    >>> check_unsafe('foo', unsafe=None)
+    False
+    >>> check_unsafe('foo', 'baz', unsafe='foo,bar')
+    False
+
+    If `error=True` and some requirements have not been met, raises
+    `liquidctl.error.UnsafeFeaturesNotEnabled`.  In the default `error=False`
+    mode, a boolean is return indicating whether all requirements were met.
+
+    >>> check_unsafe('foo', 'baz', unsafe='foo,bar', error=True)
+    Traceback (most recent call last):
+        ...
+    liquidctl.error.UnsafeFeaturesNotEnabled: baz
+
+    In driver code, `unsafe` is normally passed in `**kwargs`.
+
+    >>> kwargs = {'unsafe': 'foo,bar'}
+    >>> check_unsafe('foo', 'bar', **kwargs)
+    True
+    >>> check_unsafe('foo', 'baz', error=True, **kwargs)
+    Traceback (most recent call last):
+        ...
+    liquidctl.error.UnsafeFeaturesNotEnabled: baz
+    """
+
+    if unsafe:
+        reqs = tuple(filter(lambda x: x not in unsafe, reqs))
+
+    if not reqs:
+        return True
+
+    if error:
+        raise UnsafeFeaturesNotEnabled(*reqs)
+    return False

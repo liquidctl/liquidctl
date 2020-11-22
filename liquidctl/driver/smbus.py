@@ -12,6 +12,7 @@ import os
 import sys
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
+from liquidctl.util import check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -93,7 +94,12 @@ if sys.platform == 'linux':
         def open(self):
             """Open the I²C bus."""
             if not self._smbus:
-                self._smbus = SMBus(self._number)
+                try:
+                    self._smbus = SMBus(self._number)
+                except FileNotFoundError:
+                    if Path('/sys/class/i2c-dev').exists():
+                        raise
+                    raise OSError('kernel module i2c-dev not loaded') from None
 
         def read_byte(self, address):
             """Read a single byte from a device."""
@@ -214,10 +220,10 @@ class SmbusDriver(BaseDriver):
         self._product_id = product_id
         self._address = address
 
-    def connect(self, unsafe=None, **kwargs):
+    def connect(self, **kwargs):
         """Connect to the device."""
-        if not (unsafe and 'smbus' in unsafe):
-            _LOGGER.warning('SMBus support requires the `smbus` unsafe flag')
+        if not check_unsafe('smbus', **kwargs):
+            _LOGGER.warning("SMBus: connecting requires unsafe feature 'smbus'")
             return
         self._smbus.open()
 

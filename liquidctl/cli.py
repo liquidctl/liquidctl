@@ -74,7 +74,7 @@ import sys
 from docopt import docopt
 
 from liquidctl.driver import *
-from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
@@ -313,6 +313,9 @@ def main():
             raise SystemExit(f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver:
             raise SystemExit(f'Error: operation not supported by driver for {dev.description}')
+        except UnsafeFeaturesNotEnabled as err:
+            features = ','.join(err.args)
+            raise SystemExit(f'Error: missing --unsafe features for {dev.description}: {features!r}')
         except:
             LOGGER.exception('Unexpected error with %s', dev.description)
             sys.exit(1)

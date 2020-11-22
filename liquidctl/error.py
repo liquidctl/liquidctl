@@ -9,3 +9,7 @@ class NotSupportedByDevice(Exception):
 
 class NotSupportedByDriver(Exception):
     pass
+
+class UnsafeFeaturesNotEnabled(Exception):
+    """Unstable."""
+    pass

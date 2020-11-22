@@ -10,6 +10,7 @@ import re
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice
+from liquidctl.util import check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ _NVIDIA_GTX_1080 = 0x1b80
 
 
 class EvgaPascal(SmbusDriver):
-    """Tenth-series (Pascal) NVIDIA graphics card from EVGA."""
+    """NVIDIA series 10 (Pascal) graphics card from EVGA."""
 
     ADDRESS = 0x49
     REG_MODE = 0xc
@@ -76,7 +77,7 @@ class EvgaPascal(SmbusDriver):
             _LOGGER.debug('instanced driver for %s', desc)
             yield dev
 
-    def get_status(self, verbose=False, unsafe=None, **kwargs):
+    def get_status(self, verbose=False, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
@@ -88,8 +89,9 @@ class EvgaPascal(SmbusDriver):
         if not verbose:
             return []
 
-        if not (unsafe and 'evga_pascal' in unsafe):
-            _LOGGER.warning('Device requires `evga_pascal` unsafe flag')
+        if not check_unsafe('smbus', 'evga_pascal', **kwargs):
+            _LOGGER.warning("%s: nothing to return, requires unsafe features "
+                            "'smbus,evga_pascal'",  self.description)
             return []
 
         mode = self.Mode(self._smbus.read_byte_data(self.ADDRESS, self.REG_MODE))
@@ -124,6 +126,8 @@ class EvgaPascal(SmbusDriver):
         limited maximum number of write cycles, volatile settings are
         preferable, if the use case allows for them.
         """
+
+        check_unsafe('smbus', 'evga_pascal', error=True, **kwargs)
 
         channel = 'led'
         colors = list(colors)
