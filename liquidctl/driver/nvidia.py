@@ -23,13 +23,12 @@ _NVIDIA_GTX_1080 = 0x1b80
 class EvgaPascal(SmbusDriver):
     """NVIDIA series 10 (Pascal) graphics card from EVGA."""
 
-    ADDRESS = 0x49
-    REG_MODE = 0xc
-    REG_RED = 0x9
-    REG_GREEN = 0xa
-    REG_BLUE = 0xb
-    REG_PERSIST = 0x23
-    PERSIST = 0xe5
+    _REG_MODE = 0x0c
+    _REG_RED = 0x09
+    _REG_GREEN = 0x0a
+    _REG_BLUE = 0x0b
+    _REG_PERSIST = 0x23
+    _PERSIST = 0xe5
 
     @unique
     class Mode(bytes, Enum):
@@ -50,10 +49,11 @@ class EvgaPascal(SmbusDriver):
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
+        ADDRESS = 0x49
         GTX_1080_FTW = 0x6286
 
         if (vendor and vendor != _EVGA) \
-                or (address and int(address, base=16) != cls.ADDRESS) \
+                or (address and int(address, base=16) != ADDRESS) \
                 or smbus.parent_subsystem_vendor != _EVGA \
                 or smbus.parent_vendor != _NVIDIA \
                 or smbus.parent_driver != 'nvidia' \
@@ -73,7 +73,7 @@ class EvgaPascal(SmbusDriver):
                 continue
 
             dev = cls(smbus, desc, vendor_id=_EVGA, product_id=GTX_1080_FTW,
-                      address=cls.ADDRESS)
+                      address=ADDRESS)
             _LOGGER.debug('instanced driver for %s', desc)
             yield dev
 
@@ -94,13 +94,13 @@ class EvgaPascal(SmbusDriver):
                             "'smbus,evga_pascal'",  self.description)
             return []
 
-        mode = self.Mode(self._smbus.read_byte_data(self._address, self.REG_MODE))
+        mode = self.Mode(self._smbus.read_byte_data(self._address, self._REG_MODE))
         status = [('Mode', mode, '')]
 
         if mode.required_colors > 0:
-            r = self._smbus.read_byte_data(self._address, self.REG_RED)
-            g = self._smbus.read_byte_data(self._address, self.REG_GREEN)
-            b = self._smbus.read_byte_data(self._address, self.REG_BLUE)
+            r = self._smbus.read_byte_data(self._address, self._REG_RED)
+            g = self._smbus.read_byte_data(self._address, self._REG_GREEN)
+            b = self._smbus.read_byte_data(self._address, self._REG_BLUE)
             status.append(('Color', f'{r:02x}{g:02x}{b:02x}', ''))
 
         return status
@@ -144,19 +144,19 @@ class EvgaPascal(SmbusDriver):
             _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
             colors = colors[:mode.required_colors]
 
-        self._smbus.write_byte_data(self._address, self.REG_MODE, mode.value)
+        self._smbus.write_byte_data(self._address, self._REG_MODE, mode.value)
 
         for r, g, b in colors:
-            self._smbus.write_byte_data(self._address, self.REG_RED, r)
-            self._smbus.write_byte_data(self._address, self.REG_GREEN, g)
-            self._smbus.write_byte_data(self._address, self.REG_BLUE, b)
+            self._smbus.write_byte_data(self._address, self._REG_RED, r)
+            self._smbus.write_byte_data(self._address, self._REG_GREEN, g)
+            self._smbus.write_byte_data(self._address, self._REG_BLUE, b)
 
         if non_volatile:
             # the following write always fails, but nonetheless induces persistence
             try:
-                self._smbus.write_byte_data(self._address, self.REG_PERSIST, self.PERSIST)
+                self._smbus.write_byte_data(self._address, self._REG_PERSIST, self._PERSIST)
             except OSError as err:
-                _LOGGER.debug('expected OSError when writing to REG_PERSIST: %s', err)
+                _LOGGER.debug('expected OSError when writing to _REG_PERSIST: %s', err)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
