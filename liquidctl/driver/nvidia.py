@@ -39,10 +39,10 @@ class EvgaPascal(SmbusDriver):
             obj.required_colors = required_colors
             return obj
 
-        OFF = (0b000, 0)
-        FIXED = (0b001, 1)
-        RAINBOW = (0b010, 0)
-        BREATHING = (0b101, 1)
+        OFF = (0x00, 0)
+        FIXED = (0x01, 1)
+        RAINBOW = (0x02, 0)
+        BREATHING = (0x05, 1)
 
         def __str__(self):
             return self.name.capitalize()
