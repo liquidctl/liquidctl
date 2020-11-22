@@ -94,13 +94,13 @@ class EvgaPascal(SmbusDriver):
                             "'smbus,evga_pascal'",  self.description)
             return []
 
-        mode = self.Mode(self._smbus.read_byte_data(self.ADDRESS, self.REG_MODE))
+        mode = self.Mode(self._smbus.read_byte_data(self._address, self.REG_MODE))
         status = [('Mode', mode, '')]
 
         if mode.required_colors > 0:
-            r = self._smbus.read_byte_data(self.ADDRESS, self.REG_RED)
-            g = self._smbus.read_byte_data(self.ADDRESS, self.REG_GREEN)
-            b = self._smbus.read_byte_data(self.ADDRESS, self.REG_BLUE)
+            r = self._smbus.read_byte_data(self._address, self.REG_RED)
+            g = self._smbus.read_byte_data(self._address, self.REG_GREEN)
+            b = self._smbus.read_byte_data(self._address, self.REG_BLUE)
             status.append(('Color', f'{r:02x}{g:02x}{b:02x}', ''))
 
         return status
@@ -144,17 +144,17 @@ class EvgaPascal(SmbusDriver):
             _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
             colors = colors[:mode.required_colors]
 
-        self._smbus.write_byte_data(self.ADDRESS, self.REG_MODE, mode.value)
+        self._smbus.write_byte_data(self._address, self.REG_MODE, mode.value)
 
         for r, g, b in colors:
-            self._smbus.write_byte_data(self.ADDRESS, self.REG_RED, r)
-            self._smbus.write_byte_data(self.ADDRESS, self.REG_GREEN, g)
-            self._smbus.write_byte_data(self.ADDRESS, self.REG_BLUE, b)
+            self._smbus.write_byte_data(self._address, self.REG_RED, r)
+            self._smbus.write_byte_data(self._address, self.REG_GREEN, g)
+            self._smbus.write_byte_data(self._address, self.REG_BLUE, b)
 
         if non_volatile:
             # the following write always fails, but nonetheless induces persistence
             try:
-                self._smbus.write_byte_data(self.ADDRESS, self.REG_PERSIST, self.PERSIST)
+                self._smbus.write_byte_data(self._address, self.REG_PERSIST, self.PERSIST)
             except OSError as err:
                 _LOGGER.debug('expected OSError when writing to REG_PERSIST: %s', err)
 
