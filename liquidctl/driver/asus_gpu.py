@@ -54,9 +54,7 @@ class RogTuring(SmbusDriver):
 
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
-              release=None, serial=None, **kwargs):
-
-        unsafe = kwargs.get('unsafe', None)
+              release=None, serial=None, unsafe=None, **kwargs):
 
         if (vendor and vendor != _ASUS) \
                 or (address and int(address, base=16) not in cls.ADDRESSES) \
@@ -134,7 +132,7 @@ class RogTuring(SmbusDriver):
 
         return status
 
-    def set_color(self, channel, mode, colors, save=False, **kwargs):
+    def set_color(self, channel, mode, colors, unsafe=None, **kwargs):
         """Set the lighting mode, when applicable, color.
 
         The table bellow summarizes the available channels, modes and their
