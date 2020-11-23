@@ -78,7 +78,7 @@ class RogTuring(SmbusDriver):
 
             if not check_unsafe('smbus', 'rog_turing', **kwargs):
                 _LOGGER.warning("%s: assuming driver found at address %02x "
-                            "'smbus,rog_turing'",  self.description, 0x2a)
+                            "'smbus,rog_turing'",  desc, 0x2a)
 
                 dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
                           address=0x2a)   # default picked the address that works for my device
