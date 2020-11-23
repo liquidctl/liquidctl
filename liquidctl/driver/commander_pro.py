@@ -18,6 +18,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile
+from liquidctl.error import NotSupportedByDevice
 
 
 LOGGER = logging.getLogger(__name__)
@@ -126,15 +127,19 @@ class CommanderPro(UsbHidDriver):
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C10, None, 'Corsair Commander Pro (experimental)',
             {'fan_count': 6, 'led_count': 6, 'temp_probs': 4, 'led_channels': 2}),
+        (0x1B1C, 0x0C0B, None, 'Corsair Lighting Node Pro(experimental)',
+            {'fan_count': 0, 'led_count': 6, 'temp_probs': 0, 'led_channels': 2}),
     ]
 
     def __init__(self, device, description, fan_count, led_count, temp_probs, led_channels, **kwargs):
         super().__init__(device, description, **kwargs)
-        
+
         # the following fields are only initialized in connect()
         self._data = None
         self._fan_names = [f'fan{i+1}' for i in range(fan_count)]
         self._led_names = [f'led{i+1}' for i in range(led_count)]
+        self._temp_probs = temp_probs
+        self._fan_count = fan_count
 
 
 
@@ -157,40 +162,46 @@ class CommanderPro(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        
+
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[1], res[2], res[3])
-        
+
         res = self._send_command(_CMD_GET_BOOTLOADER)
         bootloader_version = (res[1], res[2])               # is it possible for there to be a third value?
-        
-        res = self._send_command(_CMD_GET_TEMP_CONFIG)
-       
-        temp_connected = res[1:5]
-
-        self._data.store('temp_sensors_connected', temp_connected)
-
-        # get the information about how the fans are connected, probably want to save this for later
-        res = self._send_command(_CMD_GET_FAN_MODES)
-        fanModes = res[1:7]
-
-        self._data.store('fan_modes', fanModes)
 
 
-        return [
+        status = [
             ('Firmware version', '%d.%d.%d' % fw_version, ''),
             ('Bootloader version', '%d.%d' % bootloader_version, ''),
-            ('Temp sensor 1', 'Connected' if temp_connected[0] else 'Not Connected', ''),
-            ('Temp sensor 2', 'Connected' if temp_connected[1] else 'Not Connected', ''),
-            ('Temp sensor 3', 'Connected' if temp_connected[2] else 'Not Connected', ''),
-            ('Temp sensor 4', 'Connected' if temp_connected[3] else 'Not Connected', ''),
-            ('Fan 1 Mode', self._get_fan_mode_description(fanModes[0]), ''),
-            ('Fan 2 Mode', self._get_fan_mode_description(fanModes[1]), ''),
-            ('Fan 3 Mode', self._get_fan_mode_description(fanModes[2]), ''),
-            ('Fan 4 Mode', self._get_fan_mode_description(fanModes[3]), ''),
-            ('Fan 5 Mode', self._get_fan_mode_description(fanModes[4]), ''),
-            ('Fan 6 Mode', self._get_fan_mode_description(fanModes[5]), ''),
         ]
+
+        if self._temp_probs > 0:
+            res = self._send_command(_CMD_GET_TEMP_CONFIG)
+            temp_connected = res[1:5]
+            self._data.store('temp_sensors_connected', temp_connected)
+            status += [
+                ('Temp sensor 1', 'Connected' if temp_connected[0] else 'Not Connected', ''),
+                ('Temp sensor 2', 'Connected' if temp_connected[1] else 'Not Connected', ''),
+                ('Temp sensor 3', 'Connected' if temp_connected[2] else 'Not Connected', ''),
+                ('Temp sensor 4', 'Connected' if temp_connected[3] else 'Not Connected', ''),
+            ]
+
+
+        if self._fan_count > 0:
+            # get the information about how the fans are connected, probably want to save this for later
+            res = self._send_command(_CMD_GET_FAN_MODES)
+            fanModes = res[1:7]
+            self._data.store('fan_modes', fanModes)
+            status += [
+                ('Fan 1 Mode', self._get_fan_mode_description(fanModes[0]), ''),
+                ('Fan 2 Mode', self._get_fan_mode_description(fanModes[1]), ''),
+                ('Fan 3 Mode', self._get_fan_mode_description(fanModes[2]), ''),
+                ('Fan 4 Mode', self._get_fan_mode_description(fanModes[3]), ''),
+                ('Fan 5 Mode', self._get_fan_mode_description(fanModes[4]), ''),
+                ('Fan 6 Mode', self._get_fan_mode_description(fanModes[5]), ''),
+            ]
+
+        return status
 
     def _get_fan_mode_description(self, mode):
         """This will convert the fan mode value to a descriptive name.
@@ -211,8 +222,7 @@ class CommanderPro(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*4) 
-
+        connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*4)
         fan_modes = self._data.load('fan_modes', default=[0]*6)
 
         # get the tempature sensor values
@@ -231,28 +241,39 @@ class CommanderPro(UsbHidDriver):
         res = self._send_command(_CMD_GET_VOLTS, [2])
         volt_3 = u16be_from(res, offset=1) / 1000
 
-        
+
         # get fan RPMs of connected fans
         fanspeeds = [0]*6
         for fan_num, mode in enumerate(fan_modes):
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 fanspeeds[fan_num] = self._get_fan_rpm(fan_num+1)
 
-        return [
-            ('Temp sensor 1', temp[0], '°C'),
-            ('Temp sensor 2', temp[1], '°C'),
-            ('Temp sensor 3', temp[2], '°C'),
-            ('Temp sensor 4', temp[3], '°C'),
+
+        status = [
             ('12 volt rail', volt_12, 'V'),
             ('5 volt rail', volt_5, 'V'),
             ('3.3 volt rail', volt_3, 'V'),
-            ('Fan 1 speed', fanspeeds[0], 'rpm'),
-            ('Fan 2 speed', fanspeeds[1], 'rpm'),
-            ('Fan 3 speed', fanspeeds[2], 'rpm'),
-            ('Fan 4 speed', fanspeeds[3], 'rpm'),
-            ('Fan 5 speed', fanspeeds[4], 'rpm'),
-            ('Fan 6 speed', fanspeeds[5], 'rpm'),
         ]
+
+        if self._temp_probs > 0:
+            status +=[
+                ('Temp sensor 1', temp[0], '°C'),
+                ('Temp sensor 2', temp[1], '°C'),
+                ('Temp sensor 3', temp[2], '°C'),
+                ('Temp sensor 4', temp[3], '°C'),
+            ]
+
+        if self._fan_count > 0:
+            status +=[
+                ('Fan 1 speed', fanspeeds[0], 'rpm'),
+                ('Fan 2 speed', fanspeeds[1], 'rpm'),
+                ('Fan 3 speed', fanspeeds[2], 'rpm'),
+                ('Fan 4 speed', fanspeeds[3], 'rpm'),
+                ('Fan 5 speed', fanspeeds[4], 'rpm'),
+                ('Fan 6 speed', fanspeeds[5], 'rpm'),
+            ]
+
+        return status
 
     def _get_temp(self, sensor_num):
         """This will get the tempature in degrees celsius for the specified temp sensor.
@@ -320,6 +341,9 @@ class CommanderPro(UsbHidDriver):
         messages (or 1 per enabled fan)
         """
 
+        if self._fan_count == 0:
+            raise NotSupportedByDevice()
+
         duty = clamp(duty, 0, 100)
         fan_channels = self._get_hw_fan_channels(channel)
         fan_modes = self._data.load('fan_modes', default=[0]*6)
@@ -348,20 +372,23 @@ class CommanderPro(UsbHidDriver):
         """
 
         # send fan num, temp sensor, check to make sure it is actually enabled, and do not let the user send external sensor
-        # 6 2-byte big endian temps (celsius * 100), then 6 2-byte big endian rpms 
+        # 6 2-byte big endian temps (celsius * 100), then 6 2-byte big endian rpms
         # need to figure out how to find out what the max rpm is for the given fan
+
+        if self._fan_count == 0:
+            raise NotSupportedByDevice()
 
         profile = list(profile)
         profile = _prepare_profile(profile)
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
         temp_sensor = kwargs.get('temp_sensor', 1) # need to make sure this is set and in range 1-4 or ext
-        temp_sensor = clamp(temp_sensor, 1, 4) 
+        temp_sensor = clamp(temp_sensor, 1, 4)
 
         # generate the  profile in the correct format, 6 temp, 6 speeds
 
         buf = bytearray(26)
-        buf[1] = temp_sensor-1 # 0  # use temp sensor 1 
+        buf[1] = temp_sensor-1 # 0  # use temp sensor 1
 
         for i,entry in enumerate(profile):
             temp = entry[0]*100
@@ -422,13 +449,13 @@ class CommanderPro(UsbHidDriver):
         """
 
         # Channel parameter is actually the device number, 1-6 or all
-        # brightness is the brighness to set default 100%
+        # brightness is the brightness to set default 100%
         # direction is `forward` or `backward` default forward
-        # num_leds is the number of leds per device. effect group. dependign on the effect you want
+        # num_leds is the number of leds per device. effect group. depending on the effect you want
         #               This is what you might want to change and not the channel number
         # random or alternating is determined by the number of colors specified
         # speed is `fast`, `medium` or `slow` default fast
-        # 
+        #
 
 
         # a special mode to clear the current led settings.
@@ -453,7 +480,7 @@ class CommanderPro(UsbHidDriver):
         mode = mode_str.lower()
 
 
-        
+
 
         brightness = clamp(brightness, 0, 100)
         direction = 0x01 if direction == 'forward' else 0x00
@@ -466,7 +493,7 @@ class CommanderPro(UsbHidDriver):
             raise ValueError(f'Mode "{mode_str}" is not valid')
 
         devices = self._get_hw_led_channels(channel)
-        random_colors = 0x00 if len(colors) != 0 else 0x01 
+        random_colors = 0x00 if len(colors) != 0 else 0x01
 
         self._send_command(0x37);               # clear group ?
         self._send_command(0x34);               # clear led ?
@@ -505,12 +532,12 @@ class CommanderPro(UsbHidDriver):
     def _send_command(self, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
         buf = bytearray(_REPORT_LENGTH + 1)
-        buf[1] = command 
+        buf[1] = command
         start_at = 2
-        
+
         if data:
             buf[start_at : start_at + len(data)] = data
-        
+
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_RESPONSE_LENGTH))
