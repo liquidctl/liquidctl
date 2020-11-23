@@ -1,4 +1,4 @@
-"""liquidctl drivers for ASUS ROG NVIDIA graphics cards.
+"""liquidctl drivers for ASUS Strix RTX 2080 Ti OC graphics card.
 
 Copyright (C) 2020–2020  Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -8,6 +8,7 @@ import logging
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice
+from liquidctl.util import check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,11 +22,10 @@ _RTX_2080_TI_REV_A = 0x1e07     # device id NOTE: 0x1E04 is also a possible valu
 class RogTuring(SmbusDriver):
     """Twenty-series (Turing) NVIDIA graphics card from ASUS ROG."""
 
-    ADDRESSES = [0x29, 0x2a, 0x60]
-    REG_RED = 0x04
-    REG_BLUE = 0x05
-    REG_GREEN = 0x06
-    REG_MODE = 0x07
+    _REG_RED = 0x04
+    _REG_BLUE = 0x05
+    _REG_GREEN = 0x06
+    _REG_MODE = 0x07
     # SYNC_REG = 0x0c     # unused
     # REG_APPLY = 0x0e    # unused
 
@@ -50,12 +50,14 @@ class RogTuring(SmbusDriver):
 
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
-              release=None, serial=None, unsafe=None, **kwargs):
+              release=None, serial=None, **kwargs):
 
         _STRIX_RTX_2080_TI_OC = 0x866a       # subsystem device
+        ADDRESSES = [0x29, 0x2a, 0x60]
+
 
         if (vendor and vendor != _ASUS) \
-                or (address and int(address, base=16) not in cls.ADDRESSES) \
+                or (address and int(address, base=16) not in ADDRESSES) \
                 or smbus.parent_subsystem_vendor != _ASUS \
                 or smbus.parent_vendor != _NVIDIA \
                 or smbus.parent_driver != 'nvidia' \
@@ -74,14 +76,16 @@ class RogTuring(SmbusDriver):
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
 
-            if not (unsafe and 'rog_turing' in unsafe):
+            if not check_unsafe('smbus', 'rog_turing', **kwargs):
+                _LOGGER.warning("%s: assuming driver found at address %02x "
+                            "'smbus,rog_turing'",  self.description, 0x2a)
+
                 dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
                           address=0x2a)   # default picked the address that works for my device
-                _LOGGER.debug(f'Assuming driver {desc} was found')
                 yield dev
                 return
 
-            for address in cls.ADDRESSES:
+            for address in ADDRESSES:
                 val1 = 0
                 val2 = 0
 
@@ -99,7 +103,7 @@ class RogTuring(SmbusDriver):
                     _LOGGER.debug(f'instanced driver for {desc} at address {address}')
                     yield dev
 
-    def get_status(self, verbose=False, unsafe=None, **kwargs):
+    def get_status(self, verbose=False, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
@@ -111,14 +115,15 @@ class RogTuring(SmbusDriver):
         if not verbose:
             return []
 
-        if not (unsafe and 'rog_turing' in unsafe):
-            _LOGGER.warning('Device requires `rog_turing` unsafe flag')
+        if not check_unsafe('smbus', 'rog_turing', **kwargs):
+            _LOGGER.warning("%s: nothing to return, requires unsafe features "
+                            "'smbus,rog_turing'",  self.description)
             return []
 
-        mode = self._smbus.read_byte_data(self._address, self.REG_MODE)
-        red = self._smbus.read_byte_data(self._address, self.REG_RED)
-        blue = self._smbus.read_byte_data(self._address, self.REG_BLUE)
-        green = self._smbus.read_byte_data(self._address, self.REG_GREEN)
+        mode = self._smbus.read_byte_data(self._address, self._REG_MODE)
+        red = self._smbus.read_byte_data(self._address, self._REG_RED)
+        blue = self._smbus.read_byte_data(self._address, self._REG_BLUE)
+        green = self._smbus.read_byte_data(self._address, self._REG_GREEN)
 
         # check if the mode is `OFF`
         if red == blue == green == 0:
@@ -150,9 +155,7 @@ class RogTuring(SmbusDriver):
 
         """
 
-        if not (unsafe and 'rog_turing' in unsafe):
-            _LOGGER.warning('Device requires `rog_turing` unsafe flag')
-            return
+        check_unsafe('smbus', 'rog_turing', error=True, **kwargs)
 
         colors = list(colors)
 
@@ -169,15 +172,15 @@ class RogTuring(SmbusDriver):
             colors = colors[:mode.required_colors]
 
         if mode == self.Mode.OFF:
-            self._smbus.write_byte_data(self._address, self.REG_MODE, self.Mode.FIXED.value)
-            self._smbus.write_byte_data(self._address, self.REG_RED, 0x00)
-            self._smbus.write_byte_data(self._address, self.REG_GREEN, 0x00)
-            self._smbus.write_byte_data(self._address, self.REG_BLUE, 0x00)
+            self._smbus.write_byte_data(self._address, self._REG_MODE, self.Mode.FIXED.value)
+            self._smbus.write_byte_data(self._address, self._REG_RED, 0x00)
+            self._smbus.write_byte_data(self._address, self._REG_GREEN, 0x00)
+            self._smbus.write_byte_data(self._address, self._REG_BLUE, 0x00)
         else:
-            self._smbus.write_byte_data(self._address, self.REG_MODE, mode.value)
-            self._smbus.write_byte_data(self._address, self.REG_RED, colors[0])
-            self._smbus.write_byte_data(self._address, self.REG_GREEN, colors[1])
-            self._smbus.write_byte_data(self._address, self.REG_BLUE, colors[2])
+            self._smbus.write_byte_data(self._address, self._REG_MODE, mode.value)
+            self._smbus.write_byte_data(self._address, self._REG_RED, colors[0])
+            self._smbus.write_byte_data(self._address, self._REG_GREEN, colors[1])
+            self._smbus.write_byte_data(self._address, self._REG_BLUE, colors[2])
 
     def initialize(self, **kwargs):
         """Initialize the device."""
