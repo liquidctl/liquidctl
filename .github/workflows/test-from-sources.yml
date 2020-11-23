@@ -7,10 +7,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 4
+      max-parallel: 8
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        os: [ubuntu-latest, macOS-latest]
+        python-version: [3.9, 3.8, 3.7, 3.6]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v1
@@ -24,7 +24,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libusb-1.0-0-dev libudev-dev
     - name: Install system dependencies (macOS)
-      if: matrix.os == 'macOS-latest'
+      if: matrix.os == 'macos-latest'
       run: |
         brew install libusb
     - name: Install Python dependencies
