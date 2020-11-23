@@ -62,10 +62,11 @@ if sys.platform == 'linux':
                           ', '.join(map(lambda x: x.__name__, drivers)))
 
             for i2c_dev in devices.iterdir():
-                if not i2c_dev.name.startswith('i2c-'):
-                    continue  # wont have a matching /dev/i2c-* file
-
-                i2c_bus = LinuxI2cBus(i2c_dev)
+                try:
+                    i2c_bus = LinuxI2cBus(i2c_dev)
+                except ValueError as err:
+                    _LOGGER.debug('ignoring %s, %s', i2c_dev.name, err)
+                    continue
 
                 if bus and bus != i2c_bus.name:
                     continue
@@ -91,8 +92,11 @@ if sys.platform == 'linux':
             self._i2c_dev = i2c_dev
             self._smbus = None
 
-            assert i2c_dev.name.startswith('i2c-')
-            self._number = int(i2c_dev.name[4:])
+            try:
+                assert i2c_dev.name.startswith('i2c-')
+                self._number = int(i2c_dev.name[4:])
+            except:
+                raise ValueError(f'cannot infer bus number')
 
         def find_devices(self, drivers, **kwargs):
             """Probe drivers and find compatible devices in this bus."""
