@@ -212,6 +212,13 @@ class SmbusDriver(BaseDriver):
 
     def __init__(self, smbus, description, vendor_id=None, product_id=None,
                  address=None, **kwargs):
+        # note: vendor_id and product_id are liquidctl properties intended to
+        # allow the user to differentiate and ultimately filter devices; in the
+        # context of SMBus, drivers may choose to use the parent's PCI
+        # **subsystem** vendor/device IDs for this task, as those are more
+        # specific and closer to the product the user purchased than the less
+        # specific PCI vendor/device IDs.
+
         assert vendor_id and product_id and address is not None
 
         self._smbus = smbus
