@@ -1,4 +1,4 @@
-# Asus ROG Driver for NVIDIA 2080 ti GPU
+# ASUS Strix RTX 2080 Ti OC GPU driver
 _Driver API and source code available in [`liquidctl.driver.asus_rog`](../liquidctl/driver/asus_rog.py)._
 
 ## Initializing the device and setting the pump mode
@@ -14,11 +14,11 @@ The status command get get the current mode and RGB value
 _Note: the verbose flag is needed to get the color information_
 
 ```
-# liquidctl status -v
+# liquidctl status -v --unsafe=smbus,rog_turing
 
-ASUS ROG RTX 2080ti (experimental)
+ASUS Strix RTX 2080 Ti OC (experimental)
 ├── Mode       Fixed
-└── Color    #ff0000
+└── Color    ff0000
 ```
 
 ## Programming the fan speeds
@@ -56,4 +56,4 @@ Each color can be specified using any of the [supported formats](../README.md#su
 
 
 Note: control of device is experimental and requires the
-`--unsafe smbus`, and the `--unsage rog_turing` flags to be supplied on the command line for all commands.
+`--unsafe=smbus,rog_turing` flags to be supplied on the command line for all commands.

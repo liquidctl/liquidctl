@@ -15,8 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 _NVIDIA = 0x10de                # vendor
 _ASUS = 0x1043                  # subsystem vendor
 
-_RTX_2080_TI_REV_A = 0x1e07           # device id NOTE: 0x1E04 is also a possible value see https://www.nv-drivers.eu/nvidia-all-devices.html
-_ROG_RTX_2080_TI = 0x866a       # subsystem device
+_RTX_2080_TI_REV_A = 0x1e07     # device id NOTE: 0x1E04 is also a possible value see https://www.nv-drivers.eu/nvidia-all-devices.html
 
 
 
@@ -28,8 +27,8 @@ class RogTuring(SmbusDriver):
     REG_BLUE = 0x05
     REG_GREEN = 0x06
     REG_MODE = 0x07
-    SYNC_REG = 0x0c     # unused
-    REG_APPLY = 0x0e
+    #SYNC_REG = 0x0c     # unused
+    #REG_APPLY = 0x0e    # unused
 
     _ASUS_GPU_MAGIC_VALUE = 0x1589
 
@@ -41,7 +40,7 @@ class RogTuring(SmbusDriver):
             obj.required_colors = required_colors
             return obj
 
-        OFF = (0x00, 0)     # I am pretty sure this is not a real mode and should actually send the fixed mode
+        OFF = (0x00, 0)     # This is not a real mode, fixed is sent with RGB = 0
         FIXED = (0x01, 1)
         BREATHING = (0x02, 1)
         FLASH = (0x03, 1)
@@ -50,11 +49,12 @@ class RogTuring(SmbusDriver):
         def __str__(self):
             return self.name.capitalize()
 
-    
 
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, unsafe=None, **kwargs):
+
+        _STRIX_RTX_2080_TI_OC = 0x866a       # subsystem device
 
         if (vendor and vendor != _ASUS) \
                 or (address and int(address, base=16) not in cls.ADDRESSES) \
@@ -65,7 +65,7 @@ class RogTuring(SmbusDriver):
             return
 
         supported = [
-            (_RTX_2080_TI_REV_A, _ROG_RTX_2080_TI, "ASUS ROG RTX 2080ti Rev A. (experimental)"),
+            (_RTX_2080_TI_REV_A, _STRIX_RTX_2080_TI_OC, "ASUS Strix RTX 2080 Ti OC (experimental)"),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
@@ -75,24 +75,26 @@ class RogTuring(SmbusDriver):
                     or smbus.parent_device != dev_id \
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
-            
+
             if not (unsafe and 'rog_turing' in unsafe):
                 dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
                         address=0x2a)   # default picked the address that works for my device
                 _LOGGER.debug(f'Assuming driver {desc} was found')
                 yield dev
-                return 
+                return
 
             for address in cls.ADDRESSES:
                 val1=0
                 val2=0
+
+                smbus.open()
                 try:
-                    smbus.open()
                     val1 = smbus.read_byte_data(address, 0x20)
                     val2 = smbus.read_byte_data(address, 0x21)
-                    smbus.close()
                 except:
-                    _LOGGER.debug(f'Device not found at {address}')
+                    pass
+                smbus.close()
+
 
                 if val1 << 8 | val2 == cls._ASUS_GPU_MAGIC_VALUE:
                     dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
@@ -121,6 +123,7 @@ class RogTuring(SmbusDriver):
         blue = self._smbus.read_byte_data(self._address, self.REG_BLUE)
         green = self._smbus.read_byte_data(self._address, self.REG_GREEN)
 
+        # check if the mode is `OFF`
         if red == blue == green == 0:
             mode = 0
 
@@ -128,7 +131,7 @@ class RogTuring(SmbusDriver):
         status = [('Mode', str(mode), '')]
 
         if mode.required_colors > 0:
-            status.append(('Color', f'#{red:02x}{blue:02x}{green:02x}', ''))
+            status.append(('Color', f'{red:02x}{blue:02x}{green:02x}', ''))
 
         return status
 
@@ -137,7 +140,7 @@ class RogTuring(SmbusDriver):
 
         The table bellow summarizes the available channels, modes and their
         associated number of required colors.
-        
+
         | Channel  | Mode      | Required colors |
         | -------- | --------- | --------------- |
         | led      | off       |               0 |
@@ -145,17 +148,17 @@ class RogTuring(SmbusDriver):
         | led      | flash     |               1 |
         | led      | breathing |               1 |
         | led      | rainbow   |               0 |
-       
-        The settings configured on the device are persistant acrross restarts.
+
+        The settings configured on the device are persistent across restarts.
 
         """
 
         if not (unsafe and 'rog_turing' in unsafe):
             _LOGGER.warning('Device requires `rog_turing` unsafe flag')
-            return 
+            return
 
         colors = list(colors)
-        
+
         try:
             mode = self.Mode[mode.upper()]
         except KeyError:
@@ -176,10 +179,9 @@ class RogTuring(SmbusDriver):
             self._smbus.write_byte_data(self._address, self.REG_BLUE, 0x00)
         else:
             self._smbus.write_byte_data(self._address, self.REG_MODE, mode.value)
-            for r, g, b in colors:
-                self._smbus.write_byte_data(self._address, self.REG_RED, r)
-                self._smbus.write_byte_data(self._address, self.REG_GREEN, g)
-                self._smbus.write_byte_data(self._address, self.REG_BLUE, b)
+            self._smbus.write_byte_data(self._address, self.REG_RED, colors[0])
+            self._smbus.write_byte_data(self._address, self.REG_GREEN, colors[1])
+            self._smbus.write_byte_data(self._address, self.REG_BLUE, colors[2])
 
 
     def initialize(self, **kwargs):
