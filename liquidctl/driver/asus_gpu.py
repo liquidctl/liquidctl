@@ -23,13 +23,14 @@ class RogTuring(SmbusDriver):
     """Twenty-series (Turing) NVIDIA graphics card from ASUS ROG."""
 
     _REG_RED = 0x04
-    _REG_BLUE = 0x05
-    _REG_GREEN = 0x06
+    _REG_GREEN = 0x05
+    _REG_BLUE = 0x06
     _REG_MODE = 0x07
     # SYNC_REG = 0x0c     # unused
-    # REG_APPLY = 0x0e    # unused
+    _REG_APPLY = 0x0e
 
     _ASUS_GPU_MAGIC_VALUE = 0x1589
+    _ASUS_GPU_APPLY_VAL = 0x01
 
     @unique
     class Mode(bytes, Enum):
@@ -137,7 +138,7 @@ class RogTuring(SmbusDriver):
 
         return status
 
-    def set_color(self, channel, mode, colors, unsafe=None, **kwargs):
+    def set_color(self, channel, mode, colors, non_volatile=False, **kwargs):
         """Set the lighting mode, when applicable, color.
 
         The table bellow summarizes the available channels, modes and their
@@ -151,7 +152,13 @@ class RogTuring(SmbusDriver):
         | led      | breathing |               1 |
         | led      | rainbow   |               0 |
 
-        The settings configured on the device are persistent across restarts.
+        The settings configured on the device are persistent across power off without
+        the use of the non_volatile argument.
+
+        It is possible to store them in non-volatile controller memory by
+        passing `non_volatile=True`.  But as this memory has some unknown yet
+        limited maximum number of write cycles, volatile settings are
+        preferable, if the use case allows for them.
 
         """
 
@@ -178,9 +185,13 @@ class RogTuring(SmbusDriver):
             self._smbus.write_byte_data(self._address, self._REG_BLUE, 0x00)
         else:
             self._smbus.write_byte_data(self._address, self._REG_MODE, mode.value)
-            self._smbus.write_byte_data(self._address, self._REG_RED, colors[0])
-            self._smbus.write_byte_data(self._address, self._REG_GREEN, colors[1])
-            self._smbus.write_byte_data(self._address, self._REG_BLUE, colors[2])
+            for r, g, b in colors:
+                self._smbus.write_byte_data(self._address, self._REG_RED, r)
+                self._smbus.write_byte_data(self._address, self._REG_GREEN, g)
+                self._smbus.write_byte_data(self._address, self._REG_BLUE, b)
+
+        if non_volatile:
+            self._smbus.write_byte_data(self._address, self._REG_APPLY, self._ASUS_GPU_APPLY_VAL)
 
     def initialize(self, **kwargs):
         """Initialize the device."""

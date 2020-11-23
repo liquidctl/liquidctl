@@ -21,10 +21,6 @@ ASUS Strix RTX 2080 Ti OC (experimental)
 └── Color    ff0000
 ```
 
-## Programming the fan speeds
-
-This is currently not supported by the driver.
-
 ## Controlling the LEDs
 
 This GPU only has one led that can be set.
@@ -57,3 +53,16 @@ Each color can be specified using any of the [supported formats](../README.md#su
 
 Note: control of device is experimental and requires the
 `--unsafe=smbus,rog_turing` flags to be supplied on the command line for all commands.
+
+The settings configured on the device are normally volatile, and are
+cleared whenever the graphics card looses power (ie. unplugged, not power off).
+
+It is possible to store them in non-volatile controller memory by
+passing `--non-volatile`.  But as this memory has some unknown yet
+limited maximum number of write cycles, volatile settings are
+preferable, if the use case allows for them.
+
+```
+$ liquidctl set led color fixed 00ff00 --non-volatile --unsafe=smbus,rog_turing
+```
+
