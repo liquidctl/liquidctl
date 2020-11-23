@@ -19,15 +19,23 @@ _LOGGER = logging.getLogger(__name__)
 
 if sys.platform == 'linux':
 
+    # WARNING: the tests rely on being able to override which SMBus
+    # implementation is used here; this is done through the SMBus attribute
+    # created below, do not move/replace/change it, nor access it during module
+    # initialization
+
     # smbus is an optional dependency
     try:
-        from smbus import SMBus
+        from smbus import SMBus  # see warning above
     except ModuleNotFoundError:
         SMBus = None
 
 
     class LinuxI2c(BaseBus):
         """The Linux I²C (`/sys/bus/i2c`) bus."""
+
+        def __init__(self, i2c_root='/sys/bus/i2c'):
+            self._i2c_root = Path(i2c_root)
 
         def find_devices(self, bus=None, usb_port=None, **kwargs):
             """Find compatible SMBus devices."""
@@ -41,7 +49,7 @@ if sys.platform == 'linux':
                               self.__class__.__name__)
                 return
 
-            devices = Path('/sys/bus/i2c/devices')
+            devices = self._i2c_root.joinpath('devices')
             if not devices.exists():
                 _LOGGER.debug('skipping %s, %s not available',
                               self.__class__.__name__, devices)
@@ -202,12 +210,16 @@ class SmbusDriver(BaseDriver):
         raise NotImplementedError()
 
     @classmethod
-    def find_supported_devices(cls, **kwargs):
+    def find_supported_devices(cls, root_bus=None, **kwargs):
         """Find devices specifically compatible with this driver."""
         if sys.platform != 'linux':
             return []
 
-        devs = filter(lambda x: isinstance(x, cls), LinuxI2c.find_devices(**kwargs))
+        if not root_bus:
+            root_bus = LinuxI2c()
+
+        devs = filter(lambda x: isinstance(x, cls),
+                      root_bus.find_devices(**kwargs))
         return list(devs)
 
     def __init__(self, smbus, description, vendor_id=None, product_id=None,
