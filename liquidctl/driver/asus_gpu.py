@@ -5,7 +5,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 from enum import Enum, unique
 import logging
-import re
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice
@@ -15,8 +14,8 @@ _LOGGER = logging.getLogger(__name__)
 _NVIDIA = 0x10de                # vendor
 _ASUS = 0x1043                  # subsystem vendor
 
-_RTX_2080_TI_REV_A = 0x1e07     # device id NOTE: 0x1E04 is also a possible value see https://www.nv-drivers.eu/nvidia-all-devices.html
-
+_RTX_2080_TI_REV_A = 0x1e07     # device id NOTE: 0x1E04 is also a possible value see
+                                # https://www.nv-drivers.eu/nvidia-all-devices.html
 
 
 class RogTuring(SmbusDriver):
@@ -27,8 +26,8 @@ class RogTuring(SmbusDriver):
     REG_BLUE = 0x05
     REG_GREEN = 0x06
     REG_MODE = 0x07
-    #SYNC_REG = 0x0c     # unused
-    #REG_APPLY = 0x0e    # unused
+    # SYNC_REG = 0x0c     # unused
+    # REG_APPLY = 0x0e    # unused
 
     _ASUS_GPU_MAGIC_VALUE = 0x1589
 
@@ -48,7 +47,6 @@ class RogTuring(SmbusDriver):
 
         def __str__(self):
             return self.name.capitalize()
-
 
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
@@ -78,14 +76,14 @@ class RogTuring(SmbusDriver):
 
             if not (unsafe and 'rog_turing' in unsafe):
                 dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
-                        address=0x2a)   # default picked the address that works for my device
+                          address=0x2a)   # default picked the address that works for my device
                 _LOGGER.debug(f'Assuming driver {desc} was found')
                 yield dev
                 return
 
             for address in cls.ADDRESSES:
-                val1=0
-                val2=0
+                val1 = 0
+                val2 = 0
 
                 smbus.open()
                 try:
@@ -95,10 +93,9 @@ class RogTuring(SmbusDriver):
                     pass
                 smbus.close()
 
-
                 if val1 << 8 | val2 == cls._ASUS_GPU_MAGIC_VALUE:
                     dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
-                        address=address)
+                              address=address)
                     _LOGGER.debug(f'instanced driver for {desc} at address {address}')
                     yield dev
 
@@ -118,7 +115,7 @@ class RogTuring(SmbusDriver):
             _LOGGER.warning('Device requires `rog_turing` unsafe flag')
             return []
 
-        mode =  self._smbus.read_byte_data(self._address, self.REG_MODE)
+        mode = self._smbus.read_byte_data(self._address, self.REG_MODE)
         red = self._smbus.read_byte_data(self._address, self.REG_RED)
         blue = self._smbus.read_byte_data(self._address, self.REG_BLUE)
         green = self._smbus.read_byte_data(self._address, self.REG_GREEN)
@@ -164,7 +161,6 @@ class RogTuring(SmbusDriver):
         except KeyError:
             raise ValueError(f'Invalid mode: {mode!r}') from None
 
-
         if len(colors) < mode.required_colors:
             raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
 
@@ -182,7 +178,6 @@ class RogTuring(SmbusDriver):
             self._smbus.write_byte_data(self._address, self.REG_RED, colors[0])
             self._smbus.write_byte_data(self._address, self.REG_GREEN, colors[1])
             self._smbus.write_byte_data(self._address, self.REG_BLUE, colors[2])
-
 
     def initialize(self, **kwargs):
         """Initialize the device."""
