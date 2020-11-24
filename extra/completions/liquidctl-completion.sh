@@ -29,7 +29,7 @@ _list_device_options () {
 }
 
 _list_match_options () {
-    liquidctl list | cut -d ':' -f 2 | sort -u | awk '{print tolower($0)}'
+    liquidctl list | cut -d ':' -f 2 | sort -u | awk '{gsub(/\(|\)/,"",$0); print tolower($0)}'
 }
 
 _list_pick_options () {
