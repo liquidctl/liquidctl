@@ -1,7 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+
+Changelog since 1.4.2:
+### Added
  - Added completion script for bash
+
 
 ## [1.4.2] – 2020-11-01
 _Summary for the 1.4.2 release: standardized hexadecimal parsing in the CLI;
