@@ -2,7 +2,6 @@ include CHANGELOG.md
 include LICENSE.txt
 include liquidctl.8
 include pytest.ini
-include liquidctl-completion.sh
 recursive-include docs *
 recursive-include extra *
 recursive-include tests *
