@@ -18,6 +18,7 @@ _ASUS = 0x1043                  # subsystem vendor
 _RTX_2080_TI_REV_A = 0x1e07     # device id NOTE: 0x1E04 is also a possible value see
                                 # https://www.nv-drivers.eu/nvidia-all-devices.html
 
+_STRIX_RTX_2080_TI_OC = 0x866a       # subsystem device
 
 class RogTuring(SmbusDriver):
     """Twenty-series (Turing) NVIDIA graphics card from ASUS ROG."""
@@ -53,7 +54,6 @@ class RogTuring(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
-        _STRIX_RTX_2080_TI_OC = 0x866a       # subsystem device
         ADDRESSES = [0x29, 0x2a, 0x60]
 
 

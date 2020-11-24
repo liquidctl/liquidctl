@@ -21,23 +21,23 @@ Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl status
 NZXT Smart Device (V1)
-├── Fan 1                        PWM
+├── Fan 1                        PWM  
 ├── Fan 1 current               0.04  A
 ├── Fan 1 speed                 1035  rpm
 ├── Fan 1 voltage              11.91  V
-├── Fan 2                          —
-├── Fan 3                          —
-├── Firmware version           1.0.7
-├── LED accessories                2
-├── LED accessory type    HUE+ Strip
-├── LED count (total)             20
+├── Fan 2                          —  
+├── Fan 3                          —  
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+├── LED count (total)             20  
 └── Noise level                   60  dB
 
 NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     28.1  °C
 ├── Fan speed               851  rpm
 ├── Pump speed             1953  rpm
-└── Firmware version      6.0.2
+└── Firmware version      6.0.2  
 ```
 
 <!-- stop here for PyPI -->
@@ -476,10 +476,10 @@ You are also encouraged to contribute to the documentation and to these examples
 
 ## License
 
-liquidctl – monitor and control liquid coolers and other devices.
+liquidctl – monitor and control liquid coolers and other devices.  
 Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey and contributors
 
-liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
+liquidctl incorporates work by leaty, Marshall Asch, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
 Pircher.
 
