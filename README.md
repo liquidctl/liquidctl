@@ -149,6 +149,20 @@ $ pytest  # optional step
 $ python -m liquidctl.cli <args>...
 # pip install .
 ```
+#### Optional steps
+
+- install man pages
+```
+# cp liquidctl.8 /usr/local/share/man/man8/
+```
+- install bash completion
+```
+# cp extra/completions/liquidctl-completion.sh /etc/bash_completion.d/	# to install bash completion script
+```
+- install udev rules (on linux)
+```
+# cp  extra/linux/71-liquidctl.rules /etc/udev/rules.d/
+```
 
 _Note: in systems that default to Python 2, use `pip3`, `python3` and `pytest-3`._  
 
