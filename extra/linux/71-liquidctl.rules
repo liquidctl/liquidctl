@@ -1,6 +1,6 @@
 # Rules that grant unprivileged access to devices supported by liquidctl
 #
-# Users and distros are encorouged to use these if they want liquidctl to work
+# Users and distros are encouraged to use these if they want liquidctl to work
 # without requiring root privileges (possibly with the use of sudo).
 #
 # Distros will likely want to place this file in `/usr/lib/udev/rules.d/`,
