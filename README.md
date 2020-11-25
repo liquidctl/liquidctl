@@ -187,9 +187,11 @@ Products that are not Human Interface Devices (HIDs), or that do not use the Mic
 
 The pre-built executables can be directly used from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that is true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
 
-_Alternatively to the pre-built executable,_ it is possible to install liquidctl from PyPI or directly from the source code repository.  Pre-build liquidctl executables for Windows already include Python and libusb, but when installing from PyPI or the sources both of these will need to be manually set up.
+_Alternatively to the pre-built executable,_ it is possible to install liquidctl from PyPI or directly from the source code repository.  This is useful to contribute fixes or improvements to liquidctl, or to use advanced features like the liquidctl API.
 
-The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64) `.dll` and `.lib` files should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+Since HWiNFO 6.10 it is possible for other programs to send additional sensor data in through a Windows Registry API, and [`LQiNFO.py`](extra/windows/LQiNFO.py) is an experimental program that uses the liquidctl API to take advantage of this feature.
+
+Pre-build liquidctl executables for Windows already include Python and libusb, but when installing from PyPI or the sources both of these will need to be manually set up.  The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64) `.dll` and `.lib` files should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
 To install any release from PyPI, *pip* should be used:
 
