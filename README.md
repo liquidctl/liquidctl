@@ -170,11 +170,11 @@ Optional steps:
 ```
 - install [udev rules] for unprivileged access to devices
 - install [modules-load configuration] for SMBus/I²C support
-- install [bash-completion] completions for liquidctl
+- install [bash completions] for liquidctl
 
 [udev rules]: extra/linux/71-liquidctl.rules
 [modules-load configuration]: extra/linux/modules-load.conf
-[completion for bash]: extra/completions/liquidctl.bash
+[bash completions]: extra/completions/liquidctl.bash
 
 
 ## Installing on Windows
