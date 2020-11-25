@@ -80,6 +80,11 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0b", TAG+="uacc
 # Corsair RM850i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uaccess"
 
+# EVGA GTX 1080 FTW
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+	ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x3842", \
+	ATTRS{subsystem_device}=="0x6286", DRIVERS=="nvidia", TAG+="uaccess"
+
 # Gigabyte RGB Fusion 2.0 5702 Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uaccess"
 
