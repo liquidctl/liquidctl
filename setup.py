@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 import setuptools
 from setuptools.command.develop import develop
@@ -68,6 +69,13 @@ CHANGES_URL = '{}/blob/v{}/CHANGELOG.md'.format(HOME, VERSION)
 
 make_extraversion()
 
+install_requires = ['docopt', 'pyusb', 'hidapi']
+
+# for now 'smbus' is optional, but to require it add:
+#
+#     if sys.platform == 'linux':
+#         install_requires.append('smbus')
+
 setuptools.setup(
     name='liquidctl',
     cmdclass={'develop': custom_develop},
@@ -97,7 +105,7 @@ setuptools.setup(
         'Documentation': DOC_URL,
         'Changelog': CHANGES_URL,
     },
-    install_requires=['docopt', 'pyusb', 'hidapi'],
+    install_requires=install_requires,
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [

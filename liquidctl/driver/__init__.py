@@ -31,6 +31,9 @@ from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
 
+if sys.platform == 'linux':
+    from liquidctl.driver import nvidia
+
 
 def find_liquidctl_devices(pick=None, **kwargs):
     """Find devices and instantiate corresponding liquidctl drivers.
@@ -45,7 +48,8 @@ def find_liquidctl_devices(pick=None, **kwargs):
     If `pick` is passed, only the driver instance for the `(pick + 1)`-th
     matched device will be yielded.
     """
-    buses = sorted(find_all_subclasses(BaseBus), key=lambda x: x.__name__)
+    buses = sorted(find_all_subclasses(BaseBus),
+                   key=lambda x: (x.__module__, x.__name__))
     num = 0
     for bus_cls in buses:
         for dev in  bus_cls().find_devices(**kwargs):

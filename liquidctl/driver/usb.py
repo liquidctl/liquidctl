@@ -494,18 +494,22 @@ class HidapiDevice:
 
 
 class HidapiBus(BaseBus):
-    def find_devices(self, vendor=None, product=None, bus=None, address=None, **kwargs):
-        """Find compatible USB HID devices."""
+    def find_devices(self, vendor=None, product=None, bus=None, address=None,
+                     usb_port=None, **kwargs):
+        """Find compatible HID devices."""
         handles = HidapiDevice.enumerate(hid, vendor, product)
-        drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
-        LOGGER.debug('searching %s (api=%s, drivers=[%s])', self.__class__.__name__, hid.__name__,
+        drivers = sorted(find_all_subclasses(UsbHidDriver),
+                         key=lambda x: (x.__module__, x.__name__))
+        LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in handles:
             if bus and handle.bus != bus:
                 continue
             if address and handle.address != address:
                 continue
-            LOGGER.debug('probing drivers for device %04x:%04x', handle.vendor_id,
+            if usb_port and handle.port != usb_port:
+                continue
+            LOGGER.debug('found HID device %04x:%04x', handle.vendor_id,
                          handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
@@ -515,8 +519,9 @@ class PyUsbBus(BaseBus):
     def find_devices(self, vendor=None, product=None, bus=None, address=None,
                      usb_port=None, **kwargs):
         """ Find compatible regular USB devices."""
-        drivers = sorted(find_all_subclasses(UsbDriver), key=lambda x: x.__name__)
-        LOGGER.debug('searching %s (drivers=[%s])', self.__class__.__name__,
+        drivers = sorted(find_all_subclasses(UsbDriver),
+                         key=lambda x: (x.__module__, x.__name__))
+        LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in PyUsbDevice.enumerate(vendor, product):
             if bus and handle.bus != bus:
@@ -525,7 +530,7 @@ class PyUsbBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            LOGGER.debug('probing drivers for device %04x:%04x', handle.vendor_id,
+            LOGGER.debug('found USB device %04x:%04x', handle.vendor_id,
                          handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)

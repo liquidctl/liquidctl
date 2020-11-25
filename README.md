@@ -83,24 +83,32 @@ The following devices are supported by this version of liquidctl.  See each guid
 | NZXT Kraken X53, X63, X73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
 | NZXT Kraken Z63, Z73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
 
-### Other parts
+### Fan controllers and power supplies
 
 | Device family | Usage | Notes |
 |:--- |:---:|:--- |
 | Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
 | Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_E_</sup> |
 | NZXT E500, E650, E850 (PSUs) | [guide](docs/nzxt-e-series-psu-guide.md) | <sup>_E_</sup> |
 | NZXT Grid+ V3  | [guide](docs/nzxt-smart-device-v1-guide.md) | |
-| NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
 | NZXT Smart Device | [guide](docs/nzxt-smart-device-v1-guide.md) | |
 | NZXT Smart Device V2 | [guide](docs/nzxt-hue2-guide.md) | |
 | NZXT RGB & Fan Controller | [guide](docs/nzxt-hue2-guide.md) | <sup>_E_</sup> |
 
+### Other parts
+
+| Device family | Usage | Notes |
+|:--- |:---:|:--- |
+| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_E_</sup> |
+| EVGA GTX 1080 FTW | [guide](docs/nvidia-guide.md) | <sup>_EUXN_</sup> |
+| NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
+
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
 <sup>_E_</sup> _Experimental and/or partial support._  
-<!--<sup>_U_</sup> _Starting with upcoming liquidctl <version>._  -->
+<sup>_U_</sup> _Requires `--unsafe` features._  
+<sup>_X_</sup> _Only supported on Linux._  
+<sup>_N_</sup> _New driver, only available on git._  
 
 
 ## Installing on Linux
@@ -122,6 +130,7 @@ On other distributions, or when more control is desired, liquidctl can be instal
 | docopt | python-docopt | python3-docopt | python3-docopt |
 | PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
+| smbus (optional) | i2c-tools | python3-i2c-tools | python3-smbus |
 
 Setuptools and, optionally, pip and pytest are needed to locally test and manually install liquidctl:
 

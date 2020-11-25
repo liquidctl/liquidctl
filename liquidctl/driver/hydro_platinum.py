@@ -21,7 +21,8 @@ from enum import Enum, unique
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
-from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profile
+from liquidctl.util import clamp, fraction_of_byte, u16le_from, \
+                           normalize_profile, check_unsafe
 
 LOGGER = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ class HydroPlatinum(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        
+
         # set the flag so the LED command will need to be set again
         self._data.store('leds_enabled', 0)
 
@@ -172,7 +173,7 @@ class HydroPlatinum(UsbHidDriver):
         fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
         if fw_version < (1, 1, 0):
             # see: #201 ("Fan settings affects Fan 1 only and disables fan2")
-            LOGGER.warning('Outdated and possibly unsupported firmware version')
+            LOGGER.warning('outdated and possibly unsupported firmware version')
         return [('Firmware version', '%d.%d.%d' % fw_version, '')]
 
     def get_status(self, **kwargs):
@@ -222,7 +223,7 @@ class HydroPlatinum(UsbHidDriver):
             self._data.store(f'{hw_channel}_profile', profile)
         self._send_set_cooling()
 
-    def set_color(self, channel, mode, colors, unsafe=None, **kwargs):
+    def set_color(self, channel, mode, colors, **kwargs):
         """Set the color of each LED.
 
         In reality the device does not have the concept of different channels
@@ -258,8 +259,8 @@ class HydroPlatinum(UsbHidDriver):
         the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
         """
 
-        if 'PRO XT' in self.description and not (unsafe and 'pro_xt_lighting' in unsafe):
-            LOGGER.warning('Lighting control of PRO XT devices is experimental and only enabled with the `pro_xt_lighting` unsafe flag')
+        if 'PRO XT' in self.description:
+            check_unsafe('pro_xt_lighting', error=True, **kwargs)
 
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
         self._check_color_args(channel, mode, colors)
@@ -271,7 +272,6 @@ class HydroPlatinum(UsbHidDriver):
             expanded = list(itertools.chain(*([color] * self._led_count for color in colors[:1])))
         else:
             assert False, 'assumed unreacheable'
-        
 
         if self._data.load('leds_enabled', of_type=int, default=0) == 0:
             # These hex strings are currently magic values that work but Im not quite sure why.

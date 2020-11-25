@@ -10,6 +10,8 @@ import logging
 from ast import literal_eval
 from enum import Enum, unique
 
+from liquidctl.error import UnsafeFeaturesNotEnabled
+
 LOGGER = logging.getLogger(__name__)
 
 HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
@@ -227,6 +229,8 @@ def color_from_str(x):
     [255, 127, 63]
     >>> color_from_str('0XfF7f3f')
     [255, 127, 63]
+    >>> color_from_str('#fF7f3f')
+    [255, 127, 63]
     >>> color_from_str('Rgb(255, 127, 63)')
     [255, 127, 63]
     >>> color_from_str('Hsv(20, 75, 100)')
@@ -275,18 +279,70 @@ def color_from_str(x):
                 raise ValueError(f'Expected value in range [0, {maxvalue}]: {value} in {x}')
         return literal
 
-    if x.lower().startswith('rgb('):
+    xl = x.lower()
+
+    if xl.startswith('rgb('):
         r, g, b = parse_triple(x[3:], (255, 255, 255))
         return [r, g, b]
-    elif x.lower().startswith('hsv('):
+    elif xl.startswith('hsv('):
         h, s, v = parse_triple(x[3:], (360, 100, 100))
         return list(map(lambda b: round(b*255), colorsys.hsv_to_rgb(h/360, s/100, v/100)))
-    elif x.lower().startswith('hsl('):
+    elif xl.startswith('hsl('):
         h, s, l = parse_triple(x[3:], (360, 100, 100))
         return list(map(lambda b: round(b*255), colorsys.hls_to_rgb(h/360, l/100, s/100)))
     elif len(x) == 6:
         return list(bytes.fromhex(x))
-    elif len(x) == 8 and (x[0:2] == '0x' or x[0:2] == '0X'):
+    elif len(x) == 7 and x.startswith('#'):
+        return list(bytes.fromhex(x[1:]))
+    elif len(x) == 8 and xl.startswith('0x'):
         return list(bytes.fromhex(x[2:]))
     else:
         raise ValueError(f'Cannot parse color: {x}')
+
+
+def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
+    """Check if unsafe feature requirements are met.
+
+    Unstable.
+
+    Checks if the requirements in the positional arguments (`*reqs`) are all
+    met by the `unsafe` string list of enabled features.
+
+    >>> check_unsafe('foo', unsafe='foo,bar')
+    True
+    >>> check_unsafe('foo', 'bar', unsafe='foo,bar')
+    True
+    >>> check_unsafe('foo', unsafe=None)
+    False
+    >>> check_unsafe('foo', 'baz', unsafe='foo,bar')
+    False
+
+    If `error=True` and some requirements have not been met, raises
+    `liquidctl.error.UnsafeFeaturesNotEnabled`.  In the default `error=False`
+    mode, a boolean is return indicating whether all requirements were met.
+
+    >>> check_unsafe('foo', 'baz', unsafe='foo,bar', error=True)
+    Traceback (most recent call last):
+        ...
+    liquidctl.error.UnsafeFeaturesNotEnabled: baz
+
+    In driver code, `unsafe` is normally passed in `**kwargs`.
+
+    >>> kwargs = {'unsafe': 'foo,bar'}
+    >>> check_unsafe('foo', 'bar', **kwargs)
+    True
+    >>> check_unsafe('foo', 'baz', error=True, **kwargs)
+    Traceback (most recent call last):
+        ...
+    liquidctl.error.UnsafeFeaturesNotEnabled: baz
+    """
+
+    if unsafe:
+        reqs = tuple(filter(lambda x: x not in unsafe, reqs))
+
+    if not reqs:
+        return True
+
+    if error:
+        raise UnsafeFeaturesNotEnabled(*reqs)
+    return False

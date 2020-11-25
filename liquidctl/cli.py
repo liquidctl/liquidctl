@@ -33,6 +33,7 @@ Other device options:
   --single-12v-ocp            Enable single rail +12V OCP
   --pump-mode <mode>          Set the pump mode (certain Corsair coolers)
   --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
+  --non-volatile              Store on non-volatile controller memory
   --unsafe <features>         Comma-separated bleeding-edge features to enable
 
 Other interface options:
@@ -73,7 +74,7 @@ import sys
 from docopt import docopt
 
 from liquidctl.driver import *
-from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
@@ -102,6 +103,7 @@ _PARSE_ARG = {
     '--single-12v-ocp': bool,
     '--pump-mode': str,
     '--legacy-690lc': bool,
+    '--non-volatile': bool,
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
@@ -147,7 +149,8 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
 
         print(f'├── Vendor ID: {dev.vendor_id:#06x}')
         print(f'├── Product ID: {dev.product_id:#06x}')
-        print(f'├── Release number: {dev.release_number:#06x}')
+        if dev.release_number:
+            print(f'├── Release number: {dev.release_number:#06x}')
         try:
             if dev.serial_number:
                 print(f'├── Serial number: {dev.serial_number}')
@@ -168,10 +171,10 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             port = '.'.join(map(str, dev.port))
             print(f'├── Port: {port}')
 
-        print(f'└── Driver: {type(dev).__name__} using module {dev.device.api.__name__}')
+        print(f'└── Driver: {type(dev).__name__}')
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            LOGGER.debug('hierarchy: %s; %s', ', '.join(driver_hier[1:]), type(dev.device).__name__)
+            LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
 
         for msg in warnings:
             LOGGER.warning(msg)
@@ -310,6 +313,9 @@ def main():
             raise SystemExit(f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver:
             raise SystemExit(f'Error: operation not supported by driver for {dev.description}')
+        except UnsafeFeaturesNotEnabled as err:
+            features = ','.join(err.args)
+            raise SystemExit(f'Error: missing --unsafe features for {dev.description}: {features!r}')
         except:
             LOGGER.exception('Unexpected error with %s', dev.description)
             sys.exit(1)
