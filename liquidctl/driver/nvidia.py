@@ -14,10 +14,11 @@ from liquidctl.util import check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
-_NVIDIA = 0x10de
-_EVGA = 0x3842
+NVIDIA = 0x10de
+NVIDIA_GTX_1080 = 0x1b80
 
-_NVIDIA_GTX_1080 = 0x1b80
+EVGA = 0x3842
+EVGA_GTX_1080_FTW = 0x6286
 
 
 class EvgaPascal(SmbusDriver):
@@ -50,18 +51,17 @@ class EvgaPascal(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
         ADDRESS = 0x49
-        GTX_1080_FTW = 0x6286
 
-        if (vendor and vendor != _EVGA) \
+        if (vendor and vendor != EVGA) \
                 or (address and int(address, base=16) != ADDRESS) \
-                or smbus.parent_subsystem_vendor != _EVGA \
-                or smbus.parent_vendor != _NVIDIA \
+                or smbus.parent_subsystem_vendor != EVGA \
+                or smbus.parent_vendor != NVIDIA \
                 or smbus.parent_driver != 'nvidia' \
                 or release or serial:  # will never match: always None
             return
 
         supported = [
-            (_NVIDIA_GTX_1080, GTX_1080_FTW, "EVGA GTX 1080 FTW (experimental)"),
+            (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, "EVGA GTX 1080 FTW (experimental)"),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
@@ -72,7 +72,7 @@ class EvgaPascal(SmbusDriver):
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
 
-            dev = cls(smbus, desc, vendor_id=_EVGA, product_id=GTX_1080_FTW,
+            dev = cls(smbus, desc, vendor_id=EVGA, product_id=EVGA_GTX_1080_FTW,
                       address=ADDRESS)
             _LOGGER.debug('instanced driver for %s', desc)
             yield dev

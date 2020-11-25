@@ -61,3 +61,47 @@ class MockHidapiDevice:
 
     def send_feature_report(self, data):
         return self.write(data)
+
+
+class VirtualSmbus:
+    def __init__(self, address_count=256, register_count=256, name='i2c-99',
+                 description='Virtual', parent_vendor=0xff01, parent_device=0xff02,
+                 parent_subsystem_vendor=0xff10, parent_subsystem_device=0xff20,
+                 parent_driver='virtual'):
+
+        self._open = False
+        self._data = [[0] * register_count] * address_count
+
+        self.name = name
+        self.description = description
+        self.parent_vendor = parent_vendor
+        self.parent_device = parent_device
+        self.parent_subsystem_vendor = parent_subsystem_vendor
+        self.parent_subsystem_device = parent_subsystem_device
+        self.parent_driver = parent_driver
+
+    def open(self):
+        self._open = True
+
+    def read_byte(self, address):
+        if not self._open:
+            raise OSError('closed')
+        return self._data[address][0]
+
+    def read_byte_data(self, address, register):
+        if not self._open:
+            raise OSError('closed')
+        return self._data[address][register]
+
+    def write_byte(self, address, value):
+        if not self._open:
+            raise OSError('closed')
+        self._data[address][0] = value
+
+    def write_byte_data(self, address, register, value):
+        if not self._open:
+            raise OSError('closed')
+        self._data[address][register] = value
+
+    def close(self):
+        self._open = False
