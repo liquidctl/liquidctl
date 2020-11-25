@@ -168,14 +168,13 @@ Optional steps:
 # cp liquidctl.8 /usr/local/share/man/man8/
 # mandb
 ```
-- install udev rules
-```
-# cp extra/linux/71-liquidctl.rules /etc/udev/rules.d/
-```
-- install completion for bash
-```
-# cp extra/completions/liquidctl-completion.sh /etc/bash_completion.d/
-```
+- install [udev rules] for unprivileged access to devices
+- install [modules-load configuration] for SMBus/I²C support
+- install [bash-completion] completions for liquidctl
+
+[udev rules]: extra/linux/71-liquidctl.rules
+[modules-load configuration]: extra/linux/modules-load.conf
+[completion for bash]: extra/completions/liquidctl.bash
 
 
 ## Installing on Windows

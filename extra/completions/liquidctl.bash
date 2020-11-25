@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 
-# This is a bash completion script for liquidctl 
-# to enable this completion place this file in /etc/bash_completion.d/ (note this locatio may be system dependant_ 
-# you can also enable this manually by sourcing this file in your ~/.bashrc file `source path/to/this` 
+# Bash completions for liquidctl.
 #
+# Requires bash-completion.[1]
+#
+# Users can place this file in the `completions` subdir of
+# $BASH_COMPLETION_USER_DIR (defaults to `$XDG_DATA_HOME/bash-completion` or
+# `~/.local/share/bash-completion` if $XDG_DATA_HOME is not set).
+# 
+# Distros should instead use the directory returned by
+#     pkg-config --variable=completionsdir bash-completion
+#
+# See [1] for more information.
+#
+# [1] https://github.com/scop/bash-completion
 #
 # Copyright (C) 2020-2020 Marshall Asch 
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -324,4 +334,3 @@ _liquidctl_set_led ()
 }
 
 complete -F _liquidctl_main liquidctl
-
