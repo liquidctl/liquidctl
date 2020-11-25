@@ -1,11 +1,7 @@
-import pytest
-import sys
-
-if sys.platform != 'linux':
-    pytest.skip('SMBus is only supported on Linux', allow_module_level=True)
+from pathlib import Path
 
 from liquidctl.driver.smbus import SmbusDriver
-from pathlib import Path
+import pytest
 
 
 class Canary(SmbusDriver):

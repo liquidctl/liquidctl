@@ -1,11 +1,6 @@
-import pytest
-import sys
-
-if sys.platform != 'linux':
-    pytest.skip('NVIDIA cards are only supported on Linux', allow_module_level=True)
-
 from liquidctl.driver.nvidia import *
 from liquidctl.error import *
+import pytest
 
 from _testutils import VirtualSmbus
 
