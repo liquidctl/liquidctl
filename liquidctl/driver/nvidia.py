@@ -6,7 +6,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 from enum import Enum, unique
 import logging
-import re
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice
