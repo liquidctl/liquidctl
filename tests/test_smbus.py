@@ -45,7 +45,7 @@ def no_smbus(monkeypatch):
     return replace_smbus(None, monkeypatch)
 
 
-def test_meta_smbus_replacement(tmpdir, emulated_smbus):
+def test__helper_fixture_replaces_real_smbus_implementation(tmpdir, emulated_smbus):
     from liquidctl.driver.smbus import LinuxI2cBus
 
     i2c_dev = Path(tmpdir.mkdir('i2c-9999'))  # unlikely to be valid
@@ -66,7 +66,7 @@ def test_filter_by_usb_port_yields_no_devices(emulated_smbus):
     assert discovered == []
 
 
-def test_abort_if_sysfs_is_missing_devices(tmpdir, emulated_smbus):
+def test_aborts_if_sysfs_is_missing_devices(tmpdir, emulated_smbus):
     from liquidctl.driver.smbus import LinuxI2c
 
     empty = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
@@ -121,7 +121,7 @@ def test_honors_a_bus_filter(tmpdir, emulated_smbus):
     assert discovered[0]._smbus.name == 'i2c-1'
 
 
-def test_connecting_is_unsafe(tmpdir, emulated_smbus):
+def test_connect_is_unsafe(tmpdir, emulated_smbus):
     from liquidctl.driver.smbus import LinuxI2cBus
 
     i2c_dev = Path(tmpdir.mkdir('i2c-0'))
