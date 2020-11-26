@@ -20,7 +20,7 @@ def evga_gtx_1080_ftw_smbus():
     )
 
 
-def test_evga_pascal_finds_devices(monkeypatch, evga_gtx_1080_ftw_smbus):
+def test_evga_pascal_finds_devices(evga_gtx_1080_ftw_smbus, monkeypatch):
     smbus = evga_gtx_1080_ftw_smbus
 
     checks = [
