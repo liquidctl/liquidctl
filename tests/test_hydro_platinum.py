@@ -47,6 +47,16 @@ class HydroPlatinumTestCase(unittest.TestCase):
     def tearDown(self):
         self.device.disconnect()
 
+    def test_connect(self):
+        def mock_open():
+            nonlocal opened
+            opened = True
+        self.mock_hid.open = mock_open
+        opened = False
+        with self.device.connect() as cm:
+            self.assertEqual(cm, self.device)
+            self.assertTrue(opened)
+
     def test_command_format(self):
         self.device._data.store('sequence', None)
         self.device._data.store('leds_enabled', 0)
@@ -62,7 +72,6 @@ class HydroPlatinumTestCase(unittest.TestCase):
             self.assertEqual(data[0], 0x3f)
             self.assertEqual(data[1] >> 3, i + 1)
             self.assertEqual(data[-1], compute_pec(data[1:-1]))
-
 
     def test_command_format_enabled(self):
         # test that the led enable messages are not sent if they are sent again
@@ -80,7 +89,6 @@ class HydroPlatinumTestCase(unittest.TestCase):
             self.assertEqual(data[0], 0x3f)
             self.assertEqual(data[1] >> 3, i + 1)
             self.assertEqual(data[-1], compute_pec(data[1:-1]))
-
 
     def test_get_status(self):
         temp, fan1, fan2, pump = self.device.get_status()
@@ -110,7 +118,6 @@ class HydroPlatinumTestCase(unittest.TestCase):
                                 msg='failed preload soundness check')
 
     def test_initialize_status(self):
-        
         self.device._data.store('leds_enabled', 1)
         (fw_version, ) = self.device.initialize()
         self.assertEqual(fw_version[1], '%d.%d.%d' % self.mock_hid.fw_version)

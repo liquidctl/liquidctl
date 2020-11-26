@@ -43,6 +43,16 @@ class CurrentX2TestCase(_TestCase):
         self.mock_hid = _MockKraken(fw_version=(6, 0, 2))
         self.device = Kraken2(self.mock_hid, 'Mock X62', device_type=Kraken2.DEVICE_KRAKENX)
 
+    def test_connect(self):
+        def mock_open():
+            nonlocal opened
+            opened = True
+        self.mock_hid.open = mock_open
+        opened = False
+        with self.device.connect() as cm:
+            self.assertEqual(cm, self.device)
+            self.assertTrue(opened)
+
     def test_get_status(self):
         fan, fw_ver, temp, pump = sorted(self.device.get_status())
         self.assertEqual(fw_ver[1], '%d.%d.%d' % self.mock_hid.fw_version)

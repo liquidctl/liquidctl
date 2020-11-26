@@ -144,6 +144,7 @@ class _CommonAsetekDriver(UsbDriver):
 
         super().connect(**kwargs)
         self._configure_flow_control(clear_to_send=True)
+        return self
 
     def initialize(self, **kwargs):
         """Initialize the device."""

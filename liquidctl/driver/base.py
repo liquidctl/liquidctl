@@ -10,16 +10,16 @@ class BaseDriver:
     All drivers are expected to implement this API for compatibility with the
     liquidctl CLI or other thirdy party tools.
 
-    Example usage:
+    Drivers will automatically implement the context manager protocol, but this
+    should only be used from a call to `connect`.
+
+    Example:
 
         for dev in <Driver>.find_supported_devices():
-            dev.connect()
-            try:
+            with dev.connect():
                 print(dev.get_status())
                 if dev.serial_number == '49385027ZP':
-                    dev.set_fixed_speed("fan3", 42)
-            finally:
-                dev.disconnect()
+                    dev.set_fixed_speed('fan3', 42)
 
     """
 
@@ -36,6 +36,8 @@ class BaseDriver:
 
         Procedure before any read or write operation can be performed.
         Typically a handshake between driver and device.
+
+        Returns `self`.
         """
         raise NotImplementedError()
 
@@ -131,7 +133,6 @@ class BaseDriver:
         raise NotImplementedError()
 
     def __enter__(self):
-        self.connect()
         return self
 
     def __exit__(self, *args):

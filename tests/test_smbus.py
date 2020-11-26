@@ -129,19 +129,17 @@ def test_connect_is_unsafe(emulated_device, caplog):
 
     assert 'requires unsafe' in caplog.text
 
-def test_connects(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2cBus
 
-    i2c_dev = Path(tmpdir.mkdir('i2c-0'))
-    bus = LinuxI2cBus(i2c_dev=i2c_dev)
-    dev = SmbusDriver(smbus=bus, description='Test', vendor_id=-1,
-                      product_id=-1, address=-1)
+def test_connects(emulated_device):
+    bus, dev = emulated_device
 
     def mock_open():
         nonlocal opened
         opened = True
 
-    opened = False
     bus.open = mock_open
-    dev.connect(unsafe='smbus')
-    assert opened
+    opened = False
+
+    with dev.connect(unsafe='smbus') as cm:
+        assert cm == dev
+        assert opened

@@ -249,6 +249,7 @@ class SmbusDriver(BaseDriver):
             _LOGGER.warning("SMBus: disabled, requires unsafe feature 'smbus'")
             return
         self._smbus.open()
+        return self
 
     def disconnect(self, **kwargs):
         """Disconnect from the device."""
