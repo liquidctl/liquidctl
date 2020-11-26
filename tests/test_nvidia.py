@@ -79,7 +79,7 @@ def test_evga_pascal_set_color_is_unsafe(evga_gtx_1080_ftw_smbus):
 
 def test_evga_pascal_sets_color_to_off(evga_gtx_1080_ftw_smbus):
     card = next(EvgaPascal.probe(evga_gtx_1080_ftw_smbus))
-    enable = [0]
+    enable = ['smbus', 'evga_pascal']
 
     with card.connect(unsafe=enable):
         # change mode register to something other than 0 (=off)
