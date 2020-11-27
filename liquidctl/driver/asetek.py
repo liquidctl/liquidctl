@@ -115,16 +115,16 @@ class _CommonAsetekDriver(UsbDriver):
                     + [alert_temp, interval1, interval2, not blackout, fading,
                        blinking, enable_alert, 0x00, 0x01])
 
-    def _prepare_profile(self, profile, min_duty, max_duty):
+    def _prepare_profile(self, profile, min_duty, max_duty, max_points):
         opt = list(profile)
         size = len(opt)
         if size < 1:
             raise ValueError('At least one PWM point required')
-        elif size > _MAX_PROFILE_POINTS:
-            raise ValueError(f'Too many PWM points ({size}), only 6 supported')
+        elif size > max_points:
+            raise ValueError(f'Too many PWM points ({size}), only {max_points} supported')
         for i, (temp, duty) in enumerate(opt):
             opt[i] = (temp, clamp(duty, min_duty, max_duty))
-        missing = _MAX_PROFILE_POINTS - size
+        missing = max_points - size
         if missing:
             # Some issues were observed when padding with (0°C, 0%), though
             # they were hard to reproduce.  So far it *seems* that in some
@@ -265,7 +265,7 @@ class Modern690Lc(_CommonAsetekDriver):
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to follow a speed duty profile."""
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
-        adjusted = self._prepare_profile(profile, dmin, dmax)
+        adjusted = self._prepare_profile(profile, dmin, dmax, _MAX_PROFILE_POINTS)
         for temp, duty in adjusted:
             _LOGGER.info('setting %i PWM point: (%i°C, %i%%), device interpolated',
                          channel, temp, duty)
