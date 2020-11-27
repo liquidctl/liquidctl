@@ -70,7 +70,7 @@ class VirtualSmbus:
                  parent_driver='virtual'):
 
         self._open = False
-        self._data = [[0] * register_count] * address_count
+        self._data = [ [0] * register_count for _ in range(address_count) ] 
 
         self.name = name
         self.description = description

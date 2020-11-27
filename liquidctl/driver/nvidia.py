@@ -242,7 +242,7 @@ class RogTuring(SmbusDriver):
                 _LOGGER.warning("%s: assuming driver found at address %02x "
                             "'smbus,rog_turing'",  desc, 0x2a)
 
-                dev = cls(smbus, desc, vendor_id=_ASUS, product_id=dev_id,
+                dev = cls(smbus, desc, vendor_id=ASUS, product_id=dev_id,
                           address=0x2a)   # default picked the address that works for my device
                 yield dev
                 return
@@ -284,18 +284,18 @@ class RogTuring(SmbusDriver):
 
         mode = self._smbus.read_byte_data(self._address, self._REG_MODE)
         red = self._smbus.read_byte_data(self._address, self._REG_RED)
-        blue = self._smbus.read_byte_data(self._address, self._REG_BLUE)
         green = self._smbus.read_byte_data(self._address, self._REG_GREEN)
+        blue = self._smbus.read_byte_data(self._address, self._REG_BLUE)
 
         # check if the mode is `OFF`
-        if red == blue == green == 0:
+        if red == green == blue == 0:
             mode = 0
 
         mode = self.Mode(mode)
         status = [('Mode', str(mode), '')]
 
         if mode.required_colors > 0:
-            status.append(('Color', f'{red:02x}{blue:02x}{green:02x}', ''))
+            status.append(('Color', f'{red:02x}{green:02x}{blue:02x}', ''))
 
         return status
 
