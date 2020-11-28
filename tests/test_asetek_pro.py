@@ -19,9 +19,11 @@ class _MockAsetekProDevice():
         self.release = noop
         self.close = noop
 
-        self._reset_sent()
+        self._reset()
 
     def read(self, endpoint, length, timeout=None):
+        if len(self._responses):
+            return self._responses.popleft()
         return [0] * length
 
     def write(self, endpoint, data, timeout=None):
@@ -32,8 +34,9 @@ class _MockAsetekProDevice():
         self._sent_xfers.append(('ctrl_transfer', bmRequestType, bRequest,
                                  wValue, wIndex, data_or_wLength))
 
-    def _reset_sent(self):
+    def _reset(self):
         self._sent_xfers = deque()
+        self._responses = deque()
 
 class CorsairAsetekProDriverTestCase(unittest.TestCase):
     def setUp(self):
@@ -58,9 +61,48 @@ class CorsairAsetekProDriverTestCase(unittest.TestCase):
                                profile=iter([(20, 20), (30, 50), (40, 100)]))
         self.device.set_fixed_speed(channel='pump', duty=50)
 
+    def test_set_speed_of_all_fans(self):
+        # When setting the speed of all fans the driver first gets the speed of all fans
+        # to work out how many fans are present. Set 2 valid responses to simulate a setup
+        # with 2 fans present
+        self.mock_usb._responses.append([0x41, 0x12, 0x34, 0x00, 0x00, 0x32])
+        self.mock_usb._responses.append([0x41, 0x12, 0x34, 0x01, 0x00, 0x32])
+        self.mock_usb._responses.append([0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        self.device.initialize()
+        self.device.set_speed_profile(channel='fan', profile=[(0, 10), (25, 50), (40, 100)])
+        _begin, _fan_1_spd, _fan_2_spd, _fan_3_spd, set_fan_1, set_fan_2 = self.mock_usb._sent_xfers
+        assert set_fan_1 == ('write', 1, [0x40, 0x00, 0x00, 0x19, 0x28, 0x3c, 0x3c, 0x3c, 0x3c,
+            0x0a, 0x32, 0x64, 0x64, 0x64, 0x64, 0x64])
+        assert set_fan_2 == ('write', 1, [0x40, 0x01, 0x00, 0x19, 0x28, 0x3c, 0x3c, 0x3c, 0x3c,
+            0x0a, 0x32, 0x64, 0x64, 0x64, 0x64, 0x64])
+
     def test_setting_speed_on_single_fan_3(self):
         self.device.initialize()
         self.device.set_fixed_speed('fan3', 100)
         _begin, fan2_message = self.mock_usb._sent_xfers
         assert fan2_message == ('write', 1, [0x40, 0x02, 0x00, 0x3b, 0x3c, 0x3c, 0x3c,
             0x3c, 0x3c, 0x64, 0x64, 0x64, 0x64, 0x64, 0x64, 0x64])
+
+    def test_set_led_to_rainbow_mode(self):
+        self.device.initialize()
+        self.device.set_color(channel='led', mode='rainbow', colors=iter([]), speed=1)
+        _begin, color_mode_message, end_message = self.mock_usb._sent_xfers
+        assert color_mode_message == ('write', 1, [0x53, 0x30])
+        assert end_message == ('write', 1, [0x55, 0x01])
+
+    def test_set_led_to_fixed_color(self):
+        self.device.initialize()
+        self.device.set_color(channel='led', mode='fixed', colors=iter([[0xff, 0x88, 0x44]]))
+        _begin, color_change_message, end_message = self.mock_usb._sent_xfers
+        assert color_change_message == ('write', 1, [0x56, 0x02, 0xff, 0x88, 0x44, 0xff, 0x88, 0x44])
+        assert end_message == ('write', 1, [0x55, 0x01])
+
+    def test_set_led_to_blinking_mode(self):
+        self.device.initialize()
+        self.device.set_color(channel='led', mode='blinking', speed=2,
+            colors=iter([[0xff, 0x88, 0x44], [0xff, 0xff, 0xff], [0x00, 0x00, 0x00]]))
+        _begin, color_change_message, color_mode_message, end_message = self.mock_usb._sent_xfers
+        assert color_change_message == ('write', 1, [0x56, 0x03, 0xff, 0x88, 0x44, 0xff, 0xff, 0xff,
+            0x00, 0x00, 0x00])
+        assert color_mode_message == ('write', 1, [0x53, 0x0A])
+        assert end_message == ('write', 1, [0x58, 0x01])
