@@ -20,6 +20,9 @@
 # Asetek 690LC (also EVGA CLC or NZXT Kraken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
 
+# Corsair Commander Pro
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="uaccess"
+
 # Corsair H100i PRO XT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c20", TAG+="uaccess"
 
@@ -67,6 +70,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c02", TAG+="uacc
 
 # Corsair Hydro H80i v2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c08", TAG+="uaccess"
+
+# Corsair Lighting Node Pro
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c0b", TAG+="uaccess"
 
 # Corsair RM1000i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0d", TAG+="uaccess"
