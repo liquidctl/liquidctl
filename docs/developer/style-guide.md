@@ -24,6 +24,14 @@ modules.
 [PEP 8]: https://pep8.org/
 [Beyond PEP 8]: https://www.youtube.com/watch?v=wf-BqAjZb8M
 
+### Nits
+
+- indent with 4 spaces
+- prefer to continue lines vertically, aligned with the opening delimiter
+- prefer single quotes for string literals, unless double quotes will avoid
+  some escaping
+- use lowercase hexadecimal literals
+
 ## Use of automatic formatters
 
 Pull requests are welcome.
@@ -45,6 +53,8 @@ keep the messages clear, objective and consistent.
 
 Raise exceptions, preferably `liquidctl.error.*` or Python's
 [built-in exceptions].
+
+Error messages should start with a lowercase letter.
 
 [built-in exceptions]: https://docs.python.org/3/library/exceptions.html
 
