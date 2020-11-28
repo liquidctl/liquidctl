@@ -126,18 +126,18 @@ class CommanderPro(UsbHidDriver):
 
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C10, None, 'Corsair Commander Pro (experimental)',
-            {'fan_count': 6, 'led_count': 6, 'temp_probs': 4, 'led_channels': 2}),
+            {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
         (0x1B1C, 0x0C0B, None, 'Corsair Lighting Node Pro(experimental)',
-            {'fan_count': 0, 'led_count': 6, 'temp_probs': 0, 'led_channels': 2}),
+            {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
     ]
 
-    def __init__(self, device, description, fan_count, led_count, temp_probs, led_channels, **kwargs):
+    def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
         super().__init__(device, description, **kwargs)
 
         # the following fields are only initialized in connect()
         self._data = None
         self._fan_names = [f'fan{i+1}' for i in range(fan_count)]
-        self._led_names = [f'led{i+1}' for i in range(led_count)]
+        self._led_names = [f'led{i+1}' for i in range(led_channels)]
         self._temp_probs = temp_probs
         self._fan_count = fan_count
 
@@ -154,7 +154,7 @@ class CommanderPro(UsbHidDriver):
         loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
         self._data = RuntimeStorage(key_prefixes=[ids, loc])
 
-    def initialize(self, pump_mode='balanced', **kwargs):
+    def initialize(self, **kwargs):
         """Initialize the device and get the fan modes.
 
         The device should be initialized every time it is powered on, including when
@@ -186,11 +186,10 @@ class CommanderPro(UsbHidDriver):
                 ('Temp sensor 4', 'Connected' if temp_connected[3] else 'Not Connected', ''),
             ]
 
-
         if self._fan_count > 0:
             # get the information about how the fans are connected, probably want to save this for later
             res = self._send_command(_CMD_GET_FAN_MODES)
-            fanModes = res[1:7]
+            fanModes = res[1:self._fan_count+1]
             self._data.store('fan_modes', fanModes)
             status += [
                 ('Fan 1 Mode', self._get_fan_mode_description(fanModes[0]), ''),
@@ -222,11 +221,11 @@ class CommanderPro(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*4)
-        fan_modes = self._data.load('fan_modes', default=[0]*6)
+        connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
+        fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
         # get the tempature sensor values
-        temp = [0]*4
+        temp = [0]*self._temp_probs
         for num, enabled in enumerate(connected_temp_sensors):
             if enabled:
                 temp[num] = self._get_temp(num)
@@ -243,7 +242,7 @@ class CommanderPro(UsbHidDriver):
 
 
         # get fan RPMs of connected fans
-        fanspeeds = [0]*6
+        fanspeeds = [0]*self._fan_count
         for fan_num, mode in enumerate(fan_modes):
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 fanspeeds[fan_num] = self._get_fan_rpm(fan_num+1)
@@ -255,24 +254,12 @@ class CommanderPro(UsbHidDriver):
             ('3.3 volt rail', volt_3, 'V'),
         ]
 
-        if self._temp_probs > 0:
-            status +=[
-                ('Temp sensor 1', temp[0], '°C'),
-                ('Temp sensor 2', temp[1], '°C'),
-                ('Temp sensor 3', temp[2], '°C'),
-                ('Temp sensor 4', temp[3], '°C'),
-            ]
+        for temp_num in range(self._temp_probs):
+            status += [(f'Temp sensor {temp_num + 1}', temp[temp_num], '°C')]
 
-        if self._fan_count > 0:
-            status +=[
-                ('Fan 1 speed', fanspeeds[0], 'rpm'),
-                ('Fan 2 speed', fanspeeds[1], 'rpm'),
-                ('Fan 3 speed', fanspeeds[2], 'rpm'),
-                ('Fan 4 speed', fanspeeds[3], 'rpm'),
-                ('Fan 5 speed', fanspeeds[4], 'rpm'),
-                ('Fan 6 speed', fanspeeds[5], 'rpm'),
-            ]
-
+        for fan_num in range(self._fan_count):
+            status += [(f'Fan {fan_num + 1} speed', fanspeeds[fan_num], 'rpm')]
+        
         return status
 
     def _get_temp(self, sensor_num):
@@ -346,7 +333,7 @@ class CommanderPro(UsbHidDriver):
 
         duty = clamp(duty, 0, 100)
         fan_channels = self._get_hw_fan_channels(channel)
-        fan_modes = self._data.load('fan_modes', default=[0]*6)
+        fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
         for fan in fan_channels:
             mode = fan_modes[fan]
@@ -383,7 +370,7 @@ class CommanderPro(UsbHidDriver):
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
         temp_sensor = kwargs.get('temp_sensor', 1) # need to make sure this is set and in range 1-4 or ext
-        temp_sensor = clamp(temp_sensor, 1, 4)
+        temp_sensor = clamp(temp_sensor, 1, self._temp_probs)
 
         # generate the  profile in the correct format, 6 temp, 6 speeds
 
@@ -396,14 +383,14 @@ class CommanderPro(UsbHidDriver):
 
             # convert both values to 2 byte big endian values
             buf[2 + i*2] = temp.to_bytes(2, byteorder='big')[0]
-            buf[2 + i*2 + 1] = temp.to_bytes(2, byteorder='big')[1]
-            buf[2 + i*2 + 12] = rpm.to_bytes(2, byteorder='big')[0]
-            buf[2 + i*2 + 12 + 1] = rpm.to_bytes(2, byteorder='big')[1]
+            buf[3 + i*2] = temp.to_bytes(2, byteorder='big')[1]
+            buf[14 + i*2] = rpm.to_bytes(2, byteorder='big')[0]
+            buf[15 + i*2] = rpm.to_bytes(2, byteorder='big')[1]
 
 
 
         fan_channels = self._get_hw_fan_channels(channel)
-        fan_modes = self._data.load('fan_modes', default=[0]*6)
+        fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
         for fan in fan_channels:
             mode = fan_modes[fan]
@@ -461,9 +448,7 @@ class CommanderPro(UsbHidDriver):
         # a special mode to clear the current led settings.
         # this is usefull if the the user wants to use a led mode for multiple devices
         if mode_str == "clear":
-            for i in range(2):
-                for j in range(6):
-                    self._data.store(f'led_value{i}{j}', None)
+            self._data.store('saved_effects', None)
             return
 
         colors = list(colors)
@@ -474,52 +459,56 @@ class CommanderPro(UsbHidDriver):
         brightness = kwargs.get('brightness', 100)
         direction = kwargs.get('direction', 'forward').lower()
         speed = kwargs.get('speed', 'fast').lower()
-        led_channel = kwargs.get('channel', 1)
-        leds_per_device = kwargs.get('led_type', 1);
+        start_led = kwargs.get('start_led', 1)
+        num_leds = kwargs.get('num_leds', 1);
         channel = channel.lower()
         mode = mode_str.lower()
 
 
-
+        # default to channel 1 if channel 2 is not specified.
+        led_channel = 1 if channel == 'led2' else 0
+            
 
         brightness = clamp(brightness, 0, 100)
         direction = 0x01 if direction == 'forward' else 0x00
         speed = 0x02 if speed == 'slow' else 0x01 if speed == 'medium' else 0x00
-        led_channel = clamp(led_channel, 1, 2) - 1
-        leds_per_device = clamp(leds_per_device, 0, 32)
+        start_led = clamp(start_led, 0, 96)
+        num_leds = clamp(num_leds, 0, 96) # there is a current firmware limitation of 96 led's per channel
+        random_colors = 0x00 if len(colors) != 0 else 0x01
         mode = _MODES.get(mode, -1)
 
         if mode == -1:
             raise ValueError(f'Mode "{mode_str}" is not valid')
 
-        devices = self._get_hw_led_channels(channel)
-        random_colors = 0x00 if len(colors) != 0 else 0x01
+        lighting_effect = {
+                'channel': led_channel, 
+                'start_led': start_led, 
+                'num_leds': num_leds, 
+                'mode': mode, 
+                'speed': speed, 
+                'direction': direction, 
+                'random_colors': random_colors, 
+                'colors': colors
+            }
 
+        saved_effects = self._data.load('saved_effects', default=[])
+        saved_effects += [ lighting_effect ]
+        self._data.store('saved_effects', saved_effects)
+
+        # start sending the led commands
         self._send_command(0x37);               # clear group ?
         self._send_command(0x34);               # clear led ?
-        self._send_command(0x39, [led_channel, brightness]); # brightness
-        self._send_command(0x38, [led_channel, 0x01]); # group setting ?
-
-        # generate the LED set command, keep all the LED's the same if only one channel is being set.
-        alldevices = self._get_hw_led_channels('led')
-        for device in alldevices:
-            if device in devices:
-                config = [led_channel, device, leds_per_device, mode, speed, direction, random_colors, 0xff] + colors
-                devices.remove(device)
-                self._data.store(f'led_value{led_channel}{device}', config)
-            else:
-                config = self._data.load(f'led_value{led_channel}{device}', [])
-
-            if config != None and len(config) != 0:
-                self._send_command(0x35, config );
+        # self._send_command(0x39, [led_channel, brightness]); # brightness seems to currently not work as expected, more research is needed
+        self._send_command(0x38, [led_channel, 0x01]); # this will put the channel into hardware mode. (so that the effect does not need to be constantly sent to the device.
 
 
+        for effect in saved_effects:
+
+            # generate the LED set command, keep all the LED's the same if only one channel is being set.
+            config = [effect.get('channel'), effect.get('start_led'), effect.get('num_leds'), effect.get('mode'), effect.get('speed'), effect.get('direction'), effect.get('random_colors'), 0xff] + effect.get('colors')
+            self._send_command(0x35, config);
 
         self._send_command(0x33, [0xff]);
-
-
-
-
 
         # send 37 - set led's ?
         # send 34 - clear?
