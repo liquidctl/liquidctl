@@ -57,6 +57,16 @@ class Modern690LcTestCase(unittest.TestCase):
                                profile=iter([(20, 20), (30, 50), (40, 100)]))
         self.device.set_fixed_speed(channel='pump', duty=50)
 
+    def test_connect(self):
+        def mock_open():
+            nonlocal opened
+            opened = True
+        self.mock_usb.open = mock_open
+        opened = False
+        with self.device.connect() as cm:
+            assert cm == self.device
+            assert opened
+
     def test_begin_transaction(self):
         self.mock_usb._reset_sent()
 

@@ -113,6 +113,7 @@ class BaseUsbDriver(BaseDriver):
     def connect(self, **kwargs):
         """Connect to the device."""
         self.device.open()
+        return self
 
     def disconnect(self, **kwargs):
         """Disconnect from the device."""

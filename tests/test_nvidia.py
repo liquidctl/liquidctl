@@ -20,7 +20,7 @@ def evga_1080_ftw_bus():
     )
 
 
-def test_evga_pascal_finds_devices(monkeypatch, evga_1080_ftw_bus):
+def test_evga_pascal_finds_devices(evga_1080_ftw_bus, monkeypatch):
     smbus = evga_1080_ftw_bus
 
     checks = [
@@ -55,11 +55,9 @@ def test_evga_pascal_get_verbose_status_is_unsafe(evga_1080_ftw_bus):
 
 def test_evga_pascal_gets_verbose_status(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
-    enable = 'smbus,evga_pascal'
+    enable = ['smbus', 'evga_pascal']
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         evga_1080_ftw_bus.write_byte_data(0x49, 0x09, 0xaa)
         evga_1080_ftw_bus.write_byte_data(0x49, 0x0a, 0xbb)
         evga_1080_ftw_bus.write_byte_data(0x49, 0x0b, 0xcc)
@@ -72,8 +70,6 @@ def test_evga_pascal_gets_verbose_status(evga_1080_ftw_bus):
         ]
 
         assert status == expected
-    finally:
-        card.disconnect()
 
 
 def test_evga_pascal_set_color_is_unsafe(evga_1080_ftw_bus):
@@ -91,27 +87,21 @@ def test_evga_pascal_set_color_is_unsafe(evga_1080_ftw_bus):
 
 def test_evga_pascal_sets_color_to_off(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
-    enable = 'smbus,evga_pascal'
+    enable = ['smbus', 'evga_pascal']
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         # change mode register to something other than 0 (=off)
         evga_1080_ftw_bus.write_byte_data(0x49, 0x0c, 0x01)
 
         card.set_color('led', 'off', [], unsafe=enable)
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0c) == 0x00
-    finally:
-        card.disconnect()
 
 
 def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
-    enable = 'smbus,evga_pascal'
+    enable = ['smbus', 'evga_pascal']
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         radical_red = [0xff, 0x35, 0x5e]
         card.set_color('led', 'fixed', [radical_red], unsafe=enable)
 
@@ -119,30 +109,22 @@ def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x09) == 0xff
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0a) == 0x35
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0b) == 0x5e
-    finally:
-        card.disconnect()
 
 
 def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
-    enable = 'smbus,evga_pascal'
+    enable = ['smbus', 'evga_pascal']
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         card.set_color('led', 'rainbow', [], unsafe=enable)
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0c) == 0x02
-    finally:
-        card.disconnect()
 
 
 def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
-    enable = 'smbus,evga_pascal'
+    enable = ['smbus', 'evga_pascal']
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         radical_red = [0xff, 0x35, 0x5e]
         card.set_color('led', 'breathing', [radical_red], unsafe=enable)
 
@@ -150,13 +132,11 @@ def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x09) == 0xff
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0a) == 0x35
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0b) == 0x5e
-    finally:
-        card.disconnect()
 
 
 def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
-    enable = 'smbus,evga_pascal'
+    enable = ['smbus', 'evga_pascal']
 
     orig = evga_1080_ftw_bus.write_byte_data
 
@@ -397,9 +377,7 @@ def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
     enable = 'smbus,rog_turing'
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         card.set_color('led', 'off', [], non_volatile=True, unsafe=enable)
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x07) == 0x01
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x04) == 0x00
@@ -407,5 +385,3 @@ def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x00
 
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x01  # persistent
-    finally:
-        card.disconnect()

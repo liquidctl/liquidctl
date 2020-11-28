@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from liquidctl.driver.smbus import SmbusDriver
+from liquidctl.driver.smbus import LinuxI2c, LinuxI2cBus, SmbusDriver
+
 import pytest
 
 
@@ -41,9 +42,7 @@ def no_smbus(monkeypatch):
     return replace_smbus(None, monkeypatch)
 
 
-def test__helper_fixture_replaces_real_smbus_implementation(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2cBus
-
+def test__helper_fixture_replaces_real_smbus_implementation(emulated_smbus, tmpdir):
     i2c_dev = Path(tmpdir.mkdir('i2c-9999'))  # unlikely to be valid
     bus = LinuxI2cBus(i2c_dev=i2c_dev)
 
@@ -62,9 +61,7 @@ def test_filter_by_usb_port_yields_no_devices(emulated_smbus):
     assert discovered == []
 
 
-def test_aborts_if_sysfs_is_missing_devices(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2c
-
+def test_aborts_if_sysfs_is_missing_devices(emulated_smbus, tmpdir):
     empty = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
     virtual_bus = LinuxI2c(i2c_root=empty)
 
@@ -72,9 +69,7 @@ def test_aborts_if_sysfs_is_missing_devices(tmpdir, emulated_smbus):
     assert discovered == []
 
 
-def test_finds_a_device(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2c
-
+def test_finds_a_device(emulated_smbus, tmpdir):
     i2c_root = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
     device1 = i2c_root.mkdir('devices').mkdir('i2c-42')
 
@@ -85,15 +80,13 @@ def test_finds_a_device(tmpdir, emulated_smbus):
     assert discovered[0]._smbus.name == 'i2c-42'
 
 
-def test_ignores_non_bus_sysfs_entries(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2c
-
+def test_ignores_non_bus_sysfs_entries(emulated_smbus, tmpdir):
     i2c_root = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
     devices = i2c_root.mkdir('devices')
     device1 = devices.mkdir('i2c-0')
     device2 = devices.mkdir('0-0050')  # SPD info chip on i2c-0
     device3 = devices.mkdir('i2c-DELL0829:00')  # i2c HID chip from Dell laptop
-  
+
     virtual_bus = LinuxI2c(i2c_root=i2c_root)
 
     discovered = Canary.find_supported_devices(root_bus=virtual_bus)
@@ -101,14 +94,12 @@ def test_ignores_non_bus_sysfs_entries(tmpdir, emulated_smbus):
     assert discovered[0]._smbus.name == 'i2c-0'
 
 
-def test_honors_a_bus_filter(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2c
-
+def test_honors_a_bus_filter(emulated_smbus, tmpdir):
     i2c_root = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
     devices = i2c_root.mkdir('devices')
     device1 = devices.mkdir('i2c-0')
     device1 = devices.mkdir('i2c-1')
-  
+
     virtual_bus = LinuxI2c(i2c_root=i2c_root)
 
     discovered = Canary.find_supported_devices(bus='i2c-1',
@@ -117,13 +108,18 @@ def test_honors_a_bus_filter(tmpdir, emulated_smbus):
     assert discovered[0]._smbus.name == 'i2c-1'
 
 
-def test_connect_is_unsafe(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2cBus
-
+@pytest.fixture
+def emulated_device(tmpdir, emulated_smbus):
     i2c_dev = Path(tmpdir.mkdir('i2c-0'))
     bus = LinuxI2cBus(i2c_dev=i2c_dev)
     dev = SmbusDriver(smbus=bus, description='Test', vendor_id=-1,
                       product_id=-1, address=-1)
+
+    return (bus, dev)
+
+
+def test_connect_is_unsafe(emulated_device, caplog):
+    bus, dev = emulated_device
 
     def mock_open():
         raise RuntimeError('opened')
@@ -131,20 +127,19 @@ def test_connect_is_unsafe(tmpdir, emulated_smbus):
     bus.open = mock_open
     dev.connect()
 
+    assert 'requires unsafe' in caplog.text
 
-def test_connects(tmpdir, emulated_smbus):
-    from liquidctl.driver.smbus import LinuxI2cBus
 
-    i2c_dev = Path(tmpdir.mkdir('i2c-0'))
-    bus = LinuxI2cBus(i2c_dev=i2c_dev)
-    dev = SmbusDriver(smbus=bus, description='Test', vendor_id=-1,
-                      product_id=-1, address=-1)
+def test_connects(emulated_device):
+    bus, dev = emulated_device
 
     def mock_open():
         nonlocal opened
         opened = True
 
-    opened = False
     bus.open = mock_open
-    dev.connect(unsafe='smbus')
-    assert opened
+    opened = False
+
+    with dev.connect(unsafe='smbus') as cm:
+        assert cm == dev
+        assert opened

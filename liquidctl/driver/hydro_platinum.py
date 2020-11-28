@@ -151,6 +151,7 @@ class HydroPlatinum(UsbHidDriver):
         loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
         self._data = RuntimeStorage(key_prefixes=[ids, loc])
         self._sequence = _sequence(self._data)
+        return self
 
     def initialize(self, pump_mode='balanced', **kwargs):
         """Initialize the device and set the pump mode.

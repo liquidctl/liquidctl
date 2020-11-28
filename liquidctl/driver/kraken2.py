@@ -114,6 +114,7 @@ class Kraken2(UsbHidDriver):
     def connect(self, **kwargs):
         super().connect(**kwargs)
         self._connected = True
+        return self
 
     def disconnect(self, **kwargs):
         super().disconnect(**kwargs)
