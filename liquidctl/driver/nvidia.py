@@ -1,7 +1,6 @@
 """liquidctl drivers for NVIDIA graphics cards.
-liquidctl drivers for ASUS Strix RTX 2080 Ti OC graphics card.
 
-Copyright (C) 2020–2020  Jonas Malacoi, Marshall Asch and contributors
+Copyright (C) 2020–2020  Jonas Malaco, Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -14,21 +13,32 @@ from liquidctl.util import check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
-NVIDIA = 0x10de                 # vendor ID
-
-
-# Device id
+# vendor, devices
+NVIDIA = 0x10de
 NVIDIA_GTX_1080 = 0x1b80
-RTX_2080_TI_REV_A = 0x1e07     # device id NOTE: 0x1E04 is also a possible value see
-                                # https://www.nv-drivers.eu/nvidia-all-devices.html
-#  sub system vendors
-EVGA = 0x3842
+RTX_2080_TI_REV_A = 0x1e07
+# https://www.nv-drivers.eu/nvidia-all-devices.html
+# https://pci-ids.ucw.cz/pci.ids
+
+# subsystem vendor ASUS, subsystem devices
 ASUS = 0x1043
+ASUS_STRIX_RTX_2080_TI_OC = 0x866a
 
-
-# Subsystem devices
+# subsystem vendor EVGA, subsystem devices
+EVGA = 0x3842
 EVGA_GTX_1080_FTW = 0x6286
-STRIX_RTX_2080_TI_OC = 0x866a
+
+@unique
+class _ModeEnum(bytes, Enum):
+    def __new__(cls, value, required_colors):
+        obj = bytes.__new__(cls, [value])
+        obj._value_ = value
+        obj.required_colors = required_colors
+        return obj
+
+    def __str__(self):
+        return self.name.capitalize()
+
 
 class EvgaPascal(SmbusDriver):
     """NVIDIA series 10 (Pascal) graphics card from EVGA."""
@@ -41,24 +51,16 @@ class EvgaPascal(SmbusDriver):
     _PERSIST = 0xe5
 
     @unique
-    class Mode(bytes, Enum):
-        def __new__(cls, value, required_colors):
-            obj = bytes.__new__(cls, [value])
-            obj._value_ = value
-            obj.required_colors = required_colors
-            return obj
-
+    class Mode(_ModeEnum):
         OFF = (0x00, 0)
         FIXED = (0x01, 1)
         RAINBOW = (0x02, 0)
         BREATHING = (0x05, 1)
 
-        def __str__(self):
-            return self.name.capitalize()
-
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
+
         ADDRESS = 0x49
 
         if (vendor and vendor != EVGA) \
@@ -70,7 +72,7 @@ class EvgaPascal(SmbusDriver):
             return
 
         supported = [
-            (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, "EVGA GTX 1080 FTW (experimental)"),
+            (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, 'EVGA GTX 1080 FTW (experimental)'),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
@@ -180,43 +182,33 @@ class EvgaPascal(SmbusDriver):
         raise NotSupportedByDevice()
 
 
-
 class RogTuring(SmbusDriver):
-    """Twenty-series (Turing) NVIDIA graphics card from ASUS ROG."""
+    """NVIDIA series 20 (Turing) graphics card from ASUS."""
 
     _REG_RED = 0x04
     _REG_GREEN = 0x05
     _REG_BLUE = 0x06
     _REG_MODE = 0x07
-    # SYNC_REG = 0x0c     # unused
     _REG_APPLY = 0x0e
+    _SYNC_REG = 0x0c  # unused
 
-    _ASUS_GPU_MAGIC_VALUE = 0x1589
+    _SENTINEL_ADDRESS = 0xffff  # intentionally invalid
     _ASUS_GPU_APPLY_VAL = 0x01
 
     @unique
-    class Mode(bytes, Enum):
-        def __new__(cls, value, required_colors):
-            obj = bytes.__new__(cls, [value])
-            obj._value_ = value
-            obj.required_colors = required_colors
-            return obj
-
-        OFF = (0x00, 0)     # This is not a real mode, fixed is sent with RGB = 0
+    class Mode(_ModeEnum):
+        OFF = (0x00, 0)  # not a real mode; fixed is sent with RGB = 0
         FIXED = (0x01, 1)
         BREATHING = (0x02, 1)
         FLASH = (0x03, 1)
         RAINBOW = (0x04, 0)
-
-        def __str__(self):
-            return self.name.capitalize()
 
     @classmethod
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
         ADDRESSES = [0x29, 0x2a, 0x60]
-
+        ASUS_GPU_MAGIC_VALUE = 0x1589
 
         if (vendor and vendor != ASUS) \
                 or (address and int(address, base=16) not in ADDRESSES) \
@@ -227,7 +219,8 @@ class RogTuring(SmbusDriver):
             return
 
         supported = [
-            (RTX_2080_TI_REV_A, STRIX_RTX_2080_TI_OC, "ASUS Strix RTX 2080 Ti OC (experimental)"),
+            (RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
+                'ASUS Strix RTX 2080 Ti OC (experimental)'),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
@@ -238,32 +231,34 @@ class RogTuring(SmbusDriver):
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
                 continue
 
-            if not check_unsafe('smbus', 'rog_turing', **kwargs):
-                _LOGGER.warning("%s: assuming driver found at address %02x "
-                            "'smbus,rog_turing'",  desc, 0x2a)
+            selected_address = None
 
+            if check_unsafe('smbus', 'rog_turing', **kwargs):
+                for address in ADDRESSES:
+                    val1 = 0
+                    val2 = 0
+
+                    smbus.open()
+                    try:
+                        val1 = smbus.read_byte_data(address, 0x20)
+                        val2 = smbus.read_byte_data(address, 0x21)
+                    except:
+                        pass
+                    smbus.close()
+
+                    if val1 << 8 | val2 == ASUS_GPU_MAGIC_VALUE:
+                        selected_address = address
+                        break
+            else:
+                selected_address = cls._SENTINEL_ADDRESS
+                _LOGGER.debug('unsafe features not enabled, using sentinel address')
+
+            if selected_address is not None:
                 dev = cls(smbus, desc, vendor_id=ASUS, product_id=dev_id,
-                          address=0x2a)   # default picked the address that works for my device
+                          address=selected_address)
+                _LOGGER.debug('instanced driver for %s at address %02x',
+                              desc, selected_address)
                 yield dev
-                return
-
-            for address in ADDRESSES:
-                val1 = 0
-                val2 = 0
-
-                smbus.open()
-                try:
-                    val1 = smbus.read_byte_data(address, 0x20)
-                    val2 = smbus.read_byte_data(address, 0x21)
-                except:
-                    pass
-                smbus.close()
-
-                if val1 << 8 | val2 == cls._ASUS_GPU_MAGIC_VALUE:
-                    dev = cls(smbus, desc, vendor_id=ASUS, product_id=dev_id,
-                              address=address)
-                    _LOGGER.debug(f'instanced driver for {desc} at address {address}')
-                    yield dev
 
     def get_status(self, verbose=False, **kwargs):
         """Get a status report.
@@ -281,6 +276,9 @@ class RogTuring(SmbusDriver):
             _LOGGER.warning("%s: nothing to return, requires unsafe features "
                             "'smbus,rog_turing'",  self.description)
             return []
+
+        assert self._address != self._SENTINEL_ADDRESS, \
+               "invalid address (probing may not have had access to SMbus)"
 
         mode = self._smbus.read_byte_data(self._address, self._REG_MODE)
         red = self._smbus.read_byte_data(self._address, self._REG_RED)
@@ -324,6 +322,9 @@ class RogTuring(SmbusDriver):
         """
 
         check_unsafe('smbus', 'rog_turing', error=True, **kwargs)
+
+        assert self._address != self._SENTINEL_ADDRESS, \
+               "invalid address (probing may not have had access to SMbus)"
 
         colors = list(colors)
 

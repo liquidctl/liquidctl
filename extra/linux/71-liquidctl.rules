@@ -17,14 +17,13 @@
 # group is not used by default to avoid generating warnings on systems that
 # have already removed it.
 
-# NVIDIA ASUS Strix 2080 Ti OC GPU
-KERNEL=="i2c-[0-9]*", ATTRS{vendor}=="0x10de", ATTRS{subsystem_vendor}=="0x1043", ATTRS{device}=="0x1e07", ATTRS{subsystem_device}=="0x866a", TAG+="uaccess"
-
-# NVIDIA EVGA GTX 1080 FTW
-KERNEL=="i2c-[0-9]*", ATTRS{vendor}=="0x10de", ATTRS{subsystem_vendor}=="0x3842", ATTRS{device}=="0x1b80", ATTRS{subsystem_device}=="0x6286", TAG+="uaccess"
-
 # Asetek 690LC (also EVGA CLC or NZXT Kraken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
+
+# ASUS Strix 2080 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+	ATTRS{device}=="0x1e07", ATTRS{subsystem_vendor}=="0x1043", \
+	ATTRS{subsystem_device}=="0x866a", DRIVERS=="nvidia", TAG+="uaccess"
 
 # Corsair H100i PRO XT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c20", TAG+="uaccess"

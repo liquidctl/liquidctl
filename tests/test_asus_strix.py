@@ -15,7 +15,7 @@ def asus_strix_2080ti_oc_smbus():
             parent_vendor=NVIDIA,
             parent_device=RTX_2080_TI_REV_A,
             parent_subsystem_vendor=ASUS,
-            parent_subsystem_device=STRIX_RTX_2080_TI_OC,
+            parent_subsystem_device=ASUS_STRIX_RTX_2080_TI_OC,
             parent_driver='nvidia',
     )
 
@@ -26,7 +26,7 @@ def create_asus_strix_2080ti_oc_smbus(controller_address=None):
             parent_vendor=NVIDIA,
             parent_device=RTX_2080_TI_REV_A,
             parent_subsystem_vendor=ASUS,
-            parent_subsystem_device=STRIX_RTX_2080_TI_OC,
+            parent_subsystem_device=ASUS_STRIX_RTX_2080_TI_OC,
             parent_driver='nvidia',
     )
 
@@ -42,7 +42,6 @@ def create_asus_strix_2080ti_oc_smbus(controller_address=None):
         pass
 
     return smbus
-
 
 
 def test_rog_turing_finds_devices(monkeypatch, asus_strix_2080ti_oc_smbus):
@@ -73,25 +72,31 @@ def test_rog_turing_finds_devices(monkeypatch, asus_strix_2080ti_oc_smbus):
     addresses = [0x29, 0x2a, 0x60]
     for addr in addresses:
         smbus = create_asus_strix_2080ti_oc_smbus(controller_address=addr)
-        assert list(map(type, RogTuring.probe(smbus, unsafe='smbus,rog_turing'))) == [RogTuring]
+        cards = list(RogTuring.probe(smbus, unsafe='smbus,rog_turing'))
+        assert list(map(type, cards)) == [RogTuring]
+        assert cards[0].address == hex(addr)
+
+    # check that only one address is used
+    asus_strix_2080ti_oc_smbus.open()
+    for addr in addresses:
+        asus_strix_2080ti_oc_smbus.write_byte_data(addr, 0x20, 0x15)
+        asus_strix_2080ti_oc_smbus.write_byte_data(addr, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.close()
+    cards = list(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe='smbus,rog_turing'))
+    assert list(map(type, cards)) == [RogTuring]
+    assert cards[0].address == hex(addresses[0])
 
 
-    # test multiple controllers on one bus? I suppose that is possible
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x29, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x29, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x60, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x60, 0x21, 0x89)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+def test_unsafely_probed_does_use_placehold_address(asus_strix_2080ti_oc_smbus):
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
+    too_late = 'smbus,rog_turing'
 
-    assert list(map(type, RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe='smbus,rog_turing'))) == [RogTuring, RogTuring, RogTuring]
+    with pytest.raises(AssertionError):
+        card.get_status(verbose=True, unsafe=too_late)
+
+    with pytest.raises(AssertionError):
+        card.set_color('led', 'off', [], unsafe=too_late)
+
 
 def test_rog_turing_get_status_is_noop(asus_strix_2080ti_oc_smbus):
     card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
@@ -99,30 +104,23 @@ def test_rog_turing_get_status_is_noop(asus_strix_2080ti_oc_smbus):
 
 
 def test_rog_turing_get_verbose_status_is_unsafe(asus_strix_2080ti_oc_smbus):
-    
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.close()
 
     card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     assert card.get_status(verbose=True) == []
 
 
 def test_rog_turing_gets_verbose_status(asus_strix_2080ti_oc_smbus):
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.close()
 
-    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     enable = 'smbus,rog_turing'
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe=enable))
 
     try:
         card.connect(unsafe=enable)
@@ -156,21 +154,17 @@ def test_rog_turing_set_color_is_unsafe(asus_strix_2080ti_oc_smbus):
         assert card.set_color('led', 'off', [], unsafe='smbus')
 
 def test_rog_turing_sets_color_to_off(asus_strix_2080ti_oc_smbus):
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
+    asus_strix_2080ti_oc_smbus.close()
 
-    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     enable = 'smbus,rog_turing'
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe=enable))
 
     try:
         card.connect(unsafe=enable)
@@ -185,21 +179,17 @@ def test_rog_turing_sets_color_to_off(asus_strix_2080ti_oc_smbus):
 
 
 def test_rog_turing_sets_color_to_fixed(asus_strix_2080ti_oc_smbus):
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
+    asus_strix_2080ti_oc_smbus.close()
 
-    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     enable = 'smbus,rog_turing'
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe=enable))
 
     try:
         card.connect(unsafe=enable)
@@ -217,21 +207,17 @@ def test_rog_turing_sets_color_to_fixed(asus_strix_2080ti_oc_smbus):
 
 
 def test_rog_turing_sets_color_to_rainbow(asus_strix_2080ti_oc_smbus):
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
+    asus_strix_2080ti_oc_smbus.close()
 
-    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     enable = 'smbus,rog_turing'
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe=enable))
 
     try:
         card.connect(unsafe=enable)
@@ -244,21 +230,17 @@ def test_rog_turing_sets_color_to_rainbow(asus_strix_2080ti_oc_smbus):
 
 
 def test_rog_turing_sets_color_to_breathing(asus_strix_2080ti_oc_smbus):
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x01)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x01)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
+    asus_strix_2080ti_oc_smbus.close()
 
-    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     enable = 'smbus,rog_turing'
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe=enable))
 
     try:
         card.connect(unsafe=enable)
@@ -275,21 +257,17 @@ def test_rog_turing_sets_color_to_breathing(asus_strix_2080ti_oc_smbus):
 
 
 def test_rog_turing_sets_non_volatile_color(asus_strix_2080ti_oc_smbus):
-    try:
-        asus_strix_2080ti_oc_smbus.open()
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
-        
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
-        asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
-        asus_strix_2080ti_oc_smbus.close()
-    except:
-        pass
+    asus_strix_2080ti_oc_smbus.open()
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x20, 0x15)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x21, 0x89)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x07, 0x02)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x04, 0xaa)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x05, 0xbb)
+    asus_strix_2080ti_oc_smbus.write_byte_data(0x2a, 0x06, 0xcc)
+    asus_strix_2080ti_oc_smbus.close()
 
-    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus))
     enable = 'smbus,rog_turing'
+    card = next(RogTuring.probe(asus_strix_2080ti_oc_smbus, unsafe=enable))
 
     try:
         card.connect(unsafe=enable)

@@ -99,9 +99,9 @@ The following devices are supported by this version of liquidctl.  See each guid
 
 | Device family | Usage | Notes |
 |:--- |:---:|:--- |
+| ASUS Strix RTX 2080 Ti OC | [guide](docs/anvidia-guide.md) | <sup>_EUXN_</SUP> |
 | Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_E_</sup> |
 | EVGA GTX 1080 FTW | [guide](docs/nvidia-guide.md) | <sup>_EUXN_</sup> |
-| ASUS Strix RTX 2080 Ti OC | [guide](docs/anvidia-guide.md) | <sup>_EUXN_</SUP> |
 | NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
@@ -477,9 +477,10 @@ You are also encouraged to contribute to the documentation and to these examples
 ## License
 
 liquidctl – monitor and control liquid coolers and other devices.  
-Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey and contributors
+Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey, Marshall Asch and
+contributors
 
-liquidctl incorporates work by leaty, Marshall Asch, Ksenija Stanojevic, Alexander Tong, Jens
+liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
 Pircher.
 
