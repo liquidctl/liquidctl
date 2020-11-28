@@ -69,8 +69,9 @@ available channels, modes and their associated number of required colors.
 The LED color can be specified using any of the
 [supported formats](../README.md#supported-color-specification-formats).
 
-The settings configured on the device are normally volatile, and are
-cleared whenever the graphics card is powered down.
+The settings configured on the device are normally volatile, and are cleared
+whenever the graphics card is powered down (OS and UEFI power saving settings
+can affect when this happens).
 
 It is possible to store them in non-volatile controller memory by
 passing `--non-volatile`.  But as this memory has some unknown yet
@@ -135,7 +136,8 @@ The LED color can be specified using any of the
 [supported formats](../README.md#supported-color-specification-formats).
 
 The settings configured on the device are normally volatile, and are cleared
-whenever the graphics card looses power (ie. unplugged, not power off).  FIXME
+whenever the graphics card is powered down (OS and UEFI power saving settings
+can affect when this happens).
 
 It is possible to store them in non-volatile controller memory by passing
 `--non-volatile`.  But as this memory has some unknown yet limited maximum

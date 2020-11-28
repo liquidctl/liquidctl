@@ -130,7 +130,8 @@ class EvgaPascal(SmbusDriver):
         | led      | rainbow   |               0 |
 
         The settings configured on the device are normally volatile, and are
-        cleared whenever the graphics card is powered down.
+        cleared whenever the graphics card is powered down (ErP power saving
+        settings can affect when this happens).
 
         It is possible to store them in non-volatile controller memory by
         passing `non_volatile=True`.  But as this memory has some unknown yet
@@ -310,8 +311,9 @@ class RogTuring(SmbusDriver):
         | led      | breathing |               1 |
         | led      | rainbow   |               0 |
 
-        The settings configured on the device are persistent across power off
-        without the use of the non_volatile argument.  FIXME
+        The settings configured on the device are normally volatile, and are
+        cleared whenever the graphics card is powered down (ErP power saving
+        settings can affect when this happens).
 
         It is possible to store them in non-volatile controller memory by
         passing `non_volatile=True`.  But as this memory has some unknown yet
