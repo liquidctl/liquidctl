@@ -96,6 +96,9 @@ def test_evga_pascal_sets_color_to_off(evga_1080_ftw_bus):
         card.set_color('led', 'off', [], unsafe=enable)
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0c) == 0x00
 
+        # persistence not enabled
+        assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0x00
+
 
 def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
     enable = ['smbus', 'evga_pascal']
@@ -110,6 +113,9 @@ def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0a) == 0x35
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0b) == 0x5e
 
+        # persistence not enabled
+        assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0x00
+
 
 def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
     enable = ['smbus', 'evga_pascal']
@@ -118,6 +124,9 @@ def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
     with card.connect(unsafe=enable):
         card.set_color('led', 'rainbow', [], unsafe=enable)
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0c) == 0x02
+
+        # persistence not enabled
+        assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0x00
 
 
 def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
@@ -132,6 +141,9 @@ def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x09) == 0xff
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0a) == 0x35
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x0b) == 0x5e
+
+        # persistence not enabled
+        assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0x00
 
 
 def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
@@ -311,6 +323,9 @@ def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x00
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x00
 
+        # persistence not enabled
+        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x00
+
 
 def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
     enable = ['smbus', 'rog_turing']
@@ -325,6 +340,9 @@ def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x35
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x5e
 
+        # persistence not enabled
+        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x00
+
 
 def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
     enable = ['smbus', 'rog_turing']
@@ -333,6 +351,9 @@ def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
     with card.connect(unsafe=enable):
         card.set_color('led', 'rainbow', [], unsafe=enable)
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x07) == 0x04
+
+        # persistence not enabled
+        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x00
 
 
 def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
@@ -348,6 +369,9 @@ def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x35
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x5e
 
+        # persistence not enabled
+        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x00
+
 
 def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
     enable = ['smbus', 'rog_turing']
@@ -355,10 +379,4 @@ def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
 
     with card.connect(unsafe=enable):
         card.set_color('led', 'off', [], non_volatile=True, unsafe=enable)
-
-        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x07) == 0x01
-        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x04) == 0x00
-        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x00
-        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x00
-
-        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x01  # persistent
+        assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x01
