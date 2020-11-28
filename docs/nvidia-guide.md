@@ -90,7 +90,7 @@ Unsafe features:
 
 - `smbus`: enable SMBus support; SMBus devices may not tolerate writes or reads
   they do not expect
-- `rog_turing`: enable access to the specific graphics cars
+- `rog_turing`: enable access to the specific graphics cards
 
 ### Initialization
 
