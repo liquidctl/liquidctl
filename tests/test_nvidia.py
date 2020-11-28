@@ -238,7 +238,7 @@ def test_rog_turing_only_use_one_address(monkeypatch):
     assert cards[0].address == hex(addresses[0])
 
 
-def test_unsafely_probed_does_use_placehold_address(strix_2080ti_oc_bus):
+def test_rog_turing_unsafely_probed_is_not_usable(strix_2080ti_oc_bus):
     card = next(RogTuring.probe(strix_2080ti_oc_bus))
     too_late = 'smbus,rog_turing'
 
@@ -355,6 +355,7 @@ def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
 
     with card.connect(unsafe=enable):
         card.set_color('led', 'off', [], non_volatile=True, unsafe=enable)
+
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x07) == 0x01
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x04) == 0x00
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x00
