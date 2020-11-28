@@ -290,7 +290,7 @@ class RogTuring(SmbusDriver):
             mode = 0
 
         mode = self.Mode(mode)
-        status = [('Mode', str(mode), '')]
+        status = [('Mode', mode, '')]
 
         if mode.required_colors > 0:
             status.append(('Color', f'{red:02x}{green:02x}{blue:02x}', ''))
