@@ -277,7 +277,7 @@ class RogTuring(SmbusDriver):
             return []
 
         assert self._address != self._SENTINEL_ADDRESS, \
-               "invalid address (probing may not have had access to SMbus)"
+               'invalid address (probing may not have had access to SMbus)'
 
         mode = self._smbus.read_byte_data(self._address, self._REG_MODE)
         red = self._smbus.read_byte_data(self._address, self._REG_RED)
@@ -323,7 +323,7 @@ class RogTuring(SmbusDriver):
         check_unsafe('smbus', 'rog_turing', error=True, **kwargs)
 
         assert self._address != self._SENTINEL_ADDRESS, \
-               "invalid address (probing may not have had access to SMbus)"
+               'invalid address (probing may not have had access to SMbus)'
 
         colors = list(colors)
 
