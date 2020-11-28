@@ -54,8 +54,8 @@ def test_evga_pascal_get_verbose_status_is_unsafe(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_gets_verbose_status(evga_1080_ftw_bus):
-    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     enable = ['smbus', 'evga_pascal']
+    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
         evga_1080_ftw_bus.write_byte_data(0x49, 0x09, 0xaa)
@@ -86,8 +86,8 @@ def test_evga_pascal_set_color_is_unsafe(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_off(evga_1080_ftw_bus):
-    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     enable = ['smbus', 'evga_pascal']
+    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
         # change mode register to something other than 0 (=off)
@@ -98,8 +98,8 @@ def test_evga_pascal_sets_color_to_off(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
-    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     enable = ['smbus', 'evga_pascal']
+    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
         radical_red = [0xff, 0x35, 0x5e]
@@ -112,8 +112,8 @@ def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
-    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     enable = ['smbus', 'evga_pascal']
+    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
         card.set_color('led', 'rainbow', [], unsafe=enable)
@@ -121,8 +121,8 @@ def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
-    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     enable = ['smbus', 'evga_pascal']
+    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
         radical_red = [0xff, 0x35, 0x5e]
@@ -135,8 +135,8 @@ def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
-    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     enable = ['smbus', 'evga_pascal']
+    card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     orig = evga_1080_ftw_bus.write_byte_data
 
@@ -263,7 +263,7 @@ def test_rog_turing_get_verbose_status_is_unsafe(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_gets_verbose_status(strix_2080ti_oc_bus):
-    enable = 'smbus,rog_turing'
+    enable = ['smbus', 'rog_turing']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -295,7 +295,7 @@ def test_rog_turing_set_color_is_unsafe(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
-    enable = 'smbus,rog_turing'
+    enable = ['smbus', 'rog_turing']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -313,7 +313,7 @@ def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
-    enable = 'smbus,rog_turing'
+    enable = ['smbus', 'rog_turing']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -327,7 +327,7 @@ def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
-    enable = 'smbus,rog_turing'
+    enable = ['smbus', 'rog_turing']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -336,7 +336,7 @@ def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
-    enable = 'smbus,rog_turing'
+    enable = ['smbus', 'rog_turing']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -350,7 +350,7 @@ def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
-    enable = 'smbus,rog_turing'
+    enable = ['smbus', 'rog_turing']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
