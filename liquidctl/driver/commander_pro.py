@@ -5,6 +5,12 @@ Supported devices:
 - Corsair Commander Pro
 - Corsair Lighting Node Pro
 
+
+NOTE:
+    This device currently only has hardware control implemented but it also supports a software control mode.
+    Software control will be enabled at a future time.
+
+
 Copyright (C) 2020–2020  Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
@@ -191,6 +197,11 @@ class CommanderPro(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
+        if self.device.product_id != 0x0c10:
+            LOGGER.debug('only the commander pro supports this')
+            return []
+
 
         connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)

@@ -87,7 +87,8 @@ The following devices are supported by this version of liquidctl.  See each guid
 
 | Device family | Usage | Notes |
 |:--- |:---:|:--- |
-| Corsair Commander Pro | TODO | |
+| Corsair Commander Pro | [guide](docs/corsair-commander.md) | <sup>_N_</sup> |
+| Corsair Lighting Node Pro | [guide](docs/corsair-commander.md) | <sup>_N_</sup> |
 | Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
 | Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
 | NZXT E500, E650, E850 (PSUs) | [guide](docs/nzxt-e-series-psu-guide.md) | <sup>_E_</sup> |
