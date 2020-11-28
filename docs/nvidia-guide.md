@@ -101,7 +101,7 @@ Not required for this device.
 In verbose mode `status` reports the current RGB lighting settings.
 
 ```
-# liquidctl status -v --unsafe=smbus,rog_turing
+# liquidctl status --verbose --unsafe=smbus,rog_turing
 ASUS Strix RTX 2080 Ti OC (experimental)
 ├── Mode      Fixed  
 └── Color    ff0000  
