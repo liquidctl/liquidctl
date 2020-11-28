@@ -28,7 +28,6 @@ Animation options (devices/modes can support zero or more):
   --time-off <value>          Time to wait with the LED turned off (seconds)
   --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
-  --brightness <percentage>   How bright the LED channel should be
   --direction <string>        If the pattern should move forward or backwords. [default: forward]
   --start-led <number>        The first led to start the effect at (0 offset)
   --num-leds <number>         The number of LED's the effect shoud apply to
@@ -106,7 +105,6 @@ _PARSE_ARG = {
     '--alert-color': color_from_str,
     '--temp-sensor': int,
     '--direction': str,
-    '--brightness': int,
     '--num-devices': int,
     '--start-led': int,
     '--num-leds': int,

@@ -3,6 +3,7 @@
 Supported devices:
 
 - Corsair Commander Pro
+- Corsair Lighting Node Pro
 
 Copyright (C) 2020–2020  Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -37,6 +38,21 @@ _CMD_GET_FAN_RPM = 0x21
 _CMD_SET_FAN_DUTY = 0x23
 _CMD_SET_FAN_PROFILE = 0x25
 
+_CMD_RESET_LED_CHANNEL = 0x37
+_CMD_BEGIN_LED_EFFECT = 0x34
+_CMD_SET_LED_CHANNEL_STATE = 0x38
+_CMD_LED_EFFECT = 0x35
+_CMD_LED_COMMIT = 0x33
+
+_LED_PORT_STATE_HARDWARE = 0x01
+_LED_PORT_STATE_SOFTWARE = 0x02
+_LED_SPEED_FAST = 0x00
+_LED_SPEED_MEDIUM = 0x01
+_LED_SPEED_SLOW = 0x02
+
+_LED_DIRECTION_FORWARD = 0x01
+_LED_DIRECTION_BACKWARD = 0x00
+
 _FAN_MODE_DISCONNECTED = 0x00
 _FAN_MODE_DC = 0x01
 _FAN_MODE_PWM = 0x02
@@ -47,6 +63,7 @@ _CRITICAL_TEMPERATURE = 60
 _MAX_FAN_RPM = 5000             # I have no idea if this is a good value or not
 
 _MODES = {
+    'off': 0x04,            # this is a special case of fixed
     'rainbow': 0x00,
     'color_shift': 0x01,
     'color_pulse': 0x02,
@@ -60,58 +77,12 @@ _MODES = {
     'rainbow2': 0x0A,
 }
 
-# FAN TYPES
-
-# SP RGB - 100% = 1540     - 1 led
-# SP RGB PRO - 100% = 1540 - 8 leds
-# HD RGB - 800 - 1725      - 12 leds
-# LL RGB - 600 - 1500      - 16 leds
-# QL RGB - 525 - 1500      - 34 leds
-# AF      - 1400
-# ML RGB - 400 - 2400      - 4 leds
-
-
-
-## old values (remove)
-#_FEATURE_COOLING = 0b000
-#_CMD_GET_STATUS = 0xFF
-#_CMD_SET_COOLING = 0x14
-#
-#_FEATURE_LIGHTING = None
-#_CMD_SET_LIGHTING1 = 0b100
-#_CMD_SET_LIGHTING2 = 0b101
-#
-## cooling data starts at offset 3 and ends just before the PEC byte
-#_SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
-#_SET_COOLING_DATA_PREFIX = [0x0, 0xFF, 0x5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-#_FAN_MODE_OFFSETS = [0x0B - 3, 0x11 - 3]
-#_FAN_DUTY_OFFSETS = [offset + 5 for offset in _FAN_MODE_OFFSETS]
-#_FAN_PROFILE_OFFSETS = [0x1E - 3, 0x2C - 3]
-#_FAN_OFFSETS = list(zip(_FAN_MODE_OFFSETS, _FAN_DUTY_OFFSETS, _FAN_PROFILE_OFFSETS))
-#_PUMP_MODE_OFFSET = 0x17 - 3
-#_PROFILE_LENGTH_OFFSET = 0x1D - 3
-#_PROFILE_LENGTH = 7
-#_CRITICAL_TEMPERATURE = 60
-#
-#
-#@unique
-#class _FanMode(Enum):
-#    CUSTOM_PROFILE = 0x0
-#    CUSTOM_PROFILE_WITH_EXTERNAL_SENSOR = 0x1
-#    FIXED_DUTY = 0x2
-#    FIXED_RPM = 0x4
-#
-#    @classmethod
-#    def _missing_(cls, value):
-#        LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
-#        return _FanMode.FIXED_DUTY
-
 def _prepare_profile(original):
     clamped = ((temp, clamp(duty, 0, _MAX_FAN_RPM)) for temp, duty in original)
     normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE, _MAX_FAN_RPM)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
-        raise ValueError(f'Too many points in profile (remove {-missing})')
+        raise ValueError(f'too many points in profile (remove {-missing})')
     if missing > 0:
         normal += missing * [(_CRITICAL_TEMPERATURE, _MAX_FAN_RPM)]
     return normal
@@ -301,7 +272,7 @@ class CommanderPro(UsbHidDriver):
         elif channel in self._fan_names:
             return [self._fan_names.index(channel)]
         else:
-            raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+            raise ValueError(f'unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
 
     def _get_hw_led_channels(self, channel):
         """This will get a list of all the led channels that the command should be sent to
@@ -313,7 +284,7 @@ class CommanderPro(UsbHidDriver):
         elif channel in self._led_names:
             return [self._led_names.index(channel)]
         else:
-            raise ValueError(f'Unknown channel, should be one of: {_quoted("led", *self._led_names)}')
+            raise ValueError(f'unknown channel, should be one of: {_quoted("led", *self._led_names)}')
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -425,21 +396,23 @@ class CommanderPro(UsbHidDriver):
         The table bellow summarizes the available channels, modes, and their
         associated maximum number of colors for each device family.
 
-        | Channel  | Mode        | LEDs         | Platinum | PRO XT |
-        | -------- | ----------- | ------------ | -------- | ------ |
-        | led      | off         | synchronized |        0 |      0 |
-        | led      | fixed       | synchronized |        1 |      1 |
-        | led      | super-fixed | independent  |       24 |     16 |
+        | Channel  | Mode        | Num colors |
+        | -------- | ----------- | ---------- |
+        | led      | off         |          0 |
+        | led      | fixed       |          1 |
+        | led      | color_shift |          2 |
+        | led      | color_pulse |          2 |
+        | led      | color_wave  |          2 |
+        | led      | visor       |          2 |
+        | led      | blink       |          2 |
+        | led      | marquee     |          1 |
+        | led      | sequential  |          1 |
+        | led      | rainbow     |          0 |
+        | led      | rainbow2    |          0 |
 
-        Note: lighting control of PRO XT devices is experimental and requires
-        the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
         """
 
-        # Channel parameter is actually the device number, 1-6 or all
-        # brightness is the brightness to set default 100%
         # direction is `forward` or `backward` default forward
-        # num_leds is the number of leds per device. effect group. depending on the effect you want
-        #               This is what you might want to change and not the channel number
         # random or alternating is determined by the number of colors specified
         # speed is `fast`, `medium` or `slow` default fast
         #
@@ -447,16 +420,18 @@ class CommanderPro(UsbHidDriver):
 
         # a special mode to clear the current led settings.
         # this is usefull if the the user wants to use a led mode for multiple devices
-        if mode_str == "clear":
+        if mode_str == 'clear':
             self._data.store('saved_effects', None)
             return
+
+        if mode_str == 'off':
+            self._data.store('saved_effects', None)
 
         colors = list(colors)
         expanded = colors[:3]
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
         colors = list(c)
 
-        brightness = kwargs.get('brightness', 100)
         direction = kwargs.get('direction', 'forward').lower()
         speed = kwargs.get('speed', 'fast').lower()
         start_led = kwargs.get('start_led', 1)
@@ -469,16 +444,15 @@ class CommanderPro(UsbHidDriver):
         led_channel = 1 if channel == 'led2' else 0
             
 
-        brightness = clamp(brightness, 0, 100)
-        direction = 0x01 if direction == 'forward' else 0x00
-        speed = 0x02 if speed == 'slow' else 0x01 if speed == 'medium' else 0x00
+        direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
+        speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_MEDIUM if speed == 'medium' else _LED_SPEED_FAST
         start_led = clamp(start_led, 0, 96)
         num_leds = clamp(num_leds, 0, 96) # there is a current firmware limitation of 96 led's per channel
-        random_colors = 0x00 if len(colors) != 0 else 0x01
+        random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
         mode = _MODES.get(mode, -1)
 
         if mode == -1:
-            raise ValueError(f'Mode "{mode_str}" is not valid')
+            raise ValueError(f'mode "{mode_str}" is not valid')
 
         lighting_effect = {
                 'channel': led_channel, 
@@ -496,26 +470,17 @@ class CommanderPro(UsbHidDriver):
         self._data.store('saved_effects', saved_effects)
 
         # start sending the led commands
-        self._send_command(0x37);               # clear group ?
-        self._send_command(0x34);               # clear led ?
-        # self._send_command(0x39, [led_channel, brightness]); # brightness seems to currently not work as expected, more research is needed
-        self._send_command(0x38, [led_channel, 0x01]); # this will put the channel into hardware mode. (so that the effect does not need to be constantly sent to the device.
+        self._send_command(_CMD_RESET_LED_CHANNEL);               # clear group ?
+        self._send_command(_CMD_BEGIN_LED_EFFECT);               # clear led ?
+        self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]); # this will put the channel into hardware mode. (so that the effect does not need to be constantly sent to the device.
 
 
         for effect in saved_effects:
-
             # generate the LED set command, keep all the LED's the same if only one channel is being set.
             config = [effect.get('channel'), effect.get('start_led'), effect.get('num_leds'), effect.get('mode'), effect.get('speed'), effect.get('direction'), effect.get('random_colors'), 0xff] + effect.get('colors')
-            self._send_command(0x35, config);
+            self._send_command(_CMD_LED_EFFECT, config);
 
-        self._send_command(0x33, [0xff]);
-
-        # send 37 - set led's ?
-        # send 34 - clear?
-        # send 39 - set brightness [ 0x38, channel, brightness, 0x00 ... ]
-        # send 38 - magic message [ 0x38, 0x00, 0x01, 0x00 ... ]
-        # send 35 X times, - [ 0x35, channel, fan num, type, mode, speed, direction, alternating or random, 0xFF, r1,g1,b1, r2,g2,b2, r3,g3,b3, tmp1, tmp1, tmp2, tmp2. tmp3. tmp3. 0x00] temp big endian
-        # send 33 - done [ 0x33, 0xFF, 0x00 ...]
+        self._send_command(_CMD_LED_COMMIT, [0xff]);
 
 
     def _send_command(self, command, data=None):
