@@ -140,13 +140,12 @@ class EvgaPascal(SmbusDriver):
 
         check_unsafe('smbus', 'evga_pascal', error=True, **kwargs)
 
-        channel = 'led'
         colors = list(colors)
 
         try:
             mode = self.Mode[mode.upper()]
         except KeyError:
-            raise ValueError(f'Invalid mode: {mode!r}') from None
+            raise ValueError(f'invalid mode: {mode!r}') from None
 
         if len(colors) < mode.required_colors:
             raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
@@ -285,7 +284,7 @@ class RogTuring(SmbusDriver):
         green = self._smbus.read_byte_data(self._address, self._REG_GREEN)
         blue = self._smbus.read_byte_data(self._address, self._REG_BLUE)
 
-        # check if the mode is `OFF`
+        # emulate `OFF` both ways
         if red == green == blue == 0:
             mode = 0
 
@@ -311,8 +310,8 @@ class RogTuring(SmbusDriver):
         | led      | breathing |               1 |
         | led      | rainbow   |               0 |
 
-        The settings configured on the device are persistent across power off without
-        the use of the non_volatile argument.
+        The settings configured on the device are persistent across power off
+        without the use of the non_volatile argument.  FIXME
 
         It is possible to store them in non-volatile controller memory by
         passing `non_volatile=True`.  But as this memory has some unknown yet
@@ -331,7 +330,7 @@ class RogTuring(SmbusDriver):
         try:
             mode = self.Mode[mode.upper()]
         except KeyError:
-            raise ValueError(f'Invalid mode: {mode!r}') from None
+            raise ValueError(f'invalid mode: {mode!r}') from None
 
         if len(colors) < mode.required_colors:
             raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
@@ -341,7 +340,8 @@ class RogTuring(SmbusDriver):
             colors = colors[:mode.required_colors]
 
         if mode == self.Mode.OFF:
-            self._smbus.write_byte_data(self._address, self._REG_MODE, self.Mode.FIXED.value)
+            self._smbus.write_byte_data(self._address, self._REG_MODE,
+                                        self.Mode.FIXED.value)
             self._smbus.write_byte_data(self._address, self._REG_RED, 0x00)
             self._smbus.write_byte_data(self._address, self._REG_GREEN, 0x00)
             self._smbus.write_byte_data(self._address, self._REG_BLUE, 0x00)
@@ -353,7 +353,8 @@ class RogTuring(SmbusDriver):
                 self._smbus.write_byte_data(self._address, self._REG_BLUE, b)
 
         if non_volatile:
-            self._smbus.write_byte_data(self._address, self._REG_APPLY, self._ASUS_GPU_APPLY_VAL)
+            self._smbus.write_byte_data(self._address, self._REG_APPLY,
+                                        self._ASUS_GPU_APPLY_VAL)
 
     def initialize(self, **kwargs):
         """Initialize the device."""

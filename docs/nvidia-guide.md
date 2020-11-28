@@ -135,7 +135,7 @@ The LED color can be specified using any of the
 [supported formats](../README.md#supported-color-specification-formats).
 
 The settings configured on the device are normally volatile, and are cleared
-whenever the graphics card looses power (ie. unplugged, not power off).
+whenever the graphics card looses power (ie. unplugged, not power off).  FIXME
 
 It is possible to store them in non-volatile controller memory by passing
 `--non-volatile`.  But as this memory has some unknown yet limited maximum
