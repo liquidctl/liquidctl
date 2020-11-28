@@ -147,13 +147,9 @@ def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
 
     evga_1080_ftw_bus.write_byte_data = raise_if_23h
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         card.set_color('led', 'off', [], non_volatile=True, unsafe=enable)
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0xe5
-    finally:
-        card.disconnect()
 
 
 # ASUS Turing
@@ -172,13 +168,13 @@ def create_strix_2080ti_oc_bus(controller_address=None):
     if controller_address == None:
         return smbus
 
+    smbus.open()
     try:
-        smbus.open()
         smbus.write_byte_data(controller_address, 0x20, 0x15)
         smbus.write_byte_data(controller_address, 0x21, 0x89)
-        smbus.close()
     except:
         pass
+    smbus.close()
 
     return smbus
 
@@ -270,9 +266,7 @@ def test_rog_turing_gets_verbose_status(strix_2080ti_oc_bus):
     enable = 'smbus,rog_turing'
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         strix_2080ti_oc_bus.write_byte_data(0x2a, 0x07, 0x01)
         strix_2080ti_oc_bus.write_byte_data(0x2a, 0x04, 0xaa)
         strix_2080ti_oc_bus.write_byte_data(0x2a, 0x05, 0xbb)
@@ -285,8 +279,6 @@ def test_rog_turing_gets_verbose_status(strix_2080ti_oc_bus):
         ]
 
         assert status == expected
-    finally:
-        card.disconnect()
 
 
 def test_rog_turing_set_color_is_unsafe(strix_2080ti_oc_bus):
@@ -306,9 +298,7 @@ def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
     enable = 'smbus,rog_turing'
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         # change colors to something other than 0
         strix_2080ti_oc_bus.write_byte_data(0x2a, 0x04, 0xaa)
         strix_2080ti_oc_bus.write_byte_data(0x2a, 0x05, 0xbb)
@@ -320,17 +310,13 @@ def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x04) == 0x00
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x00
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x00
-    finally:
-        card.disconnect()
 
 
 def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
     enable = 'smbus,rog_turing'
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         radical_red = [0xff, 0x35, 0x5e]
         card.set_color('led', 'fixed', [radical_red], unsafe=enable)
 
@@ -338,30 +324,22 @@ def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x04) == 0xff
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x35
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x5e
-    finally:
-        card.disconnect()
 
 
 def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
     enable = 'smbus,rog_turing'
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         card.set_color('led', 'rainbow', [], unsafe=enable)
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x07) == 0x04
-    finally:
-        card.disconnect()
 
 
 def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
     enable = 'smbus,rog_turing'
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
-    try:
-        card.connect(unsafe=enable)
-
+    with card.connect(unsafe=enable):
         radical_red = [0xff, 0x35, 0x5e]
         card.set_color('led', 'breathing', [radical_red], unsafe=enable)
 
@@ -369,8 +347,6 @@ def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x04) == 0xff
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x05) == 0x35
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x06) == 0x5e
-    finally:
-        card.disconnect()
 
 
 def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
