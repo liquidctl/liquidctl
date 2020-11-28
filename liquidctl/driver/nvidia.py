@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 # vendor, devices
 NVIDIA = 0x10de
 NVIDIA_GTX_1080 = 0x1b80
-RTX_2080_TI_REV_A = 0x1e07
+NVIDIA_RTX_2080_TI_REV_A = 0x1e07
 # https://www.nv-drivers.eu/nvidia-all-devices.html
 # https://pci-ids.ucw.cz/pci.ids
 
@@ -130,8 +130,8 @@ class EvgaPascal(SmbusDriver):
         | led      | rainbow   |               0 |
 
         The settings configured on the device are normally volatile, and are
-        cleared whenever the graphics card is powered down (ErP power saving
-        settings can affect when this happens).
+        cleared whenever the graphics card is powered down (OS and UEFI power
+        saving settings can affect when this happens).
 
         It is possible to store them in non-volatile controller memory by
         passing `non_volatile=True`.  But as this memory has some unknown yet
@@ -219,7 +219,7 @@ class RogTuring(SmbusDriver):
             return
 
         supported = [
-            (RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
+            (NVIDIA_RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
                 'ASUS Strix RTX 2080 Ti OC (experimental)'),
         ]
 
@@ -312,8 +312,8 @@ class RogTuring(SmbusDriver):
         | led      | rainbow   |               0 |
 
         The settings configured on the device are normally volatile, and are
-        cleared whenever the graphics card is powered down (ErP power saving
-        settings can affect when this happens).
+        cleared whenever the graphics card is powered down (OS and UEFI power
+        saving settings can affect when this happens).
 
         It is possible to store them in non-volatile controller memory by
         passing `non_volatile=True`.  But as this memory has some unknown yet
