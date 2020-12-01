@@ -4,7 +4,19 @@
 
 Changelog since 1.4.2:
 ### Added
+ - Add SMBus support on Linux
+ - Add experimental partial support for EVGA GTX 1080 FTW
+ - Add experimental partial support for ASUS Strix RTX 2080 Ti OC
+ - Add support for CSS-style hexadecimal triples
  - Added completion script for bash
+ - Implement the context manager protocol in the driver API
+ - Export `find_liquidctl_devices` from the top-level `liquidctl` package
+ - [extra] Add `LQiNFO.py` exporter (liquidctl -> HWiNFO)
+### Changed
+ - Improve the documentation
+### Fixed
+ - Fix potential exception when a release number is not available
+ - Enforce USB port filters on HID devices
 
 
 ## [1.4.2] – 2020-11-01
