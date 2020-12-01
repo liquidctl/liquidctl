@@ -100,9 +100,9 @@ class EvgaPascal(SmbusDriver):
         if not verbose:
             return []
 
-        if not check_unsafe('smbus', 'evga_pascal', **kwargs):
+        if not check_unsafe('smbus', **kwargs):
             _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'smbus,evga_pascal'",  self.description)
+                            "'smbus'",  self.description)
             return []
 
         mode = self.Mode(self._smbus.read_byte_data(self._address, self._REG_MODE))
@@ -139,7 +139,7 @@ class EvgaPascal(SmbusDriver):
         preferable, if the use case allows for them.
         """
 
-        check_unsafe('smbus', 'evga_pascal', error=True, **kwargs)
+        check_unsafe('smbus', error=True, **kwargs)
 
         colors = list(colors)
 

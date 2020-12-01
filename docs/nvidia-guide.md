@@ -66,7 +66,6 @@ Experimental.  Only RGB lighting supported.
 Unsafe features:
 
 - `smbus`: see [Inherit unsafeness of I²C/SMBus]
-- `evga_pascal`: access address `0x49` on the card's `i2c adapter 1`
 
 ### Initialization
 

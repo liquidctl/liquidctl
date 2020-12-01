@@ -49,12 +49,11 @@ def test_evga_pascal_get_status_is_noop(evga_1080_ftw_bus):
 def test_evga_pascal_get_verbose_status_is_unsafe(evga_1080_ftw_bus):
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
     assert card.get_status(verbose=True) == []
-    assert card.get_status(verbose=True, unsafe='evga_pascal') == []
-    assert card.get_status(verbose=True, unsafe='smbus') == []
+    assert card.get_status(verbose=True, unsafe='other') == []
 
 
 def test_evga_pascal_gets_verbose_status(evga_1080_ftw_bus):
-    enable = ['smbus', 'evga_pascal']
+    enable = ['smbus']
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
@@ -79,14 +78,11 @@ def test_evga_pascal_set_color_is_unsafe(evga_1080_ftw_bus):
         card.set_color('led', 'off', [])
 
     with pytest.raises(UnsafeFeaturesNotEnabled):
-        card.set_color('led', 'off', [], unsafe='evga_pascal')
-
-    with pytest.raises(UnsafeFeaturesNotEnabled):
-        card.set_color('led', 'off', [], unsafe='smbus')
+        card.set_color('led', 'off', [], unsafe='other')
 
 
 def test_evga_pascal_sets_color_to_off(evga_1080_ftw_bus):
-    enable = ['smbus', 'evga_pascal']
+    enable = ['smbus']
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
@@ -101,7 +97,7 @@ def test_evga_pascal_sets_color_to_off(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
-    enable = ['smbus', 'evga_pascal']
+    enable = ['smbus']
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
@@ -118,7 +114,7 @@ def test_evga_pascal_sets_color_to_fixed(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
-    enable = ['smbus', 'evga_pascal']
+    enable = ['smbus']
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
@@ -130,7 +126,7 @@ def test_evga_pascal_sets_color_to_rainbow(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
-    enable = ['smbus', 'evga_pascal']
+    enable = ['smbus']
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     with card.connect(unsafe=enable):
@@ -147,7 +143,7 @@ def test_evga_pascal_sets_color_to_breathing(evga_1080_ftw_bus):
 
 
 def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
-    enable = ['smbus', 'evga_pascal']
+    enable = ['smbus']
     card = next(EvgaPascal.probe(evga_1080_ftw_bus))
 
     orig = evga_1080_ftw_bus.write_byte_data
