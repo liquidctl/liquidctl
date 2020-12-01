@@ -246,7 +246,13 @@ class SmbusDriver(BaseDriver):
     def connect(self, **kwargs):
         """Connect to the device."""
         if not check_unsafe('smbus', **kwargs):
-            _LOGGER.warning("SMBus: disabled, requires unsafe feature 'smbus'")
+            # do not raise yet: some driver APIs may not access the bus after
+            # all, and allowing the device to pseudo-connect is convenient
+            # given the current API structure; APIs that do access the bus
+            # should check for the 'smbus' feature themselves and, if
+            # necessary, raise UnsafeFeaturesNotEnabled(*requirements)
+            # (see also: check_unsafe(..., error=True))
+            _LOGGER.debug("SMBus is disabled, missing unsafe feature 'smbus'")
             return
         self._smbus.open()
         return self

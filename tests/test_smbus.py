@@ -118,16 +118,18 @@ def emulated_device(tmpdir, emulated_smbus):
     return (bus, dev)
 
 
-def test_connect_is_unsafe(emulated_device, caplog):
+def test_connect_is_unsafe(emulated_device):
     bus, dev = emulated_device
 
     def mock_open():
-        raise RuntimeError('opened')
+        nonlocal opened
+        opened = True
 
     bus.open = mock_open
-    dev.connect()
+    opened = False
 
-    assert 'requires unsafe' in caplog.text
+    dev.connect()
+    assert not opened
 
 
 def test_connects(emulated_device):
