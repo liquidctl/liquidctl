@@ -1,14 +1,53 @@
 # NVIDIA graphics cards
 _Driver API and source code available in [`liquidctl.driver.nvidia`](../liquidctl/driver/nvidia.py)._
 
-Support for these cards in only available on Linux.
-
-Additional requirements must also be met:
+Support for these cards in only available on Linux.  Other requirements must
+also be met:
 
 - optional Python dependency `smbus` is available
 - `i2c-dev` kernel module has been loaded
-- specific unsafe features have been opted in
 - r/w permissions to card-specific `/dev/i2c-*` devices
+- specific unsafe features have been opted in
+
+## Inherit unsafeness of I²C/SMBus
+[Inherit unsafeness of I²C/SMBus]: #inherit-unsafeness-of-i2c-smbus
+
+Reading and writing to System Management (SMBus) and I²C buses is inherently
+more risky than dealing with, for example, USB devices.  On typical desktop and
+workstation systems many important chips are connected to these buses, and they
+may not tolerate writes or reads they do not expect.
+
+While SMBus 2.0 has some limited ability for automatic enumeration of devices
+connected to it, unlike simpler I²C buses and SMBus 1.0, this capability is,
+effectively, not safely available for us in user space.
+
+It is thus necessary to rely on certain devices being know to use a specific
+address, or being documented/specified to do so; but there is always some risk
+that another, unexpected, device is using that same address.
+
+The enumeration capability of SMBus 2.0 also brings dynamic address assignment,
+so even if a device is know to use a particular address in one machine, that
+could be different on other systems.
+
+On top of this, accessing I²C or SMBus buses concurrently, from multiple
+threads or processes, may also result in undesirable or unpredictable behavior.
+
+Unsurprisingly, users or programs dealing with I²C/SMBus devices have
+occasionally crashed systems and even bricked boards or peripherals.  In some
+cases this is reversible, but not always.
+
+For all of these reasons liquidctl requires users to *opt into* accessing
+I²C/SMBus devices, which can be done by enabling the `smbus` unsafe feature.
+Other unsafe features may also be required for the use of specific devices,
+based on other *know* risks specific to a particular device.
+
+Note that a feature not being labeled unsafe, or a device not requiring the use
+of additional unsafe features, does in no way assure that it is safe.  This is
+especially true when dealing with I²C/SMBus devices.
+
+Finally, liquidctl may list some I²C/SMBus devices even if `smbus` has not been
+enabled, but only if it is able to discover them without communicating with the
+bus or the devices.
 
 ---
 
@@ -26,9 +65,8 @@ Experimental.  Only RGB lighting supported.
 
 Unsafe features:
 
-- `smbus`: enable SMBus support; SMBus devices may not tolerate writes or reads
-  they do not expect
-- `evga_pascal`: enable access to the specific graphics cards
+- `smbus`: see [Inherit unsafeness of I²C/SMBus]
+- `evga_pascal`: access address `0x49` on the card's `i2c adapter 1`
 
 ### Initialization
 
@@ -89,9 +127,8 @@ Experimental. Only RGB lighting supported.
 
 Unsafe features:
 
-- `smbus`: enable SMBus support; SMBus devices may not tolerate writes or reads
-  they do not expect
-- `rog_turing`: enable access to the specific graphics cards
+- `smbus`: see [Inherit unsafeness of I²C/SMBus]
+- `rog_turing`: access a few predefined addresses
 
 ### Initialization
 
