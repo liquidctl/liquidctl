@@ -9,8 +9,8 @@ also be met:
 - r/w permissions to card-specific `/dev/i2c-*` devices
 - specific unsafe features have been opted in
 
-## Inherit unsafeness of I²C/SMBus
-[Inherit unsafeness of I²C/SMBus]: #inherit-unsafeness-of-i2c-smbus
+## Inherit unsafeness of I2C and SMBus
+[Inherit unsafeness of I²C/SMBus]: #inherit-unsafeness-of-i2c-and-smbus
 
 Reading and writing to System Management (SMBus) and I²C buses is inherently
 more risky than dealing with, for example, USB devices.  On typical desktop and
