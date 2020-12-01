@@ -59,18 +59,25 @@ class CorsairAsetekProDriverTestCase(unittest.TestCase):
                                profile=iter([(20, 20), (30, 50), (40, 100)]))
         self.device.set_speed_profile(channel='fan2',
                                profile=iter([(20, 20), (30, 50), (40, 100)]))
-        self.device.set_fixed_speed(channel='pump', duty=50)
+        self.device.set_fixed_speed(channel='fan', duty=50)
 
-    def test_set_speed_of_all_fans(self):
+    def test_initialize_with_pump_mode(self):
+        self.device.initialize(pump_mode='BaLanced')
+        _begin, set_pump = self.mock_usb._sent_xfers
+        assert set_pump == ('write', 1, [0x32, 0x01])
+
+    def test_set_profile_of_all_fans(self):
         # When setting the speed of all fans the driver first gets the speed of all fans
         # to work out how many fans are present. Set 2 valid responses to simulate a setup
-        # with 2 fans present
+        # with 2 fans present.
+        # The first response is for the pump setup in the initialize function
+        self.mock_usb._responses.append([0x00, 0x00, 0x00, 0x00, 0x00,])
         self.mock_usb._responses.append([0x41, 0x12, 0x34, 0x00, 0x00, 0x32])
         self.mock_usb._responses.append([0x41, 0x12, 0x34, 0x01, 0x00, 0x32])
         self.mock_usb._responses.append([0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
         self.device.initialize()
         self.device.set_speed_profile(channel='fan', profile=[(0, 10), (25, 50), (40, 100)])
-        _begin, _fan_1_spd, _fan_2_spd, _fan_3_spd, set_fan_1, set_fan_2 = self.mock_usb._sent_xfers
+        _begin, _set_pump, _fan_1_spd, _fan_2_spd, _fan_3_spd, set_fan_1, set_fan_2 = self.mock_usb._sent_xfers
         assert set_fan_1 == ('write', 1, [0x40, 0x00, 0x00, 0x19, 0x28, 0x3c, 0x3c, 0x3c, 0x3c,
             0x0a, 0x32, 0x64, 0x64, 0x64, 0x64, 0x64])
         assert set_fan_2 == ('write', 1, [0x40, 0x01, 0x00, 0x19, 0x28, 0x3c, 0x3c, 0x3c, 0x3c,
@@ -79,21 +86,20 @@ class CorsairAsetekProDriverTestCase(unittest.TestCase):
     def test_setting_speed_on_single_fan_3(self):
         self.device.initialize()
         self.device.set_fixed_speed('fan3', 100)
-        _begin, fan2_message = self.mock_usb._sent_xfers
-        assert fan2_message == ('write', 1, [0x40, 0x02, 0x00, 0x3b, 0x3c, 0x3c, 0x3c,
-            0x3c, 0x3c, 0x64, 0x64, 0x64, 0x64, 0x64, 0x64, 0x64])
+        _begin, _set_pump, fan2_message = self.mock_usb._sent_xfers
+        assert fan2_message == ('write', 1, [0x42, 0x02, 0x64])
 
     def test_set_led_to_rainbow_mode(self):
         self.device.initialize()
         self.device.set_color(channel='led', mode='rainbow', colors=iter([]), speed=1)
-        _begin, color_mode_message, end_message = self.mock_usb._sent_xfers
+        _begin, _set_pump, color_mode_message, end_message = self.mock_usb._sent_xfers
         assert color_mode_message == ('write', 1, [0x53, 0x30])
         assert end_message == ('write', 1, [0x55, 0x01])
 
     def test_set_led_to_fixed_color(self):
         self.device.initialize()
         self.device.set_color(channel='led', mode='fixed', colors=iter([[0xff, 0x88, 0x44]]))
-        _begin, color_change_message, end_message = self.mock_usb._sent_xfers
+        _begin, _set_pump, color_change_message, end_message = self.mock_usb._sent_xfers
         assert color_change_message == ('write', 1, [0x56, 0x02, 0xff, 0x88, 0x44, 0xff, 0x88, 0x44])
         assert end_message == ('write', 1, [0x55, 0x01])
 
@@ -101,7 +107,7 @@ class CorsairAsetekProDriverTestCase(unittest.TestCase):
         self.device.initialize()
         self.device.set_color(channel='led', mode='blinking', speed=2,
             colors=iter([[0xff, 0x88, 0x44], [0xff, 0xff, 0xff], [0x00, 0x00, 0x00]]))
-        _begin, color_change_message, color_mode_message, end_message = self.mock_usb._sent_xfers
+        _begin, _set_pump, color_change_message, color_mode_message, end_message = self.mock_usb._sent_xfers
         assert color_change_message == ('write', 1, [0x56, 0x03, 0xff, 0x88, 0x44, 0xff, 0xff, 0xff,
             0x00, 0x00, 0x00])
         assert color_mode_message == ('write', 1, [0x53, 0x0A])
