@@ -76,7 +76,7 @@ Not required for this device.
 In verbose mode `status` reports the current RGB lighting settings.
 
 ```
-# liquidctl status --verbose --unsafe=smbus,evga_pascal
+# liquidctl status --verbose --unsafe=smbus
 EVGA GTX 1080 FTW (experimental)
 ├── Mode      Fixed  
 └── Color    2aff00  
@@ -95,12 +95,12 @@ available channels, modes and their associated number of required colors.
 | `led`      | `rainbow`   |      0 |
 
 ```
-# liquidctl set led color off --unsafe=smbus,evga_pascal
-# liquidctl set led color rainbow --unsafe=smbus,evga_pascal
-# liquidctl set led color fixed ff8000 --unsafe=smbus,evga_pascal
-# liquidctl set led color breathing "hsv(90,85,70)" --unsafe=smbus,evga_pascal
-                ^^^       ^^^^^^^^^  ^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^
-              channel        mode        color        enable unsafe features
+# liquidctl set led color off --unsafe=smbus
+# liquidctl set led color rainbow --unsafe=smbus
+# liquidctl set led color fixed ff8000 --unsafe=smbus
+# liquidctl set led color breathing "hsv(90,85,70)" --unsafe=smbus
+                ^^^       ^^^^^^^^^  ^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^
+              channel        mode        color     unsafe features
 ```
 
 The LED color can be specified using any of the
@@ -116,7 +116,7 @@ limited maximum number of write cycles, volatile settings are
 preferable, if the use case allows for them.
 
 ```
-# liquidctl set led color fixed 00ff00 --non-volatile --unsafe=smbus,evga_pascal
+# liquidctl set led color fixed 00ff00 --non-volatile --unsafe=smbus
 ```
 
 
