@@ -50,12 +50,12 @@ EVGA GTX 1080 FTW (experimental)
 This GPU only has one led that can be set.  The table bellow summarizes the
 available channels, modes and their associated number of required colors.
 
-| Channel    | Mode        | Required colors |
-| ---------- | ----------- | --------------- |
-| `led`      | `off`       |               0 |
-| `led`      | `fixed`     |               1 |
-| `led`      | `breathing` |               1 |
-| `led`      | `rainbow`   |               0 |
+| Channel    | Mode        | Colors |
+| ---------- | ----------- | -----: |
+| `led`      | `off`       |      0 |
+| `led`      | `fixed`     |      1 |
+| `led`      | `breathing` |      1 |
+| `led`      | `rainbow`   |      0 |
 
 ```
 # liquidctl set led color off --unsafe=smbus,evga_pascal
@@ -114,13 +114,13 @@ This GPU only has one led that can be set.  The table bellow summarizes the
 available channels, modes, and their associated maximum number of colors for
 each device family.
 
-| Channel    | Mode          | colors  |
-| ---------- | ------------- | ------- |
-| `led`      | `off`         |       0 |
-| `led`      | `fixed`       |       1 |
-| `led`      | `flash`       |       1 |
-| `led`      | `breathing`   |       1 |
-| `led`      | `rainbow`     |       0 |
+| Channel    | Mode          | Colors |
+| ---------- | ------------- | -----: |
+| `led`      | `off`         |      0 |
+| `led`      | `fixed`       |      1 |
+| `led`      | `flash`       |      1 |
+| `led`      | `breathing`   |      1 |
+| `led`      | `rainbow`     |      0 |
 
 ```
 # liquidctl set led color off --unsafe=smbus,rog_turing
