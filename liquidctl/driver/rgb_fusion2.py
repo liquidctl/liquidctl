@@ -169,7 +169,7 @@ class RgbFusion2(UsbHidDriver):
         0–255.
 
         `speed`, when supported by the `mode`, can be one of: `slowest`,
-        `slow`, `normal` (default), `faster`, `fastest` or `ludicrous`.
+        `slower`, `normal` (default), `faster`, `fastest` or `ludicrous`.
         """
 
         if mode.lower() == 'static':
