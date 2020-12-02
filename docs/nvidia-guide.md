@@ -144,7 +144,7 @@ ASUS Strix RTX 2080 Ti OC (experimental)
 └── Color    ff0000  
 ```
 
-## Controlling the LED
+### Controlling the LED
 
 This GPU only has one led that can be set.  The table bellow summarizes the
 available channels, modes, and their associated maximum number of colors for
