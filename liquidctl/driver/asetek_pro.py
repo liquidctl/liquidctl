@@ -101,7 +101,6 @@ class CorsairAsetekProDriver(_CommonAsetekDriver):
 
     def _write(self, data):
         """Write data to the AIO and log"""
-        _LOGGER.debug('write %s', LazyHexRepr(data))
         self.device.write(_WRITE_ENDPOINT, data, _WRITE_TIMEOUT)
 
     # Not calling this (or begin transaction) since they do not seem to be needed for H100i Pro
@@ -114,7 +113,6 @@ class CorsairAsetekProDriver(_CommonAsetekDriver):
         approach.
         """
         msg = self.device.read(_READ_ENDPOINT, length, _READ_TIMEOUT)
-        _LOGGER.debug('received %s', LazyHexRepr(msg))
         self.device.release()
         return msg
 
