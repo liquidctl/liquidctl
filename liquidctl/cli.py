@@ -70,6 +70,7 @@ import inspect
 import logging
 import os
 import sys
+import errno
 
 from docopt import docopt
 
@@ -297,10 +298,18 @@ def main():
     elif len(selected) == 0:
         raise SystemExit('Error: no devices matches available drivers and selection criteria')
 
+    errors = 0
+
+    def log_error(err, msg, *args):
+        nonlocal errors
+        errors += 1
+        LOGGER.info('%s', err, exc_info=True)
+        LOGGER.error(msg, *args)
+
     for dev in selected:
         LOGGER.debug('device: %s', dev.description)
-        dev.connect(**opts)
         try:
+            dev.connect(**opts)
             if args['initialize']:
                 _print_dev_status(dev, dev.initialize(**opts))
             elif args['status']:
@@ -311,18 +320,27 @@ def main():
                 _device_set_color(dev, args, **opts)
             else:
                 raise Exception('Not sure what to do')
-        except NotSupportedByDevice:
-            raise SystemExit(f'Error: operation not supported by {dev.description}')
-        except NotSupportedByDriver:
-            raise SystemExit(f'Error: operation not supported by driver for {dev.description}')
+        except OSError as err:
+            # each backend API returns a different subtype of OSError (OSError, usb.core.USBError
+            # or PermissionError), but all set err.errno to EACCES (or EPERM)
+            if err.errno in [errno.EACCES , errno.EPERM]:
+                log_error(err, f'Error: insufficient permissions to access {dev.description}')
+            else:
+                log_error(err, 'Unexpected OS error with %s', dev.description)
+        except NotSupportedByDevice as err:
+            log_error(err, f'Error: operation not supported by {dev.description}')
+        except NotSupportedByDriver as err:
+            log_error(err, f'Error: operation not supported by driver for {dev.description}')
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
-            raise SystemExit(f'Error: missing --unsafe features for {dev.description}: {features!r}')
-        except:
-            LOGGER.exception('Unexpected error with %s', dev.description)
-            sys.exit(1)
+            log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
+        except Exception as err:
+            log_error(err, 'Unexpected error with %s', dev.description)
         finally:
             dev.disconnect(**opts)
+
+    if errors:
+        sys.exit(errors)
 
 
 def find_all_supported_devices(**opts):
