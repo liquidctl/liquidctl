@@ -93,6 +93,16 @@ class VirtualSmbus:
             raise OSError('closed')
         return self._data[address][register]
 
+    def read_word_data(self, address, register):
+        if not self._open:
+            raise OSError('closed')
+        return self._data[address][register]
+
+    def read_block_data(self, address, register):
+        if not self._open:
+            raise OSError('closed')
+        return self._data[address][register]
+
     def write_byte(self, address, value):
         if not self._open:
             raise OSError('closed')
@@ -103,5 +113,18 @@ class VirtualSmbus:
             raise OSError('closed')
         self._data[address][register] = value
 
+    def write_word_data(self, address, register, value):
+        if not self._open:
+            raise OSError('closed')
+        self._data[address][register] = value
+
+    def write_block_data(self, address, register, data):
+        if not self._open:
+            raise OSError('closed')
+        self._data[address][register] = data
+
     def close(self):
         self._open = False
+
+    def load_spd_eeprom(self, spd_address):
+        return self._data[spd_address]

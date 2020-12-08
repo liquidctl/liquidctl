@@ -145,3 +145,18 @@ def test_connects(emulated_device):
     with dev.connect(unsafe='smbus') as cm:
         assert cm == dev
         assert opened
+
+
+def test_loading_unnavailable_spd_returns_none(emulated_device):
+    bus, dev = emulated_device
+    assert bus.load_spd_eeprom(0x51) == None
+
+
+def test_loads_spd_eeprom(emulated_device):
+    bus, dev = emulated_device
+
+    spd = bus._i2c_dev.joinpath('0-0051')
+    spd.mkdir()
+    spd.joinpath('eeprom').write_bytes(b'012345')
+
+    assert bus.load_spd_eeprom(0x51) == b'012345'
