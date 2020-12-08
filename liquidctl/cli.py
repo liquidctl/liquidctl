@@ -147,8 +147,10 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         if not verbose:
             continue
 
-        print(f'├── Vendor ID: {dev.vendor_id:#06x}')
-        print(f'├── Product ID: {dev.product_id:#06x}')
+        if dev.vendor_id:
+            print(f'├── Vendor ID: {dev.vendor_id:#06x}')
+        if dev.product_id:
+            print(f'├── Product ID: {dev.product_id:#06x}')
         if dev.release_number:
             print(f'├── Release number: {dev.release_number:#06x}')
         try:

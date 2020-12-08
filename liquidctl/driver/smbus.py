@@ -235,7 +235,7 @@ class SmbusDriver(BaseDriver):
         # specific and closer to the product the user purchased than the less
         # specific PCI vendor/device IDs.
 
-        assert vendor_id and product_id and address is not None
+        assert address is not None
 
         self._smbus = smbus
         self._description = description
@@ -268,12 +268,12 @@ class SmbusDriver(BaseDriver):
 
     @property
     def vendor_id(self):
-        """Numeric vendor identifier."""
+        """Numeric vendor identifier, or None if N/A."""
         return self._vendor_id
 
     @property
     def product_id(self):
-        """Numeric product identifier."""
+        """Numeric product identifier, or None if N/A."""
         return self._product_id
 
     @property
