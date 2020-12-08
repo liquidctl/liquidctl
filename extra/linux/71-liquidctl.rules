@@ -20,6 +20,9 @@
 
 # i2c and SMBus
 
+# Host SMBus on Intel mainstream/HEDT platforms
+KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess"
+
 # ASUS Strix 2080 Ti OC
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
 	ATTRS{device}=="0x1e07", ATTRS{subsystem_vendor}=="0x1043", \
