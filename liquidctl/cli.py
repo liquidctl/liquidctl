@@ -335,7 +335,7 @@ def main():
             features = ','.join(err.args)
             log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
         except Exception as err:
-            log_error(err, 'Unexpected error with %s', dev.description)
+            log_error(err, 'Unexpected error with %s: %s', dev.description, err)
         finally:
             dev.disconnect(**opts)
 
