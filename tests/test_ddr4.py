@@ -175,6 +175,13 @@ def test_generic_get_status_reads_negative_temperature(smbus):
 # Corsair Vengeance RGB
 
 
+@pytest.fixture
+def vengeance_rgb(smbus):
+    emulate_spd_at(smbus, 0x51, _VENGEANCE_RGB_SAMPLE)
+    dimm = next(VengeanceRgb.probe(smbus))
+    return (smbus, dimm)
+
+
 def test_vengeance_rgb_finds_devices(smbus):
     emulate_spd_at(smbus, 0x51, _VENGEANCE_RGB_SAMPLE)
     emulate_spd_at(smbus, 0x53, _VENGEANCE_RGB_SAMPLE)
@@ -187,10 +194,9 @@ def test_vengeance_rgb_finds_devices(smbus):
     assert devs[1].description == 'Corsair Vengeance RGB DIMM4 (experimental)'
 
 
-def test_vengeance_get_status_reads_temperature(smbus):
+def test_vengeance_get_status_reads_temperature(vengeance_rgb):
     enable = ['smbus', 'vengeance_rgb']
-    emulate_spd_at(smbus, 0x51, _VENGEANCE_RGB_SAMPLE)
-    dimm = next(VengeanceRgb.probe(smbus))
+    smbus, dimm = vengeance_rgb
 
     def forbid(*args, **kwargs):
         assert False, 'should not reach here'
@@ -206,3 +212,125 @@ def test_vengeance_get_status_reads_temperature(smbus):
         ]
 
         assert status == expected
+
+
+def test_vengeance_rgb_set_color_is_unsafe(vengeance_rgb):
+    _, dimm = vengeance_rgb
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        assert dimm.set_color('led', 'off', [])
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        assert dimm.set_color('led', 'off', [], unsafe='vengeance_rgb')
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        assert dimm.set_color('led', 'off', [], unsafe='smbus')
+
+
+def test_vengeance_rgb_sets_color_to_off(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        # change registers to something other than 0
+        smbus.write_byte_data(0x59, 0xa4, 0x10)
+        smbus.write_byte_data(0x59, 0xa5, 0x20)
+        smbus.write_byte_data(0x59, 0xb0, 0xaa)
+        smbus.write_byte_data(0x59, 0xb1, 0xbb)
+        smbus.write_byte_data(0x59, 0xb2, 0xcc)
+        smbus.write_byte_data(0x59, 0xa6, 0xff)
+
+        dimm.set_color('led', 'off', [], unsafe=enable)
+
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x00
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x00
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
+        assert smbus.read_byte_data(0x59, 0xa6) == 0x00
+
+        for color_component in range(0xb0, 0xb3):
+            assert smbus.read_byte_data(0x59, color_component) == 0x00
+
+
+def test_vengeance_rgb_sets_color_to_fixed(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        dimm.set_color('led', 'fixed', [radical_red], unsafe=enable)
+
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x00
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x00
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
+        assert smbus.read_byte_data(0x59, 0xa6) == 0x00
+
+        assert smbus.read_byte_data(0x59, 0xb0) == 0xff
+        assert smbus.read_byte_data(0x59, 0xb1) == 0x35
+        assert smbus.read_byte_data(0x59, 0xb2) == 0x5e
+
+
+def test_vengeance_rgb_sets_color_to_breathing(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        mountain_meadow = [0x1a, 0xb3, 0x85]
+        dimm.set_color('led', 'breathing', [radical_red, mountain_meadow],
+                       unsafe=enable)
+
+        # assert smbus.read_byte_data(0x59, 0xa4) == 0x00  # FIXME
+        # assert smbus.read_byte_data(0x59, 0xa5) == 0x00  # FIXME
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x02
+        assert smbus.read_byte_data(0x59, 0xa6) == 0x02
+
+        assert smbus.read_byte_data(0x59, 0xb0) == 0xff
+        assert smbus.read_byte_data(0x59, 0xb1) == 0x35
+        assert smbus.read_byte_data(0x59, 0xb2) == 0x5e
+
+        assert smbus.read_byte_data(0x59, 0xb3) == 0x1a
+        assert smbus.read_byte_data(0x59, 0xb4) == 0xb3
+        assert smbus.read_byte_data(0x59, 0xb5) == 0x85
+
+
+def test_vengeance_rgb_sets_single_color_to_breathing(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        dimm.set_color('led', 'breathing', [radical_red],
+                       unsafe=enable)
+
+        # assert smbus.read_byte_data(0x59, 0xa4) == 0x00  # FIXME
+        # assert smbus.read_byte_data(0x59, 0xa5) == 0x00  # FIXME
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
+        assert smbus.read_byte_data(0x59, 0xa6) == 0x00  # special case
+
+        assert smbus.read_byte_data(0x59, 0xb0) == 0xff
+        assert smbus.read_byte_data(0x59, 0xb1) == 0x35
+        assert smbus.read_byte_data(0x59, 0xb2) == 0x5e
+
+
+def test_vengeance_rgb_sets_color_to_fading(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        mountain_meadow = [0x1a, 0xb3, 0x85]
+        dimm.set_color('led', 'fading', [radical_red, mountain_meadow],
+                       unsafe=enable)
+
+        # assert smbus.read_byte_data(0x59, 0xa4) == 0x00  # FIXME
+        # assert smbus.read_byte_data(0x59, 0xa5) == 0x00  # FIXME
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x02
+        assert smbus.read_byte_data(0x59, 0xa6) == 0x01
+
+        assert smbus.read_byte_data(0x59, 0xb0) == 0xff
+        assert smbus.read_byte_data(0x59, 0xb1) == 0x35
+        assert smbus.read_byte_data(0x59, 0xb2) == 0x5e
+
+        assert smbus.read_byte_data(0x59, 0xb3) == 0x1a
+        assert smbus.read_byte_data(0x59, 0xb4) == 0xb3
+        assert smbus.read_byte_data(0x59, 0xb5) == 0x85

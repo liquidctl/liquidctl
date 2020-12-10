@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 from enum import Enum, unique
+import itertools
 import logging
 
 from liquidctl.driver.smbus import SmbusDriver
@@ -125,6 +126,9 @@ class Ddr4Spd:
 class Ddr4Temperature(SmbusDriver):
     """DDR4 module with TSE2004av-compatible SPD EEPROM and temperature sensor."""
 
+    _SPD_DTIC = 0x50
+    _TS_DTIC = 0x18
+    _SA_MASK = 0b111
     _REG_CAPABILITIES = 0x00
     _REG_TEMPERATURE = 0x05
 
@@ -138,17 +142,14 @@ class Ddr4Temperature(SmbusDriver):
         # i801_smbus, piix4_smbus does not enumerate and register the available
         # SPD EEPROMs with i2c_register_spd
 
-        _DIMM_MASK = 0b111
-        _SPD_DTIC = 0x50
-        _TS_DTIC = 0x18
         _SMBUS_DRIVERS = ['i801_smbus']
 
         if smbus.parent_driver not in _SMBUS_DRIVERS \
                 or any([vendor, product, release, serial]):  # wont match, always None
             return
 
-        for dimm in range(_DIMM_MASK + 1):
-            spd_addr = _SPD_DTIC | dimm
+        for dimm in range(cls._SA_MASK + 1):
+            spd_addr = cls._SPD_DTIC | dimm
             spd = smbus.load_spd_eeprom(spd_addr)
 
             if not spd:
@@ -167,14 +168,16 @@ class Ddr4Temperature(SmbusDriver):
             if not desc:
                 continue
 
-            ts_addr = _TS_DTIC | dimm
             desc += f' DIMM{dimm + 1} (experimental)'
 
-            if (address and int(address, base=16) != ts_addr) \
+            if (address and int(address, base=16) != spd_addr) \
                     or (match and match.lower() not in desc.lower()):
                 continue
 
-            dev = cls(smbus, desc, address=ts_addr)
+            # set the default device address to a weird value to prevent
+            # accidental attempts of writes to the SPD EEPROM (DDR4 SPD writes
+            # are also disabled by default in many motherboards)
+            dev = cls(smbus, desc, address=(None, None, spd_addr))
             _LOGGER.debug('instanced driver for %s', desc)
             yield dev
 
@@ -192,6 +195,14 @@ class Ddr4Temperature(SmbusDriver):
             return f'{manufacturer} {spd.module_part_number}'
         else:
             return f'{manufacturer}'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._ts_address = self._TS_DTIC | (self._address[2] & self._SA_MASK)
+
+    @property
+    def address(self):
+        return f'{self._address[2]:#04x}'
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -221,7 +232,7 @@ class Ddr4Temperature(SmbusDriver):
         ]
 
     def _read_temperature_register(self):
-        return self._smbus.read_block_data(self._address, self._REG_TEMPERATURE)
+        return self._smbus.read_block_data(self._ts_address, self._REG_TEMPERATURE)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -243,7 +254,37 @@ class Ddr4Temperature(SmbusDriver):
 class VengeanceRgb(Ddr4Temperature):
     """Corsair Vengeance RGB DDR4 module."""
 
+    _RGB_DTIC = 0x58
+    _REG_RGB_TIME2 = 0xa4
+    _REG_RGB_TIME1 = 0xa5
+    _REG_RGB_COLOR_START = 0xb0
+    _REG_RGB_COLOR_END = 0xc5
+    _REG_RGB_COLOR_COUNT = 0xa7
+    _REG_RGB_MODE = 0xa6
+
     _UNSAFE = ['smbus', 'vengeance_rgb']
+
+    @unique
+    class Mode(bytes, Enum):
+        def __new__(cls, value, min_colors, max_colors):
+            obj = bytes.__new__(cls, [value])
+            obj._value_ = value
+            obj.min_colors = min_colors
+            obj.max_colors = max_colors
+            return obj
+
+        FIXED = (0x00, 1, 1)
+        FADING = (0x01, 2, 7)
+        BREATHING = (0x02, 1, 7)
+
+        OFF = (0xf0, 0, 0)  # pseudo mode, equivalent to fixed #000000
+
+        def __str__(self):
+            return self.name.lower()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._rgb_address = self._RGB_DTIC | (self._address[2] & self._SA_MASK)
 
     @classmethod
     def _match(cls, spd):
@@ -257,10 +298,63 @@ class VengeanceRgb(Ddr4Temperature):
     def _read_temperature_register(self):
         # instead of using block reads, Vengeance RGB temperature sensor
         # devices must be read in words
-        treg = self._smbus.read_word_data(self._address, self._REG_TEMPERATURE)
+        treg = self._smbus.read_word_data(self._ts_address, self._REG_TEMPERATURE)
 
         # swap LSB and MSB; read_word_data reads in little endianess, but the
         # temperature sensor registers should be read in big endianess
         treg = ((treg & 0xff) << 8) | (treg >> 8)
 
         return treg
+
+    def set_color(self, channel, mode, colors, **kwargs):
+        """Set the RGB lighting mode and, when applicable, color.
+
+        The table bellow summarizes the available channels, modes and their
+        associated number of required colors.
+
+        | Channel  | Mode      | Colors |
+        | -------- | --------- | ------ |
+        | led      | off       |      0 |
+        | led      | fixed     |      1 |
+        | led      | breathing |    1–7 |
+        | led      | fading    |    2–7 |
+        """
+
+        # FIXME check if settings are persistent
+        # FIXME try to optimize/reduce writes for certain modes (e.g. off)
+
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
+        colors = list(colors)
+
+        try:
+            mode = self.Mode[mode.upper()]
+        except KeyError:
+            raise ValueError(f'invalid mode: {mode!r}') from None
+
+        if len(colors) < mode.min_colors:
+            raise ValueError(f'{mode} mode requires {mode.min_colors} colors')
+
+        if len(colors) > mode.max_colors:
+            _LOGGER.debug('too many colors, dropping to %d', mode.max_colors)
+            colors = colors[:mode.max_colors]
+
+        if mode == self.Mode.OFF:
+            mode = self.Mode.FIXED
+            colors = [[0x00, 0x00, 0x00]]
+        elif mode == self.Mode.BREATHING and len(colors) == 1:
+            mode = self.Mode.FIXED
+
+        _LOGGER.warning('timings are not being sent yet, modes other than fixed will not work correctly')
+
+        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_TIME2, 0x00)  # FIXME
+        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_TIME1, 0x00)  # FIXME
+
+        color_registers = range(self._REG_RGB_COLOR_START, self._REG_RGB_COLOR_END)
+        color_components = itertools.chain(*colors)
+
+        for register, component in zip(color_registers, color_components):
+            self._smbus.write_byte_data(self._rgb_address, register, component)
+
+        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_COLOR_COUNT, len(colors))
+        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_MODE, mode.value)
