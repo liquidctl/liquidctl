@@ -22,7 +22,7 @@ class Ddr4Spd:
     """Partial decoding of DDR4 Serial Presence Detect (SPD) information.
 
     Properties will raise on data they are not yet prepared to handle, but what
-    is implemented attempts to comply with JEDEC 21-C Annex L.
+    is implemented attempts to comply with JEDEC 21-C 4.1.2 Annex L.
     """
 
     class DramDeviceType(Enum):

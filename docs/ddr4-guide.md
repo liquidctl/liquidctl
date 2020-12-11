@@ -89,7 +89,8 @@ Experimental. Only temperature monitoring supported.
 Unsafe features:
 
 - `smbus`: see [Inherent unsafeness of I²C/SMBus]
-- `vengeance_rgb`: access non-advertised temperature sensor address
+- `vengeance_rgb`: access non-advertised temperature sensor and RGB controller
+  addresses
 
 ### Initialization
 
@@ -131,3 +132,8 @@ The LED colors can be specified using any of the
 The speed of the breathing and fading animations can be adjusted with
 `--speed`; the allowed values are `slowest`, `slower`, `normal` (default),
 `faster` and `fastest`.
+
+```
+# liquidctl set led color breathing ff355e 1ab385 --speed=faster --unsafe=smbus,vengeance_rgb
+                                                  ^^^^^^^^^^^^^^
+```
