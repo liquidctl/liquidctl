@@ -174,7 +174,7 @@ if sys.platform == 'linux':
                 self._smbus = None
 
         def load_eeprom(self, address):
-            """Load EEPROM name and data."""
+            """Return EEPROM name and data in `address`, or None if N/A."""
 
             # uses kernel facilities to avoid directly reading from the EEPROM
             # or managing its pages, also avoiding the need for unsafe=smbus
