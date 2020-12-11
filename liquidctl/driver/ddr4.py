@@ -10,7 +10,7 @@ import logging
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
-from liquidctl.util import check_unsafe
+from liquidctl.util import check_unsafe, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -255,12 +255,12 @@ class VengeanceRgb(Ddr4Temperature):
     """Corsair Vengeance RGB DDR4 module."""
 
     _RGB_DTIC = 0x58
-    _REG_RGB_TIME2 = 0xa4
-    _REG_RGB_TIME1 = 0xa5
+    _REG_RGB_TIMING1 = 0xa4
+    _REG_RGB_TIMING2 = 0xa5
+    _REG_RGB_MODE = 0xa6
+    _REG_RGB_COLOR_COUNT = 0xa7
     _REG_RGB_COLOR_START = 0xb0
     _REG_RGB_COLOR_END = 0xc5
-    _REG_RGB_COLOR_COUNT = 0xa7
-    _REG_RGB_MODE = 0xa6
 
     _UNSAFE = ['smbus', 'vengeance_rgb']
 
@@ -282,6 +282,14 @@ class VengeanceRgb(Ddr4Temperature):
         def __str__(self):
             return self.name.lower()
 
+    @unique
+    class SpeedTimings(Enum):
+        SLOWEST = 63
+        SLOWER = 48
+        NORMAL = 32
+        FASTER = 16
+        FASTEST = 1
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._rgb_address = self._RGB_DTIC | (self._address[2] & self._SA_MASK)
@@ -300,13 +308,12 @@ class VengeanceRgb(Ddr4Temperature):
         # devices must be read in words
         treg = self._smbus.read_word_data(self._ts_address, self._REG_TEMPERATURE)
 
-        # swap LSB and MSB; read_word_data reads in little endianess, but the
-        # temperature sensor registers should be read in big endianess
-        treg = ((treg & 0xff) << 8) | (treg >> 8)
+        # swap LSB and MSB before returning: read_word_data reads in little
+        # endianess, but the register should be read in big endianess
+        return ((treg & 0xff) << 8) | (treg >> 8)
 
-        return treg
-
-    def set_color(self, channel, mode, colors, **kwargs):
+    def set_color(self, channel, mode, colors, speed='normal',
+                  transition_ticks=None, stable_ticks=None, **kwargs):
         """Set the RGB lighting mode and, when applicable, color.
 
         The table bellow summarizes the available channels, modes and their
@@ -318,12 +325,28 @@ class VengeanceRgb(Ddr4Temperature):
         | led      | fixed     |      1 |
         | led      | breathing |    1–7 |
         | led      | fading    |    2–7 |
+
+        The speed of the breathing and fading animations can be adjusted with
+        `speed`; the allowed values are 'slowest', 'slower', 'normal'
+        (default), 'faster' and 'fastest'.
+
+        It is also possible to override the raw timing parameters through
+        `transition_ticks` and `stable_ticks`; these should be integer values
+        in the range 0–63.
         """
 
-        # FIXME check if settings are persistent
-        # FIXME try to optimize/reduce writes for certain modes (e.g. off)
-
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
+        try:
+            common = self.SpeedTimings[speed.upper()].value
+            tp1 = tp2 = common
+        except KeyError:
+            raise ValueError(f'invalid speed preset: {speed!r}') from None
+
+        if transition_ticks is not None:
+            tp1 = clamp(transition_ticks, 0, 63)
+        if stable_ticks is not None:
+            tp2 = clamp(stable_ticks, 0, 63)
 
         colors = list(colors)
 
@@ -342,19 +365,25 @@ class VengeanceRgb(Ddr4Temperature):
         if mode == self.Mode.OFF:
             mode = self.Mode.FIXED
             colors = [[0x00, 0x00, 0x00]]
-        elif mode == self.Mode.BREATHING and len(colors) == 1:
-            mode = self.Mode.FIXED
 
-        _LOGGER.warning('timings are not being sent yet, modes other than fixed will not work correctly')
+        def rgb_write(register, value):
+            self._smbus.write_byte_data(self._rgb_address, register, value)
 
-        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_TIME2, 0x00)  # FIXME
-        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_TIME1, 0x00)  # FIXME
+        if mode == self.Mode.FIXED:
+            rgb_write(self._REG_RGB_TIMING1, 0x00)
+        else:
+            rgb_write(self._REG_RGB_TIMING1, tp1)
+            rgb_write(self._REG_RGB_TIMING2, tp2)
 
         color_registers = range(self._REG_RGB_COLOR_START, self._REG_RGB_COLOR_END)
         color_components = itertools.chain(*colors)
 
         for register, component in zip(color_registers, color_components):
-            self._smbus.write_byte_data(self._rgb_address, register, component)
+            rgb_write(register, component)
 
-        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_COLOR_COUNT, len(colors))
-        self._smbus.write_byte_data(self._rgb_address, self._REG_RGB_MODE, mode.value)
+        rgb_write(self._REG_RGB_COLOR_COUNT, len(colors))
+
+        if mode == self.Mode.BREATHING and len(colors) == 1:
+            rgb_write(self._REG_RGB_MODE, self.Mode.FIXED.value)
+        else:
+            rgb_write(self._REG_RGB_MODE, mode.value)

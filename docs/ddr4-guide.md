@@ -105,4 +105,29 @@ Corsair Vengeance RGB DIMM2 (experimental)
 
 ### Controlling the LED
 
-Not implemented yet.
+Each module features a few *non-addressable* RGB LEDs.  The table bellow
+summarizes the available channels, modes and their associated number of
+required colors.
+
+| Channel    | Mode        | Colors |
+| ---------- | ----------- | -----: |
+| `led`      | `off`       |      0 |
+| `led`      | `fixed`     |      1 |
+| `led`      | `breathing` |    1–7 |
+| `led`      | `fading`    |    2–7 |
+
+```
+# liquidctl set led color off --unsafe=smbus,vengeance_rgb
+# liquidctl set led color fixed ff355e --unsafe=smbus,vengeance_rgb
+# liquidctl set led color fading "hsv(90,85,70)" "hsv(162,85,70)" --unsafe=smbus,vengeance_rgb
+# liquidctl set led color breathing ff355e 1ab385 --unsafe=smbus,vengeance_rgb
+                ^^^       ^^^^^^^^^ ^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              channel        mode      colors     unsafe features
+```
+
+The LED colors can be specified using any of the
+[supported formats](../README.md#supported-color-specification-formats).
+
+The speed of the breathing and fading animations can be adjusted with
+`--speed`; the allowed values are `slowest`, `slower`, `normal` (default),
+`faster` and `fastest`.

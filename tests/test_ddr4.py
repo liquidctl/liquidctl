@@ -233,19 +233,17 @@ def test_vengeance_rgb_sets_color_to_off(vengeance_rgb):
 
     with dimm.connect(unsafe=enable):
         # change registers to something other than 0
-        smbus.write_byte_data(0x59, 0xa4, 0x10)
-        smbus.write_byte_data(0x59, 0xa5, 0x20)
+        smbus.write_byte_data(0x59, 0xa4, 0x11)
+        smbus.write_byte_data(0x59, 0xa6, 0x22)
         smbus.write_byte_data(0x59, 0xb0, 0xaa)
         smbus.write_byte_data(0x59, 0xb1, 0xbb)
         smbus.write_byte_data(0x59, 0xb2, 0xcc)
-        smbus.write_byte_data(0x59, 0xa6, 0xff)
 
         dimm.set_color('led', 'off', [], unsafe=enable)
 
         assert smbus.read_byte_data(0x59, 0xa4) == 0x00
-        assert smbus.read_byte_data(0x59, 0xa5) == 0x00
-        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
         assert smbus.read_byte_data(0x59, 0xa6) == 0x00
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
 
         for color_component in range(0xb0, 0xb3):
             assert smbus.read_byte_data(0x59, color_component) == 0x00
@@ -260,9 +258,8 @@ def test_vengeance_rgb_sets_color_to_fixed(vengeance_rgb):
         dimm.set_color('led', 'fixed', [radical_red], unsafe=enable)
 
         assert smbus.read_byte_data(0x59, 0xa4) == 0x00
-        assert smbus.read_byte_data(0x59, 0xa5) == 0x00
-        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
         assert smbus.read_byte_data(0x59, 0xa6) == 0x00
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
 
         assert smbus.read_byte_data(0x59, 0xb0) == 0xff
         assert smbus.read_byte_data(0x59, 0xb1) == 0x35
@@ -279,10 +276,10 @@ def test_vengeance_rgb_sets_color_to_breathing(vengeance_rgb):
         dimm.set_color('led', 'breathing', [radical_red, mountain_meadow],
                        unsafe=enable)
 
-        # assert smbus.read_byte_data(0x59, 0xa4) == 0x00  # FIXME
-        # assert smbus.read_byte_data(0x59, 0xa5) == 0x00  # FIXME
-        assert smbus.read_byte_data(0x59, 0xa7) == 0x02
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x20
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x20
         assert smbus.read_byte_data(0x59, 0xa6) == 0x02
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x02
 
         assert smbus.read_byte_data(0x59, 0xb0) == 0xff
         assert smbus.read_byte_data(0x59, 0xb1) == 0x35
@@ -302,10 +299,10 @@ def test_vengeance_rgb_sets_single_color_to_breathing(vengeance_rgb):
         dimm.set_color('led', 'breathing', [radical_red],
                        unsafe=enable)
 
-        # assert smbus.read_byte_data(0x59, 0xa4) == 0x00  # FIXME
-        # assert smbus.read_byte_data(0x59, 0xa5) == 0x00  # FIXME
-        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x20
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x20
         assert smbus.read_byte_data(0x59, 0xa6) == 0x00  # special case
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x01
 
         assert smbus.read_byte_data(0x59, 0xb0) == 0xff
         assert smbus.read_byte_data(0x59, 0xb1) == 0x35
@@ -322,10 +319,10 @@ def test_vengeance_rgb_sets_color_to_fading(vengeance_rgb):
         dimm.set_color('led', 'fading', [radical_red, mountain_meadow],
                        unsafe=enable)
 
-        # assert smbus.read_byte_data(0x59, 0xa4) == 0x00  # FIXME
-        # assert smbus.read_byte_data(0x59, 0xa5) == 0x00  # FIXME
-        assert smbus.read_byte_data(0x59, 0xa7) == 0x02
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x20
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x20
         assert smbus.read_byte_data(0x59, 0xa6) == 0x01
+        assert smbus.read_byte_data(0x59, 0xa7) == 0x02
 
         assert smbus.read_byte_data(0x59, 0xb0) == 0xff
         assert smbus.read_byte_data(0x59, 0xb1) == 0x35
@@ -334,3 +331,47 @@ def test_vengeance_rgb_sets_color_to_fading(vengeance_rgb):
         assert smbus.read_byte_data(0x59, 0xb3) == 0x1a
         assert smbus.read_byte_data(0x59, 0xb4) == 0xb3
         assert smbus.read_byte_data(0x59, 0xb5) == 0x85
+
+
+def test_vengeance_rgb_animation_speed_presets_set_correct_timings(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        mountain_meadow = [0x1a, 0xb3, 0x85]
+
+        presets = ['slowest', 'slower', 'normal', 'faster', 'fastest']
+        timings = [0x3f, 0x30, 0x20, 0x10, 0x01]
+        for preset, timing in zip(presets, timings):
+            dimm.set_color('led', 'fading', [radical_red, mountain_meadow],
+                           speed=preset, unsafe=enable)
+
+            assert smbus.read_byte_data(0x59, 0xa4) == timing, f'wrong tp1 for {preset!r}'
+            assert smbus.read_byte_data(0x59, 0xa5) == timing, f'wrong tp2 for {preset!r}'
+
+
+def test_vengeance_rgb_animation_transition_ticks_overrides_tp1(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        mountain_meadow = [0x1a, 0xb3, 0x85]
+        dimm.set_color('led', 'fading', [radical_red, mountain_meadow],
+                       transition_ticks=0x01, unsafe=enable)
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x01
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x20
+
+
+def test_vengeance_rgb_animation_transition_ticks_overrides_tp1(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        radical_red = [0xff, 0x35, 0x5e]
+        mountain_meadow = [0x1a, 0xb3, 0x85]
+        dimm.set_color('led', 'fading', [radical_red, mountain_meadow],
+                       stable_ticks=0x01, unsafe=enable)
+        assert smbus.read_byte_data(0x59, 0xa4) == 0x20
+        assert smbus.read_byte_data(0x59, 0xa5) == 0x01
