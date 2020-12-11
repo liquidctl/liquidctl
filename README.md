@@ -67,44 +67,32 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 The following devices are supported by this version of liquidctl.  See each guide for specific usage instructions and other pertinent information.
 
-### All-in-one liquid coolers
-
-| Device family | Usage | Notes |
-|:--- |:---:|:--- |
-| Corsair Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc-guide.md) | <sup>_ZE_</sup> |
-| Corsair Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
-| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_E_</sup> |
-| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_E_</sup> |
-| EVGA CLC 120 (CL12), 240, 280, 360 | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
-| NZXT Kraken M22 | [guide](docs/kraken-x2-m2-guide.md) | |
-| NZXT Kraken X40, X60 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
-| NZXT Kraken X31, X41, X61 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
-| NZXT Kraken X42, X52, X62, X72 | [guide](docs/kraken-x2-m2-guide.md) | |
-| NZXT Kraken X53, X63, X73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
-| NZXT Kraken Z63, Z73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
-
-### Fan controllers and power supplies
-
-| Device family | Usage | Notes |
-|:--- |:---:|:--- |
-| Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| NZXT E500, E650, E850 (PSUs) | [guide](docs/nzxt-e-series-psu-guide.md) | <sup>_E_</sup> |
-| NZXT Grid+ V3  | [guide](docs/nzxt-smart-device-v1-guide.md) | |
-| NZXT Smart Device | [guide](docs/nzxt-smart-device-v1-guide.md) | |
-| NZXT Smart Device V2 | [guide](docs/nzxt-hue2-guide.md) | |
-| NZXT RGB & Fan Controller | [guide](docs/nzxt-hue2-guide.md) | <sup>_E_</sup> |
-
-### Other parts
-
-| Device family | Usage | Notes |
-|:--- |:---:|:--- |
-| ASUS Strix RTX 2080 Ti OC | [guide](docs/nvidia-guide.md) | <sup>_EUXN_</sup> |
-| Corsair Vengeance RGB | [guide](docs/ddr4-guide.md) | <sup>_EUXN_</sup> |
-| DDR4 DIMMs with temperature sensor | [guide](docs/ddr4-guide.md) | <sup>_EUXN_</sup> |
-| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_E_</sup> |
-| EVGA GTX 1080 FTW | [guide](docs/nvidia-guide.md) | <sup>_EUXN_</sup> |
-| NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
+| Type | Device/guide | Bus | Notes |
+| :-: | :-- | :-: | :-- |
+| AIO liquid cooler | [Corsair Hydro H100i PRO XT, H115i PRO XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
+| AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
+| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
+| AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
+| AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
+| AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
+| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
+| DDR4 DRAM | [Generic TSE20004-compatible DIMMs](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
+| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_E_</sup> |
+| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
+| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_EUXN_</sup> |
+| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_EUXN_</sup> |
+| Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | <sup>_E_</sup> |
+| Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_E_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
