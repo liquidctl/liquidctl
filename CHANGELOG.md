@@ -4,15 +4,19 @@
 
 Changelog since 1.4.2:
 ### Added
- - Add SMBus support on Linux
+ - Add SMBus and I²C support on Linux
  - Add experimental partial support for EVGA GTX 1080 FTW
  - Add experimental partial support for ASUS Strix RTX 2080 Ti OC
+ - Add experimental support for TSE2004 DDR4 temperature sensors
+ - Add experimental support for Corsair Vengeance RGB
  - Add support for CSS-style hexadecimal triples
  - Added completion script for bash
  - Implement the context manager protocol in the driver API
  - Export `find_liquidctl_devices` from the top-level `liquidctl` package
  - [extra] Add `LQiNFO.py` exporter (liquidctl -> HWiNFO)
 ### Changed
+ - Make vendor and product IDs optional in drivers
+ - Improve error handling and reporting
  - Improve the documentation
 ### Fixed
  - Fix potential exception when a release number is not available
