@@ -147,16 +147,17 @@ def test_connects(emulated_device):
         assert opened
 
 
-def test_loading_unnavailable_spd_returns_none(emulated_device):
+def test_loading_unnavailable_eeprom_returns_none(emulated_device):
     bus, dev = emulated_device
-    assert bus.load_spd_eeprom(0x51) == None
+    assert bus.load_eeprom(0x51) == None
 
 
-def test_loads_spd_eeprom(emulated_device):
+def test_loads_eeprom(emulated_device):
     bus, dev = emulated_device
 
     spd = bus._i2c_dev.joinpath('0-0051')
     spd.mkdir()
     spd.joinpath('eeprom').write_bytes(b'012345')
+    spd.joinpath('name').write_text('name\n')
 
-    assert bus.load_spd_eeprom(0x51) == b'012345'
+    assert bus.load_eeprom(0x51) == ('name', b'012345')

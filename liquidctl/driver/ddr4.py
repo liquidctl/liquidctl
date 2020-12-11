@@ -150,13 +150,13 @@ class Ddr4Temperature(SmbusDriver):
 
         for dimm in range(cls._SA_MASK + 1):
             spd_addr = cls._SPD_DTIC | dimm
-            spd = smbus.load_spd_eeprom(spd_addr)
+            eeprom = smbus.load_eeprom(spd_addr)
 
-            if not spd:
+            if not eeprom or eeprom.name != 'ee1004':
                 continue
 
             try:
-                spd = Ddr4Spd(spd)
+                spd = Ddr4Spd(eeprom.data)
 
                 if spd.dram_device_type != Ddr4Spd.DramDeviceType.DDR4_SDRAM:
                     continue

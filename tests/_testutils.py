@@ -63,6 +63,9 @@ class MockHidapiDevice:
         return self.write(data)
 
 
+VirtualEeprom = namedtuple('VirtualEeprom', ['name', 'data'])
+
+
 class VirtualSmbus:
     def __init__(self, address_count=256, register_count=256, name='i2c-99',
                  description='Virtual', parent_vendor=0xff01, parent_device=0xff02,
@@ -126,5 +129,8 @@ class VirtualSmbus:
     def close(self):
         self._open = False
 
-    def load_spd_eeprom(self, spd_address):
-        return self._data[spd_address]
+    def emulate_eeprom_at(self, address, name, data):
+        self._data[address] = VirtualEeprom(name, data)  # hack
+
+    def load_eeprom(self, address):
+        return self._data[address]  # hack

@@ -6,6 +6,7 @@ Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+from collections import namedtuple
 from pathlib import Path
 import logging
 import os
@@ -29,6 +30,9 @@ if sys.platform == 'linux':
         from smbus import SMBus  # see warning above
     except ModuleNotFoundError:
         SMBus = None
+
+
+    LinuxEeprom = namedtuple('LinuxEeprom', 'name data')
 
 
     class LinuxI2c(BaseBus):
@@ -169,12 +173,13 @@ if sys.platform == 'linux':
                 self._smbus.close()
                 self._smbus = None
 
-        def load_spd_eeprom(self, spd_address):
-            spd_dev = f'{self._number}-{spd_address:04x}'
-            eeprom = self._i2c_dev.joinpath(spd_dev, 'eeprom')
+        def load_eeprom(self, address):
+            dev = f'{self._number}-{address:04x}'
             try:
-                return eeprom.read_bytes()
-            except:
+                name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
+                eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
+                return LinuxEeprom(name, eeprom)
+            except Exception as err:
                 return None
 
         @property

@@ -84,14 +84,6 @@ def test_dram_manufacturer(cmr_spd):
     assert cmr_spd.dram_manufacturer == 'Samsung'
 
 
-def emulate_spd_at(bus, address, cmr_spd):
-    # hack: preload cmr_spd eeprom data
-    bus._data[address] = cmr_spd
-
-
-# DDR4 modules using a TSE2004-compatible SPD EEPROM with temperature sensor
-
-
 @pytest.fixture
 def smbus():
     smbus = VirtualSmbus(parent_driver='i801_smbus')
@@ -103,8 +95,11 @@ def smbus():
     return smbus
 
 
+# DDR4 modules using a TSE2004-compatible SPD EEPROM with temperature sensor
+
+
 def test_tse2004_ignores_not_allowed_buses(smbus, monkeypatch):
-    emulate_spd_at(smbus, 0x51, _TS_SPD)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _TS_SPD)
 
     checks = [
         ('parent_driver', 'other'),
@@ -117,16 +112,21 @@ def test_tse2004_ignores_not_allowed_buses(smbus, monkeypatch):
                     f'changing {attr} did not cause a mismatch'
 
 
-def test_tse2004_doest_match_non_ts_devices(smbus):
-    emulate_spd_at(smbus, 0x51, _NON_TS_SPD)
+def test_tse2004_does_not_match_non_ee1004_device(smbus):
+    smbus.emulate_eeprom_at(0x51, 'other', _TS_SPD)
+    assert list(map(type, Ddr4Temperature.probe(smbus))) == []
+
+
+def test_tse2004_does_not_match_non_ts_devices(smbus):
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _NON_TS_SPD)
     assert list(map(type, Ddr4Temperature.probe(smbus))) == []
 
 
 def test_tse2004_finds_ts_devices(smbus):
-    emulate_spd_at(smbus, 0x51, _TS_SPD)
-    emulate_spd_at(smbus, 0x53, _TS_SPD)
-    emulate_spd_at(smbus, 0x55, _TS_SPD)
-    emulate_spd_at(smbus, 0x57, _TS_SPD)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _TS_SPD)
+    smbus.emulate_eeprom_at(0x53, 'ee1004', _TS_SPD)
+    smbus.emulate_eeprom_at(0x55, 'ee1004', _TS_SPD)
+    smbus.emulate_eeprom_at(0x57, 'ee1004', _TS_SPD)
 
     devs = list(Ddr4Temperature.probe(smbus))
 
@@ -135,14 +135,14 @@ def test_tse2004_finds_ts_devices(smbus):
 
 
 def test_tse2004_get_status_is_unsafe(smbus):
-    emulate_spd_at(smbus, 0x51, _TS_SPD)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _TS_SPD)
     dimm = next(Ddr4Temperature.probe(smbus))
     assert dimm.get_status() == []
 
 
 def test_tse2004_get_status_reads_temperature(smbus):
     enable = ['smbus', 'ddr4_temperature']
-    emulate_spd_at(smbus, 0x51, _TS_SPD)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _TS_SPD)
     dimm = next(Ddr4Temperature.probe(smbus))
 
     with dimm.connect(unsafe=enable):
@@ -158,7 +158,7 @@ def test_tse2004_get_status_reads_temperature(smbus):
 
 def test_tse2004_get_status_reads_negative_temperature(smbus):
     enable = ['smbus', 'ddr4_temperature']
-    emulate_spd_at(smbus, 0x51, _TS_SPD)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _TS_SPD)
     dimm = next(Ddr4Temperature.probe(smbus))
 
     with dimm.connect(unsafe=enable):
@@ -177,16 +177,16 @@ def test_tse2004_get_status_reads_negative_temperature(smbus):
 
 @pytest.fixture
 def vengeance_rgb(smbus):
-    emulate_spd_at(smbus, 0x51, _VENGEANCE_RGB_SAMPLE)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _VENGEANCE_RGB_SAMPLE)
     dimm = next(VengeanceRgb.probe(smbus))
     return (smbus, dimm)
 
 
 def test_vengeance_rgb_finds_devices(smbus):
-    emulate_spd_at(smbus, 0x51, _VENGEANCE_RGB_SAMPLE)
-    emulate_spd_at(smbus, 0x53, _VENGEANCE_RGB_SAMPLE)
-    emulate_spd_at(smbus, 0x55, _VENGEANCE_RGB_SAMPLE)
-    emulate_spd_at(smbus, 0x57, _VENGEANCE_RGB_SAMPLE)
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _VENGEANCE_RGB_SAMPLE)
+    smbus.emulate_eeprom_at(0x53, 'ee1004', _VENGEANCE_RGB_SAMPLE)
+    smbus.emulate_eeprom_at(0x55, 'ee1004', _VENGEANCE_RGB_SAMPLE)
+    smbus.emulate_eeprom_at(0x57, 'ee1004', _VENGEANCE_RGB_SAMPLE)
 
     devs = list(VengeanceRgb.probe(smbus))
 
