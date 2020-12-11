@@ -54,11 +54,11 @@ bus or the devices.
 
 Jump to a specific DIMM model:
 
-- [Generic support for standard SPD EEPROM with temperature sensor][ddr4_temperature]
+- [DIMMs with standard (TSE2004-compatible) temperature sensors][ddr4_temperature]
 - [Corsair Vengeance RGB][vengeance_rgb]
 
 
-## Generic support for standard SPD EEPROM with temperature sensor
+## DIMMs with standard (TSE2004-compatible) temperature sensors
 [ddr4_temperature]: #generic-support-for-standard-spd-eeprom-with-temperature-sensor
 
 Experimental.

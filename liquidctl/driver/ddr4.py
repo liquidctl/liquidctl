@@ -124,7 +124,7 @@ class Ddr4Spd:
 
 
 class Ddr4Temperature(SmbusDriver):
-    """DDR4 module with TSE2004av-compatible SPD EEPROM and temperature sensor."""
+    """DDR4 module with TSE2004-compatible SPD EEPROM and temperature sensor."""
 
     _SPD_DTIC = 0x50
     _TS_DTIC = 0x18

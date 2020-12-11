@@ -89,7 +89,7 @@ def emulate_spd_at(bus, address, cmr_spd):
     bus._data[address] = cmr_spd
 
 
-# DDR4 modules using a TSE2004av-compatible SPD EEPROM with temperature sensor
+# DDR4 modules using a TSE2004-compatible SPD EEPROM with temperature sensor
 
 
 @pytest.fixture
@@ -103,7 +103,7 @@ def smbus():
     return smbus
 
 
-def test_generic_ignores_not_allowed_buses(smbus, monkeypatch):
+def test_tse2004_ignores_not_allowed_buses(smbus, monkeypatch):
     emulate_spd_at(smbus, 0x51, _TS_SPD)
 
     checks = [
@@ -117,12 +117,12 @@ def test_generic_ignores_not_allowed_buses(smbus, monkeypatch):
                     f'changing {attr} did not cause a mismatch'
 
 
-def test_generic_doest_match_non_ts_devices(smbus):
+def test_tse2004_doest_match_non_ts_devices(smbus):
     emulate_spd_at(smbus, 0x51, _NON_TS_SPD)
     assert list(map(type, Ddr4Temperature.probe(smbus))) == []
 
 
-def test_generic_finds_ts_devices(smbus):
+def test_tse2004_finds_ts_devices(smbus):
     emulate_spd_at(smbus, 0x51, _TS_SPD)
     emulate_spd_at(smbus, 0x53, _TS_SPD)
     emulate_spd_at(smbus, 0x55, _TS_SPD)
@@ -134,13 +134,13 @@ def test_generic_finds_ts_devices(smbus):
     assert devs[1].description == 'Corsair DIMM4 (experimental)'
 
 
-def test_generic_get_status_is_unsafe(smbus):
+def test_tse2004_get_status_is_unsafe(smbus):
     emulate_spd_at(smbus, 0x51, _TS_SPD)
     dimm = next(Ddr4Temperature.probe(smbus))
     assert dimm.get_status() == []
 
 
-def test_generic_get_status_reads_temperature(smbus):
+def test_tse2004_get_status_reads_temperature(smbus):
     enable = ['smbus', 'ddr4_temperature']
     emulate_spd_at(smbus, 0x51, _TS_SPD)
     dimm = next(Ddr4Temperature.probe(smbus))
@@ -156,7 +156,7 @@ def test_generic_get_status_reads_temperature(smbus):
         assert status == expected
 
 
-def test_generic_get_status_reads_negative_temperature(smbus):
+def test_tse2004_get_status_reads_negative_temperature(smbus):
     enable = ['smbus', 'ddr4_temperature']
     emulate_spd_at(smbus, 0x51, _TS_SPD)
     dimm = next(Ddr4Temperature.probe(smbus))

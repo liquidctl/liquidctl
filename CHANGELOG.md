@@ -7,7 +7,7 @@ Changelog since 1.4.2:
  - Add SMBus and I²C support on Linux
  - Add experimental partial support for EVGA GTX 1080 FTW
  - Add experimental partial support for ASUS Strix RTX 2080 Ti OC
- - Add experimental support for TSE2004 DDR4 temperature sensors
+ - Add experimental support for DIMMs with TSE2004-compatible temperature sensors
  - Add experimental support for Corsair Vengeance RGB
  - Add support for CSS-style hexadecimal triples
  - Added completion script for bash
