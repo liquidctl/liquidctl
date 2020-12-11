@@ -174,6 +174,11 @@ if sys.platform == 'linux':
                 self._smbus = None
 
         def load_eeprom(self, address):
+            """Load EEPROM name and data."""
+
+            # uses kernel facilities to avoid directly reading from the EEPROM
+            # or managing its pages, also avoiding the need for unsafe=smbus
+
             dev = f'{self._number}-{address:04x}'
             try:
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
