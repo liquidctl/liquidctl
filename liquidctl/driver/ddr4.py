@@ -68,9 +68,10 @@ class Ddr4Spd:
     def __init__(self, eeprom):
         self._eeprom = eeprom
 
-        assert self.dram_device_type in [self.DramDeviceType.DDR4_SDRAM,
+        if self.dram_device_type not in [self.DramDeviceType.DDR4_SDRAM,
                                          self.DramDeviceType.LPDDR4_SDRAM,
-                                         self.DramDeviceType.LPDDR4X_SDRAM]
+                                         self.DramDeviceType.LPDDR4X_SDRAM]:
+            raise ValueError('not a DDR4 SPD EEPROM')
 
     @property
     def spd_bytes_used(self):
