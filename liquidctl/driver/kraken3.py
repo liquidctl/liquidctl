@@ -144,7 +144,7 @@ class KrakenX3(UsbHidDriver):
     """Fourth-generation Kraken X liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {
+        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENX,
             'color_channels': _COLOR_CHANNELS_KRAKENX,
         })

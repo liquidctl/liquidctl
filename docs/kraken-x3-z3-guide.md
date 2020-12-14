@@ -32,7 +32,7 @@ The firmware version and all connected LED accessories are reported during the d
 
 ```
 # liquidctl initialize
-NZXT Kraken X (X53, X63 or X73) (experimental)
+NZXT Kraken X (X53, X63 or X73)
 ├── Firmware version                    1.8.0
 ├── LED accessory 1    HUE 2 LED Strip 300 mm
 ├── LED accessory 1          AER RGB 2 140 mm
@@ -48,7 +48,7 @@ The cooler can report the pump speed and liquid temperature.
 
 ```
 # liquidctl status
-NZXT Kraken X (X53, X63 or X73) (experimental)
+NZXT Kraken X (X53, X63 or X73)
 ├── Liquid temperature    24.1  °C
 ├── Pump speed            1869  rpm
 └── Pump duty               60  %
