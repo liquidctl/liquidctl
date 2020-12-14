@@ -84,7 +84,7 @@ DDR4 DIMM2 (experimental)
 ## Corsair Vengeance RGB
 [vengeance_rgb]: #corsair-vengeance-rgb
 
-Experimental. Only temperature monitoring supported.
+Experimental.
 
 Unsafe features:
 
@@ -117,15 +117,6 @@ required colors.
 | `led`      | `breathing` |    1–7 |
 | `led`      | `fading`    |    2–7 |
 
-```
-# liquidctl set led color off --unsafe=smbus,vengeance_rgb
-# liquidctl set led color fixed ff355e --unsafe=smbus,vengeance_rgb
-# liquidctl set led color fading "hsv(90,85,70)" "hsv(162,85,70)" --unsafe=smbus,vengeance_rgb
-# liquidctl set led color breathing ff355e 1ab385 --unsafe=smbus,vengeance_rgb
-                ^^^       ^^^^^^^^^ ^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-              channel        mode      colors     unsafe features
-```
-
 The LED colors can be specified using any of the
 [supported formats](../README.md#supported-color-specification-formats).
 
@@ -134,6 +125,11 @@ The speed of the breathing and fading animations can be adjusted with
 `faster` and `fastest`.
 
 ```
-# liquidctl set led color breathing ff355e 1ab385 --speed=faster --unsafe=smbus,vengeance_rgb
-                                                  ^^^^^^^^^^^^^^
+# liquidctl set led color breathing ff355e 1ab385 speed=faster --unsafe=smbus,vengeance_rgb
+                ^^^       ^^^^^^^^^ ^^^^^^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              channel        mode      colors        speed        enable unsafe features
+
+# liquidctl set led color fading "hsv(90,85,70)" "hsv(162,85,70)" --unsafe=smbus,vengeance_rgb
+# liquidctl set led color fixed ff355e --unsafe=smbus,vengeance_rgb
+# liquidctl set led color off --unsafe=smbus,vengeance_rgb
 ```
