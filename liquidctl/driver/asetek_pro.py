@@ -78,7 +78,7 @@ _COLOR_SPEEDS_VALUES = {
 _COLOR_CHANGE_MODES = {
     'rainbow': [0x55, 0x01],
     'alert': [],
-    'shitf': [0x55, 0x01],
+    'shift': [0x55, 0x01],
     'pulse': [0x52, 0x01],
     'blinking': [0x58, 0x01],
     'fixed': [0x55, 0x01]
@@ -140,7 +140,7 @@ class CorsairAsetekProDriver(_CommonAsetekDriver):
                 _LOGGER.debug('Unable to get speed for fan id %d', i)
                 speeds.append(-1)
                 continue
-            speeds.append((i, (msg[4] << 8) + msg[5]))
+            speeds.append((msg[4] << 8) + msg[5])
         return speeds
 
     def _get_fan_indexes(self, channel):
@@ -155,6 +155,10 @@ class CorsairAsetekProDriver(_CommonAsetekDriver):
         """Initialize the device."""
         _LOGGER.debug('Pro configure device...')
         _LOGGER.debug('pump_mode %s', pump_mode)
+        pump_mode = pump_mode.lower()
+        if pump_mode not in _PUMP_MODES:
+            valid = ", ".join(_PUMP_MODES)
+            raise KeyError(f'Unknown pump mode {pump_mode}, should be one of {valid}')
         self._write([_CMD_WRITE_PUMP_MODE, _PUMP_MODES.index(pump_mode.lower())])
         self._end_transaction_and_read(5)
 
