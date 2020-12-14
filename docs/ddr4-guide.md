@@ -10,8 +10,6 @@ also be met:
 - specific unsafe features have been opted in
 - the host SMBus is supported: currently only i801 (Intel mainstream & HEDT)
 
----
-
 Jump to a specific section:
 
 - [DIMMs with a standard temperature sensor][ddr4_temperature]

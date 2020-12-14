@@ -9,8 +9,6 @@ also be met:
 - r/w permissions to card-specific `/dev/i2c-*` devices
 - specific unsafe features have been opted in
 
----
-
 Jump to a specific section:
 
 * _Series 10/Pascal:_
