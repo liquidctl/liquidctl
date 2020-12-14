@@ -81,7 +81,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
 | DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
-| DDR4 DRAM | [DIMMs with standard temperature sensors](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
+| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_E_</sup> |
