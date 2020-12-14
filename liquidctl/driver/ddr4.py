@@ -9,7 +9,7 @@ import itertools
 import logging
 
 from liquidctl.driver.smbus import SmbusDriver
-from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
+from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import check_unsafe, clamp
 
 _LOGGER = logging.getLogger(__name__)
@@ -292,7 +292,7 @@ class VengeanceRgb(Ddr4Temperature):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._rgb_address = self._RGB_DTIC | (self._address[2] & self._SA_MASK)
+        self._rgb_address = None
 
     @classmethod
     def _match(cls, spd):
@@ -362,6 +362,8 @@ class VengeanceRgb(Ddr4Temperature):
             _LOGGER.debug('too many colors, dropping to %d', mode.max_colors)
             colors = colors[:mode.max_colors]
 
+        self._compute_rgb_address()
+
         if mode == self.Mode.OFF:
             mode = self.Mode.FIXED
             colors = [[0x00, 0x00, 0x00]]
@@ -387,3 +389,16 @@ class VengeanceRgb(Ddr4Temperature):
             rgb_write(self._REG_RGB_MODE, self.Mode.FIXED.value)
         else:
             rgb_write(self._REG_RGB_MODE, mode.value)
+
+    def _compute_rgb_address(self):
+        if self._rgb_address:
+            return
+
+        # the dimm's rgb controller is typically at 0x58–0x5f
+        candidate = self._RGB_DTIC | (self._address[2] & self._SA_MASK)
+
+        # reading from any register should return 0xba if we have the right device
+        if self._smbus.read_byte_data(candidate, self._REG_RGB_MODE) != 0xba:
+            raise ExpectationNotMet(f'{self.bus}:{candidate:#04x} is not the RGB controller')
+
+        self._rgb_address = candidate

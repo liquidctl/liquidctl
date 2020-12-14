@@ -179,6 +179,12 @@ def test_tse2004_get_status_reads_negative_temperature(smbus):
 def vengeance_rgb(smbus):
     smbus.emulate_eeprom_at(0x51, 'ee1004', _VENGEANCE_RGB_SAMPLE)
     dimm = next(VengeanceRgb.probe(smbus))
+
+    smbus.open()
+    for reg in range(256):
+        smbus.write_byte_data(0x59, reg, 0xba)
+    smbus.close()
+
     return (smbus, dimm)
 
 
@@ -227,18 +233,23 @@ def test_vengeance_rgb_set_color_is_unsafe(vengeance_rgb):
         assert dimm.set_color('led', 'off', [], unsafe='smbus')
 
 
+def test_vengeance_rgb_asserts_rgb_address_validity(vengeance_rgb):
+    enable = ['smbus', 'vengeance_rgb']
+    smbus, dimm = vengeance_rgb
+
+    with dimm.connect(unsafe=enable):
+        smbus.write_byte_data(0x59, 0xa6, 0x00)
+
+        with pytest.raises(ExpectationNotMet):
+            dimm.set_color('led', 'off', [], unsafe=enable)
+
+
+
 def test_vengeance_rgb_sets_color_to_off(vengeance_rgb):
     enable = ['smbus', 'vengeance_rgb']
     smbus, dimm = vengeance_rgb
 
     with dimm.connect(unsafe=enable):
-        # change registers to something other than 0
-        smbus.write_byte_data(0x59, 0xa4, 0x11)
-        smbus.write_byte_data(0x59, 0xa6, 0x22)
-        smbus.write_byte_data(0x59, 0xb0, 0xaa)
-        smbus.write_byte_data(0x59, 0xb1, 0xbb)
-        smbus.write_byte_data(0x59, 0xb2, 0xcc)
-
         dimm.set_color('led', 'off', [], unsafe=enable)
 
         assert smbus.read_byte_data(0x59, 0xa4) == 0x00
