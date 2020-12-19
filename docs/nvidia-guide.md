@@ -4,7 +4,6 @@ _Driver API and source code available in [`liquidctl.driver.nvidia`](../liquidct
 Support for these cards in only available on Linux.  Other requirements must
 also be met:
 
-- optional Python dependency `smbus` is available
 - `i2c-dev` kernel module has been loaded
 - r/w permissions to card-specific `/dev/i2c-*` devices
 - specific unsafe features have been opted in

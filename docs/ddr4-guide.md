@@ -4,7 +4,6 @@ _Driver API and source code available in [`liquidctl.driver.ddr4`](../liquidctl/
 Support for these DIMMs in only available on Linux.  Other requirements must
 also be met:
 
-- optional Python dependency `smbus` is available
 - `i2c-dev` kernel module has been loaded
 - r/w permissions to the host SMBus `/dev/i2c-*` device
 - specific unsafe features have been opted in

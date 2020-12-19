@@ -24,12 +24,7 @@ if sys.platform == 'linux':
     # implementation is used here; this is done through the SMBus attribute
     # created below, do not move/replace/change it, nor access it during module
     # initialization
-
-    # smbus is an optional dependency
-    try:
-        from smbus import SMBus  # see warning above
-    except ModuleNotFoundError:
-        SMBus = None
+    from smbus import SMBus
 
 
     LinuxEeprom = namedtuple('LinuxEeprom', 'name data')
@@ -46,11 +41,6 @@ if sys.platform == 'linux':
 
             if usb_port:
                 # a usb_port filter implies an USB bus
-                return
-
-            if not SMBus:
-                _LOGGER.debug('skipping %s, smbus package not available',
-                              self.__class__.__name__)
                 return
 
             devices = self._i2c_root.joinpath('devices')

@@ -71,10 +71,8 @@ make_extraversion()
 
 install_requires = ['docopt', 'pyusb', 'hidapi']
 
-# for now 'smbus' is optional, but to require it add:
-#
-#     if sys.platform == 'linux':
-#         install_requires.append('smbus')
+if sys.platform == 'linux':
+    install_requires.append('smbus')
 
 setuptools.setup(
     name='liquidctl',
