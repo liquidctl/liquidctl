@@ -1,6 +1,6 @@
 # Techniques for analyzing USB protocols
 
-_Originally posted as a [comment in issue #142](https://github.com/jonasmalacofilho/liquidctl/issues/142#issuecomment-650568291)._
+_Originally posted as a [comment in issue #142](https://github.com/liquidctl/liquidctl/issues/142#issuecomment-650568291)._
 
 ## USB transfers
 
@@ -55,7 +55,7 @@ Mapping between actions and transfers is usually simple, based on what fields yo
 
 Usually in u16le or u16be (16-bit unsigned integer of either endianess).  In the case of power suplies, could also be encoded in LINEAR11/LINEAR16, as defined by the PMBus specification ([`liquidctl.pmbus.linear_to_float`]).
 
-[`liquidctl.pmbus.linear_to_float`]: https://github.com/jonasmalacofilho/liquidctl/blob/d1b8d2424948c564e218e2f0cf5ffb86f21b1445/liquidctl/pmbus.py#L104
+[`liquidctl.pmbus.linear_to_float`]: https://github.com/liquidctl/liquidctl/blob/d1b8d2424948c564e218e2f0cf5ffb86f21b1445/liquidctl/pmbus.py#L104
 
 ### Fan and/or pump duty values (read/write)
 
@@ -77,7 +77,7 @@ Almost universally sent as 24-bit RGB.  However, endianess varies, and some devi
 
 Some devices end all messages (received and sent) with a 8-bit checksum (also known as a PEC byte).  They usually follow the SMBus specification and use the `x⁸ + x² + x¹ + x⁰` polynomial ([`liquidctl.pmbus.compute_pec(bytes)`]).
 
-[`liquidctl.pmbus.compute_pec(bytes)`]: https://github.com/jonasmalacofilho/liquidctl/blob/d1b8d2424948c564e218e2f0cf5ffb86f21b1445/liquidctl/pmbus.py#L168
+[`liquidctl.pmbus.compute_pec(bytes)`]: https://github.com/liquidctl/liquidctl/blob/d1b8d2424948c564e218e2f0cf5ffb86f21b1445/liquidctl/pmbus.py#L168
 
 ### Action type (read/write)
 
@@ -121,7 +121,7 @@ You can preprocess this data with `jq`, and then further manipulate it in any to
 
 You also easily write a custom script to do some analyses or test hypothesis on these JSON captures.  For an example, check the [script I used when working the Platinum coolers].
 
-[script I used when working the Platinum coolers]: https://github.com/jonasmalacofilho/liquidctl-device-data/blob/master/Corsair%20H115i%20RGB%20Platinum/analyze.py
+[script I used when working the Platinum coolers]: https://github.com/liquidctl/collected-device-data/blob/master/Corsair%20H115i%20RGB%20Platinum/analyze.py
 
 
 

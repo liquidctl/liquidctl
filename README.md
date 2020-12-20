@@ -2,7 +2,7 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
-[![Status of the tests](https://github.com/jonasmalacofilho/liquidctl/workflows/tests/badge.svg)](https://github.com/jonasmalacofilho/liquidctl/commits/master)
+[![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/master)
 [![Status of the build for Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/master?svg=true&passingText=windows%20exe&failingText=failed&pendingText=building)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/master)
 
 
@@ -143,7 +143,7 @@ To install a release from PyPI, *pip* should be used:
 For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
-$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ git clone https://github.com/liquidctl/liquidctl
 $ cd liquidctl
 $ pytest  # optional step
 $ python -m liquidctl.cli <args>...
@@ -170,9 +170,9 @@ Optional steps:
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
 
-Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
+Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
 Products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disapear from liquidctl.
 
@@ -194,7 +194,7 @@ To install any release from PyPI, *pip* should be used:
 For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
-> git clone https://github.com/jonasmalacofilho/liquidctl
+> git clone https://github.com/liquidctl/liquidctl
 > cd liquidctl
 > python -m liquidctl.cli <args>...
 > pip install .
@@ -226,7 +226,7 @@ $ pip3 install liquidctl==<version>
 For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
-$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ git clone https://github.com/liquidctl/liquidctl
 $ cd liquidctl
 $ python3 -m liquidctl.cli <args>...
 $ pip3 install .
@@ -373,7 +373,7 @@ Make sure that liquidctl is available in the context where the batch file will r
 
 When not using a pre-built liquidctl executable, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH.
 
-A slightly more complex example can be seen in [issue #14](https://github.com/jonasmalacofilho/liquidctl/issues/14#issuecomment-456519098) ("Can I autostart liquidctl on Windows?"), that uses the LEDs to convey progress or eventual errors.  Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) is also a good read.
+A slightly more complex example can be seen in [issue #14](https://github.com/liquidctl/liquidctl/issues/14#issuecomment-456519098) ("Can I autostart liquidctl on Windows?"), that uses the LEDs to convey progress or eventual errors.  Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) is also a good read.
 
 As an alternative to using Task Scheduler, the batch file can simply be placed in the startup folder; you can run `shell:startup` to [find out where that is](https://support.microsoft.com/en-us/help/4026268/windows-10-change-startup-apps).
 
@@ -450,7 +450,7 @@ Alternatively to running liquidctl as root (or with `sudo`), you can install the
 
 ### Other problems
 
-If your problem is not listed here, try searching the [issues](https://github.com/jonasmalacofilho/liquidctl/issues).  If no issue matches your problem, you still need help, or you have found a bug, please open one.
+If your problem is not listed here, try searching the [issues](https://github.com/liquidctl/liquidctl/issues).  If no issue matches your problem, you still need help, or you have found a bug, please open one.
 
 When commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.
 
@@ -502,7 +502,7 @@ file.
 
 Open-source graphical interface to control many different types of RGB devices.
 
-### [jonasmalacofilho/liquidtux](https://github.com/jonasmalacofilho/liquidtux)
+### [liquidctl/liquidtux](https://github.com/liquidctl/liquidtux)
 
 Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allows standard monitoring tools (for example lm-sensors, or tools built on top of it) to read sensor data from Kraken X42/X52/X62/X72 coolers and the Smart Device (V1).
 
@@ -510,6 +510,6 @@ Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allo
 
 Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl, and joining them is a great way to get involved.
 
-### [jonasmalacofilho/liquidctl-device-data](https://github.com/jonasmalacofilho/liquidctl-device-data)
+### [liquidctl/collected-device-data](https://github.com/liquidctl/collected-device-data)
 
 Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyzes.

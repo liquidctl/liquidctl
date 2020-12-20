@@ -81,9 +81,9 @@ Modules.
 
 [JEDEC 21-C 4.1.2.L-5]: https://www.jedec.org/standards-documents/docs/spd412l-5
 
-[SMBus captures] in liquidctl-device-data.
+[SMBus captures] in liquidctl/collected-device-data.
 
-[SMBus captures]: https://github.com/jonasmalacofilho/liquidctl-device-data/tree/master/Corsair%20Vengeance%20RGB
+[SMBus captures]: https://github.com/liquidctl/collected-device-data/tree/master/Corsair%20Vengeance%20RGB
 
 [OpenRGB wiki entry] for Corsair Vengeance RGB modules.
 

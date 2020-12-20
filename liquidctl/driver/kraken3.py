@@ -213,7 +213,7 @@ class KrakenX3(UsbHidDriver):
         if msg[15:17] == [0xff, 0xff]:
             LOGGER.warning('unexpected temperature reading, possible firmware fault;')
             LOGGER.warning('try resetting the device or updating the firmware')
-            LOGGER.warning('(see https://github.com/jonasmalacofilho/liquidctl/issues/172)')
+            LOGGER.warning('(see https://github.com/liquidctl/liquidctl/issues/172)')
         return [
             ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),

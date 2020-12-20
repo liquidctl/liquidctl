@@ -9,12 +9,12 @@ from liquidctl.util import HUE2_MAX_ACCESSORIES_IN_CHANNEL as MAX_ACCESSORIES
 
 from _testutils import MockHidapiDevice, Report
 
-# https://github.com/jonasmalacofilho/liquidctl/issues/160#issuecomment-664044103
+# https://github.com/liquidctl/liquidctl/issues/160#issuecomment-664044103
 _SAMPLE_STATUS = bytes.fromhex(
     '7502200036000b51535834353320012101a80635350000000000000000000000'
     '0000000000000000000000000000000000000000000000000000000000000000'
 )
-# https://github.com/jonasmalacofilho/liquidctl/issues/160#issue-665781804
+# https://github.com/liquidctl/liquidctl/issues/160#issue-665781804
 _FAULTY_STATUS = bytes.fromhex(
     '7502200036000b5153583435332001ffffcc0a64640000000000000000000000'
     '0000000000000000000000000000000000000000000000000000000000000000'

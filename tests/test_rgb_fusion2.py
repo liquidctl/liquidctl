@@ -4,7 +4,7 @@ from liquidctl.driver.rgb_fusion2 import RgbFusion2
 from _testutils import MockHidapiDevice, Report
 
 # Sample data for 5702 controller from a Gigabyte Z490 Vision D
-# https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663213956
+# https://github.com/liquidctl/liquidctl/issues/151#issuecomment-663213956
 _INIT_5702_DATA = bytes.fromhex(
     'cc01000701000a00000000004954353730322d47494741425954452056312e30'
     '2e31302e30000000000102000200010002000100000102000001025700000000'
@@ -12,7 +12,7 @@ _INIT_5702_DATA = bytes.fromhex(
 _INIT_5702_SAMPLE = Report(_INIT_5702_DATA[0], _INIT_5702_DATA[1:])
 
 # Sample data for 8297 controller from a Gigabyte X570 Aorus Elite rev 1.0
-# https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-663247422
+# https://github.com/liquidctl/liquidctl/issues/151#issuecomment-663247422
 # (note: original data had a trailing 0x61 byte, but that seems to be an artifact)
 _INIT_8297_DATA = bytes.fromhex(
     '00010001010006000000000049543832393742582d4742583537300000000000'

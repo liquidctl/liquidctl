@@ -120,7 +120,7 @@ So there are three ways of setting up `liquidctl.exe`:
 
 The last stable version of liquidctl can be found in the [_Releases_ page].
 
-[_Releases_ page]: https://github.com/jonasmalacofilho/liquidctl/releases
+[_Releases_ page]: https://github.com/liquidctl/liquidctl/releases
 
 New drivers may not yet be a part of a stable release (which is the case with
 the Kraken X53 as of 24 June 2020).  If that's the case, you can use one of the
@@ -170,7 +170,7 @@ patch PyUSB or stick to libusb 1.0.21.
 This document was originally a response to a direct message:
 
 > Hi. How are you? Hope you're staying safe and well. I just wanted to know of
-> there is a windows gui for liquidctrl?
+> there is a windows gui for liquidctl?
 > I have zero experience with command line stuff and I don't entirely understand
 > it... also most of the guides are from late 2018 or early 2019.
 > And i just bought a x53 kraken.
