@@ -321,12 +321,14 @@ def main():
             else:
                 raise Exception('Not sure what to do')
         except OSError as err:
-            # each backend API returns a different subtype of OSError (OSError, usb.core.USBError
-            # or PermissionError), but all set err.errno to EACCES (or EPERM)
+            # each backend API returns a different subtype of OSError (OSError,
+            # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES , errno.EPERM]:
                 log_error(err, f'Error: insufficient permissions to access {dev.description}')
+            elif err.args == ('open failed', ):
+                log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, 'Unexpected OS error with %s', dev.description)
+                log_error(err, f'Unexpected OS error with {dev.description}: {err}')
         except NotSupportedByDevice as err:
             log_error(err, f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
@@ -335,7 +337,7 @@ def main():
             features = ','.join(err.args)
             log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
         except Exception as err:
-            log_error(err, 'Unexpected error with %s: %s', dev.description, err)
+            log_error(err, f'Unexpected error with {dev.description}: {err}')
         finally:
             dev.disconnect(**opts)
 
