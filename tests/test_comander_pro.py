@@ -1032,7 +1032,11 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
-def test_set_color_hardware_channel_1(commanderProDevice):
+@pytest.mark.parametrize("channel,expected", [
+    ('led1', 0x00), ('led', 0x00), ('LeD1', 0x00),
+    ('led2', 0x01), ('LED2', 0x01), ('LeD2', 0x01)
+    ])
+def test_set_color_hardware_channel(commanderProDevice, channel, expected):
     responses = [
         '00000000000000000000000000000000',
         '00000000000000000000000000000000',
@@ -1046,42 +1050,17 @@ def test_set_color_hardware_channel_1(commanderProDevice):
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
-    commanderProDevice.set_color('led1', 'fixed', colors)
+    commanderProDevice.set_color(channel, 'fixed', colors)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
+    assert sent[0][1][1] == expected
+    assert sent[1][1][1] == expected
+    assert sent[2][1][1] == expected
     assert sent[3][1][0] == 0x35
-    assert sent[3][1][1] == 0x00
-
-    effects = commanderProDevice._data.load('saved_effects', default=None)
-
-    assert effects != None
-    assert len(effects) == 1
-
-def test_set_color_hardware_channel_2(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
-    colors = [[0xaa, 0xbb, 0xcc]]
-    commanderProDevice.set_color('led2', 'fixed', colors)
-
-    # check the commands sent
-    sent = commanderProDevice.device.sent
-    assert len(sent) == 5
-
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][1] == 0x01
+    assert sent[3][1][1] == expected
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 

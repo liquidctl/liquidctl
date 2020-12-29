@@ -93,7 +93,6 @@ def _prepare_profile(original):
         normal += missing * [(_CRITICAL_TEMPERATURE, _MAX_FAN_RPM)]
     return normal
 
-
 def _quoted(*names):
     return ', '.join(map(repr, names))
 
@@ -481,8 +480,8 @@ class CommanderPro(UsbHidDriver):
         self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
 
         # start sending the led commands
-        self._send_command(_CMD_RESET_LED_CHANNEL);               # clear group ?
-        self._send_command(_CMD_BEGIN_LED_EFFECT);               # clear led ?
+        self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel]);               # clear group ?
+        self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel]);               # clear led ?
         self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]); # this will put the channel into hardware mode. (so that the effect does not need to be constantly sent to the device.
 
 

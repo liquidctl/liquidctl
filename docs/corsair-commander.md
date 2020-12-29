@@ -1,6 +1,8 @@
 # Corsair Commander Pro
 _Driver API and source code available in [`liquidctl.driver.commander_pro`](../liquidctl/driver/commander_pro.py)._
 
+This driver will also work for the Corsair Lighting Node Pro Devices.
+
 ## Initializing the device
 
 The device should be initialized every time it is powered on, including when
@@ -39,7 +41,7 @@ The Lighting Node Pro does not have a status message.
 
 
 The Commander pro is able to retrieve the current fan speeds as well as
-the current temperature of any connected temperature probes. Additionally 
+the current temperature of any connected temperature probes. Additionally
 the Commander Pro is able to retrieve the voltages from the 3.3, 5, and 12
 volt buses.
 
@@ -72,10 +74,10 @@ The Lighting Node Pro Does not have any fans to control.
 
 Each fan can be set to either a fixed duty cycle, or a profile consisting of up
 to six (temperature, rpm) pairs.  Temperatures should be given in Celsius
-and rpm values as a valid rpm for the fan that is connected. 
-*NOTE: you must ensure that the rpm value is within the min, max range for your hardware.* 
+and rpm values as a valid rpm for the fan that is connected.
+*NOTE: you must ensure that the rpm value is within the min, max range for your hardware.*
 
-Profiles run on the device and are always based one the specified temp probe. If a 
+Profiles run on the device and are always based one the specified temp probe. If a
 temperature probe is not specified number 1 is used. The last point should
 set the fan to 100% fan speed, or be omitted; in the latter case the fan will
 be set to 5000 rpm at 60°C (this speed may not be appropriate for your device).
@@ -109,12 +111,12 @@ The Commander Pro has 2 lighting channels that can have up to 96 leds connected 
 LED channels are specified as either `led1` or `led2` with channel 1 being the default.
 
 The table bellow summarizes the available modes, and their associated
-maximum number of colors. Note that for any effect if no colors are specified then 
+maximum number of colors. Note that for any effect if no colors are specified then
 random colors will be used.
 
 | Mode          | Num colors |
 | ------------- | ---------- |
-| `clear` _¹_   |          0 | 
+| `clear` _¹_   |          0 |
 | `off` _²_     |          0 |
 | `fixed`       |          1 |
 | `color_shift` |          2 |
@@ -132,7 +134,7 @@ _¹: This is not a real mode but it will remove all saved effects_
 _²: This is not a real mode but it is fixed with RGB values of 0_
 
 
-To specify which LED's on the channel the effect should apply to the 
+To specify which LED's on the channel the effect should apply to the
 `--start-led` and `--num-leds` flags must be given.
 
 If you have 3 Corsair LL fans connected to channel one and you want to set
@@ -140,7 +142,7 @@ the first and third to green and the middle to blue you can use the following
 commands:
 
 ```
-# liquidctl set led1 color fixed 00ff00 --start-led 0 --num-leds 48
+# liquidctl set led1 color fixed 00ff00 --start-led 1 --num-leds 48
 # liquidctl set led1 color fixed 0000ff --start-led 16 --num-leds 16
 ```
 
@@ -148,25 +150,25 @@ This will first set all 48 leds to green then will set leds 16-32 to blue.
 Alternatively you could do:
 
 ```
-# liquidctl set led1 color fixed 00ff00 --start-led 0 --num-leds 16
+# liquidctl set led1 color fixed 00ff00 --start-led 1 --num-leds 16
 # liquidctl set led1 color fixed 0000ff --start-led 16 --num-leds 16
 # liquidctl set led1 color fixed 00ff00 --start-led 32 --num-leds 16
 ```
 
 
 This allows you to compose more complex led effects then just the base modes.
-The different commands need to be sent in order that they should be applied. 
+The different commands need to be sent in order that they should be applied.
 In the first example if the order were reversed then all of the LED's would
 be green.
 
 All of the effects support specifying a `--direction=forward` or `--direction=backward`.  
 
-There are also 3 speeds that can be specified for the `--speed` flag. 
+There are also 3 speeds that can be specified for the `--speed` flag.
 `fast`, `medium`, and `slow`.
 
 
 Each color can be specified using any of the [supported formats](../README.md#supported-color-specification-formats).
 
-Currently the device can only accept hardware effects, and the specified 
+Currently the device can only accept hardware effects, and the specified
 configuration will persist across power offs. The changes take a couple of
-seconds to take effect. 
+seconds to take effect.
