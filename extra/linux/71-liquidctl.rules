@@ -17,6 +17,25 @@
 # group is not used by default to avoid generating warnings on systems that
 # have already removed it.
 
+
+# i2c and SMBus
+
+# Host SMBus on Intel mainstream/HEDT platforms
+KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess"
+
+# ASUS Strix 2080 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+	ATTRS{device}=="0x1e07", ATTRS{subsystem_vendor}=="0x1043", \
+	ATTRS{subsystem_device}=="0x866a", DRIVERS=="nvidia", TAG+="uaccess"
+
+# EVGA GTX 1080 FTW
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+	ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x3842", \
+	ATTRS{subsystem_device}=="0x6286", DRIVERS=="nvidia", TAG+="uaccess"
+
+
+# USB and USB HIDs
+
 # Asetek 690LC (also EVGA CLC or NZXT Kraken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
 
@@ -85,11 +104,6 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0b", TAG+="uacc
 
 # Corsair RM850i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uaccess"
-
-# EVGA GTX 1080 FTW
-KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
-	ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x3842", \
-	ATTRS{subsystem_device}=="0x6286", DRIVERS=="nvidia", TAG+="uaccess"
 
 # Gigabyte RGB Fusion 2.0 5702 Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uaccess"

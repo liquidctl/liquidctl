@@ -2,7 +2,7 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
-[![Status of the tests](https://github.com/jonasmalacofilho/liquidctl/workflows/tests/badge.svg)](https://github.com/jonasmalacofilho/liquidctl/commits/master)
+[![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/master)
 [![Status of the build for Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/master?svg=true&passingText=windows%20exe&failingText=failed&pendingText=building)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/master)
 
 
@@ -67,43 +67,33 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 The following devices are supported by this version of liquidctl.  See each guide for specific usage instructions and other pertinent information.
 
-### All-in-one liquid coolers
-
-| Device family | Usage | Notes |
-|:--- |:---:|:--- |
-| Corsair Hydro H80i GT, H100i GTX, H110i GTX | [guide](docs/asetek-690lc-guide.md) | <sup>_ZE_</sup> |
-| Corsair Hydro H80i v2, H100i v2, H115i | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
-| Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_E_</sup> |
-| Corsair Hydro H100i PRO XT, H115i PRO XT | [guide](docs/corsair-platinum-pro-xt-guide.md) | <sup>_E_</sup> |
-| EVGA CLC 120 (CL12), 240, 280, 360 | [guide](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> |
-| NZXT Kraken M22 | [guide](docs/kraken-x2-m2-guide.md) | |
-| NZXT Kraken X40, X60 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
-| NZXT Kraken X31, X41, X61 | [guide](docs/asetek-690lc-guide.md) | <sup>_LZE_</sup> |
-| NZXT Kraken X42, X52, X62, X72 | [guide](docs/kraken-x2-m2-guide.md) | |
-| NZXT Kraken X53, X63, X73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
-| NZXT Kraken Z63, Z73 | [guide](docs/kraken-x3-z3-guide.md) | <sup>_E_</sup> |
-
-### Fan controllers and power supplies
-
-| Device family | Usage | Notes |
-|:--- |:---:|:--- |
-| Corsair Commander Pro | [guide](docs/corsair-commander.md) | <sup>_N_</sup> |
-| Corsair Lighting Node Pro | [guide](docs/corsair-commander.md) | <sup>_N_</sup> |
-| Corsair HX750i, HX850i, HX1000i, HX1200i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| Corsair RM650i, RM750i, RM850i, RM1000i | [guide](docs/corsair-hxi-rmi-psu-guide.md) | |
-| NZXT E500, E650, E850 (PSUs) | [guide](docs/nzxt-e-series-psu-guide.md) | <sup>_E_</sup> |
-| NZXT Grid+ V3  | [guide](docs/nzxt-smart-device-v1-guide.md) | |
-| NZXT Smart Device | [guide](docs/nzxt-smart-device-v1-guide.md) | |
-| NZXT Smart Device V2 | [guide](docs/nzxt-hue2-guide.md) | |
-| NZXT RGB & Fan Controller | [guide](docs/nzxt-hue2-guide.md) | <sup>_E_</sup> |
-
-### Other parts
-
-| Device family | Usage | Notes |
-|:--- |:---:|:--- |
-| Gigabyte RGB Fusion 2.0 Motherboards | [guide](docs/gigabyte-rgb-fusion2-guide.md) | <sup>_E_</sup> |
-| EVGA GTX 1080 FTW | [guide](docs/nvidia-guide.md) | <sup>_EUXN_</sup> |
-| NZXT HUE 2, HUE 2 Ambient | [guide](docs/nzxt-hue2-guide.md) | |
+| Type | Device/guide | Bus | Notes |
+| :-: | :-- | :-: | :-- |
+| AIO liquid cooler | [Corsair Hydro H100i PRO XT, H115i PRO XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
+| AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
+| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
+| AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
+| AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
+| AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
+| AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
+| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
+| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander.md) | <sup>_EN_</sup> |
+| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
+| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_EUXN_</sup> |
+| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_EUXN_</sup> |
+| Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
+| Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_E_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
@@ -118,7 +108,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 Packages for liquidctl are available for certain Linux distributions and package managers:
 
  - Alpine Linux: [liquidctl](https://pkgs.alpinelinux.org/packages?name=liquidctl)
- - ArchLinux/Manjaro: [liquidctl<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
+ - ArchLinux: [liquidctl](https://www.archlinux.org/packages/community/any/liquidctl/), [liquidctl-git<sup>AUR</sup>](https://aur.archlinux.org/packages/liquidctl-git/)
  - Fedora: [liquidctl](https://src.fedoraproject.org/rpms/liquidctl)
  - Gentoo: [app-misc/liquidctl<sup>GURU</sup>](https://cgit.gentoo.org/repo/proj/guru.git/tree/app-misc/liquidctl)
 
@@ -127,12 +117,12 @@ On other distributions, or when more control is desired, liquidctl can be instal
 | Dependency | Arch Linux | Fedora | Ubuntu |
 | --- | --- | --- | --- |
 | Python 3.6+ | python | python3 | python3 |
-| libusb-1.0 | libusb-1.0 | libusbx | libusb-1.0-0 |
 | pkg_resources | python-setuptools | python3-setuptools | python3-pkg-resources |
 | docopt | python-docopt | python3-docopt | python3-docopt |
-| PyUSB | python-pyusb | python3-pyusb | python3-usb |
 | cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
-| smbus (optional) | i2c-tools | python3-i2c-tools | python3-smbus |
+| PyUSB | python-pyusb | python3-pyusb | python3-usb |
+| libusb-1.0 | libusb-1.0 | libusbx | libusb-1.0-0 |
+| smbus | i2c-tools | python3-i2c-tools | python3-smbus |
 
 Setuptools and, optionally, pip and pytest are needed to locally test and manually install liquidctl:
 
@@ -154,7 +144,7 @@ To install a release from PyPI, *pip* should be used:
 For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
-$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ git clone https://github.com/liquidctl/liquidctl
 $ cd liquidctl
 $ pytest  # optional step
 $ python -m liquidctl.cli <args>...
@@ -181,9 +171,9 @@ Optional steps:
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/jonasmalacofilho/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
 
-Executables for previous releases can be found in the assets of the [Releases](https://github.com/jonasmalacofilho/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
+Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
 Products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disapear from liquidctl.
 
@@ -205,7 +195,7 @@ To install any release from PyPI, *pip* should be used:
 For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
-> git clone https://github.com/jonasmalacofilho/liquidctl
+> git clone https://github.com/liquidctl/liquidctl
 > cd liquidctl
 > python -m liquidctl.cli <args>...
 > pip install .
@@ -237,7 +227,7 @@ $ pip3 install liquidctl==<version>
 For the latest changes and to contribute back to the project, it is best to clone the source code repository.  You can directly execute the code, or install it from that local copy.
 
 ```
-$ git clone https://github.com/jonasmalacofilho/liquidctl
+$ git clone https://github.com/liquidctl/liquidctl
 $ cd liquidctl
 $ python3 -m liquidctl.cli <args>...
 $ pip3 install .
@@ -384,7 +374,7 @@ Make sure that liquidctl is available in the context where the batch file will r
 
 When not using a pre-built liquidctl executable, try installing Python with the option to set the PATH variable enabled, or manually add the necessary folders to the PATH.
 
-A slightly more complex example can be seen in [issue #14](https://github.com/jonasmalacofilho/liquidctl/issues/14#issuecomment-456519098) ("Can I autostart liquidctl on Windows?"), that uses the LEDs to convey progress or eventual errors.  Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) is also a good read.
+A slightly more complex example can be seen in [issue #14](https://github.com/liquidctl/liquidctl/issues/14#issuecomment-456519098) ("Can I autostart liquidctl on Windows?"), that uses the LEDs to convey progress or eventual errors.  Chris' guide on [Replacing NZXT’s CAM software on Windows for Kraken](https://codecalamity.com/replacing-nzxts-cam-software-on-windows-for-kraken/) is also a good read.
 
 As an alternative to using Task Scheduler, the batch file can simply be placed in the startup folder; you can run `shell:startup` to [find out where that is](https://support.microsoft.com/en-us/help/4026268/windows-10-change-startup-apps).
 
@@ -461,7 +451,7 @@ Alternatively to running liquidctl as root (or with `sudo`), you can install the
 
 ### Other problems
 
-If your problem is not listed here, try searching the [issues](https://github.com/jonasmalacofilho/liquidctl/issues).  If no issue matches your problem, you still need help, or you have found a bug, please open one.
+If your problem is not listed here, try searching the [issues](https://github.com/liquidctl/liquidctl/issues).  If no issue matches your problem, you still need help, or you have found a bug, please open one.
 
 When commenting on an issue, please describe the problem in as much detail as possible.  List your operating system and the specific devices you own.
 
@@ -478,7 +468,8 @@ You are also encouraged to contribute to the documentation and to these examples
 ## License
 
 liquidctl – monitor and control liquid coolers and other devices.  
-Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey and contributors
+Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey, Marshall Asch and
+contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
@@ -512,7 +503,7 @@ file.
 
 Open-source graphical interface to control many different types of RGB devices.
 
-### [jonasmalacofilho/liquidtux](https://github.com/jonasmalacofilho/liquidtux)
+### [liquidctl/liquidtux](https://github.com/liquidctl/liquidtux)
 
 Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allows standard monitoring tools (for example lm-sensors, or tools built on top of it) to read sensor data from Kraken X42/X52/X62/X72 coolers and the Smart Device (V1).
 
@@ -520,6 +511,6 @@ Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allo
 
 Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl, and joining them is a great way to get involved.
 
-### [jonasmalacofilho/liquidctl-device-data](https://github.com/jonasmalacofilho/liquidctl-device-data)
+### [liquidctl/collected-device-data](https://github.com/liquidctl/collected-device-data)
 
 Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyzes.

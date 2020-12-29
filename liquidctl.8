@@ -282,8 +282,8 @@ Mode	logo	ring	#colors
 .PP
 When applicable the animation speed can be set with
 .BI \-\-speed= value ,
-where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
-\fIfast\fR, \fIfastest\fR.
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
 .
 .SS NZXT Kraken X53, X63, X73
 .SS NZXT Kraken Z63, Z73
@@ -320,8 +320,8 @@ Mode	#colors
 .PP
 When applicable the animation speed can be set with
 .BI \-\-speed= value ,
-where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
-\fIfast\fR, \fIfastest\fR.
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
 .
 .SS Corsair HX750i, HX850i, HX1000i, HX1200i
 .SS Corsair RM650i, RM750i, RM850i, RM1000i
@@ -375,8 +375,8 @@ Mode	#colors
 .PP
 When applicable the animation speed can be set with
 .BI \-\-speed= value ,
-where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
-\fIfast\fR, \fIfastest\fR.
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
 .
 .SS NZXT Smart Device V2
 .SS NZXT RGB & Fan Controller
@@ -414,8 +414,44 @@ Mode	#colors
 .PP
 When applicable the animation speed can be set with
 .BI \-\-speed= value ,
-where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
-\fIfast\fR, \fIfastest\fR.
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
+.
+.SS ASUS Strix RTX 2080 Ti OC
+Fan channels: none.
+.PP
+Lighting channels: \fIled\fR.
+.TS
+l c
+----
+l c .
+Mode	#colors
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIflash\fR	1
+\fIbreathing\fR	1
+\fIrainbow\fR	0
+.TE
+.
+.SS Corsair Vengeance RGB
+Fan channels: none.
+.PP
+Lighting channels: \fIled\fR.
+.TS
+l c
+----
+l c .
+Mode	#colors
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIbreathing\fR	1\(en7
+\fIfading\fR	2\(en7
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
 .
 .SS Gigabyte RGB Fusion 2.0 5702 Controller
 .SS Gigabyte RGB Fusion 2.0 8297 Controller
@@ -436,8 +472,8 @@ Mode	#colors
 .PP
 When applicable the animation speed can be set with
 .BI \-\-speed= value ,
-where the allowed values are: \fIslowest\fR, \fIslow\fR, \fInormal\fR,
-\fIfast\fR, \fIfastest\fR, \fIludicrous\fR.
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR, \fIludicrous\fR.
 .
 .SS EVGA GTX 1080 FTW
 Fan channels: none.
@@ -457,6 +493,6 @@ Mode	#colors
 .SH SEE ALSO
 The complete documentation is available in
 the project's sources and
-.UR https://github.com/jonasmalacofilho/liquidctl
+.UR https://github.com/liquidctl/liquidctl
 homepage
 .UE .

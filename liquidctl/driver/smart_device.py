@@ -312,7 +312,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
             'speed_channel_count': 0,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x2009, None, 'NZXT RGB & Fan Controller (experimental)', {
+        (0x1e71, 0x2009, None, 'NZXT RGB & Fan Controller', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),

@@ -77,13 +77,16 @@ class MockHidapiDevice:
             # length dictates the size of the buffer, and if it's not large
             # enough "ioctl (GFEATURE): Value too large for defined data type"
             # may happen on Linux; see:
-            # https://github.com/jonasmalacofilho/liquidctl/issues/151#issuecomment-665119675
+            # https://github.com/liquidctl/liquidctl/issues/151#issuecomment-665119675
             assert length >= len(data) + 1, 'buffer not large enough for received report'
             return [number] + list(data)[:length]
         return None
 
     def send_feature_report(self, data):
         return self.write(data)
+
+
+VirtualEeprom = namedtuple('VirtualEeprom', ['name', 'data'])
 
 
 class VirtualSmbus:
@@ -93,7 +96,7 @@ class VirtualSmbus:
                  parent_driver='virtual'):
 
         self._open = False
-        self._data = [[0] * register_count] * address_count
+        self._data = [ [0] * register_count for _ in range(address_count) ] 
 
         self.name = name
         self.description = description
@@ -116,6 +119,16 @@ class VirtualSmbus:
             raise OSError('closed')
         return self._data[address][register]
 
+    def read_word_data(self, address, register):
+        if not self._open:
+            raise OSError('closed')
+        return self._data[address][register]
+
+    def read_block_data(self, address, register):
+        if not self._open:
+            raise OSError('closed')
+        return self._data[address][register]
+
     def write_byte(self, address, value):
         if not self._open:
             raise OSError('closed')
@@ -126,5 +139,21 @@ class VirtualSmbus:
             raise OSError('closed')
         self._data[address][register] = value
 
+    def write_word_data(self, address, register, value):
+        if not self._open:
+            raise OSError('closed')
+        self._data[address][register] = value
+
+    def write_block_data(self, address, register, data):
+        if not self._open:
+            raise OSError('closed')
+        self._data[address][register] = data
+
     def close(self):
         self._open = False
+
+    def emulate_eeprom_at(self, address, name, data):
+        self._data[address] = VirtualEeprom(name, data)  # hack
+
+    def load_eeprom(self, address):
+        return self._data[address]  # hack

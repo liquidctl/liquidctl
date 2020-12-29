@@ -16,6 +16,9 @@ class Canary(SmbusDriver):
         # there is no justification for calling connect on this test driver
         raise RuntimeError('forbidden')
 
+    def __repr__(self):
+        return repr(self._smbus)
+
 
 def replace_smbus(replacement, monkeypatch):
     import liquidctl.driver.smbus
@@ -30,16 +33,13 @@ def replace_smbus(replacement, monkeypatch):
 
 @pytest.fixture
 def emulated_smbus(monkeypatch):
+    """Replace the SMBus implementation in liquidctl.driver.smbus."""
+
     class SMBus:
         def __init__(self, number):
             pass
 
     return replace_smbus(SMBus, monkeypatch)
-
-
-@pytest.fixture
-def no_smbus(monkeypatch):
-    return replace_smbus(None, monkeypatch)
 
 
 def test__helper_fixture_replaces_real_smbus_implementation(emulated_smbus, tmpdir):
@@ -49,11 +49,6 @@ def test__helper_fixture_replaces_real_smbus_implementation(emulated_smbus, tmpd
     bus.open()
 
     assert type(bus._smbus) == emulated_smbus
-
-
-def test_probing_is_aborted_if_smbus_module_is_unavailable(no_smbus):
-    discovered = Canary.find_supported_devices()
-    assert discovered == []
 
 
 def test_filter_by_usb_port_yields_no_devices(emulated_smbus):
@@ -118,16 +113,18 @@ def emulated_device(tmpdir, emulated_smbus):
     return (bus, dev)
 
 
-def test_connect_is_unsafe(emulated_device, caplog):
+def test_connect_is_unsafe(emulated_device):
     bus, dev = emulated_device
 
     def mock_open():
-        raise RuntimeError('opened')
+        nonlocal opened
+        opened = True
 
     bus.open = mock_open
-    dev.connect()
+    opened = False
 
-    assert 'requires unsafe' in caplog.text
+    dev.connect()
+    assert not opened
 
 
 def test_connects(emulated_device):
@@ -143,3 +140,19 @@ def test_connects(emulated_device):
     with dev.connect(unsafe='smbus') as cm:
         assert cm == dev
         assert opened
+
+
+def test_loading_unnavailable_eeprom_returns_none(emulated_device):
+    bus, dev = emulated_device
+    assert bus.load_eeprom(0x51) == None
+
+
+def test_loads_eeprom(emulated_device):
+    bus, dev = emulated_device
+
+    spd = bus._i2c_dev.joinpath('0-0051')
+    spd.mkdir()
+    spd.joinpath('eeprom').write_bytes(b'012345')
+    spd.joinpath('name').write_text('name\n')
+
+    assert bus.load_eeprom(0x51) == ('name', b'012345')

@@ -87,12 +87,12 @@ class BaseDriver:
 
     @property
     def vendor_id(self):
-        """Numeric vendor identifier."""
+        """Numeric vendor identifier, or None if N/A."""
         raise NotImplementedError()
 
     @property
     def product_id(self):
-        """Numeric product identifier."""
+        """Numeric product identifier, or None if N/A."""
         raise NotImplementedError()
 
     @property

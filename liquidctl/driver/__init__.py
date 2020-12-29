@@ -33,6 +33,7 @@ from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
 
 if sys.platform == 'linux':
+    from liquidctl.driver import ddr4
     from liquidctl.driver import nvidia
 
 

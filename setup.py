@@ -61,7 +61,7 @@ class custom_develop(develop):
         super().run()
 
 
-HOME = 'https://github.com/jonasmalacofilho/liquidctl'
+HOME = 'https://github.com/liquidctl/liquidctl'
 VERSION = get_static_version()
 SUPPORTED_URL = '{}/tree/v{}#supported-devices'.format(HOME, VERSION)
 DOC_URL = '{}/tree/v{}#liquidctl--liquid-cooler-control'.format(HOME, VERSION)
@@ -71,10 +71,8 @@ make_extraversion()
 
 install_requires = ['docopt', 'pyusb', 'hidapi']
 
-# for now 'smbus' is optional, but to require it add:
-#
-#     if sys.platform == 'linux':
-#         install_requires.append('smbus')
+if sys.platform == 'linux':
+    install_requires.append('smbus')
 
 setuptools.setup(
     name='liquidctl',

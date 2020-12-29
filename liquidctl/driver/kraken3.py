@@ -115,7 +115,7 @@ _STATIC_VALUE = {
 }
 
 # Speed scale/timing bytes
-# scale -> (slowest, slow, normal, fast, fastest)
+# scale -> (slowest, slower, normal, faster, fastest)
 _SPEED_VALUE = {
     0:  ([0x32, 0x00], [0x32, 0x00], [0x32, 0x00], [0x32, 0x00], [0x32, 0x00]),
     1:  ([0x50, 0x00], [0x3c, 0x00], [0x28, 0x00], [0x14, 0x00], [0x0a, 0x00]),
@@ -144,7 +144,7 @@ class KrakenX3(UsbHidDriver):
     """Fourth-generation Kraken X liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73) (experimental)', {
+        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENX,
             'color_channels': _COLOR_CHANNELS_KRAKENX,
         })
@@ -213,7 +213,7 @@ class KrakenX3(UsbHidDriver):
         if msg[15:17] == [0xff, 0xff]:
             LOGGER.warning('unexpected temperature reading, possible firmware fault;')
             LOGGER.warning('try resetting the device or updating the firmware')
-            LOGGER.warning('(see https://github.com/jonasmalacofilho/liquidctl/issues/172)')
+            LOGGER.warning('(see https://github.com/liquidctl/liquidctl/issues/172)')
         return [
             ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),

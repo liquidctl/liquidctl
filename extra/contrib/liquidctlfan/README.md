@@ -1,6 +1,6 @@
 # liquidctlfan a wrapper script for liquidctl to control your fans
 When I built my first water-cooled PC a few months ago, using Linux, I thought it would be easy to control or regulate it. I quickly found liquidctl on Github and after a few weeks I could control my NZXT X73 under Linux. Thanks a lot for that!
-Unfortunately I found out that I couldn't control the fans in relation to the CPU temperature. (see https://github.com/jonasmalacofilho/liquidctl/issues/118)
+Unfortunately I found out that I couldn't control the fans in relation to the CPU temperature. (see https://github.com/liquidctl/liquidctl/issues/118)
 
 ## Components
 liquidctlfan - Wrapper script as a small demon
