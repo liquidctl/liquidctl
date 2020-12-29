@@ -83,13 +83,13 @@ def test_quoted_empty():
     assert _quoted() == ''
 
 def test_quoted_single():
-    assert _quoted("one arg") == "'one arg'"
+    assert _quoted('one arg') == "'one arg'"
 
 def test_quoted_valid():
-    assert _quoted("one", "two") == "'one', 'two'"
+    assert _quoted('one', 'two') == "'one', 'two'"
 
 def test_quoted_not_string():
-    assert _quoted("test", 500) == "'test', 500"
+    assert _quoted('test', 500) == "'test', 500"
 
 ##### fan modes
 def test_get_fan_mode_description_auto():
@@ -762,9 +762,9 @@ def test_set_color_hardware_off(commanderProDevice):
 
     assert effects == None
 
-@pytest.mark.parametrize("directionStr,expected", [
-    ("forward", 0x01), ("FORWARD", 0x01), ("fOrWaRd", 0x01),
-    ("backward", 0x00), ("BACKWARD", 0x00), ("BaCkWaRd", 0x00)
+@pytest.mark.parametrize('directionStr,expected', [
+    ('forward', 0x01), ('FORWARD', 0x01), ('fOrWaRd', 0x01),
+    ('backward', 0x00), ('BACKWARD', 0x00), ('BaCkWaRd', 0x00)
     ])
 def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expected):
     responses = [
@@ -850,10 +850,10 @@ def test_set_color_hardware_speed_default(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
-@pytest.mark.parametrize("speedStr,expected", [
-    ("slow", 0x02), ("SLOW", 0x02), ("SlOw", 0x02),
-    ("fast", 0x00), ("FAST", 0x00), ("fAsT", 0x00),
-    ("medium", 0x01), ("MEDIUM", 0x01), ("MeDiUm", 0x01)
+@pytest.mark.parametrize('speedStr,expected', [
+    ('slow', 0x02), ('SLOW', 0x02), ('SlOw', 0x02),
+    ('fast', 0x00), ('FAST', 0x00), ('fAsT', 0x00),
+    ('medium', 0x01), ('MEDIUM', 0x01), ('MeDiUm', 0x01)
     ])
 def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
     responses = [
@@ -912,7 +912,7 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
-@pytest.mark.parametrize("startLED,expected", [
+@pytest.mark.parametrize('startLED,expected', [
     (1, 0x00), (30, 0x1D), (92, 0x5B)
     ])
 def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
@@ -943,7 +943,7 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
     assert effects != None
     assert len(effects) == 1
 
-@pytest.mark.parametrize("numLED,expected", [
+@pytest.mark.parametrize('numLED,expected', [
     (1, 0x01), (30, 0x1E), (96, 0x5f)
     ])
 def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
@@ -1032,7 +1032,7 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
-@pytest.mark.parametrize("channel,expected", [
+@pytest.mark.parametrize('channel,expected', [
     ('led1', 0x00), ('led', 0x00), ('LeD1', 0x00),
     ('led2', 0x01), ('LED2', 0x01), ('LeD2', 0x01)
     ])
@@ -1186,7 +1186,7 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
-@pytest.mark.parametrize("modeStr,expected", [
+@pytest.mark.parametrize('modeStr,expected', [
     ('rainbow', 0x00), ('color_shift', 0x01), ('color_pulse', 0x02),
     ('color_wave', 0x03), ('fixed', 0x04), ('visor', 0x06), ('marquee', 0x07), ('blink', 0x08),
     ('sequential', 0x09), ('sEqUeNtIaL', 0x09), ('rainbow2', 0x0A)

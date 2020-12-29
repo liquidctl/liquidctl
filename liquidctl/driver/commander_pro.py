@@ -480,14 +480,20 @@ class CommanderPro(UsbHidDriver):
         self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
 
         # start sending the led commands
-        self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel]);               # clear group ?
-        self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel]);               # clear led ?
-        self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]); # this will put the channel into hardware mode. (so that the effect does not need to be constantly sent to the device.
+        self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel]);
+        self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel]);
+        self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]);
 
 
         for effect in saved_effects:
-            # generate the LED set command, keep all the LED's the same if only one channel is being set.
-            config = [effect.get('channel'), effect.get('start_led'), effect.get('num_leds'), effect.get('mode'), effect.get('speed'), effect.get('direction'), effect.get('random_colors'), 0xff] + effect.get('colors')
+            config = [ effect.get('channel'),
+                effect.get('start_led'),
+                effect.get('num_leds'),
+                effect.get('mode'),
+                effect.get('speed'),
+                effect.get('direction'),
+                effect.get('random_colors'),
+                0xff] + effect.get('colors')
             self._send_command(_CMD_LED_EFFECT, config);
 
         self._send_command(_CMD_LED_COMMIT, [0xff]);
