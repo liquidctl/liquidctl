@@ -7,7 +7,7 @@
 # Users can place this file in the `completions` subdir of
 # $BASH_COMPLETION_USER_DIR (defaults to `$XDG_DATA_HOME/bash-completion` or
 # `~/.local/share/bash-completion` if $XDG_DATA_HOME is not set).
-# 
+#
 # Distros should instead use the directory returned by
 #     pkg-config --variable=completionsdir bash-completion
 #
@@ -15,7 +15,7 @@
 #
 # [1] https://github.com/scop/bash-completion
 #
-# Copyright (C) 2020-2020 Marshall Asch 
+# Copyright (C) 2020-2020 Marshall Asch
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # logging method
@@ -99,6 +99,10 @@ _liquidctl_main() {
     --alert-color
     --pump-mode
     --unsafe
+    --direction
+    --start-led
+    --num-leds
+    --temp-sensor
     "
 
     # generate options list and remove any flag that has already been given
@@ -113,8 +117,8 @@ _liquidctl_main() {
     options=$(echo "${options[@]}")
 
 
-    
-    # This part will check if it is currently completing a flag 
+
+    # This part will check if it is currently completing a flag
     local previous=$3
     local cur="${COMP_WORDS[COMP_CWORD]}"
 
@@ -159,16 +163,15 @@ _liquidctl_main() {
             COMPREPLY=($(compgen -W "$(_list_port_options)" -- "$cur"))
             return
             ;;
-        --speed | --time-per-color | --time-off | --alert-threshold | --alert-color | --unsafe )
-            COMPREPLY=()
-            return
-            ;;
         --pump-mode)
             COMPREPLY=($(compgen -W "balanced quiet extreme" -- "$cur"))
             return
             ;;
+        --* | -[a-z]*1)
+            COMPREPLY=()
+            return
+            ;;
         esac
-
 
     # This will handle auto completing arguments even if they are given at the end of the command
     case "$cur" in
@@ -217,7 +220,7 @@ _liquidctl_main() {
 }
 
 _liquidctl_initialize_command ()
-{  
+{
     local i=1 subcommand_index
 
   # find the sub command (either a fan or an led to set)
@@ -292,7 +295,7 @@ _liquidctl_set_fan ()
     # find the sub command (either a fan or an led to set)
     while [[ $i -lt $COMP_CWORD ]]; do
         local s="${COMP_WORDS[i]}"
- 
+
         if [[ "$s" = "speed" ]]; then
             found=1
             break
