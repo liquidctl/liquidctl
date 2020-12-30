@@ -40,7 +40,7 @@ Corsair Lighting Node Pro (experimental)
 The Lighting Node Pro does not have a status message.
 
 
-The Commander pro is able to retrieve the current fan speeds as well as
+The Commander Pro is able to retrieve the current fan speeds as well as
 the current temperature of any connected temperature probes. Additionally
 the Commander Pro is able to retrieve the voltages from the 3.3, 5, and 12
 volt buses.
@@ -107,7 +107,7 @@ normalization of the profile and enforcement of the (60°C, 5000) fail-safe._
 ## Controlling the LEDs
 
 
-The Commander Pro has 2 lighting channels that can have up to 96 leds connected to each.
+The devices have 2 lighting channels that can have up to 96 leds connected to each.
 LED channels are specified as either `led1` or `led2` with channel 1 being the default.
 
 The table bellow summarizes the available modes, and their associated

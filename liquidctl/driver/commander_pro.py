@@ -115,7 +115,7 @@ class CommanderPro(UsbHidDriver):
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C10, None, 'Corsair Commander Pro (experimental)',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
-        (0x1B1C, 0x0C0B, None, 'Corsair Lighting Node Pro(experimental)',
+        (0x1B1C, 0x0C0B, None, 'Corsair Lighting Node Pro (experimental)',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
     ]
 
@@ -323,7 +323,7 @@ class CommanderPro(UsbHidDriver):
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 self._send_command(_CMD_SET_FAN_DUTY,[fan, duty])
 
-    def set_speed_profile(self, channel, profile, **kwargs):
+    def set_speed_profile(self, channel, profile, temperature_sensor=1, **kwargs):
         """Set fan or fans to follow a speed duty profile.
 
         Valid channel values are 'fanN', where N >= 1 is the fan number, and
@@ -334,10 +334,6 @@ class CommanderPro(UsbHidDriver):
         with temperatures in Celsius and duty values in percentage.  The last
         point should set the fan to 100% duty cycle, or be omitted; in the
         latter case the fan will be set to max out at 60°C.
-
-
-        there are 6 points on the fan curve, temp, rpm pairs
-        Send one message per fan that is being set
         """
 
         # send fan num, temp sensor, check to make sure it is actually enabled, and do not let the user send external sensor
@@ -351,8 +347,7 @@ class CommanderPro(UsbHidDriver):
         profile = _prepare_profile(profile)
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
-        temp_sensor = kwargs.get('temp_sensor', 1) # need to make sure this is set and in range 1-4 or ext
-        temp_sensor = clamp(temp_sensor, 1, self._temp_probs)
+        temp_sensor = clamp(temperature_sensor, 1, self._temp_probs)
 
         sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
 
@@ -383,7 +378,7 @@ class CommanderPro(UsbHidDriver):
                 buf[0] = fan
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
-    def set_color(self, channel, mode_str, colors, **kwargs):
+    def set_color(self, channel, mode_str, colors, direction='forward', speed='medium', start_led=1, maximum_leds=1, **kwargs):
         """Set the color of each LED.
 
         In reality the device does not have the concept of different channels
@@ -425,12 +420,6 @@ class CommanderPro(UsbHidDriver):
 
         """
 
-        # direction is `forward` or `backward` default forward
-        # random or alternating is determined by the number of colors specified
-        # speed is `fast`, `medium` or `slow` default fast
-        #
-
-
         # a special mode to clear the current led settings.
         # this is usefull if the the user wants to use a led mode for multiple devices
         if mode_str == 'clear':
@@ -442,13 +431,10 @@ class CommanderPro(UsbHidDriver):
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
         colors = list(c)
 
-        direction = kwargs.get('direction', 'forward').lower()
-        speed = kwargs.get('speed', 'medium').lower()
-        start_led = kwargs.get('start_led', 1)
-        num_leds = kwargs.get('num_leds', 1);
+        direction = direction.lower()
+        speed = speed.lower()
         channel = channel.lower()
         mode = mode_str.lower()
-
 
         # default to channel 1 if channel 2 is not specified.
         led_channel = 1 if channel == 'led2' else 0
@@ -456,7 +442,7 @@ class CommanderPro(UsbHidDriver):
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
         start_led = clamp(start_led, 1, 96) - 1
-        num_leds = clamp(num_leds, 1, 96-start_led-1) # there is a current firmware limitation of 96 led's per channel
+        num_leds = clamp(maximum_leds, 1, 96-start_led-1) # there is a current firmware limitation of 96 led's per channel
         random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
         mode = _MODES.get(mode, -1)
 
@@ -483,7 +469,6 @@ class CommanderPro(UsbHidDriver):
         self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel]);
         self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel]);
         self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]);
-
 
         for effect in saved_effects:
             config = [ effect.get('channel'),

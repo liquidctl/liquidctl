@@ -101,8 +101,8 @@ _liquidctl_main() {
     --unsafe
     --direction
     --start-led
-    --num-leds
-    --temp-sensor
+    --maximum-leds
+    --temperature-sensor
     "
 
     # generate options list and remove any flag that has already been given

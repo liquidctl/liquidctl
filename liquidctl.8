@@ -140,6 +140,15 @@ Threshold temperature for a visual alert (degrees Celsius).
 .TP
 .BI \-\-alert\-color= color
 Color used by the visual high temperature alert.
+.TP
+.BI \-\-direction= string
+If the pattern should move forward or backwards. [default: forward].
+.TP
+.BI \-\-start\-led= number
+The first led to start the effect at.
+.TP
+.BI \-\-maximum\-leds= number
+The number of LED's the effect should apply to.
 .
 .SS Other options
 .TP
@@ -151,6 +160,9 @@ Set the pump mode.
 .TP
 .B \-\-legacy\-690lc
 Use Asetek 690LC in legacy mode (old Krakens).
+.TP
+.B \-\-non\-volatile
+Store on non\-volatile controller memory.
 .TP
 .B \-\-unsafe= features
 Comman-separated bleeding-edge features to enable.
@@ -195,6 +207,37 @@ Internal data used by some drivers.
 .
 .SH DEVICE SPECIFICS
 .
+.SS Corsair Commander Pro
+.SS Corsair Lighting Node Pro
+Cooling channels: \fIfan\fR, \fIfan[1\-5]\fR. (Commander Pro only)
+.PP
+Lighting channels: \fIled1\fR, \fIled2\fR.
+.TS
+l c
+---
+l c .
+Mode	#colors
+\fIclear\fR	0
+\fIoff\fR	0
+\fIfixed\fR	1
+\fIcolor_shift\fR	2
+\fIcolor_pulse\fR	2
+\fIcolor_wave\fR	2
+\fIvisor\fR	2
+\fIblink\fR	2
+\fImarquee\fR	1
+\fIsequential\fR	1
+\fIrainbow\fR	0
+\fIrainbow2\fR	0
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIfast\fR, \fImedium\fR, \fIslow\fR.
+.PP
+When applicable the animation direction can be set with
+.BI \-\-direction= value ,
+where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .SS Corsair H80i GT, H100i GTX, H110i GTX
 .SS Corsair H80i v2, H100i v2, H115i
 .SS EVGA CLC 120 (CL12), 240, 280, 360

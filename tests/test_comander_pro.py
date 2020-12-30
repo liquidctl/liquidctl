@@ -579,7 +579,7 @@ def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
-    commanderProDevice.set_speed_profile('fan1', [(10, 500), (20, 1000)], temp_sensor=10)
+    commanderProDevice.set_speed_profile('fan1', [(10, 500), (20, 1000)], temperature_sensor=10)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -610,7 +610,7 @@ def test_set_speed_profile_no_temp_sensors(commanderProDevice):
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
     with pytest.raises(ValueError):
-        commanderProDevice.set_speed_profile('fan', [(10, 500), (20, 1000)], temp_sensor=1)
+        commanderProDevice.set_speed_profile('fan', [(10, 500), (20, 1000)], temperature_sensor=1)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -960,7 +960,7 @@ def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
-    commanderProDevice.set_color('led1', 'fixed', colors, start_led=1, num_leds=numLED)
+    commanderProDevice.set_color('led1', 'fixed', colors, start_led=1, maximum_leds=numLED)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -988,7 +988,7 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
-    commanderProDevice.set_color('led1', 'fixed', colors, start_led=50, num_leds=50)
+    commanderProDevice.set_color('led1', 'fixed', colors, start_led=50, maximum_leds=50)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -1017,7 +1017,7 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
-    commanderProDevice.set_color('led1', 'fixed', colors, start_led=1, num_leds=0)
+    commanderProDevice.set_color('led1', 'fixed', colors, start_led=1, maximum_leds=0)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -1269,7 +1269,7 @@ def test_set_color_hardware_multipe_commands(commanderProDevice):
         }
     commanderProDevice._data.store('saved_effects', [effect])
 
-    commanderProDevice.set_color('led1', 'fixed', [[0x00, 0x11, 0x22]], start_led=16, num_leds=5)
+    commanderProDevice.set_color('led1', 'fixed', [[0x00, 0x11, 0x22]], start_led=16, maximum_leds=5)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
