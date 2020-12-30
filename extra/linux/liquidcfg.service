@@ -1,0 +1,21 @@
+#
+# This is a systemd service
+# This gets put in /etc/systemd/system/
+#
+# Add the line: to the /etc/udev/rules/71-liquidctl.rules file
+# for each device that needs to be running before this unit runs
+#
+# SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="systemd"
+#
+
+[Unit]
+Description=Initializeation service for liquidctl
+After=dev-bus-usb-001-007.device dev-bus-usb-001-002.device
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/liquidctl initialize all
+ExecStart=/usr/local/bin/liquidctl set fan speed .......
+
+[Install]
+WantedBy=multi-user.target

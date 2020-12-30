@@ -30,6 +30,16 @@ After=dev-clc120.device
 ...
 ```
 
+### Alternate Format
+
+Instead of adding a `SYMLINK` to the udev rules the `TAG+="systemd"` field can be added instead.
+The device dependancy can be specified using the format `dev-bus-usb-<bus>-<device>.device` you can get the bus
+and the device number by using the `lsusb` command.
+The service can be set to wait for multiple devices to be ready by adding more devices to the list separated by spaces.
+
+An example systemd configuration file can be found [here](../../extra/linux/liquidcfg.service), in that example there
+are two devices that get initialized and then the fan speed gets set.
+
 With these changes in place, and after rebooting the system, the service should begin to wait for the devices before trying to starting.
 
 Notes:
