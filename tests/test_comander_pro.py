@@ -48,35 +48,37 @@ def lightingNodeProDevice():
 
 #### prepare profile
 def test_prepare_profile_valid_max_rpm():
-    assert _prepare_profile([[10, 400], [20, 5000]]) == [(10, 400), (20, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+    assert _prepare_profile([[10, 400], [20, 5000]], 60) == [(10, 400), (20, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
 def test_prepare_profile_add_max_rpm():
-    assert _prepare_profile([[10, 400]]) == [(10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
-    assert _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800]]) == [(10, 400), (20, 500), (30, 600), (40, 700), (50, 800), (60, 5000)]
+    assert _prepare_profile([[10, 400]], 60) == [(10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+    assert _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800]], 60) == [(10, 400), (20, 500), (30, 600), (40, 700), (50, 800), (60, 5000)]
 
 def test_prepare_profile_missing_max_rpm():
     with pytest.raises(ValueError):
-        _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800], [55, 900]])
+        _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800], [55, 900]], 60)
 
 def test_prepare_profile_full_set():
-    assert _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [45, 2000], [50, 5000]]) == [(10, 400), (20, 500), (30, 600), (40, 700), (45, 2000), (50, 5000)]
+    assert _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [45, 2000], [50, 5000]], 60) == [(10, 400), (20, 500), (30, 600), (40, 700), (45, 2000), (50, 5000)]
 
 def test_prepare_profile_too_many_points():
     with pytest.raises(ValueError):
-        _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800], [55, 900]])
+        _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800], [55, 900]], 60)
 
 def test_prepare_profile_no_points():
-    with pytest.raises(TypeError):
-        _prepare_profile()
+    assert _prepare_profile([], 60) == [(60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
 def test_prepare_profile_empty_list():
-    assert _prepare_profile([]) == [(60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+    assert _prepare_profile([], 60) == [(60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
 def test_prepare_profile_above_max_temp():
-    assert _prepare_profile([[10, 400], [70, 2000]]) == [(10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+    assert _prepare_profile([[10, 400], [70, 2000]], 60) == [(10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
 def test_prepare_profile_temp_low():
-    assert _prepare_profile([[-10, 400], [70, 2000]]) == [(-10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+    assert _prepare_profile([[-10, 400], [70, 2000]], 60) == [(-10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+
+def test_prepare_profile_max_temp():
+    assert _prepare_profile([], 100) == [(100, 5000), (100, 5000), (100, 5000), (100, 5000), (100, 5000), (100, 5000)]
 
 ##### quoted
 def test_quoted_empty():
@@ -245,17 +247,17 @@ def test_get_status_commander_pro(commanderProDevice):
         sent = commanderProDevice.device.sent
         assert len(sent) == 9
 
-        assert sent[0][1][0] == 0x11
-        assert sent[1][1][0] == 0x11
-        assert sent[2][1][0] == 0x11
+        assert sent[0].data[0] == 0x11
+        assert sent[1].data[0] == 0x11
+        assert sent[2].data[0] == 0x11
 
-        assert sent[3][1][0] == 0x12
-        assert sent[4][1][0] == 0x12
-        assert sent[5][1][0] == 0x12
+        assert sent[3].data[0] == 0x12
+        assert sent[4].data[0] == 0x12
+        assert sent[5].data[0] == 0x12
 
-        assert sent[6][1][0] == 0x21
-        assert sent[7][1][0] == 0x21
-        assert sent[8][1][0] == 0x21
+        assert sent[6].data[0] == 0x21
+        assert sent[7].data[0] == 0x21
+        assert sent[8].data[0] == 0x21
 
 def test_get_status_lighting_pro(lightingNodeProDevice):
 
@@ -276,8 +278,8 @@ def test_get_temp_valid_sensor_commander(commanderProDevice):
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
-    assert sent[0][1][0] == 0x11
-    assert sent[0][1][1] == 1
+    assert sent[0].data[0] == 0x11
+    assert sent[0].data[1] == 1
 
 def test_get_temp_invalid_sensor_low_commander(commanderProDevice):
     response = '000a8300000000000000000000000000'
@@ -332,8 +334,8 @@ def test_get_fan_rpm_valid_commander(commanderProDevice):
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
-    assert sent[0][1][0] == 0x21
-    assert sent[0][1][1] == 1
+    assert sent[0].data[0] == 0x21
+    assert sent[0].data[1] == 1
 
 def test_get_fan_rpm_invalid_low_commander(commanderProDevice):
 
@@ -435,9 +437,9 @@ def test_set_fixed_speed_low(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
 
-    assert sent[0][1][0] == 0x23
-    assert sent[0][1][1] == 0x03
-    assert sent[0][1][2] == 0x00
+    assert sent[0].data[0] == 0x23
+    assert sent[0].data[1] == 0x03
+    assert sent[0].data[2] == 0x00
 
 def test_set_fixed_speed_high(commanderProDevice):
     response = '00000000000000000000000000000000'
@@ -451,9 +453,9 @@ def test_set_fixed_speed_high(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
 
-    assert sent[0][1][0] == 0x23
-    assert sent[0][1][1] == 0x02
-    assert sent[0][1][2] == 0x64
+    assert sent[0].data[0] == 0x23
+    assert sent[0].data[1] == 0x02
+    assert sent[0].data[2] == 0x64
 
 def test_set_fixed_speed_valid(commanderProDevice):
 
@@ -467,9 +469,9 @@ def test_set_fixed_speed_valid(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
 
-    assert sent[0][1][0] == 0x23
-    assert sent[0][1][1] == 0x01
-    assert sent[0][1][2] == 0x32
+    assert sent[0].data[0] == 0x23
+    assert sent[0].data[1] == 0x01
+    assert sent[0].data[2] == 0x32
 
 def test_set_fixed_speed_valid_unconfigured(commanderProDevice):
 
@@ -504,17 +506,17 @@ def test_set_fixed_speed_valid_multi_fan(commanderProDevice):
         sent = commanderProDevice.device.sent
         assert len(sent) == 3
 
-        assert sent[0][1][0] == 0x23
-        assert sent[0][1][1] == 0x00
-        assert sent[0][1][2] == 0x32
+        assert sent[0].data[0] == 0x23
+        assert sent[0].data[1] == 0x00
+        assert sent[0].data[2] == 0x32
 
-        assert sent[1][1][0] == 0x23
-        assert sent[1][1][1] == 0x02
-        assert sent[1][1][2] == 0x32
+        assert sent[1].data[0] == 0x23
+        assert sent[1].data[1] == 0x02
+        assert sent[1].data[2] == 0x32
 
-        assert sent[2][1][0] == 0x23
-        assert sent[2][1][1] == 0x03
-        assert sent[2][1][2] == 0x32
+        assert sent[2].data[0] == 0x23
+        assert sent[2].data[1] == 0x03
+        assert sent[2].data[2] == 0x32
 
 def test_set_fixed_speed_lighting(lightingNodeProDevice):
     response = '00000000000000000000000000000000'
@@ -547,22 +549,22 @@ def test_set_speed_profile_valid_multi_fan(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 3
 
-    assert sent[0][1][0] == 0x25
-    assert sent[0][1][1] == 0x00
-    assert sent[0][1][2] == 0x00
+    assert sent[0].data[0] == 0x25
+    assert sent[0].data[1] == 0x00
+    assert sent[0].data[2] == 0x00
 
-    assert sent[0][1][3] == 0x03
-    assert sent[0][1][4] == 0xE8
-    assert sent[0][1][15] == 0x01
-    assert sent[0][1][16] == 0xF4
+    assert sent[0].data[3] == 0x03
+    assert sent[0].data[4] == 0xE8
+    assert sent[0].data[15] == 0x01
+    assert sent[0].data[16] == 0xF4
 
-    assert sent[1][1][0] == 0x25
-    assert sent[1][1][1] == 0x02
-    assert sent[1][1][2] == 0x00
+    assert sent[1].data[0] == 0x25
+    assert sent[1].data[1] == 0x02
+    assert sent[1].data[2] == 0x00
 
-    assert sent[2][1][0] == 0x25
-    assert sent[2][1][1] == 0x03
-    assert sent[2][1][2] == 0x00
+    assert sent[2].data[0] == 0x25
+    assert sent[2].data[1] == 0x03
+    assert sent[2].data[2] == 0x00
 
 def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
     responses = [
@@ -585,14 +587,14 @@ def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
 
-    assert sent[0][1][0] == 0x25
-    assert sent[0][1][1] == 0x00
-    assert sent[0][1][2] == 0x03
+    assert sent[0].data[0] == 0x25
+    assert sent[0].data[1] == 0x00
+    assert sent[0].data[2] == 0x03
 
-    assert sent[0][1][3] == 0x03
-    assert sent[0][1][4] == 0xE8
-    assert sent[0][1][15] == 0x01
-    assert sent[0][1][16] == 0xF4
+    assert sent[0].data[3] == 0x03
+    assert sent[0].data[4] == 0xE8
+    assert sent[0].data[15] == 0x01
+    assert sent[0].data[16] == 0xF4
 
 def test_set_speed_profile_no_temp_sensors(commanderProDevice):
     responses = [
@@ -636,14 +638,14 @@ def test_set_speed_profile_valid(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 1
 
-    assert sent[0][1][0] == 0x25
-    assert sent[0][1][1] == 0x02
-    assert sent[0][1][2] == 0x00
+    assert sent[0].data[0] == 0x25
+    assert sent[0].data[1] == 0x02
+    assert sent[0].data[2] == 0x00
 
-    assert sent[0][1][3] == 0x03
-    assert sent[0][1][4] == 0xE8
-    assert sent[0][1][15] == 0x01
-    assert sent[0][1][16] == 0xF4
+    assert sent[0].data[3] == 0x03
+    assert sent[0].data[4] == 0xE8
+    assert sent[0].data[15] == 0x01
+    assert sent[0].data[16] == 0xF4
 
 def test_set_speed_profile_lighting(lightingNodeProDevice):
     responses = [
@@ -755,8 +757,8 @@ def test_set_color_hardware_off(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][4] == 0x04
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[4] == 0x04
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -786,8 +788,8 @@ def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expecte
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][6] == expected
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[6] == expected
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -814,8 +816,8 @@ def test_set_color_hardware_direction_default(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][6] == 0x01
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[6] == 0x01
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -842,8 +844,8 @@ def test_set_color_hardware_speed_default(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][5] == 0x01
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[5] == 0x01
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -875,8 +877,8 @@ def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][5] == expected
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[5] == expected
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -903,9 +905,9 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][2] == 0x00  # start led
-    assert sent[3][1][3] == 0x01  # num leds
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[2] == 0x00  # start led
+    assert sent[3].data[3] == 0x01  # num leds
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -935,8 +937,8 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][2] == expected  # start led
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[2] == expected  # start led
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -966,8 +968,8 @@ def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][3] == expected  # num leds
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[3] == expected  # num leds
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -994,9 +996,9 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][2] == 0x31  # start led
-    assert sent[3][1][3] == 0x2E  # num led
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[2] == 0x31  # start led
+    assert sent[3].data[3] == 0x2E  # num led
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1023,9 +1025,9 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][2] == 0x00  # start led
-    assert sent[3][1][3] == 0x01  # num led
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[2] == 0x00  # start led
+    assert sent[3].data[3] == 0x01  # num led
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1056,11 +1058,11 @@ def test_set_color_hardware_channel(commanderProDevice, channel, expected):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[0][1][1] == expected
-    assert sent[1][1][1] == expected
-    assert sent[2][1][1] == expected
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][1] == expected
+    assert sent[0].data[1] == expected
+    assert sent[1].data[1] == expected
+    assert sent[2].data[1] == expected
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[1] == expected
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1087,8 +1089,8 @@ def test_set_color_hardware_random_color(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][7] == 0x01
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[7] == 0x01
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1115,8 +1117,8 @@ def test_set_color_hardware_not_random_color(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][7] == 0x00
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[7] == 0x00
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1143,12 +1145,12 @@ def test_set_color_hardware_too_many_colors(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][7] == 0x00
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[7] == 0x00
 
-    assert sent[3][1][9] == 0xaa
-    assert sent[3][1][10] == 0xbb
-    assert sent[3][1][11] == 0xcc
+    assert sent[3].data[9] == 0xaa
+    assert sent[3].data[10] == 0xbb
+    assert sent[3].data[11] == 0xcc
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1174,12 +1176,12 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][7] == 0x01
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[7] == 0x01
 
-    assert sent[3][1][9] == 0x00
-    assert sent[3][1][10] == 0x00
-    assert sent[3][1][11] == 0x00
+    assert sent[3].data[9] == 0x00
+    assert sent[3].data[10] == 0x00
+    assert sent[3].data[11] == 0x00
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1210,8 +1212,8 @@ def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
-    assert sent[3][1][0] == 0x35
-    assert sent[3][1][4] == expected
+    assert sent[3].data[0] == 0x35
+    assert sent[3].data[4] == expected
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1275,8 +1277,8 @@ def test_set_color_hardware_multipe_commands(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 6
 
-    assert sent[3][1][0] == 0x35
-    assert sent[4][1][0] == 0x35
+    assert sent[3].data[0] == 0x35
+    assert sent[4].data[0] == 0x35
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 

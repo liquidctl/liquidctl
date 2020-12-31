@@ -24,9 +24,8 @@ from enum import Enum, unique
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
-from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile
+from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile, check_unsafe
 from liquidctl.error import NotSupportedByDevice
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -66,6 +65,7 @@ _FAN_MODE_PWM = 0x02
 
 _PROFILE_LENGTH = 6
 _CRITICAL_TEMPERATURE = 60
+_CRITICAL_TEMPERATURE_HIGH = 100
 _MAX_FAN_RPM = 5000             # I have no idea if this is a good value or not
 
 _MODES = {
@@ -83,14 +83,14 @@ _MODES = {
     'rainbow2': 0x0A,
 }
 
-def _prepare_profile(original):
+def _prepare_profile(original, critcalTempature):
     clamped = ((temp, clamp(duty, 0, _MAX_FAN_RPM)) for temp, duty in original)
-    normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE, _MAX_FAN_RPM)
+    normal = normalize_profile(clamped, critcalTempature, _MAX_FAN_RPM)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
         raise ValueError(f'too many points in profile (remove {-missing})')
     if missing > 0:
-        normal += missing * [(_CRITICAL_TEMPERATURE, _MAX_FAN_RPM)]
+        normal += missing * [(critcalTempature, _MAX_FAN_RPM)]
     return normal
 
 def _quoted(*names):
@@ -344,7 +344,9 @@ class CommanderPro(UsbHidDriver):
             raise NotSupportedByDevice()
 
         profile = list(profile)
-        profile = _prepare_profile(profile)
+
+        criticalTemp = _CRITICAL_TEMPERATURE_HIGH if check_unsafe('high_tempature', **kwargs) else _CRITICAL_TEMPERATURE
+        profile = _prepare_profile(profile, criticalTemp)
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
         temp_sensor = clamp(temperature_sensor, 1, self._temp_probs)
