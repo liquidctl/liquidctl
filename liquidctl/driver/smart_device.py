@@ -128,7 +128,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
+    def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode.
 
         Only supported by Smart Device V1/V2 and HUE 2 controllers.
@@ -151,7 +151,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
                            mode, maxcolors)
             colors = colors[:maxcolors]
         sval = _ANIMATION_SPEEDS[speed]
-        self._write_colors(cid, mode, colors, sval)
+        self._write_colors(cid, mode, colors, sval, direction)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
@@ -203,27 +203,19 @@ class SmartDevice(_CommonSmartDeviceDriver):
         'super-fixed':                   (0x00, 0x00, 0x00, 1, 40),  # independent leds
         'fading':                        (0x01, 0x00, 0x00, 1, 8),
         'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0),
-        'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0),
         'marquee-3':                     (0x03, 0x00, 0x00, 1, 1),
         'marquee-4':                     (0x03, 0x00, 0x08, 1, 1),
         'marquee-5':                     (0x03, 0x00, 0x10, 1, 1),
         'marquee-6':                     (0x03, 0x00, 0x18, 1, 1),
-        'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1),
-        'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1),
-        'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1),
-        'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1),
         'covering-marquee':              (0x04, 0x00, 0x00, 1, 8),
-        'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8),
         'alternating':                   (0x05, 0x00, 0x00, 2, 2),
         'moving-alternating':            (0x05, 0x08, 0x00, 2, 2),
-        'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2),
         'pulse':                         (0x06, 0x00, 0x00, 1, 8),
         'breathing':                     (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':               (0x07, 0x00, 0x00, 1, 40),  # one step, independent leds
         'candle':                        (0x09, 0x00, 0x00, 1, 1),
         'wings':                         (0x0c, 0x00, 0x00, 1, 1),
         'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
-        'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 40),  # independent ring leds
     }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
@@ -277,11 +269,15 @@ class SmartDevice(_CommonSmartDeviceDriver):
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
         return sorted(status)
 
-    def _write_colors(self, cid, mode, colors, sval):
+    def _write_colors(self, cid, mode, colors, sval, direction='forward'):
         mval, mod3, mod4, _, _ = self._COLOR_MODES[mode]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
+
+        if direction == 'backward':
+            mod3 += 0x10
+
         if 'super' in mode:
             steps = [list(itertools.chain(*colors))]
         else:
@@ -323,35 +319,25 @@ class SmartDevice2(_CommonSmartDeviceDriver):
     _WRITE_LENGTH = 64
 
     _COLOR_MODES = {
-        # (mode, size/variant, moving/backwards, min colors, max colors)
+        # (mode, size/variant, moving, min colors, max colors)
         'off':                              (0x00, 0x00, 0x00, 0, 0),
         'fixed':                            (0x00, 0x00, 0x00, 1, 1),
         'super-fixed':                      (0x01, 0x00, 0x00, 1, 40),  # independent leds
         'fading':                           (0x01, 0x00, 0x00, 1, 8),
         'spectrum-wave':                    (0x02, 0x00, 0x00, 0, 0),
-        'backwards-spectrum-wave':          (0x02, 0x00, 0x01, 0, 0),
         'marquee-3':                        (0x03, 0x00, 0x00, 1, 1),
         'marquee-4':                        (0x03, 0x01, 0x00, 1, 1),
         'marquee-5':                        (0x03, 0x02, 0x00, 1, 1),
         'marquee-6':                        (0x03, 0x03, 0x00, 1, 1),
-        'backwards-marquee-3':              (0x03, 0x00, 0x01, 1, 1),
-        'backwards-marquee-4':              (0x03, 0x01, 0x01, 1, 1),
-        'backwards-marquee-5':              (0x03, 0x02, 0x01, 1, 1),
-        'backwards-marquee-6':              (0x03, 0x03, 0x01, 1, 1),
         'covering-marquee':                 (0x04, 0x00, 0x00, 1, 8),
-        'covering-backwards-marquee':       (0x04, 0x00, 0x01, 1, 8),
         'alternating-3':                    (0x05, 0x00, 0x00, 2, 2),
         'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
         'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
         'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),
-        'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-6':             (0x05, 0x03, 0x10, 2, 2),   # byte4: 0x10 = moving
-        'backwards-moving-alternating-3':   (0x05, 0x00, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-4':   (0x05, 0x01, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-5':   (0x05, 0x02, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
-        'backwards-moving-alternating-6':   (0x05, 0x03, 0x11, 2, 2),   # byte4: 0x11 = moving + backwards
+        'moving-alternating-3':             (0x05, 0x00, 0x01, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-4':             (0x05, 0x01, 0x01, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-5':             (0x05, 0x02, 0x01, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-6':             (0x05, 0x03, 0x01, 2, 2),   # byte4: 0x10 = moving
         'pulse':                            (0x06, 0x00, 0x00, 1, 8),
         'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
@@ -360,9 +346,6 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         'rainbow-flow':                     (0x0b, 0x00, 0x00, 0, 0),
         'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),
         'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
-        'backwards-rainbow-flow':           (0x0b, 0x00, 0x01, 0, 0),
-        'backwards-super-rainbow':          (0x0c, 0x00, 0x01, 0, 0),
-        'backwards-rainbow-pulse':          (0x0d, 0x00, 0x01, 0, 0),
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
     }
 
@@ -448,8 +431,9 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                 return
         assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
-    def _write_colors(self, cid, mode, colors, sval):
-        mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
+    def _write_colors(self, cid, mode, colors, sval, direction='forward',):
+        mval, mod3, movingFlag, mincolors, maxcolors = self._COLOR_MODES[mode]
+
         color_count = len(colors)
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
@@ -475,8 +459,8 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                     self._write(msg + color_lists[i % 4])
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
-            byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
-            byte8 = mod4 & 0x01  # sets 'backwards' flag
+            byte7 = movingFlag # sets 'moving' flag for moving alternating modes
+            byte8 = direction == 'backward'  # sets 'backwards' flag
             byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
             header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]

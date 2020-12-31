@@ -83,10 +83,13 @@ For lighting, the user can control up to 40 LEDs, if all four strips or five fan
 # liquidctl set led color fixed af5a2f
 # liquidctl set led color fading 350017 ff2608 --speed slower
 # liquidctl set led color pulse ffffff
-# liquidctl set led color backwards-marquee-5 2f6017 --speed slowest
+# liquidctl set led color marquee-5 2f6017 --direction backward --speed slowest
 ```
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
+
+Some of the color animations can be in either the `forward` or `backward` direction.
+This can be specified by using the `--direction` flag.
 
 | Mode | Colors | Notes |
 | --- | --- | --- |
@@ -95,16 +98,11 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | `super-fixed` | Up to 40, one for each LED |
 | `fading` | Between 2 and 8, one for each step |
 | `spectrum-wave` | None |
-| `backwards-spectrum-wave` | None |
 | `super-wave` | Up to 40 |
-| `backwards-super-wave` | Up to 40 |
 | `marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
-| `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `covering-marquee` | Up to 8, one for each step |
-| `covering-backwards-marquee` | Up to 8, one for each step |
 | `alternating` | Two |
 | `moving-alternating` | Two |
-| `backwards-moving-alternating` | Two |
 | `breathing` | Up to 8, one for each step |
 | `super-breathing` | Up to 40, one for each LED | Only one step |
 | `pulse` | Up to 8, one for each pulse |
