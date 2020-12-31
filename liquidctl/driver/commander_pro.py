@@ -279,12 +279,12 @@ class CommanderPro(UsbHidDriver):
         It will look up the name of the fan channel given and return a list of the real fan number
         """
         channel = channel.lower()
-        if channel == 'fan':
+        if channel == 'sync':
             return [i for i in range(len(self._fan_names))]
         elif channel in self._fan_names:
             return [self._fan_names.index(channel)]
         else:
-            raise ValueError(f'unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+            raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
 
     def _get_hw_led_channels(self, channel):
         """This will get a list of all the led channels that the command should be sent to

@@ -375,7 +375,7 @@ def test_get_fan_rpm_lighting(lightingNodeProDevice):
 
 def test_get_hw_fan_channels_all(commanderProDevice):
 
-    res = commanderProDevice._get_hw_fan_channels('fan')
+    res = commanderProDevice._get_hw_fan_channels('sync')
     assert res == [0, 1, 2, 3, 4, 5]
 
 def test_get_hw_fan_channels_uppercase(commanderProDevice):
@@ -498,7 +498,7 @@ def test_set_fixed_speed_valid_multi_fan(commanderProDevice):
 
         commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
-        commanderProDevice.set_fixed_speed('fan', 50)
+        commanderProDevice.set_fixed_speed('sync', 50)
 
         # check the commands sent
         sent = commanderProDevice.device.sent
@@ -521,7 +521,7 @@ def test_set_fixed_speed_lighting(lightingNodeProDevice):
     lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
 
     with pytest.raises(NotSupportedByDevice):
-        lightingNodeProDevice.set_fixed_speed('fan', 50)
+        lightingNodeProDevice.set_fixed_speed('sync', 50)
 
     # check the commands sent
     sent = lightingNodeProDevice.device.sent
@@ -541,7 +541,7 @@ def test_set_speed_profile_valid_multi_fan(commanderProDevice):
 
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
-    commanderProDevice.set_speed_profile('fan', [(10, 500), (20, 1000)])
+    commanderProDevice.set_speed_profile('sync', [(10, 500), (20, 1000)])
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -610,7 +610,7 @@ def test_set_speed_profile_no_temp_sensors(commanderProDevice):
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
     with pytest.raises(ValueError):
-        commanderProDevice.set_speed_profile('fan', [(10, 500), (20, 1000)], temperature_sensor=1)
+        commanderProDevice.set_speed_profile('sync', [(10, 500), (20, 1000)], temperature_sensor=1)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -661,7 +661,7 @@ def test_set_speed_profile_lighting(lightingNodeProDevice):
     lightingNodeProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
     with pytest.raises(NotSupportedByDevice):
-        lightingNodeProDevice.set_speed_profile('fan', [(10, 500), (20, 1000)])
+        lightingNodeProDevice.set_speed_profile('sync', [(10, 500), (20, 1000)])
 
     # check the commands sent
     sent = lightingNodeProDevice.device.sent

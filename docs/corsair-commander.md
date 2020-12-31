@@ -95,7 +95,7 @@ be set to 5000 rpm at 60°C (this speed may not be appropriate for your device).
 ```
 
 Valid channel values are `fanN`, where 1 <= N <= 6 is the fan number, and
-`fan`, to simultaneously configure all fans.
+`sync`, to simultaneously configure all fans.
 
 Only fans that have been connected and identified by `liquidctl initialize` can be set.
 
