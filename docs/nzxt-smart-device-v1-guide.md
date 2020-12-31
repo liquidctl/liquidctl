@@ -108,3 +108,16 @@ This can be specified by using the `--direction` flag.
 | `pulse` | Up to 8, one for each pulse |
 | `candle` | One |
 | `wings` | One |
+
+#### Deprecated modes
+
+The following modes are now deprecated and the use of the `--direction backward` is preferred,
+they will be removed in a future version and are kept for now for backwards compatibility.
+
+| Mode | Colors | Notes |
+| --- | --- | --- |
+| `backwards-spectrum-wave` | None |
+| `backwards-super-wave` | Up to 40 |
+| `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
+| `covering-backwards-marquee` | Up to 8, one for each step |
+| `backwards-moving-alternating` | Two |

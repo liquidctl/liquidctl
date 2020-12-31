@@ -65,6 +65,16 @@ _COLOR_MODES = {
     'loading':                       (0x0a, 0x00, 0x00, 1, 1, True),
     'wings':                         (0x0c, 0x00, 0x00, 1, 1, True),
     'super-wave':                    (0x0d, 0x00, 0x00, 1, 8, True),  # independent ring leds
+
+    ## Deprecated modes, will be removed later
+    'backwards-spectrum-wave':       (0x02, 0x00, 0x00, 0, 0, False),
+    'backwards-marquee-3':           (0x03, 0x00, 0x00, 1, 1, True),
+    'backwards-marquee-4':           (0x03, 0x00, 0x08, 1, 1, True),
+    'backwards-marquee-5':           (0x03, 0x00, 0x10, 1, 1, True),
+    'backwards-marquee-6':           (0x03, 0x00, 0x18, 1, 1, True),
+    'covering-backwards-marquee':    (0x04, 0x00, 0x00, 1, 8, True),
+    'backwards-moving-alternating':  (0x05, 0x08, 0x00, 2, 2, True),
+    'backwards-super-wave':          (0x0d, 0x00, 0x00, 1, 8, True),
 }
 
 _ANIMATION_SPEEDS = {
@@ -151,7 +161,7 @@ class Kraken2(UsbHidDriver):
             mode = 'super-fixed'
         mval, mod2, mod4, mincolors, maxcolors, ringonly = _COLOR_MODES[mode]
 
-        if direction == 'backward':
+        if direction == 'backward' or 'backwards' in mode:
             mod2 += 0x10
 
         if ringonly and channel != 'ring':

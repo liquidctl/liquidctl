@@ -90,6 +90,20 @@ _COLOR_MODES = {
     'tai-chi':                              (0x0e, 0x00,  7, 1, 2),
     'water-cooler':                         (0x0f, 0x00,  6, 2, 2),
     'wings':                                (None, 0x00, 11, 1, 1),
+
+    ## Deprecated modes, will be removed later
+    'backwards-spectrum-wave':              (0x02, 0x00,  2, 0, 0),
+    'backwards-marquee-3':                  (0x03, 0x03,  2, 1, 1),
+    'backwards-marquee-4':                  (0x03, 0x04,  2, 1, 1),
+    'backwards-marquee-5':                  (0x03, 0x05,  2, 1, 1),
+    'backwards-marquee-6':                  (0x03, 0x06,  2, 1, 1),
+    'backwards-moving-alternating-3':       (0x05, 0x03,  4, 1, 2),
+    'backwards-moving-alternating-4':       (0x05, 0x04,  4, 1, 2),
+    'backwards-moving-alternating-5':       (0x05, 0x05,  4, 1, 2),
+    'backwards-moving-alternating-6':       (0x05, 0x06,  4, 1, 2),
+    'backwards-rainbow-flow':               (0x0b, 0x00,  2, 0, 0),
+    'backwards-super-rainbow':              (0x0c, 0x00,  2, 0, 0),
+    'backwards-rainbow-pulse':              (0x0b, 0x00,  2, 0, 0),
 }
 
 # A static value per channel that is somehow related to animation time and
@@ -302,7 +316,7 @@ class KrakenX3(UsbHidDriver):
             else:
                 backwards_byte = 0x00
 
-            if directionStr == 'backward':
+            if directionStr == 'backward' or 'backwards' in mode:
                 backwards_byte += 0x02
 
 

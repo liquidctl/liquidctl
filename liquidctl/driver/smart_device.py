@@ -216,6 +216,16 @@ class SmartDevice(_CommonSmartDeviceDriver):
         'candle':                        (0x09, 0x00, 0x00, 1, 1),
         'wings':                         (0x0c, 0x00, 0x00, 1, 1),
         'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
+
+        ## Deprecated modes, will be removed later
+        'backwards-spectrum-wave':       (0x02, 0x00, 0x00, 0, 0),
+        'backwards-marquee-3':           (0x03, 0x00, 0x00, 1, 1),
+        'backwards-marquee-4':           (0x03, 0x00, 0x08, 1, 1),
+        'backwards-marquee-5':           (0x03, 0x00, 0x10, 1, 1),
+        'backwards-marquee-6':           (0x03, 0x00, 0x18, 1, 1),
+        'covering-backwards-marquee':    (0x04, 0x00, 0x00, 1, 8),
+        'backwards-moving-alternating':  (0x05, 0x08, 0x00, 2, 2),
+        'backwards-super-wave':          (0x0d, 0x00, 0x00, 1, 40),
     }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
@@ -275,7 +285,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
 
-        if direction == 'backward':
+        if direction == 'backward' or 'backwards' in mode:
             mod3 += 0x10
 
         if 'super' in mode:
@@ -347,6 +357,21 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         'super-rainbow':                    (0x0c, 0x00, 0x00, 0, 0),
         'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
+
+        ## Deprecated modes, will be removed later
+        'backwards-spectrum-wave':          (0x02, 0x00, 0x00, 0, 0),
+        'backwards-marquee-3':              (0x03, 0x00, 0x00, 1, 1),
+        'backwards-marquee-4':              (0x03, 0x01, 0x00, 1, 1),
+        'backwards-marquee-5':              (0x03, 0x02, 0x00, 1, 1),
+        'backwards-marquee-6':              (0x03, 0x03, 0x00, 1, 1),
+        'covering-backwards-marquee':       (0x04, 0x00, 0x00, 1, 8),
+        'backwards-moving-alternating-3':   (0x05, 0x00, 0x01, 2, 2),
+        'backwards-moving-alternating-4':   (0x05, 0x01, 0x01, 2, 2),
+        'backwards-moving-alternating-5':   (0x05, 0x02, 0x01, 2, 2),
+        'backwards-moving-alternating-6':   (0x05, 0x03, 0x01, 2, 2),
+        'backwards-rainbow-flow':           (0x0b, 0x00, 0x00, 0, 0),
+        'backwards-super-rainbow':          (0x0c, 0x00, 0x00, 0, 0),
+        'backwards-rainbow-pulse':          (0x0d, 0x00, 0x00, 0, 0),
     }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
@@ -460,7 +485,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
             byte7 = movingFlag # sets 'moving' flag for moving alternating modes
-            byte8 = direction == 'backward'  # sets 'backwards' flag
+            byte8 = direction == 'backward' or 'backwards' in mode # sets 'backwards' flag
             byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
             header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]

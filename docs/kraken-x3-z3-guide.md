@@ -108,7 +108,7 @@ Color modes can be set independently for each lighting channel, but the specifie
 # liquidctl set sync color fixed af5a2f
 # liquidctl set ring color fading 350017 ff2608
 # liquidctl set logo color pulse ffffff
-# liquidctl set external color backwards-marquee-5 2f6017 --speed slower
+# liquidctl set external color marquee-5 2f6017 --direction backward --speed slower
 ```
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
@@ -140,6 +140,22 @@ This can be specified by using the `--direction` flag.
 | `water-cooler` | Two | ✓ |
 | `wings` | One | ✓ |
 
+
+
+#### Deprecated modes
+
+The following modes are now deprecated and the use of the `--direction backward` is preferred,
+they will be removed in a future version and are kept for now for backwards compatibility.
+
+| Mode | Colors | Variable speed |
+| --- | --- | :---: |
+| `backwards-spectrum-wave` | None | ✓ |
+| `backwards-marquee-<length>`, 3 ≤ length ≤ 6 | One | ✓ |
+| `covering-backwards-marquee` | Between 1 and 8 | ✓ |
+| `backwards-moving-alternating-<length>`, 3 ≤ length ≤ 6 | Between 1 and 2 | ✓ |
+| `backwards-rainbow-flow` | None | ✓ |
+| `backwards-super-rainbow` | None | ✓ |
+| `backwards-rainbow-pulse` | None | ✓ |
 
 ## The OLED screen (only Z models)
 
