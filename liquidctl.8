@@ -167,6 +167,9 @@ Store on non\-volatile controller memory.
 .B \-\-unsafe= features
 Comman-separated bleeding-edge features to enable.
 .TP
+.B \-\-temperature\-sensor= number
+The temperature sensor number for the Commander Pro.
+.TP
 .B \-v\fR, \fP\-\-verbose
 Output additional information.
 .TP
@@ -235,9 +238,17 @@ When applicable the animation speed can be set with
 .BI \-\-speed= value ,
 where the allowed values are: \fIfast\fR, \fImedium\fR, \fIslow\fR.
 .PP
-When applicable the animation direction can be set with
+The animation direction can be set with
 .BI \-\-direction= value ,
 where the allowed values are: \fIforward\fR or \fIbackward\fR.
+.BI \-\-start\-led= number ,
+the first LED that the lighting effect should be for.
+.BI \-\-start\-led= number ,
+the first LED that the lighting effect should be for.
+.BI \-\-maximum\-led= number ,
+the number of LEDs that the lighting effect should applied to.
+.BI \-\-temperature\-sensor= number ,
+The temperature sensor that should be used to control the fan curves, probe 1 by default.
 .SS Corsair H80i GT, H100i GTX, H110i GTX
 .SS Corsair H80i v2, H100i v2, H115i
 .SS EVGA CLC 120 (CL12), 240, 280, 360
