@@ -28,6 +28,8 @@ Animation options (devices/modes can support zero or more):
   --time-off <value>          Time to wait with the LED turned off (seconds)
   --alert-threshold <number>  Threshold temperature for a visual alert (°C)
   --alert-color <color>       Color used by the visual high temperature alert
+  --direction <string>        If the pattern should move forward or backwards. [default: forward]
+
 
 Other device options:
   --single-12v-ocp            Enable single rail +12V OCP

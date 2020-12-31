@@ -64,15 +64,10 @@ _COLOR_MODES = {
     'fading':                               (0x01, 0x00,  1, 1, 8),
     'super-fixed':                          (0x01, 0x01,  9, 1, 40),
     'spectrum-wave':                        (0x02, 0x00,  2, 0, 0),
-    'backwards-spectrum-wave':              (0x02, 0x00,  2, 0, 0),
     'marquee-3':                            (0x03, 0x03,  2, 1, 1),
     'marquee-4':                            (0x03, 0x04,  2, 1, 1),
     'marquee-5':                            (0x03, 0x05,  2, 1, 1),
     'marquee-6':                            (0x03, 0x06,  2, 1, 1),
-    'backwards-marquee-3':                  (0x03, 0x03,  2, 1, 1),
-    'backwards-marquee-4':                  (0x03, 0x04,  2, 1, 1),
-    'backwards-marquee-5':                  (0x03, 0x05,  2, 1, 1),
-    'backwards-marquee-6':                  (0x03, 0x06,  2, 1, 1),
     'covering-marquee':                     (0x04, 0x00,  2, 1, 8),
     'covering-backwards-marquee':           (0x04, 0x00,  2, 1, 8),
     'alternating-3':                        (0x05, 0x03,  3, 1, 2),
@@ -83,10 +78,6 @@ _COLOR_MODES = {
     'moving-alternating-4':                 (0x05, 0x04,  4, 1, 2),
     'moving-alternating-5':                 (0x05, 0x05,  4, 1, 2),
     'moving-alternating-6':                 (0x05, 0x06,  4, 1, 2),
-    'backwards-moving-alternating-3':       (0x05, 0x03,  4, 1, 2),
-    'backwards-moving-alternating-4':       (0x05, 0x04,  4, 1, 2),
-    'backwards-moving-alternating-5':       (0x05, 0x05,  4, 1, 2),
-    'backwards-moving-alternating-6':       (0x05, 0x06,  4, 1, 2),
     'pulse':                                (0x06, 0x00,  5, 1, 8),
     'breathing':                            (0x07, 0x00,  6, 1, 8),
     'super-breathing':                      (0x03, 0x00, 10, 1, 40),
@@ -95,9 +86,6 @@ _COLOR_MODES = {
     'rainbow-flow':                         (0x0b, 0x00,  2, 0, 0),
     'super-rainbow':                        (0x0c, 0x00,  2, 0, 0),
     'rainbow-pulse':                        (0x0d, 0x00,  2, 0, 0),
-    'backwards-rainbow-flow':               (0x0b, 0x00,  2, 0, 0),
-    'backwards-super-rainbow':              (0x0c, 0x00,  2, 0, 0),
-    'backwards-rainbow-pulse':              (0x0b, 0x00,  2, 0, 0),
     'loading':                              (0x10, 0x00,  8, 1, 1),
     'tai-chi':                              (0x0e, 0x00,  7, 1, 2),
     'water-cooler':                         (0x0f, 0x00,  6, 2, 2),
@@ -220,7 +208,7 @@ class KrakenX3(UsbHidDriver):
             ('Pump duty', msg[19], '%'),
         ]
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
+    def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
         cid = self._color_channels[channel]
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
@@ -236,7 +224,7 @@ class KrakenX3(UsbHidDriver):
             LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
             colors = colors[:maxcolors]
         sval = _ANIMATION_SPEEDS[speed]
-        self._write_colors(cid, mode, colors, sval)
+        self._write_colors(cid, mode, colors, sval, direction)
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to use a speed profile."""
@@ -273,7 +261,7 @@ class KrakenX3(UsbHidDriver):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
 
-    def _write_colors(self, cid, mode, colors, sval):
+    def _write_colors(self, cid, mode, colors, sval, directionStr):
         mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
         color_count = len(colors)
         if 'super-fixed' == mode or 'super-breathing' == mode:
@@ -300,6 +288,8 @@ class KrakenX3(UsbHidDriver):
                 self._write(msg + color_lists[i % 4])
             self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
+
+
             opcode = [0x2a, 0x04]
             address = [cid, cid]
             speed_value = _SPEED_VALUE[speed_scale][sval]
@@ -311,8 +301,11 @@ class KrakenX3(UsbHidDriver):
                 backwards_byte = 0x01
             else:
                 backwards_byte = 0x00
-            if 'backwards' in mode:
+
+            if directionStr == 'backward':
                 backwards_byte += 0x02
+
+
             if mode == 'fading' or mode == 'pulse' or mode == 'breathing':
                 mode_related = 0x08
             elif mode == 'tai-chi':

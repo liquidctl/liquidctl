@@ -113,6 +113,9 @@ Color modes can be set independently for each lighting channel, but the specifie
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
 
+Some of the color animations can be in either the `forward` or `backward` direction.
+This can be specified by using the `--direction` flag.
+
 | Mode | Colors | Variable speed |
 | --- | --- | :---: |
 | `off` | None | |
@@ -120,14 +123,10 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | `fading` | Between 1 and 8 | ✓ | |
 | `super-fixed` | Between 1 and 40 | |
 | `spectrum-wave` | None | ✓ |
-| `backwards-spectrum-wave` | None | ✓ |
 | `marquee-<length>`, 3 ≤ length ≤ 6 | One | ✓ |
-| `backwards-marquee-<length>`, 3 ≤ length ≤ 6 | One | ✓ |
 | `covering-marquee` | Between 1 and 8 | ✓ |
-| `covering-backwards-marquee` | Between 1 and 8 | ✓ |
 | `alternating-<length>` | Between 1 and 2 | ✓ |
 | `moving-alternating-<length>`, 3 ≤ length ≤ 6 | Between 1 and 2 | ✓ |
-| `backwards-moving-alternating-<length>`, 3 ≤ length ≤ 6 | Between 1 and 2 | ✓ |
 | `pulse` | Between 1 and 8 | ✓ |
 | `breathing` | Between 1 and 8 | ✓ |
 | `super-breathing` | Between 1 and 40 | ✓ |
@@ -136,9 +135,6 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | `rainbow-flow` | None | ✓ |
 | `super-rainbow` | None | ✓ |
 | `rainbow-pulse` | None | ✓ |
-| `backwards-rainbow-flow` | None | ✓ |
-| `backwards-super-rainbow` | None | ✓ |
-| `backwards-rainbow-pulse` | None | ✓ |
 | `loading` | One | |
 | `tai-chi` | Between 1 and 2 | ✓ |
 | `water-cooler` | Two | ✓ |
