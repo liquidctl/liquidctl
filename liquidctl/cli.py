@@ -104,12 +104,10 @@ _PARSE_ARG = {
     '--time-off': int,
     '--alert-threshold': int,
     '--alert-color': color_from_str,
-    '--temp-sensor': int,
+    '--temperature-sensor': int,
     '--direction': str,
-    '--num-devices': int,
     '--start-led': int,
-    '--num-leds': int,
-
+    '--maximum-leds': int,
 
     '--single-12v-ocp': bool,
     '--pump-mode': str,
