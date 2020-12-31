@@ -145,6 +145,16 @@ def u16le_from(buffer, offset=0):
     """
     return int.from_bytes(buffer[offset : offset + 2], byteorder='little')
 
+def u16be_from(buffer, offset=0):
+    """Read an unsigned 16-bit big-endian integer from `buffer`.
+
+    >>> u16be_from(b'\x45\x05\x03')
+    17669
+    >>> u16be_from(b'\x45\x05\x03', offset=1)
+    1283
+    """
+    return int.from_bytes(buffer[offset : offset + 2], byteorder='big')
+
 
 def delta(profile):
     """Compute a profile's Δx and Δy."""
@@ -152,7 +162,7 @@ def delta(profile):
             for cur,prev in zip(profile[1:], profile[:-1])]
 
 
-def normalize_profile(profile, critx):
+def normalize_profile(profile, critx, max_value=100):
     """Normalize a [(x:int, y:int), ...] profile.
 
     The normalized profile will ensure that:
@@ -171,8 +181,11 @@ def normalize_profile(profile, critx):
     [(25, 25), (30, 40), (35, 100)]
     >>> normalize_profile([], 60)
     [(60, 100)]
+    >>> normalize_profile([], 60, 300)
+    [(60, 300)]
+
     """
-    profile = sorted(list(profile) + [(critx, 100)], key=lambda p: (p[0], -p[1]))
+    profile = sorted(list(profile) + [(critx, max_value)], key=lambda p: (p[0], -p[1]))
     mono = profile[0:1]
     for (x, y), (xb, yb) in zip(profile[1:], profile[:-1]):
         if x == xb:
@@ -180,7 +193,7 @@ def normalize_profile(profile, critx):
         if y < yb:
             y = yb
         mono.append((x, y))
-        if y == 100:
+        if y == max_value:
             break
     return mono
 

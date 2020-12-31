@@ -9,6 +9,8 @@ Changelog since 1.4.2:
  - Add experimental partial support for ASUS Strix RTX 2080 Ti OC
  - Add experimental support for DIMMs with TSE2004-compatible temperature sensors
  - Add experimental support for Corsair Vengeance RGB
+ - Add experimental support for the Corsair Commander Pro
+ - Add experimental support for the Corsair Lighting Node Pro 
  - Add support for CSS-style hexadecimal triples
  - Added completion script for bash
  - Implement the context manager protocol in the driver API

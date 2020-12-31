@@ -11,39 +11,43 @@ Usage:
   liquidctl --version
 
 Device selection options (see: list -v):
-  -m, --match <substring>     Filter devices by description substring
-  -n, --pick <number>         Pick among many results for a given filter
-  --vendor <id>               Filter devices by hexadecimal vendor ID
-  --product <id>              Filter devices by hexadecimal product ID
-  --release <number>          Filter devices by hexadecimal release number
-  --serial <number>           Filter devices by serial number
-  --bus <bus>                 Filter devices by bus
-  --address <address>         Filter devices by address in bus
-  --usb-port <port>           Filter devices by USB port in bus
-  -d, --device <id>           Select device by listing id
+  -m, --match <substring>        Filter devices by description substring
+  -n, --pick <number>            Pick among many results for a given filter
+  --vendor <id>                  Filter devices by hexadecimal vendor ID
+  --product <id>                 Filter devices by hexadecimal product ID
+  --release <number>             Filter devices by hexadecimal release number
+  --serial <number>              Filter devices by serial number
+  --bus <bus>                    Filter devices by bus
+  --address <address>            Filter devices by address in bus
+  --usb-port <port>              Filter devices by USB port in bus
+  -d, --device <id>              Select device by listing id
 
 Animation options (devices/modes can support zero or more):
-  --speed <value>             Abstract animation speed (device/mode specific)
-  --time-per-color <value>    Time to wait on each color (seconds)
-  --time-off <value>          Time to wait with the LED turned off (seconds)
-  --alert-threshold <number>  Threshold temperature for a visual alert (°C)
-  --alert-color <color>       Color used by the visual high temperature alert
+  --speed <value>                Abstract animation speed (device/mode specific)
+  --time-per-color <value>       Time to wait on each color (seconds)
+  --time-off <value>             Time to wait with the LED turned off (seconds)
+  --alert-threshold <number>     Threshold temperature for a visual alert (°C)
+  --alert-color <color>          Color used by the visual high temperature alert
+  --direction <string>           If the pattern should move forward or backwards. [default: forward]
+  --start-led <number>           The first led to start the effect at
+  --maximum-leds <number>        The number of LED's the effect should apply to
 
 Other device options:
-  --single-12v-ocp            Enable single rail +12V OCP
-  --pump-mode <mode>          Set the pump mode (certain Corsair coolers)
-  --legacy-690lc              Use Asetek 690LC in legacy mode (old Krakens)
-  --non-volatile              Store on non-volatile controller memory
-  --unsafe <features>         Comma-separated bleeding-edge features to enable
+  --single-12v-ocp               Enable single rail +12V OCP
+  --pump-mode <mode>             Set the pump mode (certain Corsair coolers)
+  --legacy-690lc                 Use Asetek 690LC in legacy mode (old Krakens)
+  --non-volatile                 Store on non-volatile controller memory
+  --unsafe <features>            Comma-separated bleeding-edge features to enable
+  --temperature-sensor <number>  The temperature sensor number for the Commander Pro
 
 Other interface options:
-  -v, --verbose               Output additional information
-  -g, --debug                 Show debug information on stderr
-  --version                   Display the version number
-  --help                      Show this message
+  -v, --verbose                  Output additional information
+  -g, --debug                    Show debug information on stderr
+  --version                      Display the version number
+  --help                         Show this message
 
 Deprecated:
-  --hid <ignored>             Deprecated
+  --hid <ignored>                Deprecated
 
 Examples:
   liquidctl list --verbose
@@ -100,6 +104,10 @@ _PARSE_ARG = {
     '--time-off': int,
     '--alert-threshold': int,
     '--alert-color': color_from_str,
+    '--temperature-sensor': int,
+    '--direction': str,
+    '--start-led': int,
+    '--maximum-leds': int,
 
     '--single-12v-ocp': bool,
     '--pump-mode': str,

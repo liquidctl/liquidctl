@@ -7,6 +7,29 @@ Report = namedtuple('Report', ['number', 'data'])
 def noop(*args, **kwargs):
     return None
 
+class MockRuntimeStorage:
+    def __init__(self, key_prefixes):
+        self._cache = {}
+
+    def load(self, key, of_type=None, default=None):
+        """Unstable API."""
+        if key in self._cache:
+            value = self._cache[key]
+        else:
+            value = None
+
+        if value is None:
+            return default
+        elif of_type and not isinstance(value, of_type):
+            return default
+        else:
+            return value
+
+    def store(self, key, value):
+        """Unstable API."""
+        self._cache[key] = value
+        return value
+
 
 class MockHidapiDevice:
     def __init__(self, vendor_id=None, product_id=None, release_number=None,
