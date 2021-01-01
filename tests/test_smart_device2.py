@@ -25,7 +25,7 @@ def test_smart_device2_constructor(mockSmartDevice2):
         }
 
 
-def test_smart_device2_ot_totally_broken(mockSmartDevice2):
+def test_smart_device2_not_totally_broken(mockSmartDevice2):
 
     frimwareData = bytearray(64)
     lightingData = bytearray(64)
@@ -47,8 +47,6 @@ def test_smart_device2_ot_totally_broken(mockSmartDevice2):
     ]
     for reply in replys:
         mockSmartDevice2.device.preload_read(Report(reply[0], reply[1:]))
-
-    mockSmartDevice2.connect()
 
     mockSmartDevice2.initialize()
     status = mockSmartDevice2.get_status()
