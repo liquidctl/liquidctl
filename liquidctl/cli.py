@@ -35,10 +35,10 @@ Animation options (devices/modes can support zero or more):
 Other device options:
   --single-12v-ocp               Enable single rail +12V OCP
   --pump-mode <mode>             Set the pump mode (certain Corsair coolers)
+  --temperature-sensor <number>  The temperature sensor number for the Commander Pro
   --legacy-690lc                 Use Asetek 690LC in legacy mode (old Krakens)
   --non-volatile                 Store on non-volatile controller memory
   --unsafe <features>            Comma-separated bleeding-edge features to enable
-  --temperature-sensor <number>  The temperature sensor number for the Commander Pro
 
 Other interface options:
   -v, --verbose                  Output additional information
