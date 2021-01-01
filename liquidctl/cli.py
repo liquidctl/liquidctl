@@ -49,13 +49,6 @@ Other interface options:
 Deprecated:
   --hid <ignored>                Deprecated
 
-Examples:
-  liquidctl list --verbose
-  liquidctl initialize all
-  liquidctl --match kraken set pump speed 90
-  liquidctl --product 170e set led color fading 350017 ff2608
-  liquidctl status
-
 Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey, Marshall Asch and
 contributors
 
