@@ -4,6 +4,8 @@ When using a systemd service to configure devices at boot time, as suggested in 
 
 A blunt solution to this is to add a small delay, but a more robust alternative is to make the service unit depend on the corresponding hardware being available at the OS level.
 
+## Systemd device units
+
 For this it is first necessary to set up systemd to create device units with known names.  This is done with udev rules, specifically with `TAG+="systemd"` (to create a device unit) and a memorable `SYMLINK+="<some-name>"` name.
 
 ```
@@ -17,7 +19,11 @@ ACTION=="add", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="
 ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", SYMLINK+="clc120", TAG+="systemd"
 ```
 
-These new device units can then be added as dependencies to the service unit.
+Setting a custom name with `SYMLINK` is optional: just with `TAG+="systemd"` alone a device unit will be made available as `dev-bus-usb-<bus>-<device>.device`, where the `<bus>` and the `<device>` numbers can be found with the `lsusb` command.
+
+## Setting the dependencies
+
+The new device units can then be added as dependencies to the service unit.
 
 ```
 # /etc/systemd/system/liquidcfg.service
