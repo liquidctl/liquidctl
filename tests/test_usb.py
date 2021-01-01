@@ -8,7 +8,12 @@ from _testutils import MockHidapiDevice
 @pytest.fixture
 def emulated_hid_device():
     hiddev = MockHidapiDevice()
-    dev = UsbHidDriver(hiddev, 'Test')
+    return UsbHidDriver(hiddev, 'Test')
+
+@pytest.fixture
+def emulated_usb_device():
+    usbdev = MockHidapiDevice()  # hack, should mock PyUsbDevice
+    dev = UsbDriver(usbdev, 'Test')
 
     return dev
 
@@ -27,14 +32,18 @@ def test_hid_connects(emulated_hid_device):
         assert cm == dev
         assert opened
 
+def test_hid_disconnect(emulated_hid_device):
+    dev = emulated_hid_device
 
-@pytest.fixture
-def emulated_usb_device():
-    usbdev = MockHidapiDevice()  # hack, should mock PyUsbDevice
-    dev = UsbDriver(usbdev, 'Test')
+    def mock_close():
+        nonlocal opened
+        opened = False
 
-    return dev
+    dev.device.close = mock_close
+    opened = True
 
+    dev.disconnect()
+    assert opened == False
 
 def test_usb_connects(emulated_usb_device):
     dev = emulated_usb_device
@@ -49,3 +58,16 @@ def test_usb_connects(emulated_usb_device):
     with dev.connect() as cm:
         assert cm == dev
         assert opened
+
+def test_usb_disconnect(emulated_usb_device):
+    dev = emulated_usb_device
+
+    def mock_close():
+        nonlocal opened
+        opened = False
+
+    dev.device.close = mock_close
+    opened = True
+
+    dev.disconnect()
+    assert opened == False
