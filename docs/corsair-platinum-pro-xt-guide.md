@@ -1,4 +1,4 @@
-# Corsair Hydro Platinum and PRO XT all-in-one liquid coolers
+# Corsair Hydro Platinum and Pro XT all-in-one liquid coolers
 _Driver API and source code available in [`liquidctl.driver.hydro_platinum`](../liquidctl/driver/hydro_platinum.py)._
 
 ## Initializing the device and setting the pump mode
@@ -76,7 +76,7 @@ modes, but liquidctl provides a few for convenience.
 The table bellow summarizes the available channels, modes, and their associated
 maximum number of colors for each device family.
 
-| Channel  | Mode        | LEDs         | Components   | Platinum | PRO XT |
+| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT |
 | -------- | ----------- | ------------ | ------------ | -------- | ------ |
 | led      | off         | synchronized | all off      |        0 |      0 |
 | led      | fixed       | synchronized | independent  |        1 |      1 |
@@ -106,5 +106,5 @@ Each color can be specified using any of the [supported formats](../README.md#su
 Animations are not supported at the hardware level, and require successive
 invocations of the commands shown above, or use of the liquidctl APIs.
 
-Note: lighting control of PRO XT devices is experimental and requires the
+Note: lighting control of Pro XT devices is experimental and requires the
 `--unsafe pro_xt_lighting` flag to be supplied on the command line.

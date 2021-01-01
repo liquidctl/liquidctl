@@ -1,12 +1,12 @@
-"""liquidctl drivers for Corsair Hydro Platinum and PRO XT liquid coolers.
+"""liquidctl drivers for Corsair Hydro Platinum and Pro XT liquid coolers.
 
 Supported devices:
 
 - Corsair H100i Platinum
 - Corsair H100i Platinum SE
 - Corsair H115i Platinum
-- Corsair H100i PRO XT
-- Corsair H115i PRO XT
+- Corsair H100i Pro XT
+- Corsair H115i Pro XT
 
 Copyright (C) 2020–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -107,7 +107,7 @@ def _quoted(*names):
 
 
 class HydroPlatinum(UsbHidDriver):
-    """Corsair Hydro Platinum or PRO XT liquid cooler."""
+    """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
     SUPPORTED_DEVICES = [
         (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
@@ -116,9 +116,9 @@ class HydroPlatinum(UsbHidDriver):
             {'fan_count': 2, 'rgb_fans': True}),
         (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C20, None, 'Corsair H100i PRO XT (experimental)',
+        (0x1B1C, 0x0C20, None, 'Corsair H100i Pro XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
-        (0x1B1C, 0x0C21, None, 'Corsair H115i PRO XT (experimental)',
+        (0x1B1C, 0x0C21, None, 'Corsair H115i Pro XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
     ]
 
@@ -250,17 +250,17 @@ class HydroPlatinum(UsbHidDriver):
         The table bellow summarizes the available channels, modes, and their
         associated maximum number of colors for each device family.
 
-        | Channel  | Mode        | LEDs         | Platinum | PRO XT |
+        | Channel  | Mode        | LEDs         | Platinum | Pro XT |
         | -------- | ----------- | ------------ | -------- | ------ |
         | led      | off         | synchronized |        0 |      0 |
         | led      | fixed       | synchronized |        1 |      1 |
         | led      | super-fixed | independent  |       24 |     16 |
 
-        Note: lighting control of PRO XT devices is experimental and requires
+        Note: lighting control of Pro XT devices is experimental and requires
         the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
         """
 
-        if 'PRO XT' in self.description:
+        if 'Pro XT' in self.description:
             check_unsafe('pro_xt_lighting', error=True, **kwargs)
 
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)

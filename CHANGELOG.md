@@ -18,6 +18,7 @@ Changelog since 1.4.2:
  - [extra] Add `LQiNFO.py` exporter (liquidctl -> HWiNFO)
 ### Changed
  - Make vendor and product IDs optional in drivers
+ - Change casing of "PRO" device names to "Pro"
  - Improve error handling and reporting
  - Improve the documentation
 ### Fixed
@@ -27,7 +28,7 @@ Changelog since 1.4.2:
 
 ## [1.4.2] – 2020-11-01
 _Summary for the 1.4.2 release: standardized hexadecimal parsing in the CLI;
-fixes for Windows and mac OS; improvements to Hydro Platinum/PRO XT and Kraken
+fixes for Windows and mac OS; improvements to Hydro Platinum/Pro XT and Kraken
 X3 drivers.._
 
 Changelog since 1.4.1:
@@ -36,7 +37,7 @@ Changelog since 1.4.1:
 ### Changed
  - Accept hexadecimal inputs regardless of a `0x` prefix
  - Warn on faulty temperature readings from Kraken X3 coolers
- - Warn on Hydro Platinum/PRO XT firmware versions that are may be too old
+ - Warn on Hydro Platinum/Pro XT firmware versions that are may be too old
  - Update PyInstaller used for the Windows executable
  - Update PyUSB version bundled with the Windows executable
  - Improve the documentation
@@ -45,7 +46,7 @@ Changelog since 1.4.1:
  - Only set the sticky bit for data directories on Linux
  - Fix check of maximum number of colors in Hydro Platinum super-fixed mode
  - Fix HID writes to Corsair HXi/RMi power supplies on Windows
- - Ensure Hydro Platinum/PRO XT is in static LEDs hardware mode
+ - Ensure Hydro Platinum/Pro XT is in static LEDs hardware mode
 ### Checksums
 ```
 83517ccb06cfdda556bc585a6a45edfcb5a21e38dbe270454ac97639d463e96d  dist/liquidctl-1.4.2-bin-windows-x86_64.zip
@@ -75,7 +76,7 @@ Changelog since 1.4.0:
 
 ## [1.4.0] – 2020-07-31
 _Summary for the 1.4.0 release: fourth-generation NZXT Kraken coolers, Corsair
-Platinum and PRO XT coolers, select Gigabyte RGB Fusion 2.0 motherboards,
+Platinum and Pro XT coolers, select Gigabyte RGB Fusion 2.0 motherboards,
 additional color formats, improved fan and pump profiles in third-generation
 Krakens, and other improvements._
 
@@ -84,14 +85,14 @@ Changelog since 1.3.3:
  - Add experimental support for NZXT Kraken X53, X63 and X73 coolers
  - Add experimental partial support for NZXT Kraken Z63 and Z73 coolers
  - Add experimental support for Corsair H100i, H100i SE and H115i Platinum coolers
- - Add experimental partial support for Corsair H100i and H115i PRO XT coolers
+ - Add experimental partial support for Corsair H100i and H115i Pro XT coolers
  - Add experimental support for Gigabyte motherboards with RGB Fusion 2.0 5702 and 8297 controllers
  - Enable experimental support for the NZXT RGB & Fan Controller
  - Add support for HSV, HSL and explicit RGB color representations
  - Add `sync` lighting channel to HUE 2 devices
  - Add tentative names for the different +12 V rails of NZXT E-series PSUs
  - Add +uaccess udev rules for Linux distributions and users
- - Add `--pump-mode` option to `initialize` (Corsair Platinum/PRO XT coolers)
+ - Add `--pump-mode` option to `initialize` (Corsair Platinum/Pro XT coolers)
  - Add `--unsafe` option to enable additional bleeding-edge features
  - Add a test suite
  - [extra] Add more general `yoda` script for software-based fan/pump control (supersedes `krakencurve-poc`)
