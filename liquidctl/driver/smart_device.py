@@ -136,6 +136,17 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 
         if not self._color_channels:
             raise NotSupportedByDevice()
+
+        channel = channel.lower()
+        mode = mode.lower()
+        speed = speed.lower()
+        directon = direction.lower()
+
+        if 'backwards' in mode:
+            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            mode = mode.replace('backwards-', '')
+            direction = 'backward'
+
         cid = self._color_channels[channel]
         _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
@@ -150,6 +161,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             LOGGER.warning('too many colors for mode=%s, dropping to %i',
                            mode, maxcolors)
             colors = colors[:maxcolors]
+
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval, direction)
 
@@ -217,7 +229,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
         'wings':                         (0x0c, 0x00, 0x00, 1, 1),
         'super-wave':                    (0x0d, 0x00, 0x00, 1, 40),  # independent ring leds
 
-        ## Deprecated modes, will be removed later
+        # deprecated in favor of direction=backward
         'backwards-spectrum-wave':       (0x02, 0x00, 0x00, 0, 0),
         'backwards-marquee-3':           (0x03, 0x00, 0x00, 1, 1),
         'backwards-marquee-4':           (0x03, 0x00, 0x08, 1, 1),
@@ -358,7 +370,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         'rainbow-pulse':                    (0x0d, 0x00, 0x00, 0, 0),
         'wings':                            (None, 0x00, 0x00, 1, 1),   # wings requires special handling
 
-        ## Deprecated modes, will be removed later
+        # deprecated in favor of direction=backward
         'backwards-spectrum-wave':          (0x02, 0x00, 0x00, 0, 0),
         'backwards-marquee-3':              (0x03, 0x00, 0x00, 1, 1),
         'backwards-marquee-4':              (0x03, 0x01, 0x00, 1, 1),

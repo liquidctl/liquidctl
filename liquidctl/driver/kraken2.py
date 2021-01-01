@@ -65,16 +65,6 @@ _COLOR_MODES = {
     'loading':                       (0x0a, 0x00, 0x00, 1, 1, True),
     'wings':                         (0x0c, 0x00, 0x00, 1, 1, True),
     'super-wave':                    (0x0d, 0x00, 0x00, 1, 8, True),  # independent ring leds
-
-    ## Deprecated modes, will be removed later
-    'backwards-spectrum-wave':       (0x02, 0x00, 0x00, 0, 0, False),
-    'backwards-marquee-3':           (0x03, 0x00, 0x00, 1, 1, True),
-    'backwards-marquee-4':           (0x03, 0x00, 0x08, 1, 1, True),
-    'backwards-marquee-5':           (0x03, 0x00, 0x10, 1, 1, True),
-    'backwards-marquee-6':           (0x03, 0x00, 0x18, 1, 1, True),
-    'covering-backwards-marquee':    (0x04, 0x00, 0x00, 1, 8, True),
-    'backwards-moving-alternating':  (0x05, 0x08, 0x00, 2, 2, True),
-    'backwards-super-wave':          (0x0d, 0x00, 0x00, 1, 8, True),
 }
 
 _ANIMATION_SPEEDS = {
@@ -156,18 +146,30 @@ class Kraken2(UsbHidDriver):
         """Set the color mode for a specific channel."""
         if not self.supports_lighting:
             raise NotSupportedByDevice()
+
+        channel = channel.lower()
+        mode = mode.lower()
+        speed = speed.lower()
+        directon = direction.lower()
+
         if mode == 'super':
-            LOGGER.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
+            LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
+        if 'backwards' in mode:
+            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            mode = mode.replace('backwards-', '')
+            direction = 'backward'
+
         mval, mod2, mod4, mincolors, maxcolors, ringonly = _COLOR_MODES[mode]
 
-        if direction == 'backward' or 'backwards' in mode:
+        if direction == 'backward':
             mod2 += 0x10
 
         if ringonly and channel != 'ring':
             LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
                            mode, channel)
             channel = 'ring'
+
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
         sval = _ANIMATION_SPEEDS[speed]
         byte2 = mod2 | _COLOR_CHANNELS[channel]

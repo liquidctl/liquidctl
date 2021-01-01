@@ -23,6 +23,7 @@ Changelog since 1.4.2:
 ### Fixed
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
+ - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
 
 
 ## [1.4.2] – 2020-11-01

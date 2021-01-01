@@ -69,7 +69,6 @@ _COLOR_MODES = {
     'marquee-5':                            (0x03, 0x05,  2, 1, 1),
     'marquee-6':                            (0x03, 0x06,  2, 1, 1),
     'covering-marquee':                     (0x04, 0x00,  2, 1, 8),
-    'covering-backwards-marquee':           (0x04, 0x00,  2, 1, 8),
     'alternating-3':                        (0x05, 0x03,  3, 1, 2),
     'alternating-4':                        (0x05, 0x04,  3, 1, 2),
     'alternating-5':                        (0x05, 0x05,  3, 1, 2),
@@ -91,19 +90,20 @@ _COLOR_MODES = {
     'water-cooler':                         (0x0f, 0x00,  6, 2, 2),
     'wings':                                (None, 0x00, 11, 1, 1),
 
-    ## Deprecated modes, will be removed later
+    # deprecated in favor of direction=backward
     'backwards-spectrum-wave':              (0x02, 0x00,  2, 0, 0),
     'backwards-marquee-3':                  (0x03, 0x03,  2, 1, 1),
     'backwards-marquee-4':                  (0x03, 0x04,  2, 1, 1),
     'backwards-marquee-5':                  (0x03, 0x05,  2, 1, 1),
     'backwards-marquee-6':                  (0x03, 0x06,  2, 1, 1),
+    'covering-backwards-marquee':           (0x04, 0x00,  2, 1, 8),
     'backwards-moving-alternating-3':       (0x05, 0x03,  4, 1, 2),
     'backwards-moving-alternating-4':       (0x05, 0x04,  4, 1, 2),
     'backwards-moving-alternating-5':       (0x05, 0x05,  4, 1, 2),
     'backwards-moving-alternating-6':       (0x05, 0x06,  4, 1, 2),
     'backwards-rainbow-flow':               (0x0b, 0x00,  2, 0, 0),
     'backwards-super-rainbow':              (0x0c, 0x00,  2, 0, 0),
-    'backwards-rainbow-pulse':              (0x0b, 0x00,  2, 0, 0),
+    'backwards-rainbow-pulse':              (0x0d, 0x00,  2, 0, 0),
 }
 
 # A static value per channel that is somehow related to animation time and
@@ -224,6 +224,17 @@ class KrakenX3(UsbHidDriver):
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
+
+        channel = channel.lower()
+        mode = mode.lower()
+        speed = speed.lower()
+        directon = direction.lower()
+
+        if 'backwards' in mode:
+            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            mode = mode.replace('backwards-', '')
+            direction = 'backward'
+
         cid = self._color_channels[channel]
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
@@ -237,6 +248,7 @@ class KrakenX3(UsbHidDriver):
         elif len(colors) > maxcolors:
             LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
             colors = colors[:maxcolors]
+
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval, direction)
 
@@ -275,9 +287,10 @@ class KrakenX3(UsbHidDriver):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
 
-    def _write_colors(self, cid, mode, colors, sval, directionStr):
+    def _write_colors(self, cid, mode, colors, sval, direction):
         mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
         color_count = len(colors)
+
         if 'super-fixed' == mode or 'super-breathing' == mode:
             color = list(itertools.chain(*colors)) + [0x00, 0x00, 0x00] * (maxcolors - color_count)
             speed_value = _SPEED_VALUE[speed_scale][sval]
@@ -285,6 +298,7 @@ class KrakenX3(UsbHidDriver):
             self._write([0x22, 0x11, cid, 0x00])
             self._write([0x22, 0xa0, cid, 0x00, mval] + speed_value +
                         [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
+
         elif mode == 'wings':  # wings requires special handling
             self._write([0x22, 0x10, cid])  # clear out all independent LEDs
             self._write([0x22, 0x11, cid])  # clear out all independent LEDs
@@ -293,22 +307,22 @@ class KrakenX3(UsbHidDriver):
             color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
             color_lists[2] = [int(x // 4) for x in color_lists[1]]
             color_lists[3] = [0x00] * 8
+            speed_value = _SPEED_VALUE[speed_scale][sval]
             for i in range(8):  # send color scheme first, before enabling wings mode
                 mod = 0x05 if i in [3, 7] else 0x01
-                speed_value = _SPEED_VALUE[speed_scale][sval]
-                direction = [0x04, 0x84] if i // 4 == 0 else [0x84, 0x04]
+                alt = [0x04, 0x84] if i // 4 == 0 else [0x84, 0x04]
                 msg = ([0x22, 0x20, cid, i, 0x04] + speed_value + [mod] + [0x00] * 7 + [0x02] +
-                       direction + [0x00] * 10)
+                       alt + [0x00] * 10)
                 self._write(msg + color_lists[i % 4])
             self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
+
         else:
-
-
             opcode = [0x2a, 0x04]
             address = [cid, cid]
             speed_value = _SPEED_VALUE[speed_scale][sval]
             header = opcode + address + [mval] + speed_value
             color = list(itertools.chain(*colors)) + [0, 0, 0] * (16 - color_count)
+
             if 'marquee' in mode:
                 backwards_byte = 0x04
             elif mode == 'starry-night' or 'moving-alternating' in mode:
@@ -316,9 +330,8 @@ class KrakenX3(UsbHidDriver):
             else:
                 backwards_byte = 0x00
 
-            if directionStr == 'backward' or 'backwards' in mode:
+            if direction == 'backward' or 'backwards' in mode:
                 backwards_byte += 0x02
-
 
             if mode == 'fading' or mode == 'pulse' or mode == 'breathing':
                 mode_related = 0x08
@@ -331,6 +344,7 @@ class KrakenX3(UsbHidDriver):
                 mode_related = 0x04
             else:
                 mode_related = 0x00
+
             static_byte = _STATIC_VALUE[cid]
             led_size = size_variant if mval == 0x03 or mval == 0x05 else 0x03
             footer = [backwards_byte, color_count, mode_related, static_byte, led_size]
