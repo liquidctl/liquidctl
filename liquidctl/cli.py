@@ -56,7 +56,8 @@ Examples:
   liquidctl --product 170e set led color fading 350017 ff2608
   liquidctl status
 
-Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey and contributors
+Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey, Marshall Asch and
+contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
