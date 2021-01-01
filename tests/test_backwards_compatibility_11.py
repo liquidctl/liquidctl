@@ -3,6 +3,7 @@
 from liquidctl.driver.kraken2 import Kraken2
 from liquidctl.driver.usb import hid, HidapiDevice
 import usb
+import pytest
 
 
 class _MockPyUsbHandle(usb.core.Device):
