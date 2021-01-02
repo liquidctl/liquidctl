@@ -24,7 +24,7 @@ from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, \
                            normalize_profile, check_unsafe
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 _WRITE_PREFIX = 0x3F
@@ -59,7 +59,7 @@ class _FanMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
+        _LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
         return _FanMode.FIXED_DUTY
 
 
@@ -71,7 +71,7 @@ class _PumpMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        LOGGER.debug("falling back to BALANCED for _PumpMode(%s)", value)
+        _LOGGER.debug("falling back to BALANCED for _PumpMode(%s)", value)
         return _PumpMode.BALANCED
 
 
@@ -174,7 +174,7 @@ class HydroPlatinum(UsbHidDriver):
         fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
         if fw_version < (1, 1, 0):
             # see: #201 ("Fan settings affects Fan 1 only and disables fan2")
-            LOGGER.warning('outdated and possibly unsupported firmware version')
+            _LOGGER.warning('outdated and possibly unsupported firmware version')
         return [('Firmware version', '%d.%d.%d' % fw_version, '')]
 
     def get_status(self, **kwargs):
@@ -300,7 +300,7 @@ class HydroPlatinum(UsbHidDriver):
         if len(colors) < mincolors:
             raise ValueError(f'At least {mincolors} required for {_quoted((channel, mode))}')
         if len(colors) > maxcolors:
-            LOGGER.warning('too many colors, dropping to %d', maxcolors)
+            _LOGGER.warning('too many colors, dropping to %d', maxcolors)
             return maxcolors
         return len(colors)
 
@@ -331,7 +331,7 @@ class HydroPlatinum(UsbHidDriver):
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
         if compute_pec(buf[1:]):
-            LOGGER.warning('response checksum does not match data')
+            _LOGGER.warning('response checksum does not match data')
         return buf
 
     def _send_set_cooling(self):
@@ -345,17 +345,17 @@ class HydroPlatinum(UsbHidDriver):
                 stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
                 data[iduty] = fraction_of_byte(percentage=duty)
-                LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
+                _LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
                 stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
                 data[iprofile : iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
-                LOGGER.info('setting %s to follow profile %r', fan, profile)
+                _LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
                 raise ValueError(f'Unsupported fan {mode}')
             data[imode] = mode.value
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
-        LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
+        _LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)

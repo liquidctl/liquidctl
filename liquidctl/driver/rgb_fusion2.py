@@ -17,7 +17,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _REPORT_ID = 0xcc
 _REPORT_BYTE_LENGTH = 63
@@ -143,7 +143,7 @@ class RgbFusion2(UsbHidDriver):
         non-empty list would contain `(property, value, unit)` tuples.
         """
 
-        LOGGER.info(f'Status reports not available from {self.description}')
+        _LOGGER.info(f'Status reports not available from {self.description}')
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
@@ -191,7 +191,7 @@ class RgbFusion2(UsbHidDriver):
             single_color = (0, 0, 0)
         remaining = sum(1 for _ in colors)
         if remaining:
-            LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
+            _LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
 
         brightness = clamp(100, 0, mode.max_brightness)  # hardcode this for now
         data = [_REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

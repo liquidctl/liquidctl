@@ -16,7 +16,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
                            Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
@@ -213,9 +213,9 @@ class KrakenX3(UsbHidDriver):
         self.device.clear_enqueued_reports()
         msg = self._read()
         if msg[15:17] == [0xff, 0xff]:
-            LOGGER.warning('unexpected temperature reading, possible firmware fault;')
-            LOGGER.warning('try resetting the device or updating the firmware')
-            LOGGER.warning('(see https://github.com/liquidctl/liquidctl/issues/172)')
+            _LOGGER.warning('unexpected temperature reading, possible firmware fault;')
+            _LOGGER.warning('try resetting the device or updating the firmware')
+            _LOGGER.warning('(see https://github.com/liquidctl/liquidctl/issues/172)')
         return [
             ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
@@ -231,7 +231,7 @@ class KrakenX3(UsbHidDriver):
         directon = direction.lower()
 
         if 'backwards' in mode:
-            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
@@ -243,10 +243,10 @@ class KrakenX3(UsbHidDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if colors:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
+            _LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
             colors = colors[:maxcolors]
 
         sval = _ANIMATION_SPEEDS[speed]
@@ -260,7 +260,7 @@ class KrakenX3(UsbHidDriver):
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
         interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
         for temp, duty in zip(stdtemps, interp):
-            LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
+            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
                         duty, temp)
         self._write(header + interp)
 

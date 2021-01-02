@@ -12,7 +12,7 @@ from enum import Enum, unique
 
 from liquidctl.error import UnsafeFeaturesNotEnabled
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
 
@@ -114,7 +114,7 @@ def clamp(value, clampmin, clampmax):
     """Clamp numeric `value` to interval [`clampmin`, `clampmax`]."""
     clamped = max(clampmin, min(clampmax, value))
     if clamped != value:
-        LOGGER.debug('clamped %s to interval [%s, %s]', value, clampmin, clampmax)
+        _LOGGER.debug('clamped %s to interval [%s, %s]', value, clampmin, clampmax)
     return clamped
 
 

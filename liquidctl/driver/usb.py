@@ -67,7 +67,7 @@ except ModuleNotFoundError:
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 from liquidctl.util import LazyHexRepr
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class BaseUsbDriver(BaseDriver):
@@ -103,7 +103,7 @@ class BaseUsbDriver(BaseDriver):
             consargs = devargs.copy()
             consargs.update(kwargs)
             dev = cls(handle, description, **consargs)
-            LOGGER.debug('instanced driver for %s', description)
+            _LOGGER.debug('instanced driver for %s', description)
             yield dev
 
     def __init__(self, device, description, **kwargs):
@@ -185,7 +185,7 @@ class UsbHidDriver(BaseUsbDriver):
         # instantiated with a usb.core.Device
         if isinstance(device, usb.core.Device):
             clname = self.__class__.__name__
-            LOGGER.warning('constructing a %s instance from a usb.core.Device has been deprecated, '
+            _LOGGER.warning('constructing a %s instance from a usb.core.Device has been deprecated, '
                            'use %s.find_supported_devices() or pass a HidapiDevice handle', clname, clname)
             usbdev = device
             hidinfo = next(info for info in hid.enumerate(usbdev.idVendor, usbdev.idProduct)
@@ -241,26 +241,26 @@ class PyUsbDevice:
         try:
             cfg = self.usbdev.get_active_configuration()
         except usb.core.USBError:
-            LOGGER.debug('setting the (first) configuration')
+            _LOGGER.debug('setting the (first) configuration')
             self.usbdev.set_configuration()  # assume the first configuration
             # FIXME device or handle might not be ready for use after set_configuration()
             cfg = self.usbdev.get_active_configuration()
         self.bInterfaceNumber = self._select_interface(cfg)
-        LOGGER.debug('selected interface: %d', self.bInterfaceNumber)
+        _LOGGER.debug('selected interface: %d', self.bInterfaceNumber)
         if (sys.platform.startswith('linux') and
                 self.usbdev.is_kernel_driver_active(self.bInterfaceNumber)):
-            LOGGER.debug('replacing stock kernel driver with libusb')
+            _LOGGER.debug('replacing stock kernel driver with libusb')
             self.usbdev.detach_kernel_driver(self.bInterfaceNumber)
             self._attached = True
 
     def claim(self):
         """Explicitly claim the device from other programs."""
-        LOGGER.debug('explicitly claim interface')
+        _LOGGER.debug('explicitly claim interface')
         usb.util.claim_interface(self.usbdev, self.bInterfaceNumber)
 
     def release(self):
         """Release the device to other programs."""
-        LOGGER.debug('ensure interface is released')
+        _LOGGER.debug('ensure interface is released')
         usb.util.release_interface(self.usbdev, self.bInterfaceNumber)
 
     def close(self):
@@ -270,24 +270,24 @@ class PyUsbDevice:
         """
         self.release()
         if self._attached:
-            LOGGER.debug('restoring stock kernel driver')
+            _LOGGER.debug('restoring stock kernel driver')
             self.usbdev.attach_kernel_driver(self.bInterfaceNumber)
             self._attached = False
 
     def read(self, endpoint, length, timeout=None):
         """Read from endpoint."""
         data = self.usbdev.read(endpoint, length, timeout=timeout)
-        LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
+        _LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
         return data
 
     def write(self, endpoint, data, timeout=None):
         """Write to endpoint."""
-        LOGGER.debug('writting %d bytes: %r', len(data), LazyHexRepr(data))
+        _LOGGER.debug('writting %d bytes: %r', len(data), LazyHexRepr(data))
         return self.usbdev.write(endpoint, data, timeout=timeout)
 
     def ctrl_transfer(self, *args, **kwargs):
         """Submit a contrl transfer."""
-        LOGGER.debug('sending control transfer with %r, %r', args, kwargs)
+        _LOGGER.debug('sending control transfer with %r, %r', args, kwargs)
         return self.usbdev.ctrl_transfer(*args, **kwargs)
 
     @classmethod
@@ -384,7 +384,7 @@ class HidapiDevice:
         discarded = 0
         while self.hiddev.read(max_length=1, timeout_ms=timeout_ms):
             discarded += 1
-        LOGGER.debug('discarded %d previously enqueued reports', discarded)
+        _LOGGER.debug('discarded %d previously enqueued reports', discarded)
 
     def read(self, length):
         """Read raw report from HID.
@@ -398,7 +398,7 @@ class HidapiDevice:
         """
         self.hiddev.set_nonblocking(False)
         data = self.hiddev.read(length)
-        LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
+        _LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
         return data
 
     def write(self, data):
@@ -411,13 +411,13 @@ class HidapiDevice:
         > first byte should be set to 0. The report data itself should begin
         > at the second byte.
         """
-        LOGGER.debug('writting report 0x%02x with %d bytes: %r', data[0],
+        _LOGGER.debug('writting report 0x%02x with %d bytes: %r', data[0],
                      len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.write(data)
         if res < 0:
                 raise OSError('Could not write to device')
         if res != len(data):
-            LOGGER.debug('wrote %d total bytes, expected %d', res, len(data))
+            _LOGGER.debug('wrote %d total bytes, expected %d', res, len(data))
         return res
 
     def get_feature_report(self, report_id, length):
@@ -431,7 +431,7 @@ class HidapiDevice:
         byte.
         """
         data = self.hiddev.get_feature_report(report_id, length)
-        LOGGER.debug('got feature report 0x%02x with %d bytes: %r', data[0],
+        _LOGGER.debug('got feature report 0x%02x with %d bytes: %r', data[0],
                      len(data) - 1, LazyHexRepr(data, start=1))
         return data
 
@@ -445,13 +445,13 @@ class HidapiDevice:
         > first byte should be set to 0. The report data itself should begin
         > at the second byte.
         """
-        LOGGER.debug('sending feature report 0x%02x with %d bytes: %r',
+        _LOGGER.debug('sending feature report 0x%02x with %d bytes: %r',
                      data[0], len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.send_feature_report(data)
         if res < 0:
                 raise OSError('Could not send feature report to device')
         if res != len(data):
-            LOGGER.debug('sent %d total bytes, expected %d', res, len(data))
+            _LOGGER.debug('sent %d total bytes, expected %d', res, len(data))
         return res
 
     @classmethod
@@ -501,7 +501,7 @@ class HidapiBus(BaseBus):
         handles = HidapiDevice.enumerate(hid, vendor, product)
         drivers = sorted(find_all_subclasses(UsbHidDriver),
                          key=lambda x: (x.__module__, x.__name__))
-        LOGGER.debug('searching %s (%s)', self.__class__.__name__,
+        _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in handles:
             if bus and handle.bus != bus:
@@ -510,7 +510,7 @@ class HidapiBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            LOGGER.debug('found HID device %04x:%04x', handle.vendor_id,
+            _LOGGER.debug('found HID device %04x:%04x', handle.vendor_id,
                          handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
@@ -522,7 +522,7 @@ class PyUsbBus(BaseBus):
         """ Find compatible regular USB devices."""
         drivers = sorted(find_all_subclasses(UsbDriver),
                          key=lambda x: (x.__module__, x.__name__))
-        LOGGER.debug('searching %s (%s)', self.__class__.__name__,
+        _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in PyUsbDevice.enumerate(vendor, product):
             if bus and handle.bus != bus:
@@ -531,7 +531,7 @@ class PyUsbBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            LOGGER.debug('found USB device %04x:%04x', handle.vendor_id,
+            _LOGGER.debug('found USB device %04x:%04x', handle.vendor_id,
                          handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)

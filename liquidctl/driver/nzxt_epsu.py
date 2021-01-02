@@ -13,15 +13,12 @@ Copyright (C) 2019–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import logging
 import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.pmbus import CommandCode as CMD
 from liquidctl.pmbus import linear_to_float
-
-LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 _MIN_DELAY = 0.0025

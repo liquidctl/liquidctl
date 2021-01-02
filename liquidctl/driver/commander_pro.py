@@ -27,7 +27,7 @@ from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile, check_unsafe
 from liquidctl.error import NotSupportedByDevice
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 _RESPONSE_LENGTH = 16
@@ -195,7 +195,7 @@ class CommanderPro(UsbHidDriver):
         """
 
         if self.device.product_id != 0x0c10:
-            LOGGER.debug('only the commander pro supports this')
+            _LOGGER.debug('only the commander pro supports this')
             return []
 
         connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)

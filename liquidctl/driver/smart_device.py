@@ -106,7 +106,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp, Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _ANIMATION_SPEEDS = {
     'slowest':  0x0,
@@ -143,7 +143,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         directon = direction.lower()
 
         if 'backwards' in mode:
-            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
@@ -155,10 +155,10 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if colors:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i',
+            _LOGGER.warning('too many colors for mode=%s, dropping to %i',
                            mode, maxcolors)
             colors = colors[:maxcolors]
 
@@ -173,7 +173,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             selected_channels = {channel: self._speed_channels[channel]}
         for cname, (cid, dmin, dmax) in selected_channels.items():
             duty = clamp(duty, dmin, dmax)
-            LOGGER.info('setting %s duty to %i%%', cname, duty)
+            _LOGGER.info('setting %s duty to %i%%', cname, duty)
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):
