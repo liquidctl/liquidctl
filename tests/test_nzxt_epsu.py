@@ -2,69 +2,29 @@ import pytest
 from liquidctl.driver.nzxt_epsu import NzxtEPsu
 from _testutils import MockHidapiDevice, Report
 
+class _MockPsuDevice(MockHidapiDevice):
+    def write(self, data):
+        super().write(data)
+        data = data[1:]  # skip unused report ID
+        reply = bytearray(64)
+        reply[0:2] = (0xaa, data[2])
+        if data[5] == 0x06:
+            reply[2] = data[2] - 2
+        elif data[5] == 0xfc:
+            reply[2:4] = (0x11, 0x41)
+        self.preload_read(Report(0, reply[0:]))
 
 @pytest.fixture
 def mockPsuDevice():
-    device = MockHidapiDevice(vendor_id=0x7793, product_id=0x5911, address='addr')
+    device = _MockPsuDevice()
     return NzxtEPsu(device, 'mock NZXT E500 PSU')
-
 
 def test_psu_device_initialize(mockPsuDevice):
     mockPsuDevice.initialize()
 
     assert len(mockPsuDevice.device.sent) == 0
 
-
 def test_psu_device_status(mockPsuDevice):
-
-    replyFW = bytearray(64)
-    replyFW[0:2] = (0xaa, 0x03)
-    replyFW[2:4] = (0x11, 0x41)
-
-    replyTemp = bytearray(64)
-    replyTemp[0:2] = (0xaa, 0x03)
-
-    replySpeed = replyTemp
-
-    replyVoltA = bytearray(64)
-    replyVoltA[0:2] = (0xaa, 0x03)
-    replyVoltA[2] = 1
-
-    replyVoltB = bytearray(64)
-    replyVoltB[0:2] = (0xaa, 0x04)
-    replyVoltB[2] = 2
-
-    replyCurrent = replyVoltB
-    replyPower = replyCurrent
-
-    replies = [
-        replyFW,
-        replyTemp,
-        replySpeed,
-        replyVoltA,
-        replyVoltB,
-        replyCurrent,
-        replyPower,
-        replyVoltA,
-        replyVoltB,
-        replyCurrent,
-        replyPower,
-        replyVoltA,
-        replyVoltB,
-        replyCurrent,
-        replyPower,
-        replyVoltA,
-        replyVoltB,
-        replyCurrent,
-        replyPower,
-        replyVoltA,
-        replyVoltB,
-        replyCurrent,
-        replyPower,
-    ]
-
-    for reply in replies:
-        mockPsuDevice.device.preload_read(Report(0, reply[0:]))
 
     mockPsuDevice.connect()
     status = mockPsuDevice.get_status()
