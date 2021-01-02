@@ -227,7 +227,7 @@ def _device_set_speed(dev, args, **opts):
 def _make_opts(args):
     if args['--hid']:
         _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
-                       args['--hid'])
+                        args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
@@ -288,7 +288,7 @@ def main():
             if compat[device_id].device not in matched_devs:
                 raise SystemExit('Error: device ID does not match remaining selection criteria')
             _LOGGER.warning('mixing --device <id> with other filters is not recommended; '
-                           'to disambiguate between results prefer --pick <result>')
+                            'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
 
     if args['list']:

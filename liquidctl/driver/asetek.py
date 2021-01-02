@@ -268,7 +268,7 @@ class Modern690Lc(_CommonAsetekDriver):
         adjusted = self._prepare_profile(profile, dmin, dmax)
         for temp, duty in adjusted:
             _LOGGER.info('setting %s PWM point: (%i°C, %i%%), device interpolated',
-                        channel, temp, duty)
+                         channel, temp, duty)
         temps, duties = map(list, zip(*adjusted))
         self._begin_transaction()
         self._write([mtype, 0] + temps + duties)

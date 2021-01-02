@@ -186,7 +186,7 @@ class UsbHidDriver(BaseUsbDriver):
         if isinstance(device, usb.core.Device):
             clname = self.__class__.__name__
             _LOGGER.warning('constructing a %s instance from a usb.core.Device has been deprecated, '
-                           'use %s.find_supported_devices() or pass a HidapiDevice handle', clname, clname)
+                            'use %s.find_supported_devices() or pass a HidapiDevice handle', clname, clname)
             usbdev = device
             hidinfo = next(info for info in hid.enumerate(usbdev.idVendor, usbdev.idProduct)
                            if info['serial_number'] == usbdev.serial_number)
@@ -412,7 +412,7 @@ class HidapiDevice:
         > at the second byte.
         """
         _LOGGER.debug('writting report 0x%02x with %d bytes: %r', data[0],
-                     len(data) - 1, LazyHexRepr(data, start=1))
+                      len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.write(data)
         if res < 0:
                 raise OSError('Could not write to device')
@@ -432,7 +432,7 @@ class HidapiDevice:
         """
         data = self.hiddev.get_feature_report(report_id, length)
         _LOGGER.debug('got feature report 0x%02x with %d bytes: %r', data[0],
-                     len(data) - 1, LazyHexRepr(data, start=1))
+                      len(data) - 1, LazyHexRepr(data, start=1))
         return data
 
     def send_feature_report(self, data):
@@ -446,7 +446,7 @@ class HidapiDevice:
         > at the second byte.
         """
         _LOGGER.debug('sending feature report 0x%02x with %d bytes: %r',
-                     data[0], len(data) - 1, LazyHexRepr(data, start=1))
+                      data[0], len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.send_feature_report(data)
         if res < 0:
                 raise OSError('Could not send feature report to device')
@@ -502,7 +502,7 @@ class HidapiBus(BaseBus):
         drivers = sorted(find_all_subclasses(UsbHidDriver),
                          key=lambda x: (x.__module__, x.__name__))
         _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
-                     ', '.join(map(lambda x: x.__name__, drivers)))
+                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in handles:
             if bus and handle.bus != bus:
                 continue
@@ -511,7 +511,7 @@ class HidapiBus(BaseBus):
             if usb_port and handle.port != usb_port:
                 continue
             _LOGGER.debug('found HID device %04x:%04x', handle.vendor_id,
-                         handle.product_id)
+                          handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
 
@@ -523,7 +523,7 @@ class PyUsbBus(BaseBus):
         drivers = sorted(find_all_subclasses(UsbDriver),
                          key=lambda x: (x.__module__, x.__name__))
         _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
-                     ', '.join(map(lambda x: x.__name__, drivers)))
+                      ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in PyUsbDevice.enumerate(vendor, product):
             if bus and handle.bus != bus:
                 continue
@@ -532,6 +532,6 @@ class PyUsbBus(BaseBus):
             if usb_port and handle.port != usb_port:
                 continue
             _LOGGER.debug('found USB device %04x:%04x', handle.vendor_id,
-                         handle.product_id)
+                          handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)

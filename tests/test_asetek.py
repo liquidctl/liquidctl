@@ -51,11 +51,11 @@ class Modern690LcTestCase(unittest.TestCase):
         self.device.initialize()
         status = self.device.get_status()
         self.device.set_color(channel='led', mode='blinking', colors=iter([[3, 2, 1]]),
-                       time_per_color=3, time_off=1, alert_threshold=42,
-                       alert_color=[90, 80, 10])
+                              time_per_color=3, time_off=1, alert_threshold=42,
+                              alert_color=[90, 80, 10])
         self.device.set_color(channel='led', mode='rainbow', colors=[], speed=5)
         self.device.set_speed_profile(channel='fan',
-                               profile=iter([(20, 20), (30, 50), (40, 100)]))
+                                      profile=iter([(20, 20), (30, 50), (40, 100)]))
         self.device.set_fixed_speed(channel='pump', duty=50)
 
     def test_connect(self):
@@ -97,8 +97,8 @@ class Legacy690LcTestCase(unittest.TestCase):
         self.device.initialize()
         status = self.device.get_status()
         self.device.set_color(channel='led', mode='blinking', colors=iter([[3, 2, 1]]),
-                       time_per_color=3, time_off=1, alert_threshold=42,
-                       alert_color=[90, 80, 10])
+                              time_per_color=3, time_off=1, alert_threshold=42,
+                              alert_color=[90, 80, 10])
         self.device.set_fixed_speed(channel='fan', duty=80)
         self.device.set_fixed_speed(channel='pump', duty=50)
 

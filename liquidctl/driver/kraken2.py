@@ -167,7 +167,7 @@ class Kraken2(UsbHidDriver):
 
         if ringonly and channel != 'ring':
             _LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
-                           mode, channel)
+                            mode, channel)
             channel = 'ring'
 
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
@@ -191,7 +191,7 @@ class Kraken2(UsbHidDriver):
             colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
             _LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                           mode, maxcolors)
+                            mode, maxcolors)
             colors = colors[:maxcolors]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;

@@ -160,7 +160,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
             _LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                           mode, maxcolors)
+                            mode, maxcolors)
             colors = colors[:maxcolors]
 
         sval = _ANIMATION_SPEEDS[speed]
