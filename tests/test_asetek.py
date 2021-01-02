@@ -3,6 +3,7 @@ from collections import deque
 from liquidctl.driver.asetek import Modern690Lc, Legacy690Lc, Hydro690Lc
 from _testutils import noop
 
+
 class _Mock690LcDevice():
     def __init__(self, vendor_id=None, product_id=None, release_number=None,
                  serial_number=None, bus=None, address=None, port=None):

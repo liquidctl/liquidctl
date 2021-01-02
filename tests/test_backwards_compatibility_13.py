@@ -1,5 +1,6 @@
 import unittest
 
+
 class Pre14NamesTestCase(unittest.TestCase):
     def test_old_module_names(self):
         import liquidctl.driver.asetek

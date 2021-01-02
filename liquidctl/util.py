@@ -145,6 +145,7 @@ def u16le_from(buffer, offset=0):
     """
     return int.from_bytes(buffer[offset : offset + 2], byteorder='little')
 
+
 def u16be_from(buffer, offset=0):
     """Read an unsigned 16-bit big-endian integer from `buffer`.
 

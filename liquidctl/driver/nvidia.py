@@ -28,6 +28,7 @@ ASUS_STRIX_RTX_2080_TI_OC = 0x866a
 EVGA = 0x3842
 EVGA_GTX_1080_FTW = 0x6286
 
+
 @unique
 class _ModeEnum(bytes, Enum):
     def __new__(cls, value, required_colors):

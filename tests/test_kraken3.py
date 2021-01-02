@@ -20,6 +20,7 @@ _FAULTY_STATUS = bytes.fromhex(
     '0000000000000000000000000000000000000000000000000000000000000000'
 )
 
+
 class _MockKrakenDevice(MockHidapiDevice):
     def __init__(self, raw_led_channels):
         super().__init__()

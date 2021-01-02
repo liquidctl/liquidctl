@@ -10,6 +10,7 @@ _SAMPLE_PATH = (r'IOService:/AppleACPIPlatformExpert/PCI0@0/AppleACPIPCI/XHC@14/
                 r'2000/IOUSBHostInterface@0/AppleUserUSBHostHIDDevice+Win\\#!&3142')
 _WIN_MAX_PATH = 260  # Windows API should be the bottleneck
 
+
 class _H115iPlatinumDevice(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0xffff, product_id=0x0c17, address=_SAMPLE_PATH)

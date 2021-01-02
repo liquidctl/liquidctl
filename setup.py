@@ -5,6 +5,7 @@ import sys
 import setuptools
 from setuptools.command.develop import develop
 
+
 def get_static_version():
     """Read manually attributed version number.
 

@@ -7,6 +7,7 @@ Report = namedtuple('Report', ['number', 'data'])
 def noop(*args, **kwargs):
     return None
 
+
 class MockRuntimeStorage:
     def __init__(self, key_prefixes):
         self._cache = {}
@@ -96,7 +97,7 @@ class VirtualSmbus:
                  parent_driver='virtual'):
 
         self._open = False
-        self._data = [ [0] * register_count for _ in range(address_count) ] 
+        self._data = [ [0] * register_count for _ in range(address_count) ]
 
         self.name = name
         self.description = description

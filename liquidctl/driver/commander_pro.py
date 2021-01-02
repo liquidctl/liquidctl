@@ -83,6 +83,7 @@ _MODES = {
     'rainbow2': 0x0a,
 }
 
+
 def _prepare_profile(original, critcalTempature):
     clamped = ((temp, clamp(duty, 0, _MAX_FAN_RPM)) for temp, duty in original)
     normal = normalize_profile(clamped, critcalTempature, _MAX_FAN_RPM)
@@ -93,8 +94,10 @@ def _prepare_profile(original, critcalTempature):
         normal += missing * [(critcalTempature, _MAX_FAN_RPM)]
     return normal
 
+
 def _quoted(*names):
     return ', '.join(map(repr, names))
+
 
 def _get_fan_mode_description(mode):
     """This will convert the fan mode value to a descriptive name.
@@ -108,6 +111,7 @@ def _get_fan_mode_description(mode):
         return 'PWM'
     else:
         return 'UNKNOWN'
+
 
 class CommanderPro(UsbHidDriver):
     """Corsair Commander Pro LED and fan hub"""

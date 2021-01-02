@@ -5,29 +5,25 @@ from liquidctl.error import NotSupportedByDevice
 
 from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
-
-
-
-
-
 # hardcoded responce data expected for some of the calls:
-
-#   -- init
 # commander pro: firmware request (0.9.214)
 # commander pro: bootloader req (2.3)
 # commander pro: get temp config ( 3 sensors)
 # commander pro: get fan configs (3 DC fans, 1 PWM fan) # note I have not tested it with pwm fans
 # commander pro:
 
+
 @pytest.fixture
 def commanderProDeviceUnconnected():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
     return CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
 
+
 @pytest.fixture
 def lightingNodeProDeviceUnconnected():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c0b, address='addr')
     return CommanderPro(device, 'Corsair Lighting Node Pro (experimental)', 0, 0, 2)
+
 
 @pytest.fixture
 def commanderProDevice():
@@ -36,6 +32,7 @@ def commanderProDevice():
     pro.connect()
     pro._data = MockRuntimeStorage(key_prefixes='testing')
     return pro
+
 
 @pytest.fixture
 def lightingNodeProDevice():
@@ -50,52 +47,67 @@ def lightingNodeProDevice():
 def test_prepare_profile_valid_max_rpm():
     assert _prepare_profile([[10, 400], [20, 5000]], 60) == [(10, 400), (20, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
+
 def test_prepare_profile_add_max_rpm():
     assert _prepare_profile([[10, 400]], 60) == [(10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
     assert _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800]], 60) == [(10, 400), (20, 500), (30, 600), (40, 700), (50, 800), (60, 5000)]
+
 
 def test_prepare_profile_missing_max_rpm():
     with pytest.raises(ValueError):
         _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800], [55, 900]], 60)
 
+
 def test_prepare_profile_full_set():
     assert _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [45, 2000], [50, 5000]], 60) == [(10, 400), (20, 500), (30, 600), (40, 700), (45, 2000), (50, 5000)]
+
 
 def test_prepare_profile_too_many_points():
     with pytest.raises(ValueError):
         _prepare_profile([[10, 400], [20, 500], [30, 600], [40, 700], [50, 800], [55, 900]], 60)
 
+
 def test_prepare_profile_no_points():
     assert _prepare_profile([], 60) == [(60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+
 
 def test_prepare_profile_empty_list():
     assert _prepare_profile([], 60) == [(60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
+
 def test_prepare_profile_above_max_temp():
     assert _prepare_profile([[10, 400], [70, 2000]], 60) == [(10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
+
 
 def test_prepare_profile_temp_low():
     assert _prepare_profile([[-10, 400], [70, 2000]], 60) == [(-10, 400), (60, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
+
 def test_prepare_profile_max_temp():
     assert _prepare_profile([], 100) == [(100, 5000), (100, 5000), (100, 5000), (100, 5000), (100, 5000), (100, 5000)]
+
 
 ##### quoted
 def test_quoted_empty():
     assert _quoted() == ''
 
+
 def test_quoted_single():
     assert _quoted('one arg') == "'one arg'"
+
 
 def test_quoted_valid():
     assert _quoted('one', 'two') == "'one', 'two'"
 
+
 def test_quoted_not_string():
     assert _quoted('test', 500) == "'test', 500"
+
 
 ##### fan modes
 def test_get_fan_mode_description_auto():
     assert _get_fan_mode_description(0x00) == 'Auto/Disconnected'
+
 
 def test_get_fan_mode_description_unknown():
     assert _get_fan_mode_description(0x03) == 'UNKNOWN'
@@ -103,11 +115,14 @@ def test_get_fan_mode_description_unknown():
     assert _get_fan_mode_description(0x10) == 'UNKNOWN'
     assert _get_fan_mode_description(0xff) == 'UNKNOWN'
 
+
 def test_get_fan_mode_description_dc():
     assert _get_fan_mode_description(0x01) == 'DC'
 
+
 def test_get_fan_mode_description_pwm():
     assert _get_fan_mode_description(0x02) == 'PWM'
+
 
 ##### class methods
 def test_commander_constructor(commanderProDeviceUnconnected):
@@ -118,6 +133,7 @@ def test_commander_constructor(commanderProDeviceUnconnected):
     assert commanderProDeviceUnconnected._temp_probs == 4
     assert commanderProDeviceUnconnected._fan_count == 6
 
+
 def test_lighting_constructor(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._data == None
     assert lightingNodeProDeviceUnconnected._fan_names == []
@@ -125,13 +141,16 @@ def test_lighting_constructor(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._temp_probs == 0
     assert lightingNodeProDeviceUnconnected._fan_count == 0
 
+
 def test_connect_commander(commanderProDeviceUnconnected):
     commanderProDeviceUnconnected.connect()
     assert commanderProDeviceUnconnected._data != None
 
+
 def test_connect_lighting(lightingNodeProDeviceUnconnected):
     lightingNodeProDeviceUnconnected.connect()
     assert lightingNodeProDeviceUnconnected._data != None
+
 
 def test_initialize_commander_pro(commanderProDevice):
 
@@ -180,6 +199,7 @@ def test_initialize_commander_pro(commanderProDevice):
     assert data[2] == 0x00
     assert data[3] == 0x01
 
+
 def test_initialize_lighting_node(lightingNodeProDevice):
     responses = [
         '000009d4000000000000000000000000',  # firmware
@@ -200,6 +220,7 @@ def test_initialize_lighting_node(lightingNodeProDevice):
     data = lightingNodeProDevice._data.load('temp_sensors_connected', None)
     assert data == None
 
+
 def test_get_status_commander_pro(commanderProDevice):
 
         responses = [
@@ -215,7 +236,6 @@ def test_get_status_commander_pro(commanderProDevice):
         ]
         for d in responses:
             commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
-
 
         commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x02, 0x00, 0x00, 0x00])
         commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
@@ -259,10 +279,12 @@ def test_get_status_commander_pro(commanderProDevice):
         assert sent[7].data[0] == 0x21
         assert sent[8].data[0] == 0x21
 
+
 def test_get_status_lighting_pro(lightingNodeProDevice):
 
     res = lightingNodeProDevice.get_status()
     assert len(res) == 0
+
 
 def test_get_temp_valid_sensor_commander(commanderProDevice):
 
@@ -281,6 +303,7 @@ def test_get_temp_valid_sensor_commander(commanderProDevice):
     assert sent[0].data[0] == 0x11
     assert sent[0].data[1] == 1
 
+
 def test_get_temp_invalid_sensor_low_commander(commanderProDevice):
     response = '000a8300000000000000000000000000'
     commanderProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
@@ -293,6 +316,7 @@ def test_get_temp_invalid_sensor_low_commander(commanderProDevice):
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
+
 
 def test_get_temp_invalid_sensor_high_commander(commanderProDevice):
     response = '000a8300000000000000000000000000'
@@ -307,6 +331,7 @@ def test_get_temp_invalid_sensor_high_commander(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_get_temp_lighting(lightingNodeProDevice):
     response = '000a8300000000000000000000000000'
     lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
@@ -320,15 +345,14 @@ def test_get_temp_lighting(lightingNodeProDevice):
     sent = lightingNodeProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_get_fan_rpm_valid_commander(commanderProDevice):
 
     response = '0003ac00000000000000000000000000'
     commanderProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
-
     commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x02, 0x00, 0x00, 0x00])
 
     res = commanderProDevice._get_fan_rpm(1)
-
     assert res == 940
 
     # check the commands sent
@@ -336,6 +360,7 @@ def test_get_fan_rpm_valid_commander(commanderProDevice):
     assert len(sent) == 1
     assert sent[0].data[0] == 0x21
     assert sent[0].data[1] == 1
+
 
 def test_get_fan_rpm_invalid_low_commander(commanderProDevice):
 
@@ -351,6 +376,7 @@ def test_get_fan_rpm_invalid_low_commander(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_get_fan_rpm_invalid_high_commander(commanderProDevice):
     response = '0003ac00000000000000000000000000'
     commanderProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
@@ -364,6 +390,7 @@ def test_get_fan_rpm_invalid_high_commander(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_get_fan_rpm_lighting(lightingNodeProDevice):
     response = '0003ac00000000000000000000000000'
     lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
@@ -375,18 +402,22 @@ def test_get_fan_rpm_lighting(lightingNodeProDevice):
     sent = lightingNodeProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_get_hw_fan_channels_all(commanderProDevice):
 
     res = commanderProDevice._get_hw_fan_channels('sync')
     assert res == [0, 1, 2, 3, 4, 5]
 
+
 def test_get_hw_fan_channels_uppercase(commanderProDevice):
     res = commanderProDevice._get_hw_fan_channels('FaN3')
     assert res == [2]
 
+
 def test_get_hw_fan_channels_lowercase(commanderProDevice):
     res = commanderProDevice._get_hw_fan_channels('fan2')
     assert res == [1]
+
 
 def test_get_hw_fan_channels_invalid(commanderProDevice):
     with pytest.raises(ValueError):
@@ -401,18 +432,22 @@ def test_get_hw_fan_channels_invalid(commanderProDevice):
     with pytest.raises(ValueError):
         commanderProDevice._get_hw_fan_channels('bob')
 
+
 def test_get_hw_led_channels_all(commanderProDevice):
 
     res = commanderProDevice._get_hw_led_channels('led')
     assert res == [0, 1]
 
+
 def test_get_hw_led_channels_uppercase(commanderProDevice):
     res = commanderProDevice._get_hw_led_channels('LeD2')
     assert res == [1]
 
+
 def test_get_hw_led_channels_lowercase(commanderProDevice):
     res = commanderProDevice._get_hw_led_channels('led1')
     assert res == [0]
+
 
 def test_get_hw_led_channels_invalid(commanderProDevice):
     with pytest.raises(ValueError):
@@ -424,11 +459,11 @@ def test_get_hw_led_channels_invalid(commanderProDevice):
     with pytest.raises(ValueError):
         commanderProDevice._get_hw_led_channels('bob')
 
+
 def test_set_fixed_speed_low(commanderProDevice):
 
     response = '00000000000000000000000000000000'
     commanderProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
-
     commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x01, 0x01, 0x01, 0x01])
 
     commanderProDevice.set_fixed_speed('fan4', -10)
@@ -441,10 +476,10 @@ def test_set_fixed_speed_low(commanderProDevice):
     assert sent[0].data[1] == 0x03
     assert sent[0].data[2] == 0x00
 
+
 def test_set_fixed_speed_high(commanderProDevice):
     response = '00000000000000000000000000000000'
     commanderProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
-
     commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x01, 0x01, 0x01, 0x01])
 
     commanderProDevice.set_fixed_speed('fan3', 110)
@@ -456,6 +491,7 @@ def test_set_fixed_speed_high(commanderProDevice):
     assert sent[0].data[0] == 0x23
     assert sent[0].data[1] == 0x02
     assert sent[0].data[2] == 0x64
+
 
 def test_set_fixed_speed_valid(commanderProDevice):
 
@@ -473,6 +509,7 @@ def test_set_fixed_speed_valid(commanderProDevice):
     assert sent[0].data[1] == 0x01
     assert sent[0].data[2] == 0x32
 
+
 def test_set_fixed_speed_valid_unconfigured(commanderProDevice):
 
     response = '00000000000000000000000000000000'
@@ -485,6 +522,7 @@ def test_set_fixed_speed_valid_unconfigured(commanderProDevice):
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_set_fixed_speed_valid_multi_fan(commanderProDevice):
         responses = [
             '00000000000000000000000000000000',
@@ -496,7 +534,6 @@ def test_set_fixed_speed_valid_multi_fan(commanderProDevice):
 
         for d in responses:
             commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
-
 
         commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
@@ -518,6 +555,7 @@ def test_set_fixed_speed_valid_multi_fan(commanderProDevice):
         assert sent[2].data[1] == 0x03
         assert sent[2].data[2] == 0x32
 
+
 def test_set_fixed_speed_lighting(lightingNodeProDevice):
     response = '00000000000000000000000000000000'
     lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(response)))
@@ -528,6 +566,7 @@ def test_set_fixed_speed_lighting(lightingNodeProDevice):
     # check the commands sent
     sent = lightingNodeProDevice.device.sent
     assert len(sent) == 0
+
 
 def test_set_speed_profile_valid_multi_fan(commanderProDevice):
     responses = [
@@ -566,6 +605,7 @@ def test_set_speed_profile_valid_multi_fan(commanderProDevice):
     assert sent[2].data[1] == 0x03
     assert sent[2].data[2] == 0x00
 
+
 def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -596,6 +636,7 @@ def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
     assert sent[0].data[15] == 0x01
     assert sent[0].data[16] == 0xf4
 
+
 def test_set_speed_profile_no_temp_sensors(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -617,6 +658,7 @@ def test_set_speed_profile_no_temp_sensors(commanderProDevice):
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
+
 
 def test_set_speed_profile_valid(commanderProDevice):
     responses = [
@@ -647,6 +689,7 @@ def test_set_speed_profile_valid(commanderProDevice):
     assert sent[0].data[15] == 0x01
     assert sent[0].data[16] == 0xf4
 
+
 def test_set_speed_profile_lighting(lightingNodeProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -669,6 +712,7 @@ def test_set_speed_profile_lighting(lightingNodeProDevice):
     sent = lightingNodeProDevice.device.sent
     assert len(sent) == 0
 
+
 def test_set_speed_profile_valid_unconfigured(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -690,6 +734,7 @@ def test_set_speed_profile_valid_unconfigured(commanderProDevice):
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 0
+
 
 def test_set_color_hardware_clear(commanderProDevice):
     responses = [
@@ -725,6 +770,7 @@ def test_set_color_hardware_clear(commanderProDevice):
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
     assert effects == None
+
 
 def test_set_color_hardware_off(commanderProDevice):
     responses = [
@@ -764,6 +810,7 @@ def test_set_color_hardware_off(commanderProDevice):
 
     assert effects == None
 
+
 @pytest.mark.parametrize('directionStr,expected', [
     ('forward', 0x01), ('FORWARD', 0x01), ('fOrWaRd', 0x01),
     ('backward', 0x00), ('BACKWARD', 0x00), ('BaCkWaRd', 0x00)
@@ -796,6 +843,7 @@ def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expecte
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_direction_default(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -824,6 +872,7 @@ def test_set_color_hardware_direction_default(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_speed_default(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -851,6 +900,7 @@ def test_set_color_hardware_speed_default(commanderProDevice):
 
     assert effects != None
     assert len(effects) == 1
+
 
 @pytest.mark.parametrize('speedStr,expected', [
     ('slow', 0x02), ('SLOW', 0x02), ('SlOw', 0x02),
@@ -885,6 +935,7 @@ def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_default_start_end(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -913,6 +964,7 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
 
     assert effects != None
     assert len(effects) == 1
+
 
 @pytest.mark.parametrize('startLED,expected', [
     (1, 0x00), (30, 0x1d), (92, 0x5b)
@@ -945,6 +997,7 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
     assert effects != None
     assert len(effects) == 1
 
+
 @pytest.mark.parametrize('numLED,expected', [
     (1, 0x01), (30, 0x1e), (96, 0x5f)
     ])
@@ -976,6 +1029,7 @@ def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_too_many_leds(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1005,6 +1059,7 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_too_few_leds(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1033,6 +1088,7 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
 
     assert effects != None
     assert len(effects) == 1
+
 
 @pytest.mark.parametrize('channel,expected', [
     ('led1', 0x00), ('led', 0x00), ('LeD1', 0x00),
@@ -1069,6 +1125,7 @@ def test_set_color_hardware_channel(commanderProDevice, channel, expected):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_random_color(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1097,6 +1154,7 @@ def test_set_color_hardware_random_color(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_not_random_color(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1124,6 +1182,7 @@ def test_set_color_hardware_not_random_color(commanderProDevice):
 
     assert effects != None
     assert len(effects) == 1
+
 
 def test_set_color_hardware_too_many_colors(commanderProDevice):
     responses = [
@@ -1157,6 +1216,7 @@ def test_set_color_hardware_too_many_colors(commanderProDevice):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_too_few_colors(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1187,6 +1247,7 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
 
     assert effects != None
     assert len(effects) == 1
+
 
 @pytest.mark.parametrize('modeStr,expected', [
     ('rainbow', 0x00), ('color_shift', 0x01), ('color_pulse', 0x02),
@@ -1220,6 +1281,7 @@ def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
     assert effects != None
     assert len(effects) == 1
 
+
 def test_set_color_hardware_invalid_mode(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1244,6 +1306,7 @@ def test_set_color_hardware_invalid_mode(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
     assert effects == None
+
 
 def test_set_color_hardware_multipe_commands(commanderProDevice):
     responses = [
@@ -1285,6 +1348,7 @@ def test_set_color_hardware_multipe_commands(commanderProDevice):
     assert effects != None
     assert len(effects) == 2
 
+
 def test_send_command_valid_data(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1303,6 +1367,7 @@ def test_send_command_valid_data(commanderProDevice):
     assert sent[0].data[0] == 6
     assert sent[0].data[1] == 255
 
+
 def test_send_command_no_data(commanderProDevice):
     responses = [
         '00000000000000000000000000000000',
@@ -1320,6 +1385,7 @@ def test_send_command_no_data(commanderProDevice):
     assert len(sent[0].data) == 64
     assert sent[0].data[0] == 6
     assert sent[0].data[1] == 0
+
 
 def test_send_command_data_too_long(commanderProDevice):
     responses = [

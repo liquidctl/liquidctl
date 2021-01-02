@@ -119,6 +119,7 @@ _ANIMATION_SPEEDS = {
 _MIN_DUTY = 0
 _MAX_DUTY = 100
 
+
 class _CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
