@@ -11,6 +11,9 @@ Changelog since 1.4.2:
  - Add experimental support for Corsair Vengeance RGB
  - Add experimental support for the Corsair Commander Pro
  - Add experimental support for the Corsair Lighting Node Pro 
+ - Add `--direction` modifier to animations
+ - Add `--non-volatile` to control persistence of settings (NVIDIA GPUs)
+ - Add `--start-led`, `--maximum-leds` and `--temperature-sensor` options (Corsair Commander/Lighting Node devices)
  - Add support for CSS-style hexadecimal triples
  - Added completion script for bash
  - Implement the context manager protocol in the driver API
@@ -25,6 +28,8 @@ Changelog since 1.4.2:
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
  - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
+### Deprecated
+ - Deprecate `backwards-` modes; use `--direction=backwards` instead
 
 
 ## [1.4.2] – 2020-11-01
