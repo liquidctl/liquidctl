@@ -39,7 +39,7 @@ _CORSAIR_FAN_CONTROL_MODE = CMD.MFR_SPECIFIC_F0
 _RAIL_12V = 0x0
 _RAIL_5V = 0x1
 _RAIL_3P3V = 0x2
-_RAIL_NAMES = {_RAIL_12V : '+12V', _RAIL_5V : '+5V', _RAIL_3P3V : '+3.3V'}
+_RAIL_NAMES = {_RAIL_12V: '+12V', _RAIL_5V: '+5V', _RAIL_3P3V: '+3.3V'}
 _MIN_FAN_DUTY = 0
 
 
@@ -148,7 +148,7 @@ class CorsairHidPsu(UsbHidDriver):
     def _write(self, data):
         assert len(data) <= _REPORT_LENGTH
         packet = bytearray(1 + _REPORT_LENGTH)
-        packet[1 : 1 + len(data)] = data  # device doesn't use numbered reports
+        packet[1: 1 + len(data)] = data  # device doesn't use numbered reports
         self.device.write(packet)
 
     def _read(self):

@@ -127,11 +127,11 @@ _FILTER_OPTIONS = [
 
 # custom number formats for values of select units
 _VALUE_FORMATS = {
-    '°C' : '.1f',
-    'rpm' : '.0f',
-    'V' : '.2f',
-    'A' : '.2f',
-    'W' : '.2f'
+    '°C': '.1f',
+    'rpm': '.0f',
+    'V': '.2f',
+    'A': '.2f',
+    'W': '.2f'
 }
 
 _LOGGER = logging.getLogger(__name__)
@@ -325,7 +325,7 @@ def main():
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
-            if err.errno in [errno.EACCES , errno.EPERM]:
+            if err.errno in [errno.EACCES, errno.EPERM]:
                 log_error(err, f'Error: insufficient permissions to access {dev.description}')
             elif err.args == ('open failed', ):
                 log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')

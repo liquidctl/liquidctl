@@ -325,7 +325,7 @@ class HydroPlatinum(UsbHidDriver):
             buf[2] |= command
             start_at = 3
         if data:
-            buf[start_at : start_at + len(data)] = data
+            buf[start_at: start_at + len(data)] = data
         buf[-1] = compute_pec(buf[2:-1])
         self.device.clear_enqueued_reports()
         self.device.write(buf)
@@ -337,7 +337,7 @@ class HydroPlatinum(UsbHidDriver):
     def _send_set_cooling(self):
         assert len(self._fan_names) <= 2, 'cannot yet fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
-        data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
+        data[0: len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
         for fan, (imode, iduty, iprofile) in zip(self._fan_names, _FAN_OFFSETS):
             mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
@@ -350,7 +350,7 @@ class HydroPlatinum(UsbHidDriver):
                 stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
-                data[iprofile : iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
+                data[iprofile: iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
                 _LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
                 raise ValueError(f'Unsupported fan {mode}')

@@ -93,7 +93,7 @@ class LazyHexRepr:
         self.sep = sep
 
     def __repr__(self):
-        hexvals = map(lambda x: '%02x' % x, self.data[self.start : self.end])
+        hexvals = map(lambda x: '%02x' % x, self.data[self.start: self.end])
         return self.sep.join(hexvals)
 
 
@@ -143,7 +143,7 @@ def u16le_from(buffer, offset=0):
     >>> u16le_from(b'\x45\x05\x03', offset=1)
     773
     """
-    return int.from_bytes(buffer[offset : offset + 2], byteorder='little')
+    return int.from_bytes(buffer[offset: offset + 2], byteorder='little')
 
 
 def u16be_from(buffer, offset=0):
@@ -154,7 +154,7 @@ def u16be_from(buffer, offset=0):
     >>> u16be_from(b'\x45\x05\x03', offset=1)
     1283
     """
-    return int.from_bytes(buffer[offset : offset + 2], byteorder='big')
+    return int.from_bytes(buffer[offset: offset + 2], byteorder='big')
 
 
 def delta(profile):

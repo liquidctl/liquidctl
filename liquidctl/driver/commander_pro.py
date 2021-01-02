@@ -498,7 +498,7 @@ class CommanderPro(UsbHidDriver):
 
         if data:
             data = data[:_REPORT_LENGTH-1]
-            buf[start_at : start_at + len(data)] = data
+            buf[start_at: start_at + len(data)] = data
 
         self.device.clear_enqueued_reports()
         self.device.write(buf)
