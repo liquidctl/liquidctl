@@ -39,7 +39,7 @@ class SmartDevice2TestCase(unittest.TestCase):
         """A few reasonable example calls do not raise exceptions."""
         self.device.initialize()
         self.mock_hid.preload_read(Report(0, [0x67, 0x02] + [0] * 62))
-        status = self.device.get_status()
+        self.device.get_status()
         self.device.set_color(channel='led1', mode='breathing', colors=iter([[142, 24, 68]]),
                               speed='fastest')
         self.device.set_fixed_speed(channel='fan3', duty=50)

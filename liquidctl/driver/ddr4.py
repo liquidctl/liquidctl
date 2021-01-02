@@ -11,11 +11,9 @@ import logging
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import check_unsafe, clamp
+from collections import namedtuple
 
 _LOGGER = logging.getLogger(__name__)
-
-
-from collections import namedtuple
 
 
 class Ddr4Spd:
@@ -190,7 +188,7 @@ class Ddr4Temperature(SmbusDriver):
         try:
             manufacturer = spd.module_manufacturer
         except:
-            return f'DDR4'
+            return 'DDR4'
 
         if spd.module_part_number:
             return f'{manufacturer} {spd.module_part_number}'

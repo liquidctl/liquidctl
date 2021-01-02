@@ -26,9 +26,7 @@ if sys.platform == 'linux':
     # initialization
     from smbus import SMBus
 
-
     LinuxEeprom = namedtuple('LinuxEeprom', 'name data')
-
 
     class LinuxI2c(BaseBus):
         """The Linux I²C (`/sys/bus/i2c`) bus."""
@@ -68,7 +66,6 @@ if sys.platform == 'linux':
                 _LOGGER.debug('found I²C bus %s', i2c_bus.name)
                 yield from i2c_bus.find_devices(drivers, **kwargs)
 
-
     class LinuxI2cBus:
         """A Linux I²C device, which is itself an I²C bus.
 
@@ -90,7 +87,7 @@ if sys.platform == 'linux':
                 assert i2c_dev.name.startswith('i2c-')
                 self._number = int(i2c_dev.name[4:])
             except:
-                raise ValueError(f'cannot infer bus number')
+                raise ValueError('cannot infer bus number')
 
         def find_devices(self, drivers, **kwargs):
             """Probe drivers and find compatible devices in this bus."""
@@ -174,7 +171,7 @@ if sys.platform == 'linux':
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
                 eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
                 return LinuxEeprom(name, eeprom)
-            except Exception as err:
+            except Exception:
                 return None
 
         @property

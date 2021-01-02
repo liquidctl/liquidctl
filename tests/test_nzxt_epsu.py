@@ -36,7 +36,6 @@ class NzxtEPsuTestCase(unittest.TestCase):
         assert fw == ('Firmware version', 'A017/40983', '')
 
     def test_dont_inject_report_ids(self):
-        status = self.device.get_status()
+        self.device.get_status()
         get_fw = self.mock_hid.sent[0]
         assert get_fw == Report(0, [0xad, 0, 3, 1, 0x60, 0xfc] + 58*[0])
-

@@ -65,7 +65,7 @@ class KrakenX3TestCase(unittest.TestCase):
 
     def test_not_totally_broken(self):
         """Reasonable example calls to untested APIs do not raise exceptions."""
-        infos = self.device.initialize()
+        self.device.initialize()
         self.device.set_color(channel='ring', mode='fixed', colors=iter([[3, 2, 1]]),
                               speed='fastest')
         self.device.set_speed_profile(channel='pump',
@@ -86,9 +86,9 @@ class KrakenZ3TestCase(unittest.TestCase):
 
     def test_not_totally_broken(self):
         """Reasonable example calls to untested APIs do not raise exceptions."""
-        infos = self.device.initialize()
+        self.device.initialize()
         self.mock_hid.preload_read(Report(0, _SAMPLE_STATUS))
-        status = self.device.get_status()
+        self.device.get_status()
         self.device.set_speed_profile(channel='fan',
                                       profile=iter([(20, 20), (30, 50), (40, 100)]))
         self.device.set_fixed_speed(channel='pump', duty=50)

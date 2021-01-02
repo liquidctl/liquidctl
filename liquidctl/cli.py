@@ -185,7 +185,7 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             _LOGGER.warning(msg)
         print('')
 
-    assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
+    assert 'device' not in opts or len(devices) <= 1, 'too many results listed with --device'
 
 
 def _print_dev_status(dev, status):

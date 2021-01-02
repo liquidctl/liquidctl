@@ -49,7 +49,7 @@ class Modern690LcTestCase(unittest.TestCase):
     def test_not_totally_broken(self):
         """A few reasonable example calls do not raise exceptions."""
         self.device.initialize()
-        status = self.device.get_status()
+        self.device.get_status()
         self.device.set_color(channel='led', mode='blinking', colors=iter([[3, 2, 1]]),
                               time_per_color=3, time_off=1, alert_threshold=42,
                               alert_color=[90, 80, 10])
@@ -95,7 +95,7 @@ class Legacy690LcTestCase(unittest.TestCase):
     def test_not_totally_broken(self):
         """A few reasonable example calls do not raise exceptions."""
         self.device.initialize()
-        status = self.device.get_status()
+        self.device.get_status()
         self.device.set_color(channel='led', mode='blinking', colors=iter([[3, 2, 1]]),
                               time_per_color=3, time_off=1, alert_threshold=42,
                               alert_color=[90, 80, 10])

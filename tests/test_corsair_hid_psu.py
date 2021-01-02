@@ -28,10 +28,10 @@ class CorsairHidPsuTestCase(unittest.TestCase):
     def test_not_totally_broken(self):
         """A few reasonable example calls do not raise exceptions."""
         self.device.initialize()
-        status = self.device.get_status()
+        self.device.get_status()
 
     def test_dont_inject_report_ids(self):
-        status = self.device.set_fixed_speed(channel='fan', duty=50)
+        self.device.set_fixed_speed(channel='fan', duty=50)
         report_id, report_data = self.mock_hid.sent[0]
         assert report_id == 0
         assert len(report_data) == 64

@@ -206,9 +206,8 @@ class HydroPlatinumTestCase(unittest.TestCase):
 
         self.assertEqual(len(self.mock_hid.sent), 0)
 
-
     def test_short_enough_storage_path(self):
-        assert len(self.device._data._backend._write_dir) < _WIN_MAX_PATH;
+        assert len(self.device._data._backend._write_dir) < _WIN_MAX_PATH
         assert self.device._data._backend._write_dir.endswith('3142')
 
     def test_bad_stored_data(self):

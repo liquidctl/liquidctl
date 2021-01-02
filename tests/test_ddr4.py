@@ -244,7 +244,6 @@ def test_vengeance_rgb_asserts_rgb_address_validity(vengeance_rgb):
             dimm.set_color('led', 'off', [], unsafe=enable)
 
 
-
 def test_vengeance_rgb_sets_color_to_off(vengeance_rgb):
     enable = ['smbus', 'vengeance_rgb']
     smbus, dimm = vengeance_rgb
@@ -375,7 +374,7 @@ def test_vengeance_rgb_animation_transition_ticks_overrides_tp1(vengeance_rgb):
         assert smbus.read_byte_data(0x59, 0xa5) == 0x20
 
 
-def test_vengeance_rgb_animation_transition_ticks_overrides_tp1(vengeance_rgb):
+def test_vengeance_rgb_animation_transition_ticks_overrides_tp2(vengeance_rgb):
     enable = ['smbus', 'vengeance_rgb']
     smbus, dimm = vengeance_rgb
 

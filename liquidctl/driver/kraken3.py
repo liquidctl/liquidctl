@@ -228,7 +228,7 @@ class KrakenX3(UsbHidDriver):
         channel = channel.lower()
         mode = mode.lower()
         speed = speed.lower()
-        directon = direction.lower()
+        direction = direction.lower()
 
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')

@@ -54,7 +54,7 @@ def find_liquidctl_devices(pick=None, **kwargs):
                    key=lambda x: (x.__module__, x.__name__))
     num = 0
     for bus_cls in buses:
-        for dev in  bus_cls().find_devices(**kwargs):
+        for dev in bus_cls().find_devices(**kwargs):
             if pick is not None:
                 if num == pick:
                     yield dev

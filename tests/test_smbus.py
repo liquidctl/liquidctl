@@ -66,7 +66,7 @@ def test_aborts_if_sysfs_is_missing_devices(emulated_smbus, tmpdir):
 
 def test_finds_a_device(emulated_smbus, tmpdir):
     i2c_root = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
-    device1 = i2c_root.mkdir('devices').mkdir('i2c-42')
+    i2c_root.mkdir('devices').mkdir('i2c-42')
 
     virtual_bus = LinuxI2c(i2c_root=i2c_root)
 
@@ -78,9 +78,9 @@ def test_finds_a_device(emulated_smbus, tmpdir):
 def test_ignores_non_bus_sysfs_entries(emulated_smbus, tmpdir):
     i2c_root = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
     devices = i2c_root.mkdir('devices')
-    device1 = devices.mkdir('i2c-0')
-    device2 = devices.mkdir('0-0050')  # SPD info chip on i2c-0
-    device3 = devices.mkdir('i2c-DELL0829:00')  # i2c HID chip from Dell laptop
+    devices.mkdir('i2c-0')
+    devices.mkdir('0-0050')  # SPD info chip on i2c-0
+    devices.mkdir('i2c-DELL0829:00')  # i2c HID chip from Dell laptop
 
     virtual_bus = LinuxI2c(i2c_root=i2c_root)
 
@@ -92,8 +92,8 @@ def test_ignores_non_bus_sysfs_entries(emulated_smbus, tmpdir):
 def test_honors_a_bus_filter(emulated_smbus, tmpdir):
     i2c_root = tmpdir.mkdir('sys').mkdir('bus').mkdir('i2c')
     devices = i2c_root.mkdir('devices')
-    device1 = devices.mkdir('i2c-0')
-    device1 = devices.mkdir('i2c-1')
+    devices.mkdir('i2c-0')
+    devices.mkdir('i2c-1')
 
     virtual_bus = LinuxI2c(i2c_root=i2c_root)
 
@@ -144,7 +144,7 @@ def test_connects(emulated_device):
 
 def test_loading_unnavailable_eeprom_returns_none(emulated_device):
     bus, dev = emulated_device
-    assert bus.load_eeprom(0x51) is not None
+    assert bus.load_eeprom(0x51) is None
 
 
 def test_loads_eeprom(emulated_device):

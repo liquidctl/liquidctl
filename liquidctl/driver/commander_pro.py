@@ -75,7 +75,7 @@ _MODES = {
     'color_pulse': 0x02,
     'color_wave': 0x03,
     'fixed': 0x04,
-    #'tempature': 0x05,    # ignore this
+    # 'tempature': 0x05,    # ignore this
     'visor': 0x06,
     'marquee': 0x07,
     'blink': 0x08,
@@ -159,7 +159,6 @@ class CommanderPro(UsbHidDriver):
         res = self._send_command(_CMD_GET_BOOTLOADER)
         bootloader_version = (res[1], res[2])               # is it possible for there to be a third value?
 
-
         status = [
             ('Firmware version', '%d.%d.%d' % fw_version, ''),
             ('Bootloader version', '%d.%d' % bootloader_version, ''),
@@ -221,13 +220,11 @@ class CommanderPro(UsbHidDriver):
         res = self._send_command(_CMD_GET_VOLTS, [2])
         volt_3 = u16be_from(res, offset=1) / 1000
 
-
         # get fan RPMs of connected fans
         fanspeeds = [0]*self._fan_count
         for fan_num, mode in enumerate(fan_modes):
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
                 fanspeeds[fan_num] = self._get_fan_rpm(fan_num)
-
 
         status = [
             ('12 volt rail', volt_12, 'V'),
@@ -250,11 +247,10 @@ class CommanderPro(UsbHidDriver):
         """
 
         if self._temp_probs == 0:
-            raise ValueError(f'this device does not have a tempature sensor')
+            raise ValueError('this device does not have a tempature sensor')
 
         if sensor_num < 0 or sensor_num > 3:
             raise ValueError(f'sensor_num {sensor_num} invalid, must be between 0 and 3')
-
 
         res = self._send_command(_CMD_GET_TEMP, [sensor_num])
         temp = u16be_from(res, offset=1) / 100
@@ -268,7 +264,7 @@ class CommanderPro(UsbHidDriver):
         """
 
         if self._fan_count == 0:
-            raise ValueError(f'this device does not have any fans')
+            raise ValueError('this device does not have any fans')
 
         if fan_num < 0 or fan_num > 5:
             raise ValueError(f'fan_num {fan_num} invalid, must be between 0 and 5')
@@ -365,15 +361,13 @@ class CommanderPro(UsbHidDriver):
 
         for i, entry in enumerate(profile):
             temp = entry[0]*100
-            rpm  = entry[1]
+            rpm = entry[1]
 
             # convert both values to 2 byte big endian values
             buf[2 + i*2] = temp.to_bytes(2, byteorder='big')[0]
             buf[3 + i*2] = temp.to_bytes(2, byteorder='big')[1]
             buf[14 + i*2] = rpm.to_bytes(2, byteorder='big')[0]
             buf[15 + i*2] = rpm.to_bytes(2, byteorder='big')[1]
-
-
 
         fan_channels = self._get_hw_fan_channels(channel)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
@@ -472,9 +466,9 @@ class CommanderPro(UsbHidDriver):
         self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
 
         # start sending the led commands
-        self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel]);
-        self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel]);
-        self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]);
+        self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel])
+        self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel])
+        self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01])
 
         for effect in saved_effects:
             config = [effect.get('channel'),
@@ -485,10 +479,10 @@ class CommanderPro(UsbHidDriver):
                       effect.get('direction'),
                       effect.get('random_colors'),
                       0xff
-                     ] + effect.get('colors')
-            self._send_command(_CMD_LED_EFFECT, config);
+                      ] + effect.get('colors')
+            self._send_command(_CMD_LED_EFFECT, config)
 
-        self._send_command(_CMD_LED_COMMIT, [0xff]);
+        self._send_command(_CMD_LED_COMMIT, [0xff])
 
     def _send_command(self, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used

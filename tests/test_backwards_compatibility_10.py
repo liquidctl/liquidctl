@@ -25,7 +25,7 @@ SPECTRUM = [
 class Pre11CliApisUsedByGkraken(unittest.TestCase):
     def test_find_does_not_raise(self):
         import liquidctl.cli
-        devices = liquidctl.cli.find_all_supported_devices()
+        liquidctl.cli.find_all_supported_devices()
 
 
 class Pre11KrakenApisUsedByGkraken(unittest.TestCase):

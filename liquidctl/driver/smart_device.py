@@ -141,7 +141,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         channel = channel.lower()
         mode = mode.lower()
         speed = speed.lower()
-        directon = direction.lower()
+        direction = direction.lower()
 
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')
@@ -488,7 +488,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                 color_lists[0] = [g, r, b] * 8
                 color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
                 color_lists[2] = [int(x // 4) for x in color_lists[1]]
-                for i in range(8):   #  send color scheme first, before enabling wings mode
+                for i in range(8):   # send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
                     msg = ([0x22, 0x20, cid, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
@@ -499,8 +499,8 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         else:
             byte7 = movingFlag  # sets 'moving' flag for moving alternating modes
             byte8 = direction == 'backward'  # sets 'backwards' flag
-            byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
-            byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
+            byte9 = mod3 if mval == 0x03 else color_count  # specifies 'marquee' LED size
+            byte10 = mod3 if mval == 0x05 else 0x00  # specifies LED size for 'alternating' modes
             header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 

@@ -28,7 +28,7 @@ def lightingNodeProDeviceUnconnected():
 @pytest.fixture
 def commanderProDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
-    pro =  CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
+    pro = CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
     pro.connect()
     pro._data = MockRuntimeStorage(key_prefixes='testing')
     return pro
@@ -43,7 +43,7 @@ def lightingNodeProDevice():
     return node
 
 
-#### prepare profile
+# prepare profile
 def test_prepare_profile_valid_max_rpm():
     assert _prepare_profile([[10, 400], [20, 5000]], 60) == [(10, 400), (20, 5000), (60, 5000), (60, 5000), (60, 5000), (60, 5000)]
 
@@ -87,7 +87,7 @@ def test_prepare_profile_max_temp():
     assert _prepare_profile([], 100) == [(100, 5000), (100, 5000), (100, 5000), (100, 5000), (100, 5000), (100, 5000)]
 
 
-##### quoted
+# quoted
 def test_quoted_empty():
     assert _quoted() == ''
 
@@ -104,7 +104,7 @@ def test_quoted_not_string():
     assert _quoted('test', 500) == "'test', 500"
 
 
-##### fan modes
+# fan modes
 def test_get_fan_mode_description_auto():
     assert _get_fan_mode_description(0x00) == 'Auto/Disconnected'
 
@@ -124,7 +124,7 @@ def test_get_fan_mode_description_pwm():
     assert _get_fan_mode_description(0x02) == 'PWM'
 
 
-##### class methods
+# class methods
 def test_commander_constructor(commanderProDeviceUnconnected):
 
     assert commanderProDeviceUnconnected._data is None

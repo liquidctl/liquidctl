@@ -150,7 +150,7 @@ class Kraken2(UsbHidDriver):
         channel = channel.lower()
         mode = mode.lower()
         speed = speed.lower()
-        directon = direction.lower()
+        direction = direction.lower()
 
         if mode == 'super':
             _LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
@@ -196,7 +196,7 @@ class Kraken2(UsbHidDriver):
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
-        if not 'super' in mode:
+        if 'super' not in mode:
             steps = [(color,)*9 for color in colors]
         elif ringonly:
             steps = [[(0, 0, 0)] + colors]
