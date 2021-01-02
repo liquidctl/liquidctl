@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""liquidexport – host a metrics HTTP endpoint with Prometheus formatted data from liquidctl
+"""prometheus-liquidctl-exporter – host a metrics HTTP endpoint with Prometheus formatted data from liquidctl
 
 This is an experimental script that collects stats from liquidctl and exposes them as a http://localhost:8098/metrics
 endpoint in the Prometheus text format.
@@ -11,7 +11,7 @@ Example metric with labels:
 liquidctl{device="NZXT Kraken X (X42, X52, X62 or X72)",sensor="liquid_temperature",unit="°C"} 33.6
 
 Usage:
-  liquidexport [options]
+  prometheus-liquidctl-exporter [options]
 
 Options:
   --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
@@ -22,9 +22,9 @@ Options:
   --help                  Show this message
 
 Examples:
-  liquidexport
-  liquidexport --product 0xb200
-  liquidexport --interval 0.5
+  prometheus-liquidctl-exporter
+  prometheus-liquidctl-exporter --product 0xb200
+  prometheus-liquidctl-exporter --interval 0.5
 
 Copyright (C) 2020  Alex Berryman
 SPDX-License-Identifier: GPL-3.0-or-later
