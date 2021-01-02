@@ -21,11 +21,6 @@ Options:
   --version               Display the version number
   --help                  Show this message
 
-Examples:
-  prometheus-liquidctl-exporter
-  prometheus-liquidctl-exporter --product 0xb200
-  prometheus-liquidctl-exporter --interval 0.5
-
 Copyright (C) 2020  Alex Berryman
 SPDX-License-Identifier: GPL-3.0-or-later
 """
