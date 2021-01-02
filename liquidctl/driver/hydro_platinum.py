@@ -27,10 +27,10 @@ from liquidctl.util import clamp, fraction_of_byte, u16le_from, \
 _LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
-_WRITE_PREFIX = 0x3F
+_WRITE_PREFIX = 0x3f
 
 _FEATURE_COOLING = 0b000
-_CMD_GET_STATUS = 0xFF
+_CMD_GET_STATUS = 0xff
 _CMD_SET_COOLING = 0x14
 
 _FEATURE_LIGHTING = None
@@ -39,13 +39,13 @@ _CMD_SET_LIGHTING2 = 0b101
 
 # cooling data starts at offset 3 and ends just before the PEC byte
 _SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
-_SET_COOLING_DATA_PREFIX = [0x0, 0xFF, 0x5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-_FAN_MODE_OFFSETS = [0x0B - 3, 0x11 - 3]
+_SET_COOLING_DATA_PREFIX = [0x0, 0xff, 0x5, 0xff, 0xff, 0xff, 0xff, 0xff]
+_FAN_MODE_OFFSETS = [0x0b - 3, 0x11 - 3]
 _FAN_DUTY_OFFSETS = [offset + 5 for offset in _FAN_MODE_OFFSETS]
-_FAN_PROFILE_OFFSETS = [0x1E - 3, 0x2C - 3]
+_FAN_PROFILE_OFFSETS = [0x1e - 3, 0x2c - 3]
 _FAN_OFFSETS = list(zip(_FAN_MODE_OFFSETS, _FAN_DUTY_OFFSETS, _FAN_PROFILE_OFFSETS))
 _PUMP_MODE_OFFSET = 0x17 - 3
-_PROFILE_LENGTH_OFFSET = 0x1D - 3
+_PROFILE_LENGTH_OFFSET = 0x1d - 3
 _PROFILE_LENGTH = 7
 _CRITICAL_TEMPERATURE = 60
 
@@ -110,15 +110,15 @@ class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
+        (0x1b1c, 0x0c18, None, 'Corsair H100i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C19, None, 'Corsair H100i Platinum SE (experimental)',
+        (0x1b1c, 0x0c19, None, 'Corsair H100i Platinum SE (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
+        (0x1b1c, 0x0c17, None, 'Corsair H115i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C20, None, 'Corsair H100i Pro XT (experimental)',
+        (0x1b1c, 0x0c20, None, 'Corsair H100i Pro XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
-        (0x1B1C, 0x0C21, None, 'Corsair H115i Pro XT (experimental)',
+        (0x1b1c, 0x0c21, None, 'Corsair H115i Pro XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
     ]
 

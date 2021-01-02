@@ -68,7 +68,7 @@ _USBXPRESS_GET_PART_NUM = 0x08
 
 # Unknown control parameters; from Craig's libSiUSBXp and OpenCorsairLink
 _UNKNOWN_OPEN_REQUEST = 0x00
-_UNKNOWN_OPEN_VALUE = 0xFFFF
+_UNKNOWN_OPEN_VALUE = 0xffff
 
 # Control request type
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE

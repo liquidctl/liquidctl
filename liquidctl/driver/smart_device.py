@@ -477,7 +477,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
             leds = list(itertools.chain(*colors)) + led_padding
             self._write([0x22, 0x10, cid, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
-            self._write([0x22, 0xA0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
+            self._write([0x22, 0xa0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             for [g, r, b] in colors:

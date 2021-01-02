@@ -80,7 +80,7 @@ _MODES = {
     'marquee': 0x07,
     'blink': 0x08,
     'sequential': 0x09,
-    'rainbow2': 0x0A,
+    'rainbow2': 0x0a,
 }
 
 def _prepare_profile(original, critcalTempature):
@@ -113,9 +113,9 @@ class CommanderPro(UsbHidDriver):
     """Corsair Commander Pro LED and fan hub"""
 
     SUPPORTED_DEVICES = [
-        (0x1B1C, 0x0C10, None, 'Corsair Commander Pro (experimental)',
+        (0x1b1c, 0x0c10, None, 'Corsair Commander Pro (experimental)',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
-        (0x1B1C, 0x0C0B, None, 'Corsair Lighting Node Pro (experimental)',
+        (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro (experimental)',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
     ]
 
