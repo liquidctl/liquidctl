@@ -330,7 +330,7 @@ class KrakenX3(UsbHidDriver):
             else:
                 backwards_byte = 0x00
 
-            if direction == 'backward' or 'backwards' in mode:
+            if direction == 'backward':
                 backwards_byte += 0x02
 
             if mode == 'fading' or mode == 'pulse' or mode == 'breathing':
