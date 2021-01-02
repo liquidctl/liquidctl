@@ -61,8 +61,6 @@ def test_h115i_platinum_device_connect(h115iPlatinumDevice):
 
 def test_h115i_platinum_device_command_format(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
-    dev._data.store('sequence', None)
-    dev._data.store('leds_enabled', 0)
     dev.initialize()
     dev.get_status()
     dev.set_fixed_speed(channel='fan', duty=100)
@@ -81,7 +79,6 @@ def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
 
     # test that the led enable messages are not sent if they are sent again
-    dev._data.store('sequence', None)
     dev.initialize()
     dev._data.store('leds_enabled', 1)
     dev.get_status()
