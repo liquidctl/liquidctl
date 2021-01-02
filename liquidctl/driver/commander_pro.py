@@ -321,7 +321,7 @@ class CommanderPro(UsbHidDriver):
         for fan in fan_channels:
             mode = fan_modes[fan]
             if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
-                self._send_command(_CMD_SET_FAN_DUTY,[fan, duty])
+                self._send_command(_CMD_SET_FAN_DUTY, [fan, duty])
 
     def set_speed_profile(self, channel, profile, temperature_sensor=1, **kwargs):
         """Set fan or fans to follow a speed duty profile.
@@ -359,7 +359,7 @@ class CommanderPro(UsbHidDriver):
         buf = bytearray(26)
         buf[1] = temp_sensor-1 # 0  # use temp sensor 1
 
-        for i,entry in enumerate(profile):
+        for i, entry in enumerate(profile):
             temp = entry[0]*100
             rpm  = entry[1]
 

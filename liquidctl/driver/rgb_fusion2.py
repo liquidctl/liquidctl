@@ -143,7 +143,7 @@ class RgbFusion2(UsbHidDriver):
         non-empty list would contain `(property, value, unit)` tuples.
         """
 
-        _LOGGER.info(f'Status reports not available from {self.description}')
+        _LOGGER.info('status reports not available from %s', self.description)
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):

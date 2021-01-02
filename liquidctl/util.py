@@ -159,7 +159,7 @@ def u16be_from(buffer, offset=0):
 def delta(profile):
     """Compute a profile's Δx and Δy."""
     return [(cur[0]-prev[0], cur[1]-prev[1])
-            for cur,prev in zip(profile[1:], profile[:-1])]
+            for cur, prev in zip(profile[1:], profile[:-1])]
 
 
 def normalize_profile(profile, critx, max_value=100):

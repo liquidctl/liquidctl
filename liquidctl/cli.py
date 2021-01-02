@@ -226,7 +226,7 @@ def _device_set_speed(dev, args, **opts):
 
 def _make_opts(args):
     if args['--hid']:
-        _LOGGER.warning('Ignoring --hid %s: deprecated option, API will be selected automatically',
+        _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
                        args['--hid'])
     opts = {}
     for arg, val in args.items():

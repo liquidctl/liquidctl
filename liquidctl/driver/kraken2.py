@@ -199,7 +199,7 @@ class Kraken2(UsbHidDriver):
         if not 'super' in mode:
             steps = [(color,)*9 for color in colors]
         elif ringonly:
-            steps = [[(0,0,0)] + colors]
+            steps = [[(0, 0, 0)] + colors]
         else:
             steps = [colors]
         return steps

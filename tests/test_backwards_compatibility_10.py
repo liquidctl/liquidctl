@@ -11,14 +11,14 @@ from liquidctl.version import __version__
 from _testutils import MockHidapiDevice
 
 SPECTRUM = [
-    (235,77,40),
-    (255,148,117),
-    (126,66,45),
-    (165,87,0),
-    (56,193,66),
-    (116,217,170),
-    (166,158,255),
-    (208,0,122)
+    (235, 77, 40),
+    (255, 148, 117),
+    (126, 66, 45),
+    (165, 87, 0),
+    (56, 193, 66),
+    (116, 217, 170),
+    (166, 158, 255),
+    (208, 0, 122)
 ]
 
 
@@ -44,7 +44,7 @@ class Pre11KrakenApisUsedByGkraken(unittest.TestCase):
 
     def test_deprecated_super_mode(self):
         # deprecated in favor of super-fixed, super-breathing and super-wave
-        self.device.set_color('sync', 'super', [(128,0,255)] + SPECTRUM, 'normal')
+        self.device.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')
 
     def test_status_order(self):
         # GKraken unreasonably expects a particular ordering
