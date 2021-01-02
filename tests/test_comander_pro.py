@@ -21,17 +21,17 @@ from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
 @pytest.fixture
 def commanderProDeviceUnconnected():
-    device = MockHidapiDevice(vendor_id=0x1B1C, product_id=0x0C10, address='addr')
+    device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
     return CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
 
 @pytest.fixture
 def lightingNodeProDeviceUnconnected():
-    device = MockHidapiDevice(vendor_id=0x1B1C, product_id=0x0C0B, address='addr')
+    device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c0b, address='addr')
     return CommanderPro(device, 'Corsair Lighting Node Pro (experimental)', 0, 0, 2)
 
 @pytest.fixture
 def commanderProDevice():
-    device = MockHidapiDevice(vendor_id=0x1B1C, product_id=0x0C10, address='addr')
+    device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
     pro =  CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
     pro.connect()
     pro._data = MockRuntimeStorage(key_prefixes='testing')
@@ -39,7 +39,7 @@ def commanderProDevice():
 
 @pytest.fixture
 def lightingNodeProDevice():
-    device = MockHidapiDevice(vendor_id=0x1B1C, product_id=0x0C0B, address='addr')
+    device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c0b, address='addr')
     node = CommanderPro(device, 'Corsair Lighting Node Pro (experimental)', 0, 0, 2)
     node.connect()
     node._data = MockRuntimeStorage(key_prefixes='testing')
@@ -101,7 +101,7 @@ def test_get_fan_mode_description_unknown():
     assert _get_fan_mode_description(0x03) == 'UNKNOWN'
     assert _get_fan_mode_description(0x04) == 'UNKNOWN'
     assert _get_fan_mode_description(0x10) == 'UNKNOWN'
-    assert _get_fan_mode_description(0xFF) == 'UNKNOWN'
+    assert _get_fan_mode_description(0xff) == 'UNKNOWN'
 
 def test_get_fan_mode_description_dc():
     assert _get_fan_mode_description(0x01) == 'DC'
@@ -554,9 +554,9 @@ def test_set_speed_profile_valid_multi_fan(commanderProDevice):
     assert sent[0].data[2] == 0x00
 
     assert sent[0].data[3] == 0x03
-    assert sent[0].data[4] == 0xE8
+    assert sent[0].data[4] == 0xe8
     assert sent[0].data[15] == 0x01
-    assert sent[0].data[16] == 0xF4
+    assert sent[0].data[16] == 0xf4
 
     assert sent[1].data[0] == 0x25
     assert sent[1].data[1] == 0x02
@@ -592,9 +592,9 @@ def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
     assert sent[0].data[2] == 0x03
 
     assert sent[0].data[3] == 0x03
-    assert sent[0].data[4] == 0xE8
+    assert sent[0].data[4] == 0xe8
     assert sent[0].data[15] == 0x01
-    assert sent[0].data[16] == 0xF4
+    assert sent[0].data[16] == 0xf4
 
 def test_set_speed_profile_no_temp_sensors(commanderProDevice):
     responses = [
@@ -643,9 +643,9 @@ def test_set_speed_profile_valid(commanderProDevice):
     assert sent[0].data[2] == 0x00
 
     assert sent[0].data[3] == 0x03
-    assert sent[0].data[4] == 0xE8
+    assert sent[0].data[4] == 0xe8
     assert sent[0].data[15] == 0x01
-    assert sent[0].data[16] == 0xF4
+    assert sent[0].data[16] == 0xf4
 
 def test_set_speed_profile_lighting(lightingNodeProDevice):
     responses = [
@@ -705,8 +705,8 @@ def test_set_color_hardware_clear(commanderProDevice):
     effect = {
             'channel': 0x01,
             'start_led': 0x00,
-            'num_leds': 0x0F,
-            'mode': 0x0A,
+            'num_leds': 0x0f,
+            'mode': 0x0a,
             'speed': 0x00,
             'direction': 0x00,
             'random_colors': 0x00,
@@ -740,8 +740,8 @@ def test_set_color_hardware_off(commanderProDevice):
     effect = {
             'channel': 0x01,
             'start_led': 0x00,
-            'num_leds': 0x0F,
-            'mode': 0x0A,
+            'num_leds': 0x0f,
+            'mode': 0x0a,
             'speed': 0x00,
             'direction': 0x00,
             'random_colors': 0x00,
@@ -915,7 +915,7 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
     assert len(effects) == 1
 
 @pytest.mark.parametrize('startLED,expected', [
-    (1, 0x00), (30, 0x1D), (92, 0x5B)
+    (1, 0x00), (30, 0x1d), (92, 0x5b)
     ])
 def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
     responses = [
@@ -946,7 +946,7 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
     assert len(effects) == 1
 
 @pytest.mark.parametrize('numLED,expected', [
-    (1, 0x01), (30, 0x1E), (96, 0x5f)
+    (1, 0x01), (30, 0x1e), (96, 0x5f)
     ])
 def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     responses = [
@@ -998,7 +998,7 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
 
     assert sent[3].data[0] == 0x35
     assert sent[3].data[2] == 0x31  # start led
-    assert sent[3].data[3] == 0x2E  # num led
+    assert sent[3].data[3] == 0x2e  # num led
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1191,7 +1191,7 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
 @pytest.mark.parametrize('modeStr,expected', [
     ('rainbow', 0x00), ('color_shift', 0x01), ('color_pulse', 0x02),
     ('color_wave', 0x03), ('fixed', 0x04), ('visor', 0x06), ('marquee', 0x07), ('blink', 0x08),
-    ('sequential', 0x09), ('sEqUeNtIaL', 0x09), ('rainbow2', 0x0A)
+    ('sequential', 0x09), ('sEqUeNtIaL', 0x09), ('rainbow2', 0x0a)
     ])
 def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
     responses = [
@@ -1262,8 +1262,8 @@ def test_set_color_hardware_multipe_commands(commanderProDevice):
     effect = {
             'channel': 0x01,
             'start_led': 0x00,
-            'num_leds': 0x0F,
-            'mode': 0x0A,
+            'num_leds': 0x0f,
+            'mode': 0x0a,
             'speed': 0x00,
             'direction': 0x00,
             'random_colors': 0x00,
