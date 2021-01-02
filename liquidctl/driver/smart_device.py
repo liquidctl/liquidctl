@@ -475,7 +475,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
             leds = list(itertools.chain(*colors)) + led_padding
-            self._write([0x22, 0x10, cid, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
+            self._write([0x22, 0x10, cid, 0x00] + leds[0:60])  # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
             self._write([0x22, 0xa0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
@@ -496,16 +496,16 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                     self._write(msg + color_lists[i % 4])
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
-            byte7 = movingFlag # sets 'moving' flag for moving alternating modes
-            byte8 = direction == 'backward' # sets 'backwards' flag
+            byte7 = movingFlag  # sets 'moving' flag for moving alternating modes
+            byte8 = direction == 'backward'  # sets 'backwards' flag
             byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
             header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
-        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel passed as bitflag in last 3 bits of 3rd byte
-        msg[cid + 3] = duty # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
+        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00]  # fan channel passed as bitflag in last 3 bits of 3rd byte
+        msg[cid + 3] = duty  # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
         self._write(msg)
 
 

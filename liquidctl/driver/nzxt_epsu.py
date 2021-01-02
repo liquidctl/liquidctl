@@ -135,7 +135,7 @@ class NzxtEPsu(UsbHidDriver):
 
     def _get_vout(self, rail):
         mode = self._exec_page_plus_read(rail, CMD.VOUT_MODE, 1)[0]
-        assert mode >> 5 == 0 # assume vout_mode is always ulinear16
+        assert mode >> 5 == 0  # assume vout_mode is always ulinear16
         vout = self._exec_page_plus_read(rail, CMD.READ_VOUT, 2)
         return linear_to_float(vout, mode & 0x1f)
 

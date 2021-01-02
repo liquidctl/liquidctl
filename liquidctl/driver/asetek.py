@@ -39,7 +39,7 @@ _CMD_EXTERNAL_TEMPERATURE = 0x22
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
     'pump':  (_CMD_PUMP_PWM, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
 }
-_VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
+_VARIABLE_SPEED_CHANNELS = {  # (message type, minimum duty, maximum duty)
     'fan':   (_CMD_PROFILE, 0, 100)
 }
 _MAX_PROFILE_POINTS = 6

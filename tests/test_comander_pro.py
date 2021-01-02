@@ -136,10 +136,10 @@ def test_connect_lighting(lightingNodeProDeviceUnconnected):
 def test_initialize_commander_pro(commanderProDevice):
 
     responses = [
-        '000009d4000000000000000000000000', # firmware
-        '00000500000000000000000000000000', # bootloader
-        '00010100010000000000000000000000', # temp probes
-        '00010102000000000000000000000000'  # fan probes
+        '000009d4000000000000000000000000',  # firmware
+        '00000500000000000000000000000000',  # bootloader
+        '00010100010000000000000000000000',  # temp probes
+        '00010102000000000000000000000000'   # fan probes
     ]
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
@@ -182,7 +182,7 @@ def test_initialize_commander_pro(commanderProDevice):
 
 def test_initialize_lighting_node(lightingNodeProDevice):
     responses = [
-        '000009d4000000000000000000000000', # firmware
+        '000009d4000000000000000000000000',  # firmware
         '00000500000000000000000000000000'  # bootloader
     ]
     for d in responses:
@@ -203,15 +203,15 @@ def test_initialize_lighting_node(lightingNodeProDevice):
 def test_get_status_commander_pro(commanderProDevice):
 
         responses = [
-            '000a8300000000000000000000000000', # temp sensor 1
-            '000b6a00000000000000000000000000', # temp sensor 2
-            '000a0e00000000000000000000000000', # temp sensor 4
-            '002f2200000000000000000000000000', # get 12v
-            '00136500000000000000000000000000', # get 5v
-            '000d1f00000000000000000000000000', # get 3.3v
-            '0003ac00000000000000000000000000', # fan speed 1
-            '0003ab00000000000000000000000000', # fan speed 2
-            '0003db00000000000000000000000000' # fan speed 3
+            '000a8300000000000000000000000000',  # temp sensor 1
+            '000b6a00000000000000000000000000',  # temp sensor 2
+            '000a0e00000000000000000000000000',  # temp sensor 4
+            '002f2200000000000000000000000000',  # get 12v
+            '00136500000000000000000000000000',  # get 5v
+            '000d1f00000000000000000000000000',  # get 3.3v
+            '0003ac00000000000000000000000000',  # fan speed 1
+            '0003ab00000000000000000000000000',  # fan speed 2
+            '0003db00000000000000000000000000'  # fan speed 3
         ]
         for d in responses:
             commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))

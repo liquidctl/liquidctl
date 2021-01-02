@@ -167,7 +167,7 @@ class HydroPlatinumTestCase(unittest.TestCase):
         colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
         encoded = list(range(1, 24 * 3 + 1))
         self.device.set_color(channel='led', mode='super-fixed', colors=iter(colors))
-        self.assertEqual(len(self.mock_hid.sent), 5) # 3 for enable, 2 for off
+        self.assertEqual(len(self.mock_hid.sent), 5)  # 3 for enable, 2 for off
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b001)
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b010)
         self.assertEqual(self.mock_hid.sent[2].data[1] & 0b111, 0b011)
@@ -180,7 +180,7 @@ class HydroPlatinumTestCase(unittest.TestCase):
         colors = [[3, 2, 1]]
         encoded = [1, 2, 3] * 24
         self.device.set_color(channel='led', mode='fixed', colors=iter(colors))
-        self.assertEqual(len(self.mock_hid.sent), 5) # 3 for enable, 2 for off
+        self.assertEqual(len(self.mock_hid.sent), 5)  # 3 for enable, 2 for off
 
         self.assertEqual(self.mock_hid.sent[0].data[1] & 0b111, 0b001)
         self.assertEqual(self.mock_hid.sent[1].data[1] & 0b111, 0b010)
@@ -193,7 +193,7 @@ class HydroPlatinumTestCase(unittest.TestCase):
 
     def test_leds_off(self):
         self.device.set_color(channel='led', mode='off', colors=iter([]))
-        self.assertEqual(len(self.mock_hid.sent), 5) # 3 for enable, 2 for off
+        self.assertEqual(len(self.mock_hid.sent), 5)  # 3 for enable, 2 for off
         for _, data in self.mock_hid.sent[3:5]:
             self.assertEqual(data[2:62], [0] * 60)
 

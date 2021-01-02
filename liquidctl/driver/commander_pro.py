@@ -357,7 +357,7 @@ class CommanderPro(UsbHidDriver):
             raise ValueError('the specified tempature sensor is not connected')
 
         buf = bytearray(26)
-        buf[1] = temp_sensor-1 # 0  # use temp sensor 1
+        buf[1] = temp_sensor-1  # 0  # use temp sensor 1
 
         for i, entry in enumerate(profile):
             temp = entry[0]*100
@@ -444,7 +444,7 @@ class CommanderPro(UsbHidDriver):
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
         start_led = clamp(start_led, 1, 96) - 1
-        num_leds = clamp(maximum_leds, 1, 96-start_led-1) # there is a current firmware limitation of 96 led's per channel
+        num_leds = clamp(maximum_leds, 1, 96-start_led-1)  # there is a current firmware limitation of 96 led's per channel
         random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
         mode = _MODES.get(mode, -1)
 
