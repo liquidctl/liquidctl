@@ -223,61 +223,61 @@ def test_initialize_lighting_node(lightingNodeProDevice):
 
 def test_get_status_commander_pro(commanderProDevice):
 
-        responses = [
-            '000a8300000000000000000000000000',  # temp sensor 1
-            '000b6a00000000000000000000000000',  # temp sensor 2
-            '000a0e00000000000000000000000000',  # temp sensor 4
-            '002f2200000000000000000000000000',  # get 12v
-            '00136500000000000000000000000000',  # get 5v
-            '000d1f00000000000000000000000000',  # get 3.3v
-            '0003ac00000000000000000000000000',  # fan speed 1
-            '0003ab00000000000000000000000000',  # fan speed 2
-            '0003db00000000000000000000000000'  # fan speed 3
-        ]
-        for d in responses:
-            commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    responses = [
+        '000a8300000000000000000000000000',  # temp sensor 1
+        '000b6a00000000000000000000000000',  # temp sensor 2
+        '000a0e00000000000000000000000000',  # temp sensor 4
+        '002f2200000000000000000000000000',  # get 12v
+        '00136500000000000000000000000000',  # get 5v
+        '000d1f00000000000000000000000000',  # get 3.3v
+        '0003ac00000000000000000000000000',  # fan speed 1
+        '0003ab00000000000000000000000000',  # fan speed 2
+        '0003db00000000000000000000000000'  # fan speed 3
+    ]
+    for d in responses:
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
 
-        commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x02, 0x00, 0x00, 0x00])
-        commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
+    commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x02, 0x00, 0x00, 0x00])
+    commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
 
-        res = commanderProDevice.get_status()
+    res = commanderProDevice.get_status()
 
-        assert len(res) == 13
+    assert len(res) == 13
 
-        # voltages
-        assert res[0][1] == 12.066   # 12v
-        assert res[1][1] == 4.965    # 5v
-        assert res[2][1] == 3.359    # 3.3v
+    # voltages
+    assert res[0][1] == 12.066   # 12v
+    assert res[1][1] == 4.965    # 5v
+    assert res[2][1] == 3.359    # 3.3v
 
-        # temp probes
-        assert res[3][1] == 26.91
-        assert res[4][1] == 29.22
-        assert res[5][1] == 0.0
-        assert res[6][1] == 25.74
+    # temp probes
+    assert res[3][1] == 26.91
+    assert res[4][1] == 29.22
+    assert res[5][1] == 0.0
+    assert res[6][1] == 25.74
 
-        # fans rpm
-        assert res[7][1] == 940
-        assert res[8][1] == 939
-        assert res[9][1] == 987
-        assert res[10][1] == 0
-        assert res[11][1] == 0
-        assert res[12][1] == 0
+    # fans rpm
+    assert res[7][1] == 940
+    assert res[8][1] == 939
+    assert res[9][1] == 987
+    assert res[10][1] == 0
+    assert res[11][1] == 0
+    assert res[12][1] == 0
 
-        # check the commands sent
-        sent = commanderProDevice.device.sent
-        assert len(sent) == 9
+    # check the commands sent
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 9
 
-        assert sent[0].data[0] == 0x11
-        assert sent[1].data[0] == 0x11
-        assert sent[2].data[0] == 0x11
+    assert sent[0].data[0] == 0x11
+    assert sent[1].data[0] == 0x11
+    assert sent[2].data[0] == 0x11
 
-        assert sent[3].data[0] == 0x12
-        assert sent[4].data[0] == 0x12
-        assert sent[5].data[0] == 0x12
+    assert sent[3].data[0] == 0x12
+    assert sent[4].data[0] == 0x12
+    assert sent[5].data[0] == 0x12
 
-        assert sent[6].data[0] == 0x21
-        assert sent[7].data[0] == 0x21
-        assert sent[8].data[0] == 0x21
+    assert sent[6].data[0] == 0x21
+    assert sent[7].data[0] == 0x21
+    assert sent[8].data[0] == 0x21
 
 
 def test_get_status_lighting_pro(lightingNodeProDevice):
@@ -524,36 +524,36 @@ def test_set_fixed_speed_valid_unconfigured(commanderProDevice):
 
 
 def test_set_fixed_speed_valid_multi_fan(commanderProDevice):
-        responses = [
-            '00000000000000000000000000000000',
-            '00000000000000000000000000000000',
-            '00000000000000000000000000000000',
-            '00000000000000000000000000000000',
-            '00000000000000000000000000000000'
-        ]
+    responses = [
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000'
+    ]
 
-        for d in responses:
-            commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    for d in responses:
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
 
-        commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
+    commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
 
-        commanderProDevice.set_fixed_speed('sync', 50)
+    commanderProDevice.set_fixed_speed('sync', 50)
 
-        # check the commands sent
-        sent = commanderProDevice.device.sent
-        assert len(sent) == 3
+    # check the commands sent
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 3
 
-        assert sent[0].data[0] == 0x23
-        assert sent[0].data[1] == 0x00
-        assert sent[0].data[2] == 0x32
+    assert sent[0].data[0] == 0x23
+    assert sent[0].data[1] == 0x00
+    assert sent[0].data[2] == 0x32
 
-        assert sent[1].data[0] == 0x23
-        assert sent[1].data[1] == 0x02
-        assert sent[1].data[2] == 0x32
+    assert sent[1].data[0] == 0x23
+    assert sent[1].data[1] == 0x02
+    assert sent[1].data[2] == 0x32
 
-        assert sent[2].data[0] == 0x23
-        assert sent[2].data[1] == 0x03
-        assert sent[2].data[2] == 0x32
+    assert sent[2].data[0] == 0x23
+    assert sent[2].data[1] == 0x03
+    assert sent[2].data[2] == 0x32
 
 
 def test_set_fixed_speed_lighting(lightingNodeProDevice):

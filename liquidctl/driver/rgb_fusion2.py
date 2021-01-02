@@ -196,7 +196,7 @@ class RgbFusion2(UsbHidDriver):
 
         brightness = clamp(100, 0, mode.max_brightness)  # hardcode this for now
         data = [_REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                  0x00, 0x00, 0x00, mode.value, brightness, 0x00]
+                0x00, 0x00, 0x00, mode.value, brightness, 0x00]
         data += single_color
         data += [0x00, 0x00, 0x00, 0x00, 0x00]
         if mode.speed_values:

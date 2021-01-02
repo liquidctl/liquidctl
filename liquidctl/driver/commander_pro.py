@@ -478,14 +478,14 @@ class CommanderPro(UsbHidDriver):
 
         for effect in saved_effects:
             config = [effect.get('channel'),
-                       effect.get('start_led'),
-                       effect.get('num_leds'),
-                       effect.get('mode'),
-                       effect.get('speed'),
-                       effect.get('direction'),
-                       effect.get('random_colors'),
-                       0xff
-                    ] + effect.get('colors')
+                      effect.get('start_led'),
+                      effect.get('num_leds'),
+                      effect.get('mode'),
+                      effect.get('speed'),
+                      effect.get('direction'),
+                      effect.get('random_colors'),
+                      0xff
+                     ] + effect.get('colors')
             self._send_command(_CMD_LED_EFFECT, config);
 
         self._send_command(_CMD_LED_COMMIT, [0xff]);

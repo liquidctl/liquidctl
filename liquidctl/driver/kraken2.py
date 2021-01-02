@@ -224,7 +224,7 @@ class Kraken2(UsbHidDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
-             raise NotSupportedByDevice()
+            raise NotSupportedByDevice()
         elif self.supports_cooling_profiles:
             self.set_speed_profile(channel, [(0, duty), (59, duty), (60, 100), (100, 100)])
         else:

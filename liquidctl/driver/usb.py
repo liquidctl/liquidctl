@@ -415,7 +415,7 @@ class HidapiDevice:
                       len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.write(data)
         if res < 0:
-                raise OSError('Could not write to device')
+            raise OSError('Could not write to device')
         if res != len(data):
             _LOGGER.debug('wrote %d total bytes, expected %d', res, len(data))
         return res
@@ -449,7 +449,7 @@ class HidapiDevice:
                       data[0], len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.send_feature_report(data)
         if res < 0:
-                raise OSError('Could not send feature report to device')
+            raise OSError('Could not send feature report to device')
         if res != len(data):
             _LOGGER.debug('sent %d total bytes, expected %d', res, len(data))
         return res

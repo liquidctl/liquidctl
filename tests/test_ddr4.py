@@ -109,7 +109,7 @@ def test_tse2004_ignores_not_allowed_buses(smbus, monkeypatch):
         with monkeypatch.context() as m:
             m.setattr(smbus, attr, val)
             assert list(Ddr4Temperature.probe(smbus)) == [], \
-                    f'changing {attr} did not cause a mismatch'
+                f'changing {attr} did not cause a mismatch'
 
 
 def test_tse2004_does_not_match_non_ee1004_device(smbus):
