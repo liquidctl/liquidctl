@@ -42,7 +42,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uacc
 # Corsair Commander Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="uaccess"
 
-# Corsair H100i PRO
+# Corsair H100i Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c15", TAG+="uaccess"
 
 # Corsair H100i Pro XT
@@ -54,7 +54,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c19", TAG+="uacc
 # Corsair H100i Platinum
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c18", TAG+="uaccess"
 
-# Corsair H115i PRO
+# Corsair H115i Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c13", TAG+= "uaccess"
 
 # Corsair H115i Pro XT
@@ -63,7 +63,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c21", TAG+="uacc
 # Corsair H115i Platinum
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c17", TAG+="uaccess"
 
-# Corsair H150i PRO
+# Corsair H150i Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c12", TAG+="uaccess"
 
 # Corsair H150i Pro XT
