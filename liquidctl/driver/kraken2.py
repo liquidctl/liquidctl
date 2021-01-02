@@ -50,20 +50,13 @@ _COLOR_MODES = {
     'super-fixed':                   (0x00, 0x00, 0x00, 1, 9, False),  # independent logo + ring leds
     'fading':                        (0x01, 0x00, 0x00, 2, 8, False),
     'spectrum-wave':                 (0x02, 0x00, 0x00, 0, 0, False),
-    'backwards-spectrum-wave':       (0x02, 0x10, 0x00, 0, 0, False),
     'marquee-3':                     (0x03, 0x00, 0x00, 1, 1, True),
     'marquee-4':                     (0x03, 0x00, 0x08, 1, 1, True),
     'marquee-5':                     (0x03, 0x00, 0x10, 1, 1, True),
     'marquee-6':                     (0x03, 0x00, 0x18, 1, 1, True),
-    'backwards-marquee-3':           (0x03, 0x10, 0x00, 1, 1, True),
-    'backwards-marquee-4':           (0x03, 0x10, 0x08, 1, 1, True),
-    'backwards-marquee-5':           (0x03, 0x10, 0x10, 1, 1, True),
-    'backwards-marquee-6':           (0x03, 0x10, 0x18, 1, 1, True),
     'covering-marquee':              (0x04, 0x00, 0x00, 1, 8, True),
-    'covering-backwards-marquee':    (0x04, 0x10, 0x00, 1, 8, True),
     'alternating':                   (0x05, 0x00, 0x00, 2, 2, True),
     'moving-alternating':            (0x05, 0x08, 0x00, 2, 2, True),
-    'backwards-moving-alternating':  (0x05, 0x18, 0x00, 2, 2, True),
     'breathing':                     (0x06, 0x00, 0x00, 1, 8, False),  # colors for each step
     'super-breathing':               (0x06, 0x00, 0x00, 1, 9, False),  # one step, independent logo + ring leds
     'pulse':                         (0x07, 0x00, 0x00, 1, 8, False),
@@ -72,7 +65,6 @@ _COLOR_MODES = {
     'loading':                       (0x0a, 0x00, 0x00, 1, 1, True),
     'wings':                         (0x0c, 0x00, 0x00, 1, 1, True),
     'super-wave':                    (0x0d, 0x00, 0x00, 1, 8, True),  # independent ring leds
-    'backwards-super-wave':          (0x0d, 0x10, 0x00, 1, 8, True),  # independent ring leds
 }
 
 _ANIMATION_SPEEDS = {
@@ -150,18 +142,34 @@ class Kraken2(UsbHidDriver):
                 ('Firmware version', firmware, '')
             ]
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
+    def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
         if not self.supports_lighting:
             raise NotSupportedByDevice()
+
+        channel = channel.lower()
+        mode = mode.lower()
+        speed = speed.lower()
+        directon = direction.lower()
+
         if mode == 'super':
-            LOGGER.warning('deprecated mode, update to super-fixed, super-breathing or super-wave')
+            LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
+        if 'backwards' in mode:
+            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            mode = mode.replace('backwards-', '')
+            direction = 'backward'
+
         mval, mod2, mod4, mincolors, maxcolors, ringonly = _COLOR_MODES[mode]
+
+        if direction == 'backward':
+            mod2 += 0x10
+
         if ringonly and channel != 'ring':
             LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
                            mode, channel)
             channel = 'ring'
+
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
         sval = _ANIMATION_SPEEDS[speed]
         byte2 = mod2 | _COLOR_CHANNELS[channel]

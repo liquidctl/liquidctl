@@ -70,10 +70,13 @@ For lighting, the user can control a total of nine LEDs: one behind the NZXT log
 # liquidctl set sync color fixed af5a2f
 # liquidctl set ring color fading 350017 ff2608
 # liquidctl set logo color pulse ffffff
-# liquidctl set ring color backwards-marquee-5 2f6017 --speed slower
+# liquidctl set ring color marquee-5 2f6017 --direction backward --speed slower
 ```
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
+
+Some of the color animations can be in either the `forward` or `backward` direction.
+This can be specified by using the `--direction` flag.
 
 | `ring` | `logo` | `sync` | Mode | Colors | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -82,16 +85,11 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | ✓ | ✓ | ✓ | `super-fixed` | Up to 9 (logo + each ring LED) |
 | ✓ | ✓ | ✓ | `fading` | Between 2 and 8, one for each step |
 | ✓ | ✓ | ✓ | `spectrum-wave` | None |
-| ✓ | ✓ | ✓ | `backwards-spectrum-wave` | None |
 | ✓ |   |   | `super-wave` | Up to 8 |
-| ✓ |   |   | `backwards-super-wave` | Up to 8 |
 | ✓ |   |   | `marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
-| ✓ |   |   | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | ✓ |   |   | `covering-marquee` | Up to 8, one for each step |
-| ✓ |   |   | `covering-backwards-marquee` | Up to 8, one for each step |
 | ✓ |   |   | `alternating` | Two |
 | ✓ |   |   | `moving-alternating` | Two |
-| ✓ |   |   | `backwards-moving-alternating` | Two |
 | ✓ | ✓ | ✓ | `breathing` | Up to 8, one for each step |
 | ✓ | ✓ | ✓ | `super-breathing` | Up to 9 (logo + each ring LED) | Only one step |
 | ✓ | ✓ | ✓ | `pulse` | Up to 8, one for each pulse |
@@ -99,3 +97,17 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | ✓ |   |   | `water-cooler` | None |
 | ✓ |   |   | `loading` | One |
 | ✓ |   |   | `wings` | One |
+
+
+#### Deprecated modes
+
+The following modes are now deprecated and the use of the `--direction backward` is preferred,
+they will be removed in a future version and are kept for now for backwards compatibility.
+
+| `ring` | `logo` | `sync` | Mode | Colors | Notes |
+| --- | --- | --- | --- | --- | --- |
+| ✓ | ✓ | ✓ | `backwards-spectrum-wave` | None |
+| ✓ |   |   | `backwards-super-wave` | Up to 8 |
+| ✓ |   |   | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
+| ✓ |   |   | `covering-backwards-marquee` | Up to 8, one for each step |
+| ✓ |   |   | `backwards-moving-alternating` | Two |

@@ -91,11 +91,14 @@ LED channels are numbered sequentially: `led1`, `led2`, (only HUE 2: `led3`, `le
 # liquidctl set led1 color fixed af5a2f
 # liquidctl set led2 color fading 350017 ff2608 --speed slower
 # liquidctl set led3 color pulse ffffff
-# liquidctl set led4 color backwards-marquee-5 2f6017 --speed slowest
-# liquidctl set sync color backwards-spectrum-wave
+# liquidctl set led4 color marquee-5 2f6017 --direction backward --speed slowest
+# liquidctl set sync color spectrum-wave
 ```
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports different number of colors.  The animation speed can be customized with the `--speed <value>`, and five relative values are accepted by the device: `slowest`, `slower`, `normal`, `faster` and `fastest`.
+
+Some of the color animations can be in either the `forward` or `backward` direction.
+This can be specified by using the `--direction` flag.
 
 | Mode | Colors | Notes |
 | --- | --- | --- |
@@ -104,23 +107,31 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | `super-fixed` | Up to 40, one for each LED |
 | `fading` | Between 2 and 8, one for each step |
 | `spectrum-wave` | None |
-| `backwards-spectrum-wave` | None |
 | `marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
-| `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `covering-marquee` | Up to 8, one for each step |
-| `covering-backwards-marquee` | Up to 8, one for each step |
 | `alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
 | `moving-alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
-| `backwards-moving-alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
 | `pulse` | Up to 8, one for each pulse |
 | `breathing` | Up to 8, one for each step |
 | `super-breathing` | Up to 40, one for each LED | Only one step |
 | `candle` | One |
 | `starry-night` | One |
 | `rainbow-flow` | None |
-| `backwards-rainbow-flow` | None |
 | `super-rainbow` | None |
-| `backwards-super-rainbow` | None |
 | `rainbow-pulse` | None |
-| `backwards-rainbow-pulse` | None |
 | `wings` | One |
+
+#### Deprecated modes
+
+The following modes are now deprecated and the use of the `--direction backward` is preferred,
+they will be removed in a future version and are kept for now for backwards compatibility.
+
+| Mode | Colors | Notes |
+| --- | --- | --- |
+| `backwards-spectrum-wave` | None |
+| `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
+| `covering-backwards-marquee` | Up to 8, one for each step |
+| `backwards-moving-alternating-<length>` | Two | 3 ≤ `length` ≤ 6 |
+| `backwards-rainbow-flow` | None |
+| `backwards-super-rainbow` | None |
+| `backwards-rainbow-pulse` | None |

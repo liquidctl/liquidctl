@@ -102,7 +102,7 @@ _PARSE_ARG = {
     '--direction': str,
     '--start-led': int,
     '--maximum-leds': int,
-
+  
     '--single-12v-ocp': bool,
     '--pump-mode': str,
     '--legacy-690lc': bool,
