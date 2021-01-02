@@ -65,7 +65,8 @@ class LiquidCollector(object):
                         unit = 'seconds'
 
                     if unit != '':
-                        label_values = [d.description, sanitized_name, unit]
+                        # FIXME doesn't handle multiple equal devices well
+                        label_values = [d.description.replace(' (experimental)', ''), sanitized_name, unit]
                         g.add_metric(label_values, value=sample_value)
                         LOGGER.debug(
                             '%s: %s as GaugeMetric %s labels %s',
