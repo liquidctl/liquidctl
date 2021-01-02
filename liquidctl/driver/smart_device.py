@@ -356,10 +356,10 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         'alternating-4':                    (0x05, 0x01, 0x00, 2, 2),
         'alternating-5':                    (0x05, 0x02, 0x00, 2, 2),
         'alternating-6':                    (0x05, 0x03, 0x00, 2, 2),
-        'moving-alternating-3':             (0x05, 0x00, 0x01, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-4':             (0x05, 0x01, 0x01, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-5':             (0x05, 0x02, 0x01, 2, 2),   # byte4: 0x10 = moving
-        'moving-alternating-6':             (0x05, 0x03, 0x01, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-3':             (0x05, 0x00, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-4':             (0x05, 0x01, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-5':             (0x05, 0x02, 0x10, 2, 2),   # byte4: 0x10 = moving
+        'moving-alternating-6':             (0x05, 0x03, 0x10, 2, 2),   # byte4: 0x10 = moving
         'pulse':                            (0x06, 0x00, 0x00, 1, 8),
         'breathing':                        (0x07, 0x00, 0x00, 1, 8),   # colors for each step
         'super-breathing':                  (0x03, 0x19, 0x00, 1, 40),  # independent leds
