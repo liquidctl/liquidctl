@@ -127,7 +127,7 @@ def test_get_fan_mode_description_pwm():
 ##### class methods
 def test_commander_constructor(commanderProDeviceUnconnected):
 
-    assert commanderProDeviceUnconnected._data == None
+    assert commanderProDeviceUnconnected._data is None
     assert commanderProDeviceUnconnected._fan_names == ['fan1', 'fan2', 'fan3', 'fan4', 'fan5', 'fan6']
     assert commanderProDeviceUnconnected._led_names == ['led1', 'led2']
     assert commanderProDeviceUnconnected._temp_probs == 4
@@ -135,7 +135,7 @@ def test_commander_constructor(commanderProDeviceUnconnected):
 
 
 def test_lighting_constructor(lightingNodeProDeviceUnconnected):
-    assert lightingNodeProDeviceUnconnected._data == None
+    assert lightingNodeProDeviceUnconnected._data is None
     assert lightingNodeProDeviceUnconnected._fan_names == []
     assert lightingNodeProDeviceUnconnected._led_names == ['led1', 'led2']
     assert lightingNodeProDeviceUnconnected._temp_probs == 0
@@ -144,12 +144,12 @@ def test_lighting_constructor(lightingNodeProDeviceUnconnected):
 
 def test_connect_commander(commanderProDeviceUnconnected):
     commanderProDeviceUnconnected.connect()
-    assert commanderProDeviceUnconnected._data != None
+    assert commanderProDeviceUnconnected._data is not None
 
 
 def test_connect_lighting(lightingNodeProDeviceUnconnected):
     lightingNodeProDeviceUnconnected.connect()
-    assert lightingNodeProDeviceUnconnected._data != None
+    assert lightingNodeProDeviceUnconnected._data is not None
 
 
 def test_initialize_commander_pro(commanderProDevice):
@@ -182,7 +182,7 @@ def test_initialize_commander_pro(commanderProDevice):
     assert res[11][1] == 'Auto/Disconnected'
 
     data = commanderProDevice._data.load('fan_modes', None)
-    assert data != None
+    assert data is not None
     assert len(data) == 6
     assert data[0] == 0x01
     assert data[1] == 0x01
@@ -192,7 +192,7 @@ def test_initialize_commander_pro(commanderProDevice):
     assert data[5] == 0x00
 
     data = commanderProDevice._data.load('temp_sensors_connected', None)
-    assert data != None
+    assert data is not None
     assert len(data) == 4
     assert data[0] == 0x01
     assert data[1] == 0x01
@@ -215,10 +215,10 @@ def test_initialize_lighting_node(lightingNodeProDevice):
     assert res[1][1] == '0.5'
 
     data = lightingNodeProDevice._data.load('fan_modes', None)
-    assert data == None
+    assert data is None
 
     data = lightingNodeProDevice._data.load('temp_sensors_connected', None)
-    assert data == None
+    assert data is None
 
 
 def test_get_status_commander_pro(commanderProDevice):
@@ -769,7 +769,7 @@ def test_set_color_hardware_clear(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects == None
+    assert effects is None
 
 
 def test_set_color_hardware_off(commanderProDevice):
@@ -808,7 +808,7 @@ def test_set_color_hardware_off(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects == None
+    assert effects is None
 
 
 @pytest.mark.parametrize('directionStr,expected', [
@@ -840,7 +840,7 @@ def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expecte
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -869,7 +869,7 @@ def test_set_color_hardware_direction_default(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -898,7 +898,7 @@ def test_set_color_hardware_speed_default(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -932,7 +932,7 @@ def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -962,7 +962,7 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -994,7 +994,7 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1026,7 +1026,7 @@ def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1056,7 +1056,7 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1086,7 +1086,7 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1122,7 +1122,7 @@ def test_set_color_hardware_channel(commanderProDevice, channel, expected):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1151,7 +1151,7 @@ def test_set_color_hardware_random_color(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1180,7 +1180,7 @@ def test_set_color_hardware_not_random_color(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1213,7 +1213,7 @@ def test_set_color_hardware_too_many_colors(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1245,7 +1245,7 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1278,7 +1278,7 @@ def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 1
 
 
@@ -1305,7 +1305,7 @@ def test_set_color_hardware_invalid_mode(commanderProDevice):
     assert len(sent) == 0
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
-    assert effects == None
+    assert effects is None
 
 
 def test_set_color_hardware_multipe_commands(commanderProDevice):
@@ -1345,7 +1345,7 @@ def test_set_color_hardware_multipe_commands(commanderProDevice):
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
-    assert effects != None
+    assert effects is not None
     assert len(effects) == 2
 
 

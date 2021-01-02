@@ -173,7 +173,7 @@ def create_strix_2080ti_oc_bus(controller_address=None):
             parent_driver='nvidia',
     )
 
-    if controller_address == None:
+    if controller_address is None:
         return smbus
 
     smbus.open()

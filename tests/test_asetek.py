@@ -80,7 +80,7 @@ class Modern690LcTestCase(unittest.TestCase):
         assert bmRequestType == 0x40
         assert wValue == 1
         assert wIndex == 0
-        assert datalen == None
+        assert datalen is None
 
 
 class Legacy690LcTestCase(unittest.TestCase):

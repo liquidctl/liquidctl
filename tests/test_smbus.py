@@ -144,7 +144,7 @@ def test_connects(emulated_device):
 
 def test_loading_unnavailable_eeprom_returns_none(emulated_device):
     bus, dev = emulated_device
-    assert bus.load_eeprom(0x51) == None
+    assert bus.load_eeprom(0x51) is not None
 
 
 def test_loads_eeprom(emulated_device):
