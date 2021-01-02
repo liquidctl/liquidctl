@@ -53,8 +53,8 @@ class Ddr4Spd:
             0xad: 'SK Hynix',
             0xce: 'Samsung',
         },
-        2: { 0x98: 'Kingston' },
-        3: { 0x9e: 'Corsair' },
+        2: {0x98: 'Kingston'},
+        3: {0x9e: 'Corsair'},
         5: {
             0xcd: 'G.SKILL',
             0xef: 'Team Group',
@@ -99,7 +99,7 @@ class Ddr4Spd:
     def module_type(self):
         base = self._eeprom[0x03] & 0x0f
         hybrid = self._eeprom[0x03] >> 4
-        assert not hybrid 
+        assert not hybrid
         return (self.BaseModuleType(base), None)
 
     @property

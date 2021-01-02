@@ -467,7 +467,7 @@ class CommanderPro(UsbHidDriver):
             }
 
         saved_effects = [] if mode_str == 'off' else self._data.load('saved_effects', default=[])
-        saved_effects += [ lighting_effect ]
+        saved_effects += [lighting_effect]
 
         self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
 
@@ -477,7 +477,7 @@ class CommanderPro(UsbHidDriver):
         self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01]);
 
         for effect in saved_effects:
-            config = [ effect.get('channel'),
+            config = [effect.get('channel'),
                        effect.get('start_led'),
                        effect.get('num_leds'),
                        effect.get('mode'),
