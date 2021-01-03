@@ -173,10 +173,6 @@ class RgbFusion2(UsbHidDriver):
         `slower`, `normal` (default), `faster`, `fastest` or `ludicrous`.
         """
 
-        if mode.lower() == 'static':
-            # TODO if today > 30 August 2020: remove this custom error
-            raise ValueError("This mode was renamed to 'fixed' before the 1.4.0 release, to be consistent with other devices")
-
         mode = _COLOR_MODES[mode.lower()]
         colors = iter(colors)
         channel = channel.lower()
