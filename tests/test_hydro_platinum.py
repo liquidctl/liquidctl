@@ -16,9 +16,19 @@ def h115iPlatinumDevice():
     kwargs = {'fan_count': 2, 'rgb_fans': True}
     device = _H115iPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
+
     dev._data = MockRuntimeStorage(key_prefixes='testing')
+    dev.connect()
     dev._data.store('leds_enabled', 0)
 
+    return dev
+
+@pytest.fixture
+def h115iPlatinumDeviceRaw():
+    description = 'Mock H115i Platinum'
+    kwargs = {'fan_count': 2, 'rgb_fans': True}
+    device = _H115iPlatinumDevice()
+    dev = HydroPlatinum(device, description, **kwargs)
     dev.connect()
     return dev
 
@@ -234,10 +244,10 @@ def test_h115i_platinum_device_invalid_color_modes(h115iPlatinumDevice):
 
     assert len(dev.device.sent) == 0
 
-def test_h115i_platinum_device_short_enough_storage_path(h115iPlatinumDevice):
-    dev = h115iPlatinumDevice
-    #this test should not be here, the storage backed is tested seperately
-    pass
+def test_h115i_platinum_device_short_enough_storage_path(h115iPlatinumDeviceRaw):
+    dev = h115iPlatinumDeviceRaw
+    assert len(dev._data._backend._write_dir) < _WIN_MAX_PATH;
+    assert dev._data._backend._write_dir.endswith('3142')
 
 def test_h115i_platinum_device_bad_stored_data(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
