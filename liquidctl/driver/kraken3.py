@@ -181,7 +181,7 @@ class KrakenX3(UsbHidDriver):
         def parse_led_info(msg):
             channel_count = msg[14]
             assert channel_count == len(self._color_channels) - ('sync' in self._color_channels), \
-                   f'Unexpected number of color channels received: {channel_count}'
+                   'Unexpected number of color channels received: {}'.format(channel_count)
 
             def find(channel, accessory):
                 offset = 15  # offset of first channel/first accessory
@@ -192,7 +192,7 @@ class KrakenX3(UsbHidDriver):
                 accessory = find(0, i)
                 if not accessory:
                     break
-                status.append((f'LED accessory {i + 1}', accessory, ''))
+                status.append(('LED accessory {}'.format(i + 1), accessory, ''))
 
             if len(self._color_channels) > 1:
                 found_ring = find(1, 0) == Hue2Accessory.KRAKENX_GEN4_RING
@@ -243,10 +243,10 @@ class KrakenX3(UsbHidDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if colors:
-                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
+                _LOGGER.warning('too many colors for mode={}, none needed'.format(mode))
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            _LOGGER.warning('too many colors for mode=%s, dropping to %i', mode, maxcolors)
+            _LOGGER.warning('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
             colors = colors[:maxcolors]
 
         sval = _ANIMATION_SPEEDS[speed]
@@ -260,8 +260,8 @@ class KrakenX3(UsbHidDriver):
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
         interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
         for temp, duty in zip(stdtemps, interp):
-            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C', channel,
-                         duty, temp)
+            _LOGGER.info('setting {} PWM duty to {}% for liquid temperature >= {}°C'
+                         .format(channel, duty, temp))
         self._write(header + interp)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -281,7 +281,7 @@ class KrakenX3(UsbHidDriver):
                 func(msg)
             if not parsers:
                 return
-        assert False, f'missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})'
+        assert False, 'missing messages (attempts={}, missing={})'.format(_MAX_READ_ATTEMPTS, len(parsers))
 
     def _write(self, data):
         padding = [0x0] * (_WRITE_LENGTH - len(data))

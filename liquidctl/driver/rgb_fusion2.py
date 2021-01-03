@@ -133,7 +133,7 @@ class RgbFusion2(UsbHidDriver):
         fw_version = tuple(data[4:8])
         return [
             ('Hardware name', dev_name, ''),
-            ('Firmware version', '%d.%d.%d.%d' % fw_version, ''),
+            ('Firmware version', '{}.{}.{}.{}'.format(*fw_version), ''),
         ]
 
     def get_status(self, **kwargs):
@@ -144,7 +144,7 @@ class RgbFusion2(UsbHidDriver):
         non-empty list would contain `(property, value, unit)` tuples.
         """
 
-        _LOGGER.info('status reports not available from %s', self.description)
+        _LOGGER.info('status reports not available from {}'.format(self.description))
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
@@ -183,12 +183,12 @@ class RgbFusion2(UsbHidDriver):
                 r, g, b = next(colors)
                 single_color = (b, g, r)
             except StopIteration:
-                raise ValueError(f'One color required for mode={mode.name}')
+                raise ValueError('One color required for mode={}'.format(mode.name))
         else:
             single_color = (0, 0, 0)
         remaining = sum(1 for _ in colors)
         if remaining:
-            _LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
+            _LOGGER.warning('too many colors for mode={}, dropping {}'.format(mode.name, remaining))
 
         brightness = clamp(100, 0, mode.max_brightness)  # hardcode this for now
         data = [_REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

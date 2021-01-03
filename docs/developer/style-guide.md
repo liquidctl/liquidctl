@@ -110,8 +110,8 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 ```
 
-Prefer old-style %-formatting, since this is evaluated lazyly by `logging`, and
-the message will only be formated if the logging level is enabled.
+Prefer PEP3101 style formatting over old-style %-formatting for all strings to be
+consistent rather then using mixes of `f strings`, `% formatting`, and `string.format()`.
 
 ```py
 _LOGGER.warning('value %d, expected %d', current, expected)

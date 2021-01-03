@@ -5,13 +5,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 from enum import Enum, unique
+from collections import namedtuple
 import itertools
 import logging
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import check_unsafe, clamp
-from collections import namedtuple
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -167,7 +167,7 @@ class Ddr4Temperature(SmbusDriver):
             if not desc:
                 continue
 
-            desc += f' DIMM{dimm + 1} (experimental)'
+            desc += ' DIMM{} (experimental)'.format(dimm + 1)
 
             if (address and int(address, base=16) != spd_addr) \
                     or (match and match.lower() not in desc.lower()):
@@ -177,7 +177,7 @@ class Ddr4Temperature(SmbusDriver):
             # accidental attempts of writes to the SPD EEPROM (DDR4 SPD writes
             # are also disabled by default in many motherboards)
             dev = cls(smbus, desc, address=(None, None, spd_addr))
-            _LOGGER.debug('instanced driver for %s', desc)
+            _LOGGER.debug('instanced driver for {}'.format(desc))
             yield dev
 
     @classmethod
@@ -191,9 +191,9 @@ class Ddr4Temperature(SmbusDriver):
             return 'DDR4'
 
         if spd.module_part_number:
-            return f'{manufacturer} {spd.module_part_number}'
+            return '{} {}'.format(manufacturer, spd.module_part_number)
         else:
-            return f'{manufacturer}'
+            return manufacturer
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -201,7 +201,7 @@ class Ddr4Temperature(SmbusDriver):
 
     @property
     def address(self):
-        return f'{self._address[2]:#04x}'
+        return '{:#04x}'.format(self._address[2])
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -210,8 +210,8 @@ class Ddr4Temperature(SmbusDriver):
         """
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'%s'",  self.description, ','.join(self._UNSAFE))
+            _LOGGER.warning("{}: nothing to return, requires unsafe features '{}'"
+                            .format(self.description, ','.join(self._UNSAFE)))
             return []
 
         treg = self._read_temperature_register()
@@ -340,7 +340,7 @@ class VengeanceRgb(Ddr4Temperature):
             common = self.SpeedTimings[speed.upper()].value
             tp1 = tp2 = common
         except KeyError:
-            raise ValueError(f'invalid speed preset: {speed!r}') from None
+            raise ValueError('invalid speed preset: {!r}'.format(speed)) from None
 
         if transition_ticks is not None:
             tp1 = clamp(transition_ticks, 0, 63)
@@ -352,13 +352,13 @@ class VengeanceRgb(Ddr4Temperature):
         try:
             mode = self.Mode[mode.upper()]
         except KeyError:
-            raise ValueError(f'invalid mode: {mode!r}') from None
+            raise ValueError('invalid mode: {!r}'.format(mode)) from None
 
         if len(colors) < mode.min_colors:
-            raise ValueError(f'{mode} mode requires {mode.min_colors} colors')
+            raise ValueError('{} mode requires {} colors'.format(mode, mode.min_colors))
 
         if len(colors) > mode.max_colors:
-            _LOGGER.debug('too many colors, dropping to %d', mode.max_colors)
+            _LOGGER.debug('too many colors, dropping to {}'.format(mode.max_colors))
             colors = colors[:mode.max_colors]
 
         self._compute_rgb_address()

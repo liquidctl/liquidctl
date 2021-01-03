@@ -142,23 +142,23 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         warnings = []
 
         if not using_filters:
-            print(f'Device ID {i}: {dev.description}')
+            print('Device ID {}: {}'.format(i, dev.description))
         elif device_id is not None:
-            print(f'Device ID {device_id}: {dev.description}')
+            print('Device ID {}: {}'.format(device_id, dev.description))
         else:
-            print(f'Result #{i}: {dev.description}')
+            print('Result #{}: {}'.format(i, dev.description))
         if not verbose:
             continue
 
         if dev.vendor_id:
-            print(f'├── Vendor ID: {dev.vendor_id:#06x}')
+            print('├── Vendor ID: {:#06x}'.format(dev.vendor_id))
         if dev.product_id:
-            print(f'├── Product ID: {dev.product_id:#06x}')
+            print('├── Product ID: {:#06x}'.format(dev.product_id))
         if dev.release_number:
-            print(f'├── Release number: {dev.release_number:#06x}')
+            print('├── Release number: {:#06x}'.format(dev.release_number))
         try:
             if dev.serial_number:
-                print(f'├── Serial number: {dev.serial_number}')
+                print('├── Serial number: {}'.format(dev.serial_number))
         except:
             msg = 'could not read the serial number'
             if sys.platform.startswith('linux') and os.geteuid:
@@ -170,16 +170,16 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             else:
                 warnings.append(msg)
 
-        print(f'├── Bus: {dev.bus}')
-        print(f'├── Address: {dev.address}')
+        print('├── Bus: {}'.format(dev.bus))
+        print('├── Address: {}'.format(dev.address))
         if dev.port:
             port = '.'.join(map(str, dev.port))
-            print(f'├── Port: {port}')
+            print('├── Port: {}'.format(port))
 
-        print(f'└── Driver: {type(dev).__name__}')
+        print('└── Driver: {}'.format(type(dev).__name__))
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            _LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
+            _LOGGER.debug('hierarchy: {}'.format(', '.join(driver_hier[1:])))
 
         for msg in warnings:
             _LOGGER.warning(msg)
@@ -191,7 +191,7 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
 def _print_dev_status(dev, status):
     if not status:
         return
-    print(f'{dev.description}')
+    print(dev.description)
     tmp = []
     kcols, vcols = 0, 0
     for k, v, u in status:
@@ -200,14 +200,14 @@ def _print_dev_status(dev, status):
             u = ''
         else:
             valfmt = _VALUE_FORMATS.get(u, '')
-            v = f'{v:{valfmt}}'
+            v = '{:{valfmt}}'.format(v)
         kcols = max(kcols, len(k))
         vcols = max(vcols, len(v))
         tmp.append((k, v, u))
     for k, v, u in tmp[:-1]:
-        print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
+        print('├── {:<{kcols}}    {:>{vcols}}  {}'.format(k, v, u))
     k, v, u = tmp[-1]
-    print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
+    print('└── {:<{kcols}}    {:>{vcols}}  {}'.format(k, v, u))
     print('')
 
 
@@ -226,8 +226,8 @@ def _device_set_speed(dev, args, **opts):
 
 def _make_opts(args):
     if args['--hid']:
-        _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
-                        args['--hid'])
+        _LOGGER.warning('ignoring --hid {}: deprecated option, API will be selected automatically'
+                        .format(args['--hid']))
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
@@ -263,7 +263,7 @@ def main():
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        _LOGGER.debug('running %s', _gen_version())
+        _LOGGER.debug('running {}'.format(_gen_version()))
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
@@ -326,20 +326,20 @@ def main():
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES, errno.EPERM]:
-                log_error(err, f'Error: insufficient permissions to access {dev.description}')
+                log_error(err, 'Error: insufficient permissions to access {}'.format(dev.description))
             elif err.args == ('open failed', ):
-                log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
+                log_error(err, 'Error: could not open {}, possibly due to insufficient permissions'.format(dev.description))
             else:
-                log_error(err, f'Unexpected OS error with {dev.description}: {err}')
+                log_error(err, 'Unexpected OS error with {}: {}'.format(dev.description, err))
         except NotSupportedByDevice as err:
-            log_error(err, f'Error: operation not supported by {dev.description}')
+            log_error(err, 'Error: operation not supported by {}'.format(dev.description))
         except NotSupportedByDriver as err:
-            log_error(err, f'Error: operation not supported by driver for {dev.description}')
+            log_error(err, 'Error: operation not supported by driver for {}'.format(dev.description))
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
-            log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
+            log_error(err, 'Error: missing --unsafe features for {}: {!r}'.format(dev.description, features))
         except Exception as err:
-            log_error(err, f'Unexpected error with {dev.description}: {err}')
+            log_error(err, 'Unexpected error with {}: {}'.format(dev.description, err))
         finally:
             dev.disconnect(**opts)
 

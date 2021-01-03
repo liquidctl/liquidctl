@@ -92,7 +92,7 @@ class CorsairHidPsu(UsbHidDriver):
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
         if mode != self._get_12v_ocp_mode():
             # TODO replace log level with info once this has been confimed to work
-            _LOGGER.warning('(experimental feature) changing +12V OCP mode to %s', mode)
+            _LOGGER.warning('(experimental feature) changing +12V OCP mode to {}'.format(mode))
             self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
         if self._get_fan_control_mode() != FanControlMode.HARDWARE:
             _LOGGER.info('resetting fan control to hardware mode')
@@ -122,9 +122,9 @@ class CorsairHidPsu(UsbHidDriver):
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
             name = _RAIL_NAMES[rail]
             self._exec(WriteBit.WRITE, CMD.PAGE, [rail])
-            status.append((f'{name} output voltage', self._get_float(CMD.READ_VOUT), 'V'))
-            status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
-            status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
+            status.append(('{} output voltage'.format(name), self._get_float(CMD.READ_VOUT), 'V'))
+            status.append(('{} output current'.format(name), self._get_float(CMD.READ_IOUT), 'A'))
+            status.append(('{} output power'.format(name), self._get_float(CMD.READ_POUT), 'W'))
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         _LOGGER.warning('reading the +12V OCP mode is an experimental feature')
         return status
@@ -134,7 +134,7 @@ class CorsairHidPsu(UsbHidDriver):
         duty = clamp(duty, _MIN_FAN_DUTY, 100)
         _LOGGER.info('ensuring fan control is in software mode')
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
-        _LOGGER.info('setting fan PWM duty to %i%%', duty)
+        _LOGGER.info('setting fan PWM duty to {}%'.format(duty))
         self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
 
     def set_color(self, channel, mode, colors, **kwargs):
