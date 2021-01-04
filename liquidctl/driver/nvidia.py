@@ -86,7 +86,7 @@ class EvgaPascal(SmbusDriver):
 
             dev = cls(smbus, desc, vendor_id=EVGA, product_id=EVGA_GTX_1080_FTW,
                       address=ADDRESS)
-            _LOGGER.debug('instanced driver for {}'.format(desc))
+            _LOGGER.debug('instanced driver for %s', desc)
             yield dev
 
     def get_status(self, verbose=False, **kwargs):
@@ -102,8 +102,8 @@ class EvgaPascal(SmbusDriver):
             return []
 
         if not check_unsafe('smbus', **kwargs):
-            _LOGGER.warning("{}: nothing to return, requires unsafe features 'smbus'"
-                            .format(self.description))
+            _LOGGER.warning("%s: nothing to return, requires unsafe features 'smbus'",
+                            self.description)
             return []
 
         mode = self.Mode(self._smbus.read_byte_data(self._address, self._REG_MODE))
@@ -153,7 +153,7 @@ class EvgaPascal(SmbusDriver):
             raise ValueError('{} mode requires {} colors'.format(mode, mode.required_colors))
 
         if len(colors) > mode.required_colors:
-            _LOGGER.debug('too many colors, dropping to {}'.format(mode.required_colors))
+            _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
             colors = colors[:mode.required_colors]
 
         self._smbus.write_byte_data(self._address, self._REG_MODE, mode.value)
@@ -168,7 +168,7 @@ class EvgaPascal(SmbusDriver):
             try:
                 self._smbus.write_byte_data(self._address, self._REG_PERSIST, self._PERSIST)
             except OSError as err:
-                _LOGGER.debug('expected OSError when writing to _REG_PERSIST: {}'.format(err))
+                _LOGGER.debug('expected OSError when writing to _REG_PERSIST: %s', err)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -257,8 +257,8 @@ class RogTuring(SmbusDriver):
             if selected_address is not None:
                 dev = cls(smbus, desc, vendor_id=ASUS, product_id=dev_id,
                           address=selected_address)
-                _LOGGER.debug('instanced driver for {} at address {:02x}'
-                              .format(desc, selected_address))
+                _LOGGER.debug('instanced driver for %s at address %02x',
+                              desc, selected_address)
                 yield dev
 
     def get_status(self, verbose=False, **kwargs):
@@ -274,8 +274,8 @@ class RogTuring(SmbusDriver):
             return []
 
         if not check_unsafe('smbus', 'rog_turing', **kwargs):
-            _LOGGER.warning("{}: nothing to return, requires unsafe features "
-                            "'smbus,rog_turing'".format(self.description))
+            _LOGGER.warning("%s: nothing to return, requires unsafe features "
+                            "'smbus,rog_turing'", self.description)
             return []
 
         assert self._address != self._SENTINEL_ADDRESS, \
@@ -339,7 +339,7 @@ class RogTuring(SmbusDriver):
             raise ValueError('{} mode requires {} colors'.format(mode, mode.required_colors))
 
         if len(colors) > mode.required_colors:
-            _LOGGER.debug('too many colors, dropping to {}'.format(mode.required_colors))
+            _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
             colors = colors[:mode.required_colors]
 
         if mode == self.Mode.OFF:

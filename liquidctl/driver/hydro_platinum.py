@@ -59,7 +59,7 @@ class _FanMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        _LOGGER.debug('falling back to FIXED_DUTY for _FanMode({})'.format(value))
+        _LOGGER.debug('falling back to FIXED_DUTY for _FanMode(%s)', value)
         return _FanMode.FIXED_DUTY
 
 
@@ -71,7 +71,7 @@ class _PumpMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        _LOGGER.debug('falling back to BALANCED for _PumpMode({})'.format(value))
+        _LOGGER.debug('falling back to BALANCED for _PumpMode(%s)', value)
         return _PumpMode.BALANCED
 
 
@@ -300,7 +300,7 @@ class HydroPlatinum(UsbHidDriver):
         if len(colors) < mincolors:
             raise ValueError('At least {} required for {}'.format(mincolors, _quoted((channel, mode))))
         if len(colors) > maxcolors:
-            _LOGGER.warning('too many colors, dropping to {}'.format(maxcolors))
+            _LOGGER.warning('too many colors, dropping to %d', maxcolors)
             return maxcolors
         return len(colors)
 
@@ -345,17 +345,17 @@ class HydroPlatinum(UsbHidDriver):
                 stored = self._data.load('{}_duty'.format(fan), of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
                 data[iduty] = fraction_of_byte(percentage=duty)
-                _LOGGER.info('setting {} to {}% duty cycle'.format(fan, duty))
+                _LOGGER.info('setting %s to %i%% duty cycle', fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
                 stored = self._data.load('{}_profile'.format(fan), of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
                 data[iprofile: iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
-                _LOGGER.info('setting {} to follow profile {}'.format(fan, profile))
+                _LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
                 raise ValueError('Unsupported fan {}'.format(mode))
             data[imode] = mode.value
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
-        _LOGGER.info('setting pump mode to {}'.format(pump_mode.name.lower()))
+        _LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)

@@ -179,7 +179,7 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         print('└── Driver: {}'.format(type(dev).__name__))
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            _LOGGER.debug('hierarchy: {}'.format(', '.join(driver_hier[1:])))
+            _LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
 
         for msg in warnings:
             _LOGGER.warning(msg)
@@ -226,8 +226,8 @@ def _device_set_speed(dev, args, **opts):
 
 def _make_opts(args):
     if args['--hid']:
-        _LOGGER.warning('ignoring --hid {}: deprecated option, API will be selected automatically'
-                        .format(args['--hid']))
+        _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
+                        args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
@@ -263,7 +263,7 @@ def main():
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        _LOGGER.debug('running {}'.format(_gen_version()))
+        _LOGGER.debug('running %s', _gen_version())
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:

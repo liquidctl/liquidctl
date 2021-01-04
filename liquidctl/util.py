@@ -114,7 +114,7 @@ def clamp(value, clampmin, clampmax):
     """Clamp numeric `value` to interval [`clampmin`, `clampmax`]."""
     clamped = max(clampmin, min(clampmax, value))
     if clamped != value:
-        _LOGGER.debug('clamped {} to interval [{}, {}]'.format(value, clampmin, clampmax))
+        _LOGGER.debug('clamped %s to interval [%s, %s]', value, clampmin, clampmax)
     return clamped
 
 

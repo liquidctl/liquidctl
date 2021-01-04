@@ -92,7 +92,7 @@ class CorsairHidPsu(UsbHidDriver):
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
         if mode != self._get_12v_ocp_mode():
             # TODO replace log level with info once this has been confimed to work
-            _LOGGER.warning('(experimental feature) changing +12V OCP mode to {}'.format(mode))
+            _LOGGER.warning('(experimental feature) changing +12V OCP mode to %s', mode)
             self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
         if self._get_fan_control_mode() != FanControlMode.HARDWARE:
             _LOGGER.info('resetting fan control to hardware mode')
@@ -134,7 +134,7 @@ class CorsairHidPsu(UsbHidDriver):
         duty = clamp(duty, _MIN_FAN_DUTY, 100)
         _LOGGER.info('ensuring fan control is in software mode')
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
-        _LOGGER.info('setting fan PWM duty to {}%'.format(duty))
+        _LOGGER.info('setting fan PWM duty to %i%%', duty)
         self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
 
     def set_color(self, channel, mode, colors, **kwargs):

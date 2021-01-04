@@ -166,8 +166,8 @@ class Kraken2(UsbHidDriver):
             mod2 += 0x10
 
         if ringonly and channel != 'ring':
-            _LOGGER.warning('mode={} unsupported with channel={}, dropping to ring'
-                            .format(mode, channel))
+            _LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
+                            mode, channel)
             channel = 'ring'
 
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
@@ -187,11 +187,11 @@ class Kraken2(UsbHidDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if len(colors) > 0:
-                _LOGGER.warning('too many colors for mode={}, none needed'.format(mode))
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            _LOGGER.warning('too many colors for mode={}, dropping to {}'
-                            .format(mode, maxcolors))
+            _LOGGER.warning('too many colors for mode=%s, dropping to %d',
+                            mode, maxcolors)
             colors = colors[:maxcolors]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
@@ -217,8 +217,8 @@ class Kraken2(UsbHidDriver):
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         for i, (temp, duty) in enumerate(interp):
             duty = clamp(duty, dmin, dmax)
-            _LOGGER.info('setting {} PWM duty to {}% for liquid temperature >= {}°C'
-                         .format(channel, duty, temp))
+            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+                         channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -236,7 +236,7 @@ class Kraken2(UsbHidDriver):
             raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        _LOGGER.info('setting {} PWM duty to {}%'.format(channel, duty))
+        _LOGGER.info('setting %d PWM duty to %i%%', channel, duty)
         self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
 
     @property

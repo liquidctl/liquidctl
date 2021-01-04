@@ -243,10 +243,10 @@ class KrakenX3(UsbHidDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if colors:
-                _LOGGER.warning('too many colors for mode={}, none needed'.format(mode))
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            _LOGGER.warning('too many colors for mode={}, dropping to {}'.format(mode, maxcolors))
+            _LOGGER.warning('too many colors for mode=%s, dropping to %d', mode, maxcolors)
             colors = colors[:maxcolors]
 
         sval = _ANIMATION_SPEEDS[speed]
@@ -260,8 +260,8 @@ class KrakenX3(UsbHidDriver):
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
         interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
         for temp, duty in zip(stdtemps, interp):
-            _LOGGER.info('setting {} PWM duty to {}% for liquid temperature >= {}°C'
-                         .format(channel, duty, temp))
+            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+                         channel, duty, temp)
         self._write(header + interp)
 
     def set_fixed_speed(self, channel, duty, **kwargs):

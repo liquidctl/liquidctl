@@ -177,7 +177,7 @@ class Ddr4Temperature(SmbusDriver):
             # accidental attempts of writes to the SPD EEPROM (DDR4 SPD writes
             # are also disabled by default in many motherboards)
             dev = cls(smbus, desc, address=(None, None, spd_addr))
-            _LOGGER.debug('instanced driver for {}'.format(desc))
+            _LOGGER.debug('instanced driver for %s', desc)
             yield dev
 
     @classmethod
@@ -210,8 +210,8 @@ class Ddr4Temperature(SmbusDriver):
         """
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("{}: nothing to return, requires unsafe features '{}'"
-                            .format(self.description, ','.join(self._UNSAFE)))
+            _LOGGER.warning("%s: nothing to return, requires unsafe features '%s'",
+                            self.description, ','.join(self._UNSAFE))
             return []
 
         treg = self._read_temperature_register()
@@ -358,7 +358,7 @@ class VengeanceRgb(Ddr4Temperature):
             raise ValueError('{} mode requires {} colors'.format(mode, mode.min_colors))
 
         if len(colors) > mode.max_colors:
-            _LOGGER.debug('too many colors, dropping to {}'.format(mode.max_colors))
+            _LOGGER.debug('too many colors, dropping to %d', mode.max_colors)
             colors = colors[:mode.max_colors]
 
         self._compute_rgb_address()

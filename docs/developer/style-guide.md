@@ -110,12 +110,14 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 ```
 
-Prefer PEP3101 style formatting over old-style %-formatting for all strings to be
-consistent rather then using mixes of `f strings`, `% formatting`, and `string.format()`.
+Prefer old-style %-formatting, since this is evaluated lazyly by `logging`, and
+the message will only be formated if the logging level is enabled.
 
 ```py
 _LOGGER.warning('value %d, expected %d', current, expected)
 ```
+
+The rest of the time using `string.format()` is preferred.
 
 When writing informational or debug messages, pay attention to the cost of
 computing each value.  A classic example is hex formatting some bytes, which

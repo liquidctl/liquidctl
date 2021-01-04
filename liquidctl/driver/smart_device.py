@@ -156,11 +156,11 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
                              .format(mode, mincolors))
         elif maxcolors == 0:
             if colors:
-                _LOGGER.warning('too many colors for mode={}, none needed'.format(mode))
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            _LOGGER.warning('too many colors for mode={}, dropping to {}'
-                            .format(mode, maxcolors))
+            _LOGGER.warning('too many colors for mode=%s, dropping to %d',
+                            mode, maxcolors)
             colors = colors[:maxcolors]
 
         sval = _ANIMATION_SPEEDS[speed]
@@ -174,7 +174,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             selected_channels = {channel: self._speed_channels[channel]}
         for cname, (cid, dmin, dmax) in selected_channels.items():
             duty = clamp(duty, dmin, dmax)
-            _LOGGER.info('setting {} duty to {}%'.format(cname, duty))
+            _LOGGER.info('setting %s duty to %i%%', cname, duty)
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):
