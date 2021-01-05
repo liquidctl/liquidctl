@@ -89,7 +89,7 @@ def _prepare_profile(original, critcalTempature):
     normal = normalize_profile(clamped, critcalTempature, _MAX_FAN_RPM)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
-        raise ValueError('too many points in profile (remove {})'.format(-missing))
+        raise ValueError(f'too many points in profile (remove {-missing})')
     if missing > 0:
         normal += missing * [(critcalTempature, _MAX_FAN_RPM)]
     return normal
@@ -136,7 +136,7 @@ class CommanderPro(UsbHidDriver):
     def connect(self, **kwargs):
         """Connect to the device."""
         super().connect(**kwargs)
-        ids = 'vid{:04x}_pid{:04x}'.format(self.vendor_id, self.product_id)
+        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
         # must use the HID path because there is no serial number; however,
         # these can be quite long on Windows and macOS, so only take the
         # numbers, since they are likely the only parts that vary between two
@@ -233,10 +233,10 @@ class CommanderPro(UsbHidDriver):
         ]
 
         for temp_num in range(self._temp_probs):
-            status += [('Temp sensor {}'.format(temp_num + 1), temp[temp_num], '°C')]
+            status += [(f'Temp sensor {temp_num + 1}', temp[temp_num], '°C')]
 
         for fan_num in range(self._fan_count):
-            status += [('Fan {} speed'.format(fan_num + 1), fanspeeds[fan_num], 'rpm')]
+            status += [(f'Fan {fan_num + 1} speed', fanspeeds[fan_num], 'rpm')]
 
         return status
 
@@ -250,7 +250,7 @@ class CommanderPro(UsbHidDriver):
             raise ValueError('this device does not have a tempature sensor')
 
         if sensor_num < 0 or sensor_num > 3:
-            raise ValueError('sensor_num {} invalid, must be between 0 and 3'.format(sensor_num))
+            raise ValueError(f'sensor_num {sensor_num} invalid, must be between 0 and 3')
 
         res = self._send_command(_CMD_GET_TEMP, [sensor_num])
         temp = u16be_from(res, offset=1) / 100
@@ -267,7 +267,7 @@ class CommanderPro(UsbHidDriver):
             raise ValueError('this device does not have any fans')
 
         if fan_num < 0 or fan_num > 5:
-            raise ValueError('fan_num {} invalid, must be between 0 and 5'.format(fan_num))
+            raise ValueError(f'fan_num {fan_num} invalid, must be between 0 and 5')
 
         res = self._send_command(_CMD_GET_FAN_RPM, [fan_num])
         speed = u16be_from(res, offset=1)
@@ -284,7 +284,7 @@ class CommanderPro(UsbHidDriver):
         elif channel in self._fan_names:
             return [self._fan_names.index(channel)]
         else:
-            raise ValueError('unknown channel, should be one of: {}'.format(_quoted('sync', *self._fan_names)))
+            raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
 
     def _get_hw_led_channels(self, channel):
         """This will get a list of all the led channels that the command should be sent to
@@ -296,7 +296,7 @@ class CommanderPro(UsbHidDriver):
         elif channel in self._led_names:
             return [self._led_names.index(channel)]
         else:
-            raise ValueError('unknown channel, should be one of: {}'.format(_quoted('led', *self._led_names)))
+            raise ValueError(f'unknown channel, should be one of: {_quoted("led", *self._led_names)}')
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -447,7 +447,7 @@ class CommanderPro(UsbHidDriver):
         mode = _MODES.get(mode, -1)
 
         if mode == -1:
-            raise ValueError('mode "{}" is not valid'.format(mode_str))
+            raise ValueError(f'mode "{mode_str}" is not valid')
 
         lighting_effect = {
                 'channel': led_channel,

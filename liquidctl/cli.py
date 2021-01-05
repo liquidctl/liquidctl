@@ -142,23 +142,23 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         warnings = []
 
         if not using_filters:
-            print('Device ID {}: {}'.format(i, dev.description))
+            print(f'Device ID {i}: {dev.description}')
         elif device_id is not None:
-            print('Device ID {}: {}'.format(device_id, dev.description))
+            print(f'Device ID {device_id}: {dev.description}')
         else:
-            print('Result #{}: {}'.format(i, dev.description))
+            print(f'Result #{i}: {dev.description}')
         if not verbose:
             continue
 
         if dev.vendor_id:
-            print('├── Vendor ID: {:#06x}'.format(dev.vendor_id))
+            print(f'├── Vendor ID: {dev.vendor_id:#06x}')
         if dev.product_id:
-            print('├── Product ID: {:#06x}'.format(dev.product_id))
+            print(f'├── Product ID: {dev.product_id:#06x}')
         if dev.release_number:
-            print('├── Release number: {:#06x}'.format(dev.release_number))
+            print(f'├── Release number: {dev.release_number:#06x}')
         try:
             if dev.serial_number:
-                print('├── Serial number: {}'.format(dev.serial_number))
+                print(f'├── Serial number: {dev.serial_number}')
         except:
             msg = 'could not read the serial number'
             if sys.platform.startswith('linux') and os.geteuid:
@@ -170,13 +170,13 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             else:
                 warnings.append(msg)
 
-        print('├── Bus: {}'.format(dev.bus))
-        print('├── Address: {}'.format(dev.address))
+        print(f'├── Bus: {dev.bus}')
+        print(f'├── Address: {dev.address}')
         if dev.port:
             port = '.'.join(map(str, dev.port))
-            print('├── Port: {}'.format(port))
+            print(f'├── Port: {port}')
 
-        print('└── Driver: {}'.format(type(dev).__name__))
+        print(f'└── Driver: {type(dev).__name__}')
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
             _LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
@@ -200,14 +200,14 @@ def _print_dev_status(dev, status):
             u = ''
         else:
             valfmt = _VALUE_FORMATS.get(u, '')
-            v = '{:{valfmt}}'.format(v)
+            v = f'{v:{valfmt}}'
         kcols = max(kcols, len(k))
         vcols = max(vcols, len(v))
         tmp.append((k, v, u))
     for k, v, u in tmp[:-1]:
-        print('├── {:<{kcols}}    {:>{vcols}}  {}'.format(k, v, u))
+        print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
     k, v, u = tmp[-1]
-    print('└── {:<{kcols}}    {:>{vcols}}  {}'.format(k, v, u))
+    print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
     print('')
 
 
@@ -249,8 +249,8 @@ def _gen_version():
             if __extraversion__['dirty']:
                 extra[0] += '-dirty'
     except:
-        return 'liquidctl v{}'.format(__version__)
-    return 'liquidctl v{} ({})'.format(__version__, '; '.join(extra))
+        return f'liquidctl v{__version__}'
+    return f'liquidctl v{__version__} ({"; ".join(extra)})'
 
 
 def main():
@@ -326,20 +326,20 @@ def main():
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES, errno.EPERM]:
-                log_error(err, 'Error: insufficient permissions to access {}'.format(dev.description))
+                log_error(err, f'Error: insufficient permissions to access {dev.description}')
             elif err.args == ('open failed', ):
-                log_error(err, 'Error: could not open {}, possibly due to insufficient permissions'.format(dev.description))
+                log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, 'Unexpected OS error with {}: {}'.format(dev.description, err))
+                log_error(err, 'Unexpected OS error with {dev.description}: {err}')
         except NotSupportedByDevice as err:
-            log_error(err, 'Error: operation not supported by {}'.format(dev.description))
+            log_error(err, f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
-            log_error(err, 'Error: operation not supported by driver for {}'.format(dev.description))
+            log_error(err, f'Error: operation not supported by driver for {dev.description}')
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
-            log_error(err, 'Error: missing --unsafe features for {}: {!r}'.format(dev.description, features))
+            log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
         except Exception as err:
-            log_error(err, 'Unexpected error with {}: {}'.format(dev.description, err))
+            log_error(err, f'Unexpected error with {dev.description}: {err}')
         finally:
             dev.disconnect(**opts)
 

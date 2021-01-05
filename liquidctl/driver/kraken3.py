@@ -181,7 +181,7 @@ class KrakenX3(UsbHidDriver):
         def parse_led_info(msg):
             channel_count = msg[14]
             assert channel_count == len(self._color_channels) - ('sync' in self._color_channels), \
-                   'Unexpected number of color channels received: {}'.format(channel_count)
+                   f'Unexpected number of color channels received: {channel_count}'
 
             def find(channel, accessory):
                 offset = 15  # offset of first channel/first accessory
@@ -192,7 +192,7 @@ class KrakenX3(UsbHidDriver):
                 accessory = find(0, i)
                 if not accessory:
                     break
-                status.append(('LED accessory {}'.format(i + 1), accessory, ''))
+                status.append((f'LED accessory {i + 1}', accessory, ''))
 
             if len(self._color_channels) > 1:
                 found_ring = find(1, 0) == Hue2Accessory.KRAKENX_GEN4_RING
@@ -239,8 +239,7 @@ class KrakenX3(UsbHidDriver):
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'
-                             .format(mode, mincolors))
+            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if colors:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)
@@ -281,7 +280,7 @@ class KrakenX3(UsbHidDriver):
                 func(msg)
             if not parsers:
                 return
-        assert False, 'missing messages (attempts={}, missing={})'.format(_MAX_READ_ATTEMPTS, len(parsers))
+        assert False, f'missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
     def _write(self, data):
         padding = [0x0] * (_WRITE_LENGTH - len(data))

@@ -147,10 +147,10 @@ class EvgaPascal(SmbusDriver):
         try:
             mode = self.Mode[mode.upper()]
         except KeyError:
-            raise ValueError('invalid mode: {!r}'.format(mode)) from None
+            raise ValueError(f'invalid mode: {mode!r}') from None
 
         if len(colors) < mode.required_colors:
-            raise ValueError('{} mode requires {} colors'.format(mode, mode.required_colors))
+            raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
 
         if len(colors) > mode.required_colors:
             _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)
@@ -294,7 +294,7 @@ class RogTuring(SmbusDriver):
         status = [('Mode', mode, '')]
 
         if mode.required_colors > 0:
-            status.append(('Color', '{:02x}{:02x}{:02x}'.format(red, green, blue), ''))
+            status.append(('Color', f'{red:02x}{green:02x}{blue:02x}', ''))
 
         return status
 
@@ -333,10 +333,10 @@ class RogTuring(SmbusDriver):
         try:
             mode = self.Mode[mode.upper()]
         except KeyError:
-            raise ValueError('invalid mode: {!r}'.format(mode)) from None
+            raise ValueError(f'invalid mode: {mode!r}') from None
 
         if len(colors) < mode.required_colors:
-            raise ValueError('{} mode requires {} colors'.format(mode, mode.required_colors))
+            raise ValueError(f'{mode} mode requires {mode.required_colors} colors')
 
         if len(colors) > mode.required_colors:
             _LOGGER.debug('too many colors, dropping to %d', mode.required_colors)

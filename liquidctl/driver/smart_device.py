@@ -152,8 +152,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'
-                             .format(mode, mincolors))
+            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if colors:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)
@@ -243,7 +242,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+        speed_channels = {f'fan{i + 1}': (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
         color_channels = {'led': (i)
                           for i in range(color_channel_count)}
@@ -272,12 +271,12 @@ class SmartDevice(_CommonSmartDeviceDriver):
             msg = self.device.read(self._READ_LENGTH)
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
-            status.append(('Fan {}'.format(num), ['—', 'DC', 'PWM'][state], ''))
+            status.append((f'Fan {num}', ['—', 'DC', 'PWM'][state], ''))
             noise.append(msg[1])
             if state:
-                status.append(('Fan {} speed'.format(num), msg[3] << 8 | msg[4], 'rpm'))
-                status.append(('Fan {} voltage'.format(num), msg[7] + msg[8]/100, 'V'))
-                status.append(('Fan {} current'.format(num), msg[10]/100, 'A'))
+                status.append((f'Fan {num} speed', msg[3] << 8 | msg[4], 'rpm'))
+                status.append((f'Fan {num} voltage', msg[7] + msg[8]/100, 'V'))
+                status.append((f'Fan {num} current', msg[10]/100, 'A'))
             if i != 0:
                 continue
             fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
@@ -389,9 +388,9 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+        speed_channels = {f'fan{i + 1}': (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
-        color_channels = {'led{}'.format(i + 1): (1 << i)
+        color_channels = {f'led{i + 1}': (1 << i)
                           for i in range(color_channel_count)}
         color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
@@ -449,8 +448,8 @@ class SmartDevice2(_CommonSmartDeviceDriver):
             noise_offset = 56
             for i, _ in enumerate(self._speed_channels):
                 if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
-                    status.append(('Fan {} speed'.format(i + 1), msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                    status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
+                    status.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                    status.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
                 rpm_offset += 2
             status.append(('Noise level', msg[noise_offset], 'dB'))
 
@@ -467,7 +466,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                 func(msg)
             if not parsers:
                 return
-        assert False, 'missing messages (attempts={}, missing={})'.format(self._MAX_READ_ATTEMPTS, len(parsers))
+        assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
         mval, mod3, movingFlag, mincolors, maxcolors = self._COLOR_MODES[mode]

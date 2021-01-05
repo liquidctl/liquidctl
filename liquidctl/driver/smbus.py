@@ -166,7 +166,7 @@ if sys.platform == 'linux':
             # uses kernel facilities to avoid directly reading from the EEPROM
             # or managing its pages, also avoiding the need for unsafe=smbus
 
-            dev = '{}-{:04x}'.format(self._number, address)
+            dev = f'{self._number}-{address:04x}'
             try:
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
                 eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
@@ -207,26 +207,21 @@ if sys.platform == 'linux':
 
         def __str__(self):
             if self.description:
-                return '{}: {}'.format(self.name, self.description)
+                return f'{self.name}: {self.description}'
             return self.name
 
         def __repr__(self):
             def hexid(maybe):
                 if maybe is not None:
-                    return '{:#06x}'.format(maybe)
+                    return f'{maybe:#06x}'
                 return 'None'
 
-            return '{}: name: {!r}, description: {!r}, parent_vendor: {}, ' \
-                   'parent_device: {}, parent_subsystem_vendor: {}, ' \
-                   'parent_subsystem_device: {}, parent_driver: {!r}'.format(
-                    self.__class__.__name__,
-                    self.name,
-                    self.description,
-                    hexid(self.parent_vendor),
-                    hexid(self.parent_device),
-                    hexid(self.parent_subsystem_vendor),
-                    hexid(self.parent_subsystem_device),
-                    self.parent_driver)
+            return f'{self.__class__.__name__}: name: {self.name!r}, description:' \
+                   f' {self.description!r}, parent_vendor: {hexid(self.parent_vendor)},' \
+                   f' parent_device: {hexid(self.parent_device)}, parent_subsystem_vendor:' \
+                   f' {hexid(self.parent_subsystem_vendor)},' \
+                   f' parent_subsystem_device: {hexid(self.parent_subsystem_device)},' \
+                   f' parent_driver: {self.parent_driver!r}'
 
         def _try_sysfs_read(self, *sub, default=None):
             try:
@@ -332,7 +327,7 @@ class SmbusDriver(BaseDriver):
     @property
     def address(self):
         """Address of the device on the corresponding bus, or None if N/A."""
-        return '{:#04x}'.format(self._address)
+        return f'{self._address:#04x}'
 
     @property
     def port(self):

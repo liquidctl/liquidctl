@@ -121,7 +121,7 @@ class _CommonAsetekDriver(UsbDriver):
         if size < 1:
             raise ValueError('At least one PWM point required')
         elif size > _MAX_PROFILE_POINTS:
-            raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
+            raise ValueError(f'Too many PWM points ({size}), only 6 supported')
         for i, (temp, duty) in enumerate(opt):
             opt[i] = (temp, clamp(duty, min_duty, max_duty))
         missing = _MAX_PROFILE_POINTS - size
@@ -259,7 +259,7 @@ class Modern690Lc(_CommonAsetekDriver):
             self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
-            raise KeyError('Unknown lighting mode {}'.format(mode))
+            raise KeyError(f'Unknown lighting mode {mode}')
         self._end_transaction_and_read()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -318,15 +318,15 @@ class Legacy690Lc(_CommonAsetekDriver):
 
     def connect(self, **kwargs):
         super().connect(**kwargs)
-        ids = 'vid{:04x}_pid{:04x}'.format(self.vendor_id, self.product_id)
-        loc = 'bus{}_port{}'.format(self.bus, '_'.join(map(str, self.port)))
+        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+        loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
         self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
 
     def _set_all_fixed_speeds(self):
         self._begin_transaction()
         for channel in ['pump', 'fan']:
             mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-            duty = clamp(self._data.load_int('{}_duty'.format(channel), default=dmax), dmin, dmax)
+            duty = clamp(self._data.load_int(f'{channel}_duty', default=dmax), dmin, dmax)
             _LOGGER.info('setting %s duty to %i%%', channel, duty)
             self._write([mtype, duty])
         return self._end_transaction_and_read()
@@ -381,14 +381,14 @@ class Legacy690Lc(_CommonAsetekDriver):
             self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
-            raise KeyError('Unsupported lighting mode {}'.format(mode))
+            raise KeyError(f'Unsupported lighting mode {mode}')
         self._end_transaction_and_read()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        self._data.store_int('{}_duty'.format(channel), duty)
+        self._data.store_int(f'{channel}_duty', duty)
         self._set_all_fixed_speeds()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -417,7 +417,7 @@ class Hydro690Lc(Modern690Lc):
     def set_color(self, channel, mode, colors, **kwargs):
         """Set the color mode for a specific channel."""
         if mode == 'rainbow':
-            raise KeyError('Unsupported lighting mode {}'.format(mode))
+            raise KeyError(f'Unsupported lighting mode {mode}')
         super().set_color(channel, mode, colors, **kwargs)
 
 

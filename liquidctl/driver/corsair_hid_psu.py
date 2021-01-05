@@ -122,9 +122,9 @@ class CorsairHidPsu(UsbHidDriver):
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
             name = _RAIL_NAMES[rail]
             self._exec(WriteBit.WRITE, CMD.PAGE, [rail])
-            status.append(('{} output voltage'.format(name), self._get_float(CMD.READ_VOUT), 'V'))
-            status.append(('{} output current'.format(name), self._get_float(CMD.READ_IOUT), 'A'))
-            status.append(('{} output power'.format(name), self._get_float(CMD.READ_POUT), 'W'))
+            status.append((f'{name} output voltage', self._get_float(CMD.READ_VOUT), 'V'))
+            status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
+            status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         _LOGGER.warning('reading the +12V OCP mode is an experimental feature')
         return status

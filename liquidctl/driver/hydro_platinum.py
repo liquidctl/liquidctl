@@ -96,7 +96,7 @@ def _prepare_profile(original):
     normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
-        raise ValueError('Too many points in profile (remove {})'.format(-missing))
+        raise ValueError(f'Too many points in profile (remove {-missing})')
     if missing > 0:
         normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
     return normal
@@ -125,7 +125,7 @@ class HydroPlatinum(UsbHidDriver):
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
         super().__init__(device, description, **kwargs)
         self._led_count = 16 + 4 * fan_count * rgb_fans
-        self._fan_names = ['fan{}'.format(i + 1) for i in range(fan_count)]
+        self._fan_names = [f'fan{i + 1}' for i in range(fan_count)]
         self._mincolors = {
             ('led', 'super-fixed'): 1,
             ('led', 'fixed'): 1,
@@ -143,7 +143,7 @@ class HydroPlatinum(UsbHidDriver):
     def connect(self, **kwargs):
         """Connect to the device."""
         super().connect(**kwargs)
-        ids = 'vid{:04x}_pid{:04x}'.format(self.vendor_id, self.product_id)
+        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
         # must use the HID path because there is no serial number; however,
         # these can be quite long on Windows and macOS, so only take the
         # numbers, since they are likely the only parts that vary between two
@@ -184,7 +184,7 @@ class HydroPlatinum(UsbHidDriver):
         """
 
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
-        assert len(self._fan_names) == 2, 'cannot yet parse with {} fans'.format(len(self._fan_names))
+        assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
         return [
             ('Liquid temperature', res[8] + res[7] / 255, '°C'),
             ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
@@ -201,8 +201,8 @@ class HydroPlatinum(UsbHidDriver):
         """
 
         for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store('{}_mode'.format(hw_channel), _FanMode.FIXED_DUTY.value)
-            self._data.store('{}_duty'.format(hw_channel), duty)
+            self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
+            self._data.store(f'{hw_channel}_duty', duty)
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -220,8 +220,8 @@ class HydroPlatinum(UsbHidDriver):
 
         profile = list(profile)
         for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store('{}_mode'.format(hw_channel), _FanMode.CUSTOM_PROFILE.value)
-            self._data.store('{}_profile'.format(hw_channel), profile)
+            self._data.store(f'{hw_channel}_mode', _FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f'{hw_channel}_profile', profile)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -296,9 +296,9 @@ class HydroPlatinum(UsbHidDriver):
             mincolors = self._mincolors[(channel, mode)]
             maxcolors = self._maxcolors[(channel, mode)]
         except KeyError:
-            raise ValueError('Unsupported (channel, mode) pair, should be one of: {}'.format(_quoted(*self._mincolors)))
+            raise ValueError(f'Unsupported (channel, mode) pair, should be one of: {_quoted(*self._mincolors)}')
         if len(colors) < mincolors:
-            raise ValueError('At least {} required for {}'.format(mincolors, _quoted((channel, mode))))
+            raise ValueError(f'At least {mincolors} required for {_quoted(channel, mode)}')
         if len(colors) > maxcolors:
             _LOGGER.warning('too many colors, dropping to %d', maxcolors)
             return maxcolors
@@ -310,7 +310,7 @@ class HydroPlatinum(UsbHidDriver):
             return self._fan_names
         if channel in self._fan_names:
             return [channel]
-        raise ValueError('Unknown channel, should be one of: {}'.format(_quoted('fan', *self._fan_names)))
+        raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
 
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
@@ -340,20 +340,20 @@ class HydroPlatinum(UsbHidDriver):
         data[0: len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
         for fan, (imode, iduty, iprofile) in zip(self._fan_names, _FAN_OFFSETS):
-            mode = _FanMode(self._data.load('{}_mode'.format(fan), of_type=int))
+            mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
             if mode is _FanMode.FIXED_DUTY:
-                stored = self._data.load('{}_duty'.format(fan), of_type=int, default=100)
+                stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
                 data[iduty] = fraction_of_byte(percentage=duty)
                 _LOGGER.info('setting %s to %i%% duty cycle', fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
-                stored = self._data.load('{}_profile'.format(fan), of_type=list, default=[])
+                stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
                 data[iprofile: iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
                 _LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
-                raise ValueError('Unsupported fan {}'.format(mode))
+                raise ValueError(f'Unsupported fan {mode}')
             data[imode] = mode.value
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value

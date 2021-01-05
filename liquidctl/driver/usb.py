@@ -318,7 +318,7 @@ class PyUsbDevice:
 
     @property
     def bus(self):
-        return 'usb{}'.format(self.usbdev.bus)  # follow Linux model
+        return f'usb{self.usbdev.bus}'  # follow Linux model
 
     @property
     def address(self):

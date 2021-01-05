@@ -56,7 +56,7 @@ class NzxtEPsu(UsbHidDriver):
         status = [
             ('Temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
-            ('Firmware version', '{}/{}'.format(fw_human, fw_cam), ''),
+            ('Firmware version', f'{fw_human}/{fw_cam}', ''),
         ]
         for i, name in enumerate(_RAILS):
             status.append((f'{name} output voltage', self._get_vout(i), 'V'))
@@ -108,7 +108,7 @@ class NzxtEPsu(UsbHidDriver):
             if res[0] == 0xaa and res[1] == data_len + 1:
                 data = res
                 break
-        assert data, 'invalid response (attempts={})'.format(_ATTEMPTS)
+        assert data, f'invalid response (attempts={_ATTEMPTS})'
         return data[2:(2 + data_len)]
 
     def _exec_page_plus_read(self, page, cmd, data_len):
@@ -124,7 +124,7 @@ class NzxtEPsu(UsbHidDriver):
             if res[0] == 0xaa and res[1] == data_len + 2 and res[2] == data_len:
                 data = res
                 break
-        assert data, 'invalid response (attempts={})'.format(_ATTEMPTS)
+        assert data, f'invalid response (attempts={_ATTEMPTS})'
         return data[3:(3 + data_len)]
 
     def _get_float(self, cmd, page=None):
@@ -141,7 +141,7 @@ class NzxtEPsu(UsbHidDriver):
 
     def _get_fw_versions(self):
         minor, major = self._exec_read(_SEASONIC_READ_FIRMWARE_VERSION, 2)
-        human_ver = '{}{:03}'.format(bytes([major]).decode(), minor)
+        human_ver = f'{bytes([major]).decode()}{minor:03}'
         ascam_ver = int.from_bytes(bytes.fromhex(human_ver), byteorder='big')
         return (human_ver, ascam_ver)
 

@@ -59,7 +59,7 @@ class Hue2Accessory(Enum):
     def _missing_(cls, value):
         dummy = object.__new__(cls)
         dummy.pretty_name = 'Unknown'
-        dummy._name_ = 'UNKNOWN_{}'.format(value)
+        dummy._name_ = f'UNKNOWN_{value}'
         dummy._value_ = value
         return dummy
 
@@ -93,7 +93,7 @@ class LazyHexRepr:
         self.sep = sep
 
     def __repr__(self):
-        hexvals = map(lambda x: '{:02x}'.format(x), self.data[self.start: self.end])
+        hexvals = map(lambda x: f'{x:02x}', self.data[self.start: self.end])
         return self.sep.join(hexvals)
 
 
@@ -285,12 +285,12 @@ def color_from_str(x):
     def parse_triple(sub, maxvalues):
         literal = literal_eval(sub)
         if not isinstance(literal, tuple) or len(literal) != 3:
-            raise ValueError('Expected 3-element triple: {}'.format(x))
+            raise ValueError(f'Expected 3-element triple: {x}')
         for value, maxvalue in zip(literal, maxvalues):
             if not isinstance(value, int) and not isinstance(value, float):
-                raise ValueError('Expected float or int: {} in {}'.format(value, x))
+                raise ValueError(f'Expected float or int: {value} in {x}')
             if value < 0 or value > maxvalue:
-                raise ValueError('Expected value in range [0, {}]: {} in {}'.format(maxvalue, value, x))
+                raise ValueError(f'Expected value in range [0, {maxvalue}]: {value} in {x}')
         return literal
 
     xl = x.lower()
@@ -311,7 +311,7 @@ def color_from_str(x):
     elif len(x) == 8 and xl.startswith('0x'):
         return list(bytes.fromhex(x[2:]))
     else:
-        raise ValueError('Cannot parse color: {}'.format(x))
+        raise ValueError(f'Cannot parse color: {x}')
 
 
 def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
