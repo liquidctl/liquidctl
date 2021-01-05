@@ -17,19 +17,11 @@ def h115iPlatinumDevice():
     device = _H115iPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
 
-    dev._data = MockRuntimeStorage(key_prefixes='testing')
-    dev.connect()
-    dev._data.store('leds_enabled', 0)
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage.store('leds_enabled', 0)
 
-    return dev
+    dev.connect(runtime_storage=runtime_storage)
 
-@pytest.fixture
-def h115iPlatinumDeviceRaw():
-    description = 'Mock H115i Platinum'
-    kwargs = {'fan_count': 2, 'rgb_fans': True}
-    device = _H115iPlatinumDevice()
-    dev = HydroPlatinum(device, description, **kwargs)
-    dev.connect()
     return dev
 
 class _H115iPlatinumDevice(MockHidapiDevice):
@@ -58,6 +50,7 @@ class _H115iPlatinumDevice(MockHidapiDevice):
 
 def test_h115i_platinum_device_connect(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
+    dev.disconnect()  # the fixture had by default connected to the device
 
     def mock_open():
         nonlocal opened
@@ -244,8 +237,13 @@ def test_h115i_platinum_device_invalid_color_modes(h115iPlatinumDevice):
 
     assert len(dev.device.sent) == 0
 
-def test_h115i_platinum_device_short_enough_storage_path(h115iPlatinumDeviceRaw):
-    dev = h115iPlatinumDeviceRaw
+def test_h115i_platinum_device_short_enough_storage_path():
+    description = 'Mock H115i Platinum'
+    kwargs = {'fan_count': 2, 'rgb_fans': True}
+    device = _H115iPlatinumDevice()
+    dev = HydroPlatinum(device, description, **kwargs)
+    dev.connect()
+
     assert len(dev._data._backend._write_dir) < _WIN_MAX_PATH;
     assert dev._data._backend._write_dir.endswith('3142')
 

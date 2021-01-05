@@ -141,7 +141,7 @@ class HydroPlatinum(UsbHidDriver):
         self._data = None
         self._sequence = None
 
-    def connect(self, **kwargs):
+    def connect(self, runtime_storage=None, **kwargs):
         """Connect to the device."""
         super().connect(**kwargs)
 
@@ -152,9 +152,11 @@ class HydroPlatinum(UsbHidDriver):
         # devices of the same model
         loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
 
-        if self._data is  None:
+        if runtime_storage:
+            self._data = runtime_storage
+        else:
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
-        
+
         self._sequence = _sequence(self._data)
         return self
 

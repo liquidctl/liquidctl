@@ -316,11 +316,14 @@ class Legacy690Lc(_CommonAsetekDriver):
         # discarded; defer instantiating the data storage until to connect()
         self._data = None
 
-    def connect(self, **kwargs):
+    def connect(self, runtime_storage=None, **kwargs):
         super().connect(**kwargs)
         ids = 'vid{:04x}_pid{:04x}'.format(self.vendor_id, self.product_id)
         loc = 'bus{}_port{}'.format(self.bus, '_'.join(map(str, self.port)))
-        self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
+        if runtime_storage:
+            self._data = runtime_storage
+        else:
+            self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
 
     def _set_all_fixed_speeds(self):
         self._begin_transaction()
