@@ -120,7 +120,7 @@ class RgbFusion2(UsbHidDriver):
         # single handle is returned for that device interface (see: 259)
 
         if (handle.hidinfo['usage_page'] == _USAGE_PAGE and
-            handle.hidinfo['usage'] == _OTHER_USAGE):
+                handle.hidinfo['usage'] == _OTHER_USAGE):
             return
 
         yield from super().probe(handle, **kwargs)

@@ -25,6 +25,7 @@ def h115iPlatinumDevice():
 
     return dev
 
+
 class _H115iPlatinumDevice(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0xffff, product_id=0x0c17, address=_SAMPLE_PATH)
@@ -64,6 +65,7 @@ def test_h115i_platinum_device_connect(h115iPlatinumDevice):
         assert cm == dev
         assert opened
 
+
 def test_h115i_platinum_device_command_format(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     dev.initialize()
@@ -79,6 +81,7 @@ def test_h115i_platinum_device_command_format(h115iPlatinumDevice):
         assert data[0] == 0x3f
         assert data[1] >> 3 == i + 1
         assert data[-1] == compute_pec(data[1:-1])
+
 
 def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -99,6 +102,7 @@ def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
         assert data[1] >> 3 == i + 1
         assert data[-1] == compute_pec(data[1:-1])
 
+
 def test_h115i_platinum_device_get_status(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     temp, fan1, fan2, pump = dev.get_status()
@@ -109,6 +113,7 @@ def test_h115i_platinum_device_get_status(h115iPlatinumDevice):
     assert pump[1] == dev.device.pump_speed
     assert dev.device.sent[0].data[1] & 0b111 == 0
     assert dev.device.sent[0].data[2] == 0xff
+
 
 def test_h115i_platinum_device_handle_real_statuses(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -128,6 +133,7 @@ def test_h115i_platinum_device_handle_real_statuses(h115iPlatinumDevice):
         assert len(status) == 4
         assert status[0][1] != dev.device.temperature
 
+
 def test_h115i_platinum_device_initialize_status(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     dev._data.store('leds_enabled', 1)
@@ -135,6 +141,7 @@ def test_h115i_platinum_device_initialize_status(h115iPlatinumDevice):
 
     assert fw_version[1] == '%d.%d.%d' % dev.device.fw_version
     assert dev._data.load('leds_enabled', of_type=int, default=1) == 0
+
 
 def test_h115i_platinum_device_common_cooling_prefix(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -149,6 +156,7 @@ def test_h115i_platinum_device_common_cooling_prefix(h115iPlatinumDevice):
         # opaque but apparently important prefix (see @makk50's comments in #82):
         assert data[0x3:0xb] == [0x0, 0xff, 0x5] + 5 * [0xff]
 
+
 def test_h115i_platinum_device_set_pump_mode(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     dev.initialize(pump_mode='extreme')
@@ -156,6 +164,7 @@ def test_h115i_platinum_device_set_pump_mode(h115iPlatinumDevice):
 
     with pytest.raises(KeyError):
         dev.initialize(pump_mode='invalid')
+
 
 def test_h115i_platinum_device_fixed_fan_speeds(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -169,6 +178,7 @@ def test_h115i_platinum_device_fixed_fan_speeds(h115iPlatinumDevice):
 
     with pytest.raises(ValueError):
         dev.set_fixed_speed('invalid', 0)
+
 
 def test_h115i_platinum_device_custom_fan_profiles(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -187,13 +197,14 @@ def test_h115i_platinum_device_custom_fan_profiles(h115iPlatinumDevice):
     with pytest.raises(ValueError):
         dev.set_speed_profile('fan', zip(range(10), range(10)))
 
+
 def test_h115i_platinum_device_address_leds(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     colors = [[i + 3, i + 2, i + 1] for i in range(0, 24 * 3, 3)]
     encoded = list(range(1, 24 * 3 + 1))
     dev.set_color(channel='led', mode='super-fixed', colors=iter(colors))
 
-    assert len(dev.device.sent) == 5 # 3 for enable, 2 for off
+    assert len(dev.device.sent) == 5  # 3 for enable, 2 for off
     assert dev.device.sent[0].data[1] & 0b111 == 0b001
     assert dev.device.sent[1].data[1] & 0b111 == 0b010
     assert dev.device.sent[2].data[1] & 0b111 == 0b011
@@ -201,6 +212,7 @@ def test_h115i_platinum_device_address_leds(h115iPlatinumDevice):
     assert dev.device.sent[3].data[2:62] == encoded[:60]
     assert dev.device.sent[4].data[1] & 0b111 == 0b101
     assert dev.device.sent[4].data[2:14] == encoded[60:]
+
 
 def test_h115i_platinum_device_synchronize(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -209,7 +221,7 @@ def test_h115i_platinum_device_synchronize(h115iPlatinumDevice):
 
     dev.set_color(channel='led', mode='fixed', colors=iter(colors))
 
-    assert len(dev.device.sent) == 5 # 3 for enable, 2 for off
+    assert len(dev.device.sent) == 5  # 3 for enable, 2 for off
 
     assert dev.device.sent[0].data[1] & 0b111 == 0b001
     assert dev.device.sent[1].data[1] & 0b111 == 0b010
@@ -220,13 +232,15 @@ def test_h115i_platinum_device_synchronize(h115iPlatinumDevice):
     assert dev.device.sent[4].data[1] & 0b111 == 0b101
     assert dev.device.sent[4].data[2:14] == encoded[60:]
 
+
 def test_h115i_platinum_device_leds_off(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     dev.set_color(channel='led', mode='off', colors=iter([]))
-    assert len(dev.device.sent) == 5 # 3 for enable, 2 for off
+    assert len(dev.device.sent) == 5  # 3 for enable, 2 for off
 
     for _, data in dev.device.sent[3:5]:
         assert data[2:62] == [0] * 60
+
 
 def test_h115i_platinum_device_invalid_color_modes(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -239,6 +253,7 @@ def test_h115i_platinum_device_invalid_color_modes(h115iPlatinumDevice):
 
     assert len(dev.device.sent) == 0
 
+
 def test_h115i_platinum_device_short_enough_storage_path():
     description = 'Mock H115i Platinum'
     kwargs = {'fan_count': 2, 'rgb_fans': True}
@@ -246,10 +261,11 @@ def test_h115i_platinum_device_short_enough_storage_path():
     dev = HydroPlatinum(device, description, **kwargs)
     dev.connect()
 
-    assert len(dev._data._backend._write_dir) < _WIN_MAX_PATH;
+    assert len(dev._data._backend._write_dir) < _WIN_MAX_PATH
     assert dev._data._backend._write_dir.endswith('3142')
 
+
 def test_h115i_platinum_device_bad_stored_data(h115iPlatinumDevice):
-    dev = h115iPlatinumDevice
+    h115iPlatinumDevice
     # TODO
     pass

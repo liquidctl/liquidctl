@@ -25,8 +25,8 @@ _FAULTY_STATUS = bytes.fromhex(
 def mockKrakenXDevice():
     device = _MockKrakenDevice(raw_led_channels=len(_COLOR_CHANNELS_KRAKENX) - 1)
     dev = KrakenX3(device, 'Corsair Kraken X73',
-            speed_channels=_SPEED_CHANNELS_KRAKENX,
-            color_channels=_COLOR_CHANNELS_KRAKENX)
+                   speed_channels=_SPEED_CHANNELS_KRAKENX,
+                   color_channels=_COLOR_CHANNELS_KRAKENX)
 
     dev.connect()
     return dev
@@ -36,11 +36,12 @@ def mockKrakenXDevice():
 def mockKrakenZDevice():
     device = _MockKrakenDevice(raw_led_channels=0)
     dev = KrakenZ3(device, 'Mock Kraken Z73',
-           speed_channels=_SPEED_CHANNELS_KRAKENZ,
-           color_channels={})
+                   speed_channels=_SPEED_CHANNELS_KRAKENZ,
+                   color_channels={})
 
     dev.connect()
     return dev
+
 
 class _MockKrakenDevice(MockHidapiDevice):
     def __init__(self, raw_led_channels):
@@ -59,6 +60,7 @@ class _MockKrakenDevice(MockHidapiDevice):
                 reply[15 + 2 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_LOGO.value
         self.preload_read(Report(0, reply))
 
+
 def test_kracken_x_device_parses_status_fields(mockKrakenXDevice):
     mockKrakenXDevice.device.preload_read(Report(0, _SAMPLE_STATUS))
     temperature, pump_speed, pump_duty = mockKrakenXDevice.get_status()
@@ -73,20 +75,26 @@ def test_kracken_x_device_warns_if_faulty_temperature(mockKrakenXDevice, caplog)
 
     assert 'unexpected temperature reading' in caplog.text
 
+
 def test_kracken_x_device_not_totally_broken(mockKrakenXDevice):
     """Reasonable example calls to untested APIs do not raise exceptions."""
-    infos = mockKrakenXDevice.initialize()
-    mockKrakenXDevice.set_color(channel='ring', mode='fixed', colors=iter([[3, 2, 1]]),
-                          speed='fastest')
-    mockKrakenXDevice.set_speed_profile(channel='pump',
-                                  profile=iter([(20, 20), (30, 50), (40, 100)]))
-    mockKrakenXDevice.set_fixed_speed(channel='pump', duty=50)
+    dev = mockKrakenXDevice
+
+    dev.initialize()
+    dev.set_color(channel='ring', mode='fixed', colors=iter([[3, 2, 1]]),
+                  speed='fastest')
+    dev.set_speed_profile(channel='pump',
+                          profile=iter([(20, 20), (30, 50), (40, 100)]))
+    dev.set_fixed_speed(channel='pump', duty=50)
+
 
 def test_kracken_z_device_not_totally_broken(mockKrakenZDevice):
     """Reasonable example calls to untested APIs do not raise exceptions."""
-    infos = mockKrakenZDevice.initialize()
-    mockKrakenZDevice.device.preload_read(Report(0, _SAMPLE_STATUS))
-    status = mockKrakenZDevice.get_status()
-    mockKrakenZDevice.set_speed_profile(channel='fan',
-                                  profile=iter([(20, 20), (30, 50), (40, 100)]))
-    mockKrakenZDevice.set_fixed_speed(channel='pump', duty=50)
+    dev = mockKrakenZDevice
+
+    dev.initialize()
+    dev.device.preload_read(Report(0, _SAMPLE_STATUS))
+    dev.get_status()
+    dev.set_speed_profile(channel='fan',
+                          profile=iter([(20, 20), (30, 50), (40, 100)]))
+    dev.set_fixed_speed(channel='pump', duty=50)

@@ -2,6 +2,7 @@ import pytest
 from liquidctl.driver.nzxt_epsu import NzxtEPsu
 from _testutils import MockHidapiDevice, Report
 
+
 class _MockPsuDevice(MockHidapiDevice):
     def write(self, data):
         super().write(data)
@@ -14,21 +15,23 @@ class _MockPsuDevice(MockHidapiDevice):
             reply[2:4] = (0x11, 0x41)
         self.preload_read(Report(0, reply[0:]))
 
+
 @pytest.fixture
 def mockPsuDevice():
     device = _MockPsuDevice()
     return NzxtEPsu(device, 'mock NZXT E500 PSU')
+
 
 def test_psu_device_initialize(mockPsuDevice):
     mockPsuDevice.initialize()
 
     assert len(mockPsuDevice.device.sent) == 0
 
+
 def test_psu_device_status(mockPsuDevice):
 
     mockPsuDevice.connect()
     status = mockPsuDevice.get_status()
-
 
     fw = next(filter(lambda x: x[0] == 'Firmware version', status))
     assert fw == ('Firmware version', 'A017/40983', '')

@@ -10,6 +10,7 @@ def emulated_hid_device():
     hiddev = MockHidapiDevice()
     return UsbHidDriver(hiddev, 'Test')
 
+
 @pytest.fixture
 def emulated_usb_device():
     usbdev = MockHidapiDevice()  # hack, should mock PyUsbDevice
@@ -32,6 +33,7 @@ def test_hid_connects(emulated_hid_device):
         assert cm == dev
         assert opened
 
+
 def test_hid_disconnect(emulated_hid_device):
     dev = emulated_hid_device
 
@@ -43,7 +45,8 @@ def test_hid_disconnect(emulated_hid_device):
     opened = True
 
     dev.disconnect()
-    assert opened == False
+    assert not opened
+
 
 def test_usb_connects(emulated_usb_device):
     dev = emulated_usb_device
@@ -59,6 +62,7 @@ def test_usb_connects(emulated_usb_device):
         assert cm == dev
         assert opened
 
+
 def test_usb_disconnect(emulated_usb_device):
     dev = emulated_usb_device
 
@@ -70,4 +74,4 @@ def test_usb_disconnect(emulated_usb_device):
     opened = True
 
     dev.disconnect()
-    assert opened == False
+    assert not opened

@@ -1,11 +1,13 @@
 import pytest
 
+
 def test_pre14_old_module_names():
     import liquidctl.driver.asetek
     import liquidctl.driver.corsair_hid_psu
     import liquidctl.driver.kraken_two
     import liquidctl.driver.nzxt_smart_device
     import liquidctl.driver.seasonic
+
 
 def test_pre14_old_driver_names():
     from liquidctl.driver.asetek import AsetekDriver

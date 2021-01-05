@@ -19,9 +19,10 @@ def mockPsuDevice():
     device = _MockPsuDevice(vendor_id=0x1b1c, product_id=0x1c05, address='addr')
     return CorsairHidPsu(device, 'mock Corsair HX750i PSU')
 
+
 def test_corsair_psu_not_totally_broken(mockPsuDevice):
 
-    status = mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
+    mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
     report_id, report_data = mockPsuDevice.device.sent[0]
     assert report_id == 0
     assert len(report_data) == 64
@@ -29,7 +30,7 @@ def test_corsair_psu_not_totally_broken(mockPsuDevice):
 
 def test_corsair_psu_dont_inject_report_ids(mockPsuDevice):
 
-    status = mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
+    mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
     report_id, report_data = mockPsuDevice.device.sent[0]
     assert report_id == 0
     assert len(report_data) == 64
