@@ -133,7 +133,7 @@ class CommanderPro(UsbHidDriver):
         self._temp_probs = temp_probs
         self._fan_count = fan_count
 
-    def connect(self, **kwargs):
+    def connect(self, runtime_storage=None, **kwargs):
         """Connect to the device."""
         super().connect(**kwargs)
         ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
@@ -142,7 +142,10 @@ class CommanderPro(UsbHidDriver):
         # numbers, since they are likely the only parts that vary between two
         # devices of the same model
         loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
-        self._data = RuntimeStorage(key_prefixes=[ids, loc])
+        if runtime_storage:
+            self._data = runtime_storage
+        else:
+            self._data = RuntimeStorage(key_prefixes=[ids, loc])
 
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes.

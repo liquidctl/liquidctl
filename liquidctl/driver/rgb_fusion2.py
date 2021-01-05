@@ -19,6 +19,9 @@ from liquidctl.util import clamp
 
 _LOGGER = logging.getLogger(__name__)
 
+_USAGE_PAGE = 0xff89
+_RGB_CONTROL_USAGE = 0xcc
+_OTHER_USAGE = 0x10
 _REPORT_ID = 0xcc
 _REPORT_BYTE_LENGTH = 63
 _INIT_CMD = 0x60
@@ -105,14 +108,21 @@ class RgbFusion2(UsbHidDriver):
     def probe(cls, handle, **kwargs):
         """Probe `handle` and yield corresponding driver instances.
 
-        These devices have multiple top-level HID usages.  On Windows and Mac
-        each usage results in a different HID handle and, specifically on
-        Windows, only one of them is usable.  So HidapiDevice handles matching
-        other usages have to be ignored.
+        These devices have multiple top-level HID usages, and HidapiDevice
+        handles matching other usages have to be ignored.
         """
 
-        if (not sys.platform.startswith('linux')) and (handle.hidinfo['usage'] != _REPORT_ID):
+        # if usage_page/usage are not available due to hidapi limitations
+        # (version, platform or backend), they are unfortunately left
+        # uninitialized; because of this, we explicitly exclude the undesired
+        # usage_page/usage pair, and assume in all other cases that we either
+        # have the desired usage page/usage pair, or that on that system a
+        # single handle is returned for that device interface (see: 259)
+
+        if (handle.hidinfo['usage_page'] == _USAGE_PAGE and
+            handle.hidinfo['usage'] == _OTHER_USAGE):
             return
+
         yield from super().probe(handle, **kwargs)
 
     def initialize(self, **kwargs):

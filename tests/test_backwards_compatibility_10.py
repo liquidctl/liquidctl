@@ -5,7 +5,7 @@ cases from GKraken as that software is a substantial contribution to the
 community.
 """
 
-import unittest
+import pytest
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.version import __version__
 from _testutils import MockHidapiDevice
@@ -21,36 +21,32 @@ SPECTRUM = [
     (208, 0, 122)
 ]
 
+@pytest.fixture
+def mockDevice():
+    device = MockHidapiDevice()
+    dev = KrakenTwoDriver(device, 'Mock X62',
+                                  device_type=KrakenTwoDriver.DEVICE_KRAKENX)
 
-class Pre11CliApisUsedByGkraken(unittest.TestCase):
-    def test_find_does_not_raise(self):
-        import liquidctl.cli
-        liquidctl.cli.find_all_supported_devices()
+    dev.connect()
+    return dev
 
+def test_pre11_apis_find_does_not_raise():
+    import liquidctl.cli
+    devices = liquidctl.cli.find_all_supported_devices()
 
-class Pre11KrakenApisUsedByGkraken(unittest.TestCase):
-    def setUp(self):
-        self.mock_hid = MockHidapiDevice()
-        self.device = KrakenTwoDriver(self.mock_hid, 'Mock X62',
-                                      device_type=KrakenTwoDriver.DEVICE_KRAKENX)
-        self.device.connect()
+def test_pre11_apis_connect_as_initialize(mockDevice):
+    # deprecated behavior in favor of connect()
+    mockDevice.initialize()
 
-    def tearDown(self):
-        self.device.disconnect()
+def test_pre11_apis_deprecated_super_mode(mockDevice):
+    # deprecated in favor of super-fixed, super-breathing and super-wave
+    mockDevice.set_color('sync', 'super', [(128,0,255)] + SPECTRUM, 'normal')
 
-    def test_connect_as_initialize(self):
-        # deprecated behavior in favor of connect()
-        self.device.initialize()
+def test_pre11_apis_status_order(mockDevice):
+    # GKraken unreasonably expects a particular ordering
+    pass
 
-    def test_deprecated_super_mode(self):
-        # deprecated in favor of super-fixed, super-breathing and super-wave
-        self.device.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')
-
-    def test_status_order(self):
-        # GKraken unreasonably expects a particular ordering
-        pass
-
-    def test_finalize_as_connect_or_noop(self):
-        # deprecated in favor of disconnect()
-        self.device.finalize()  # should disconnect
-        self.device.finalize()  # should be a no-op
+def test_pre11_apis_finalize_as_connect_or_noop(mockDevice):
+    # deprecated in favor of disconnect()
+    mockDevice.finalize()  # should disconnect
+    mockDevice.finalize()  # should be a no-op

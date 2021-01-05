@@ -1,7 +1,5 @@
-import unittest
+import pytest
 from liquidctl.driver.corsair_hid_psu import CorsairHidPsu
-from liquidctl.driver.corsair_hid_psu import _CORSAIR_12V_OCP_MODE
-from liquidctl.driver.corsair_hid_psu import _CORSAIR_FAN_CONTROL_MODE
 from _testutils import MockHidapiDevice, Report
 
 
@@ -11,27 +9,27 @@ class _MockPsuDevice(MockHidapiDevice):
         data = data[1:]  # skip unused report ID
 
         reply = bytearray(64)
-        if data[1] in [_CORSAIR_12V_OCP_MODE, _CORSAIR_FAN_CONTROL_MODE]:
+        if data[1] in [0xd8, 0xf0]:
             reply[2] = 1  # just a valid mode
         self.preload_read(Report(0, reply))
 
 
-class CorsairHidPsuTestCase(unittest.TestCase):
-    def setUp(self):
-        self.mock_hid = _MockPsuDevice()
-        self.device = CorsairHidPsu(self.mock_hid, 'Mock Corsair HID PSU')
-        self.device.connect()
+@pytest.fixture
+def mockPsuDevice():
+    device = _MockPsuDevice(vendor_id=0x1b1c, product_id=0x1c05, address='addr')
+    return CorsairHidPsu(device, 'mock Corsair HX750i PSU')
 
-    def tearDown(self):
-        self.device.disconnect()
+def test_corsair_psu_not_totally_broken(mockPsuDevice):
 
-    def test_not_totally_broken(self):
-        """A few reasonable example calls do not raise exceptions."""
-        self.device.initialize()
-        self.device.get_status()
+    status = mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
+    report_id, report_data = mockPsuDevice.device.sent[0]
+    assert report_id == 0
+    assert len(report_data) == 64
 
-    def test_dont_inject_report_ids(self):
-        self.device.set_fixed_speed(channel='fan', duty=50)
-        report_id, report_data = self.mock_hid.sent[0]
-        assert report_id == 0
-        assert len(report_data) == 64
+
+def test_corsair_psu_dont_inject_report_ids(mockPsuDevice):
+
+    status = mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
+    report_id, report_data = mockPsuDevice.device.sent[0]
+    assert report_id == 0
+    assert len(report_data) == 64
