@@ -110,7 +110,7 @@ if __name__ == '__main__':
                     winreg.SetValueEx(sensor_key, 'Unit', None, winreg.REG_SZ, u)
                     winreg.SetValueEx(sensor_key, 'Value', None, winreg.REG_SZ, str(v))
                     dev_values.append(sensor_key)
-                
+
             infos.append((dev_key, dev_values))
             # set up dev infos and registry
         status = {}

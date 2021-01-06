@@ -11,15 +11,16 @@ from liquidctl.version import __version__
 from _testutils import MockHidapiDevice
 
 SPECTRUM = [
-    (235,77,40),
-    (255,148,117),
-    (126,66,45),
-    (165,87,0),
-    (56,193,66),
-    (116,217,170),
-    (166,158,255),
-    (208,0,122)
+    (235, 77, 40),
+    (255, 148, 117),
+    (126, 66, 45),
+    (165, 87, 0),
+    (56, 193, 66),
+    (116, 217, 170),
+    (166, 158, 255),
+    (208, 0, 122)
 ]
+
 
 @pytest.fixture
 def mockDevice():
@@ -30,21 +31,26 @@ def mockDevice():
     dev.connect()
     return dev
 
+
 def test_pre11_apis_find_does_not_raise():
     import liquidctl.cli
-    devices = liquidctl.cli.find_all_supported_devices()
+    liquidctl.cli.find_all_supported_devices()
+
 
 def test_pre11_apis_connect_as_initialize(mockDevice):
     # deprecated behavior in favor of connect()
     mockDevice.initialize()
 
+
 def test_pre11_apis_deprecated_super_mode(mockDevice):
     # deprecated in favor of super-fixed, super-breathing and super-wave
-    mockDevice.set_color('sync', 'super', [(128,0,255)] + SPECTRUM, 'normal')
+    mockDevice.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')
+
 
 def test_pre11_apis_status_order(mockDevice):
     # GKraken unreasonably expects a particular ordering
     pass
+
 
 def test_pre11_apis_finalize_as_connect_or_noop(mockDevice):
     # deprecated in favor of disconnect()

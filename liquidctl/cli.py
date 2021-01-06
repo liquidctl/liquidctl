@@ -102,7 +102,7 @@ _PARSE_ARG = {
     '--direction': str,
     '--start-led': int,
     '--maximum-leds': int,
-  
+
     '--single-12v-ocp': bool,
     '--pump-mode': str,
     '--legacy-690lc': bool,
@@ -127,14 +127,14 @@ _FILTER_OPTIONS = [
 
 # custom number formats for values of select units
 _VALUE_FORMATS = {
-    '°C' : '.1f',
-    'rpm' : '.0f',
-    'V' : '.2f',
-    'A' : '.2f',
-    'W' : '.2f'
+    '°C': '.1f',
+    'rpm': '.0f',
+    'V': '.2f',
+    'A': '.2f',
+    'W': '.2f'
 }
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 def _list_devices(devices, using_filters=False, device_id=None, verbose=False, debug=False, **opts):
@@ -166,7 +166,7 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
             elif sys.platform in ['win32', 'cygwin'] and 'Hid' not in type(dev.device).__name__:
                 msg += ' (device possibly requires a kernel driver)'
             if debug:
-                LOGGER.exception(msg.capitalize())
+                _LOGGER.exception(msg.capitalize())
             else:
                 warnings.append(msg)
 
@@ -179,19 +179,19 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         print(f'└── Driver: {type(dev).__name__}')
         if debug:
             driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
+            _LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
 
         for msg in warnings:
-            LOGGER.warning(msg)
+            _LOGGER.warning(msg)
         print('')
 
-    assert not 'device' in opts or len(devices) <= 1, 'too many results listed with --device'
+    assert 'device' not in opts or len(devices) <= 1, 'too many results listed with --device'
 
 
 def _print_dev_status(dev, status):
     if not status:
         return
-    print(f'{dev.description}')
+    print(dev.description)
     tmp = []
     kcols, vcols = 0, 0
     for k, v, u in status:
@@ -226,8 +226,8 @@ def _device_set_speed(dev, args, **opts):
 
 def _make_opts(args):
     if args['--hid']:
-        LOGGER.warning('Ignoring --hid %s: deprecated option, API will be selected automatically',
-                       args['--hid'])
+        _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
+                        args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
@@ -249,8 +249,8 @@ def _gen_version():
             if __extraversion__['dirty']:
                 extra[0] += '-dirty'
     except:
-        return 'liquidctl v{}'.format(__version__)
-    return 'liquidctl v{} ({})'.format(__version__, '; '.join(extra))
+        return f'liquidctl v{__version__}'
+    return f'liquidctl v{__version__} ({"; ".join(extra)})'
 
 
 def main():
@@ -263,7 +263,7 @@ def main():
     if args['--debug']:
         args['--verbose'] = True
         logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        LOGGER.debug('running %s', _gen_version())
+        _LOGGER.debug('running %s', _gen_version())
     elif args['--verbose']:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     else:
@@ -287,8 +287,8 @@ def main():
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
                 raise SystemExit('Error: device ID does not match remaining selection criteria')
-            LOGGER.warning('mixing --device <id> with other filters is not recommended; '
-                           'to disambiguate between results prefer --pick <result>')
+            _LOGGER.warning('mixing --device <id> with other filters is not recommended; '
+                            'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
 
     if args['list']:
@@ -305,11 +305,11 @@ def main():
     def log_error(err, msg, *args):
         nonlocal errors
         errors += 1
-        LOGGER.info('%s', err, exc_info=True)
-        LOGGER.error(msg, *args)
+        _LOGGER.info('%s', err, exc_info=True)
+        _LOGGER.error(msg, *args)
 
     for dev in selected:
-        LOGGER.debug('device: %s', dev.description)
+        _LOGGER.debug('device: %s', dev.description)
         try:
             dev.connect(**opts)
             if args['initialize']:
@@ -325,12 +325,12 @@ def main():
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
-            if err.errno in [errno.EACCES , errno.EPERM]:
+            if err.errno in [errno.EACCES, errno.EPERM]:
                 log_error(err, f'Error: insufficient permissions to access {dev.description}')
             elif err.args == ('open failed', ):
                 log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, f'Unexpected OS error with {dev.description}: {err}')
+                log_error(err, 'Unexpected OS error with {dev.description}: {err}')
         except NotSupportedByDevice as err:
             log_error(err, f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
@@ -349,7 +349,7 @@ def main():
 
 def find_all_supported_devices(**opts):
     """Deprecated."""
-    LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
+    _LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
     return find_liquidctl_devices(**opts)
 
 

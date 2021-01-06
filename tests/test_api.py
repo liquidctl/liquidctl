@@ -1,6 +1,7 @@
 import pytest
 from liquidctl.driver.base import BaseDriver
 
+
 class Virtual(BaseDriver):
     def __init__(self, **kwargs):
         self.kwargs = dict()

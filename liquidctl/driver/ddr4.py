@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 from enum import Enum, unique
+from collections import namedtuple
 import itertools
 import logging
 
@@ -13,9 +14,6 @@ from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupporte
 from liquidctl.util import check_unsafe, clamp
 
 _LOGGER = logging.getLogger(__name__)
-
-
-from collections import namedtuple
 
 
 class Ddr4Spd:
@@ -53,8 +51,8 @@ class Ddr4Spd:
             0xad: 'SK Hynix',
             0xce: 'Samsung',
         },
-        2: { 0x98: 'Kingston' },
-        3: { 0x9e: 'Corsair' },
+        2: {0x98: 'Kingston'},
+        3: {0x9e: 'Corsair'},
         5: {
             0xcd: 'G.SKILL',
             0xef: 'Team Group',
@@ -99,7 +97,7 @@ class Ddr4Spd:
     def module_type(self):
         base = self._eeprom[0x03] & 0x0f
         hybrid = self._eeprom[0x03] >> 4
-        assert not hybrid 
+        assert not hybrid
         return (self.BaseModuleType(base), None)
 
     @property
@@ -190,12 +188,12 @@ class Ddr4Temperature(SmbusDriver):
         try:
             manufacturer = spd.module_manufacturer
         except:
-            return f'DDR4'
+            return 'DDR4'
 
         if spd.module_part_number:
             return f'{manufacturer} {spd.module_part_number}'
         else:
-            return f'{manufacturer}'
+            return manufacturer
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -212,8 +210,8 @@ class Ddr4Temperature(SmbusDriver):
         """
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'%s'",  self.description, ','.join(self._UNSAFE))
+            _LOGGER.warning("%s: nothing to return, requires unsafe features '%s'",
+                            self.description, ','.join(self._UNSAFE))
             return []
 
         treg = self._read_temperature_register()

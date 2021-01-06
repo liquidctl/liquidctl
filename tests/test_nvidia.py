@@ -36,7 +36,7 @@ def test_evga_pascal_finds_devices(evga_1080_ftw_bus, monkeypatch):
         with monkeypatch.context() as m:
             m.setattr(smbus, attr, val)
             assert list(EvgaPascal.probe(smbus)) == [], \
-                    f'changing {attr} did not cause a mismatch'
+                f'changing {attr} did not cause a mismatch'
 
     assert list(map(type, EvgaPascal.probe(smbus))) == [EvgaPascal]
 
@@ -173,7 +173,7 @@ def create_strix_2080ti_oc_bus(controller_address=None):
             parent_driver='nvidia',
     )
 
-    if controller_address == None:
+    if controller_address is None:
         return smbus
 
     smbus.open()
@@ -209,7 +209,7 @@ def test_rog_turing_does_not_find_devices(monkeypatch):
         with monkeypatch.context() as m:
             m.setattr(smbus, attr, val)
             assert list(RogTuring.probe(smbus)) == [], \
-                    f'changing {attr} did not cause a mismatch'
+                f'changing {attr} did not cause a mismatch'
 
     # with unsafe features addresses can be checked and none match
     assert list(map(type, RogTuring.probe(smbus, unsafe='smbus,rog_turing'))) == []

@@ -13,15 +13,12 @@ Copyright (C) 2019–2020  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import logging
 import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.pmbus import CommandCode as CMD
 from liquidctl.pmbus import linear_to_float
-
-LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 _MIN_DELAY = 0.0025
@@ -82,7 +79,7 @@ class NzxtEPsu(UsbHidDriver):
     def _write(self, data):
         assert len(data) <= _REPORT_LENGTH
         packet = bytearray(1 + _REPORT_LENGTH)
-        packet[1 : 1 + len(data)] = data  # device doesn't use numbered reports
+        packet[1: 1 + len(data)] = data  # device doesn't use numbered reports
         self.device.write(packet)
 
     def _read(self):
@@ -138,7 +135,7 @@ class NzxtEPsu(UsbHidDriver):
 
     def _get_vout(self, rail):
         mode = self._exec_page_plus_read(rail, CMD.VOUT_MODE, 1)[0]
-        assert mode >> 5 == 0 # assume vout_mode is always ulinear16
+        assert mode >> 5 == 0  # assume vout_mode is always ulinear16
         vout = self._exec_page_plus_read(rail, CMD.READ_VOUT, 2)
         return linear_to_float(vout, mode & 0x1f)
 

@@ -8,6 +8,7 @@ def test_pre14_old_module_names():
     import liquidctl.driver.nzxt_smart_device
     import liquidctl.driver.seasonic
 
+
 def test_pre14_old_driver_names():
     from liquidctl.driver.asetek import AsetekDriver
     from liquidctl.driver.asetek import LegacyAsetekDriver

@@ -26,9 +26,7 @@ if sys.platform == 'linux':
     # initialization
     from smbus import SMBus
 
-
     LinuxEeprom = namedtuple('LinuxEeprom', 'name data')
-
 
     class LinuxI2c(BaseBus):
         """The Linux I²C (`/sys/bus/i2c`) bus."""
@@ -68,7 +66,6 @@ if sys.platform == 'linux':
                 _LOGGER.debug('found I²C bus %s', i2c_bus.name)
                 yield from i2c_bus.find_devices(drivers, **kwargs)
 
-
     class LinuxI2cBus:
         """A Linux I²C device, which is itself an I²C bus.
 
@@ -90,7 +87,7 @@ if sys.platform == 'linux':
                 assert i2c_dev.name.startswith('i2c-')
                 self._number = int(i2c_dev.name[4:])
             except:
-                raise ValueError(f'cannot infer bus number')
+                raise ValueError('cannot infer bus number')
 
         def find_devices(self, drivers, **kwargs):
             """Probe drivers and find compatible devices in this bus."""
@@ -110,28 +107,28 @@ if sys.platform == 'linux':
         def read_byte(self, address):
             """Read a single byte from a device."""
             value = self._smbus.read_byte(address)
-            _LOGGER.debug('read byte @ 0x%02x: 0x%02x', address, value)
+            _LOGGER.debug('read byte @ 0x%02x:0x%02x', address, value)
             return value
 
         def read_byte_data(self, address, register):
             """Read a single byte from a designated register."""
             value = self._smbus.read_byte_data(address, register)
-            _LOGGER.debug('read byte data @ 0x%02x:0x%02x: 0x%02x', address,
-                          register, value)
+            _LOGGER.debug('read byte data @ 0x%02x:0x%02x 0x%02x',
+                          address, register, value)
             return value
 
         def read_word_data(self, address, register):
             """Read a single 2-byte word from a given register."""
             value = self._smbus.read_word_data(address, register)
-            _LOGGER.debug('read word data @ 0x%02x:0x%02x: 0x%04x', address,
-                          register, value)
+            _LOGGER.debug('read word data @ 0x%02x:0x%02x 0x%02x',
+                          address, register, value)
             return value
 
         def read_block_data(self, address, register):
             """Read a block of up to  32 bytes from a given register."""
             data = self._smbus.read_block_data(address, register)
-            _LOGGER.debug('read block data @ 0x%02x:0x%02x: %r', address,
-                          register, LazyHexRepr(data))
+            _LOGGER.debug('read block data @ 0x%02x:0x%02x: %r',
+                          address, register, LazyHexRepr(data))
             return data
 
         def write_byte(self, address, value):
@@ -141,20 +138,20 @@ if sys.platform == 'linux':
 
         def write_byte_data(self, address, register, value):
             """Write a single byte to a designated register."""
-            _LOGGER.debug('writing byte data @ 0x%02x:0x%02x: 0x%02x', address,
-                          register, value)
+            _LOGGER.debug('writing byte data @ 0x%02x:0x%02x 0x%02x',
+                          address, register, value)
             return self._smbus.write_byte_data(address, register, value)
 
         def write_word_data(self, address, register, value):
             """Write a single 2-byte word to a designated register."""
-            _LOGGER.debug('writing word data @ 0x%02x:0x%02x: 0x%04x', address,
-                          register, value)
+            _LOGGER.debug('writing word data @ 0x%02x:0x%02x 0x%02x',
+                          address, register, value)
             return self._smbus.write_word_data(address, register, value)
 
         def write_block_data(self, address, register, data):
             """Write a block of byte data to a given register."""
-            _LOGGER.debug('writing block data @ 0x%02x:0x%02x: %r', address,
-                          register, LazyHexRepr(data))
+            _LOGGER.debug('writing block data @ 0x%02x:0x%02x %r',
+                          address, register, LazyHexRepr(data))
             return self._smbus.write_block_data(address, register, data)
 
         def close(self):
@@ -174,7 +171,7 @@ if sys.platform == 'linux':
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
                 eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
                 return LinuxEeprom(name, eeprom)
-            except Exception as err:
+            except Exception:
                 return None
 
         @property
@@ -219,13 +216,12 @@ if sys.platform == 'linux':
                     return f'{maybe:#06x}'
                 return 'None'
 
-            return f'{self.__class__.__name__}: name: {self.name!r}, ' \
-                   f'description: {self.description!r}, ' \
-                   f'parent_vendor: {hexid(self.parent_vendor)}, ' \
-                   f'parent_device: {hexid(self.parent_device)}, ' \
-                   f'parent_subsystem_vendor: {hexid(self.parent_subsystem_vendor)}, ' \
-                   f'parent_subsystem_device: {hexid(self.parent_subsystem_device)}, ' \
-                   f'parent_driver: {self.parent_driver!r}'
+            return f'{self.__class__.__name__}: name: {self.name!r}, description:' \
+                   f' {self.description!r}, parent_vendor: {hexid(self.parent_vendor)},' \
+                   f' parent_device: {hexid(self.parent_device)}, parent_subsystem_vendor:' \
+                   f' {hexid(self.parent_subsystem_vendor)},' \
+                   f' parent_subsystem_device: {hexid(self.parent_subsystem_device)},' \
+                   f' parent_driver: {self.parent_driver!r}'
 
         def _try_sysfs_read(self, *sub, default=None):
             try:

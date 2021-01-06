@@ -117,6 +117,8 @@ the message will only be formated if the logging level is enabled.
 _LOGGER.warning('value %d, expected %d', current, expected)
 ```
 
+The rest of the time using `f-strings` are preferred, to follow the `PEP 498` guideline.
+
 When writing informational or debug messages, pay attention to the cost of
 computing each value.  A classic example is hex formatting some bytes, which
 can be expensive; this case can be solved by using

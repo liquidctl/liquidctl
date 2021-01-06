@@ -109,7 +109,7 @@ def test_tse2004_ignores_not_allowed_buses(smbus, monkeypatch):
         with monkeypatch.context() as m:
             m.setattr(smbus, attr, val)
             assert list(Ddr4Temperature.probe(smbus)) == [], \
-                    f'changing {attr} did not cause a mismatch'
+                f'changing {attr} did not cause a mismatch'
 
 
 def test_tse2004_does_not_match_non_ee1004_device(smbus):
@@ -244,7 +244,6 @@ def test_vengeance_rgb_asserts_rgb_address_validity(vengeance_rgb):
             dimm.set_color('led', 'off', [], unsafe=enable)
 
 
-
 def test_vengeance_rgb_sets_color_to_off(vengeance_rgb):
     enable = ['smbus', 'vengeance_rgb']
     smbus, dimm = vengeance_rgb
@@ -375,7 +374,7 @@ def test_vengeance_rgb_animation_transition_ticks_overrides_tp1(vengeance_rgb):
         assert smbus.read_byte_data(0x59, 0xa5) == 0x20
 
 
-def test_vengeance_rgb_animation_transition_ticks_overrides_tp1(vengeance_rgb):
+def test_vengeance_rgb_animation_transition_ticks_overrides_tp2(vengeance_rgb):
     enable = ['smbus', 'vengeance_rgb']
     smbus, dimm = vengeance_rgb
 

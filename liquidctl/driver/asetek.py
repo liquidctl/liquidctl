@@ -25,7 +25,7 @@ from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import clamp
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _CMD_RUNTIME = 0x10
 _CMD_PROFILE = 0x11
@@ -39,7 +39,7 @@ _CMD_EXTERNAL_TEMPERATURE = 0x22
 _FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
     'pump':  (_CMD_PUMP_PWM, 50, 100),  # min/max must correspond to _MIN/MAX_PUMP_SPEED_CODE
 }
-_VARIABLE_SPEED_CHANNELS = { # (message type, minimum duty, maximum duty)
+_VARIABLE_SPEED_CHANNELS = {  # (message type, minimum duty, maximum duty)
     'fan':   (_CMD_PROFILE, 0, 100)
 }
 _MAX_PROFILE_POINTS = 6
@@ -68,7 +68,7 @@ _USBXPRESS_GET_PART_NUM = 0x08
 
 # Unknown control parameters; from Craig's libSiUSBXp and OpenCorsairLink
 _UNKNOWN_OPEN_REQUEST = 0x00
-_UNKNOWN_OPEN_VALUE = 0xFFFF
+_UNKNOWN_OPEN_VALUE = 0xffff
 
 # Control request type
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
@@ -79,7 +79,7 @@ class _CommonAsetekDriver(UsbDriver):
 
     def _configure_flow_control(self, clear_to_send):
         """Set the software clear-to-send flow control policy for device."""
-        LOGGER.debug('set clear to send = %s', clear_to_send)
+        _LOGGER.debug('set clear to send = %s', clear_to_send)
         if clear_to_send:
             self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_CLEAR_TO_SEND)
         else:
@@ -87,7 +87,7 @@ class _CommonAsetekDriver(UsbDriver):
 
     def _begin_transaction(self):
         """Begin a new transaction before writing to the device."""
-        LOGGER.debug('begin transaction')
+        _LOGGER.debug('begin transaction')
         self.device.claim()
         self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_FLUSH_BUFFERS)
 
@@ -121,7 +121,7 @@ class _CommonAsetekDriver(UsbDriver):
         if size < 1:
             raise ValueError('At least one PWM point required')
         elif size > _MAX_PROFILE_POINTS:
-            raise ValueError('Too many PWM points ({}), only 6 supported'.format(size))
+            raise ValueError(f'Too many PWM points ({size}), only 6 supported')
         for i, (temp, duty) in enumerate(opt):
             opt[i] = (temp, clamp(duty, min_duty, max_duty))
         missing = _MAX_PROFILE_POINTS - size
@@ -132,7 +132,7 @@ class _CommonAsetekDriver(UsbDriver):
             # somewhere, and would need another call to initialize() to clear
             # that up.  Padding with (CRIT, 100%) appears to avoid all issues,
             # at least within the reasonable range of operating temperatures.
-            LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
+            _LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
             opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
         return opt
 
@@ -259,7 +259,7 @@ class Modern690Lc(_CommonAsetekDriver):
             self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
-            raise KeyError('Unknown lighting mode {}'.format(mode))
+            raise KeyError(f'Unknown lighting mode {mode}')
         self._end_transaction_and_read()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -267,8 +267,8 @@ class Modern690Lc(_CommonAsetekDriver):
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
         adjusted = self._prepare_profile(profile, dmin, dmax)
         for temp, duty in adjusted:
-            LOGGER.info('setting %s PWM point: (%i°C, %i%%), device interpolated',
-                        channel, temp, duty)
+            _LOGGER.info('setting %i PWM point: (%i°C, %i%%), device interpolated',
+                         channel, temp, duty)
         temps, duties = map(list, zip(*adjusted))
         self._begin_transaction()
         self._write([mtype, 0] + temps + duties)
@@ -283,7 +283,7 @@ class Modern690Lc(_CommonAsetekDriver):
             # Note for a future self: the conflict can be cleared with
             # *another* call to initialize(), i.e.  with another
             # configuration command.
-            LOGGER.info('using a flat profile to set %s to a fixed duty', channel)
+            _LOGGER.info('using a flat profile to set %s to a fixed duty', channel)
             self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
             return
         mtype, dmin, dmax = _FIXED_SPEED_CHANNELS[channel]
@@ -291,7 +291,7 @@ class Modern690Lc(_CommonAsetekDriver):
         total_levels = _MAX_PUMP_SPEED_CODE - _MIN_PUMP_SPEED_CODE + 1
         level = round((duty - dmin)/(dmax - dmin)*total_levels)
         effective_duty = round(dmin + level*(dmax - dmin)/total_levels)
-        LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, effective_duty, level)
+        _LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, effective_duty, level)
         self._begin_transaction()
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
         self._end_transaction_and_read()
@@ -318,8 +318,9 @@ class Legacy690Lc(_CommonAsetekDriver):
 
     def connect(self, runtime_storage=None, **kwargs):
         super().connect(**kwargs)
-        ids = 'vid{:04x}_pid{:04x}'.format(self.vendor_id, self.product_id)
-        loc = 'bus{}_port{}'.format(self.bus, '_'.join(map(str, self.port)))
+        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+        loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
+
         if runtime_storage:
             self._data = runtime_storage
         else:
@@ -329,8 +330,8 @@ class Legacy690Lc(_CommonAsetekDriver):
         self._begin_transaction()
         for channel in ['pump', 'fan']:
             mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-            duty = clamp(self._data.load_int('{}_duty'.format(channel), default=dmax), dmin, dmax)
-            LOGGER.info('setting %s duty to %i%%', channel, duty)
+            duty = clamp(self._data.load_int(f'{channel}_duty', default=dmax), dmin, dmax)
+            _LOGGER.info('setting %s duty to %i%%', channel, duty)
             self._write([mtype, duty])
         return self._end_transaction_and_read()
 
@@ -384,14 +385,14 @@ class Legacy690Lc(_CommonAsetekDriver):
             self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
-            raise KeyError('Unsupported lighting mode {}'.format(mode))
+            raise KeyError(f'Unsupported lighting mode {mode}')
         self._end_transaction_and_read()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        self._data.store_int('{}_duty'.format(channel), duty)
+        self._data.store_int(f'{channel}_duty', duty)
         self._set_all_fixed_speeds()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -420,7 +421,7 @@ class Hydro690Lc(Modern690Lc):
     def set_color(self, channel, mode, colors, **kwargs):
         """Set the color mode for a specific channel."""
         if mode == 'rainbow':
-            raise KeyError('Unsupported lighting mode {}'.format(mode))
+            raise KeyError(f'Unsupported lighting mode {mode}')
         super().set_color(channel, mode, colors, **kwargs)
 
 

@@ -25,10 +25,10 @@ def test_construct_with_raw_pyusb_handle(monkeypatch):
     pyusb_handle = _MockPyUsbHandle(serial_number='123456789')
     liquidctl_device = Kraken2(pyusb_handle, 'Some device')
     assert liquidctl_device.device.vendor_id == pyusb_handle.idVendor, \
-            '<driver instance>.device points to incorrect physical device'
+        '<driver instance>.device points to incorrect physical device'
     assert liquidctl_device.device.product_id == pyusb_handle.idProduct, \
-            '<driver instance>.device points to incorrect physical device'
+        '<driver instance>.device points to incorrect physical device'
     assert liquidctl_device.device.serial_number == pyusb_handle.serial_number, \
-            '<driver instance>.device points to different physical unit'
+        '<driver instance>.device points to different physical unit'
     assert isinstance(liquidctl_device.device, HidapiDevice), \
-            '<driver instance>.device not properly converted to HidapiDevice instance'
+        '<driver instance>.device not properly converted to HidapiDevice instance'

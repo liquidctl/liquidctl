@@ -28,7 +28,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp, normalize_profile, interpolate_profile
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'fan':   (0x80, 25, 100),
@@ -120,7 +120,7 @@ class Kraken2(UsbHidDriver):
 
     def finalize(self):
         """Deprecated."""
-        LOGGER.warning('deprecated: use disconnect() instead')
+        _LOGGER.warning('deprecated: use disconnect() instead')
         if self._connected:
             self.disconnect()
 
@@ -150,13 +150,13 @@ class Kraken2(UsbHidDriver):
         channel = channel.lower()
         mode = mode.lower()
         speed = speed.lower()
-        directon = direction.lower()
+        direction = direction.lower()
 
         if mode == 'super':
-            LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
+            _LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
         if 'backwards' in mode:
-            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
@@ -166,8 +166,8 @@ class Kraken2(UsbHidDriver):
             mod2 += 0x10
 
         if ringonly and channel != 'ring':
-            LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
-                           mode, channel)
+            _LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',
+                            mode, channel)
             channel = 'ring'
 
         steps = self._generate_steps(colors, mincolors, maxcolors, mode, ringonly)
@@ -183,23 +183,22 @@ class Kraken2(UsbHidDriver):
     def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
         colors = list(colors)
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'
-                             .format(mode, mincolors))
+            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if len(colors) > 0:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [(0, 0, 0)]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                           mode, maxcolors)
+            _LOGGER.warning('too many colors for mode=%s, dropping to %d',
+                            mode, maxcolors)
             colors = colors[:maxcolors]
         # generate steps from mode and colors: usually each color set by the user generates
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
-        if not 'super' in mode:
+        if 'super' not in mode:
             steps = [(color,)*9 for color in colors]
         elif ringonly:
-            steps = [[(0,0,0)] + colors]
+            steps = [[(0, 0, 0)] + colors]
         else:
             steps = [colors]
         return steps
@@ -217,14 +216,14 @@ class Kraken2(UsbHidDriver):
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         for i, (temp, duty) in enumerate(interp):
             duty = clamp(duty, dmin, dmax)
-            LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed."""
         if not self.supports_cooling:
-             raise NotSupportedByDevice()
+            raise NotSupportedByDevice()
         elif self.supports_cooling_profiles:
             self.set_speed_profile(channel, [(0, duty), (59, duty), (60, 100), (100, 100)])
         else:
@@ -236,7 +235,7 @@ class Kraken2(UsbHidDriver):
             raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        LOGGER.info('setting %s PWM duty to %i%%', channel, duty)
+        _LOGGER.info('setting %d PWM duty to %i%%', channel, duty)
         self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
 
     @property

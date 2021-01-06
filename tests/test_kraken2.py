@@ -3,6 +3,7 @@ from liquidctl.driver.kraken2 import Kraken2
 from _testutils import MockHidapiDevice
 from liquidctl.error import NotSupportedByDevice
 
+
 @pytest.fixture
 def mockKrakenXDevice():
     device = _MockKrakenDevice(fw_version=(6, 0, 2))
@@ -10,6 +11,7 @@ def mockKrakenXDevice():
 
     dev.connect()
     return dev
+
 
 @pytest.fixture
 def mockOldKrakenXDevice():
@@ -19,6 +21,7 @@ def mockOldKrakenXDevice():
     dev.connect()
     return dev
 
+
 @pytest.fixture
 def mockKrakenMDevice():
     device = _MockKrakenDevice(fw_version=(6, 0, 2))
@@ -26,6 +29,7 @@ def mockKrakenMDevice():
 
     dev.connect()
     return dev
+
 
 class _MockKrakenDevice(MockHidapiDevice):
     def __init__(self, fw_version):
@@ -49,6 +53,7 @@ class _MockKrakenDevice(MockHidapiDevice):
         buf[0xe] = patch
         return buf[:length]
 
+
 def test_kraken_connect(mockKrakenXDevice):
     def mock_open():
         nonlocal opened
@@ -59,7 +64,8 @@ def test_kraken_connect(mockKrakenXDevice):
 
     with mockKrakenXDevice.connect() as cm:
         assert cm == mockKrakenXDevice
-        assert opened == True
+        assert opened
+
 
 def test_kraken_get_status(mockKrakenXDevice):
     fan, fw_ver, temp, pump = sorted(mockKrakenXDevice.get_status())
@@ -69,16 +75,19 @@ def test_kraken_get_status(mockKrakenXDevice):
     assert fan[1] == mockKrakenXDevice.device.fan_speed
     assert pump[1] == mockKrakenXDevice.device.pump_speed
 
+
 def test_kraken_not_totally_broken(mockKrakenXDevice):
     """Reasonable example calls to untested APIs do not raise exceptions."""
+    dev = mockKrakenXDevice
 
-    mockKrakenXDevice.initialize()
-    mockKrakenXDevice.set_color(channel='ring', mode='loading', colors=iter([[90, 80, 0]]),
-                          speed='slowest')
-    mockKrakenXDevice.set_speed_profile(channel='fan',
-                                  profile=iter([(20, 20), (30, 40), (40, 100)]))
-    mockKrakenXDevice.set_fixed_speed(channel='pump', duty=50)
-    mockKrakenXDevice.set_instantaneous_speed(channel='pump', duty=50)
+    dev.initialize()
+    dev.set_color(channel='ring', mode='loading', colors=iter([[90, 80, 0]]),
+                  speed='slowest')
+    dev.set_speed_profile(channel='fan',
+                          profile=iter([(20, 20), (30, 40), (40, 100)]))
+    dev.set_fixed_speed(channel='pump', duty=50)
+    dev.set_instantaneous_speed(channel='pump', duty=50)
+
 
 def test_kraken_set_fixed_speeds(mockOldKrakenXDevice):
     mockOldKrakenXDevice.set_fixed_speed(channel='fan', duty=42)
@@ -91,6 +100,7 @@ def test_kraken_set_fixed_speeds(mockOldKrakenXDevice):
     assert pump_report.number == 2
     assert pump_report.data[0:4] == [0x4d, 0x40, 0, 84]
 
+
 def test_kraken_speed_profiles_not_supported(mockOldKrakenXDevice):
 
     with pytest.raises(NotSupportedByDevice):
@@ -99,9 +109,11 @@ def test_kraken_speed_profiles_not_supported(mockOldKrakenXDevice):
     with pytest.raises(NotSupportedByDevice):
         mockOldKrakenXDevice.set_speed_profile('pump', [(20, 84)])
 
+
 def test_krakenM_get_status(mockKrakenMDevice):
     (fw_ver,) = mockKrakenMDevice.get_status()
-    assert fw_ver[1] ==  '6.0.2'
+    assert fw_ver[1] == '6.0.2'
+
 
 def test_krakenM_speed_control_not_supported(mockKrakenMDevice):
     with pytest.raises(NotSupportedByDevice):
@@ -116,8 +128,10 @@ def test_krakenM_speed_control_not_supported(mockKrakenMDevice):
     with pytest.raises(NotSupportedByDevice):
         mockKrakenMDevice.set_speed_profile('pump', [(20, 84)])
 
+
 def test_krakenM_not_totally_broken(mockKrakenMDevice):
     """Reasonable example calls to untested APIs do not raise exceptions."""
-    mockKrakenMDevice.initialize()
-    mockKrakenMDevice.set_color(channel='ring', mode='loading', colors=iter([[90, 80, 0]]),
-                          speed='slowest')
+    dev = mockKrakenMDevice
+    dev.initialize()
+    dev.set_color(channel='ring', mode='loading', colors=iter([[90, 80, 0]]),
+                  speed='slowest')

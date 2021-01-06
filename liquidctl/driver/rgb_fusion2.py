@@ -17,7 +17,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _USAGE_PAGE = 0xff89
 _RGB_CONTROL_USAGE = 0xcc
@@ -95,6 +95,7 @@ _COLOR_MODES = {
     ]
 }
 
+
 class RgbFusion2(UsbHidDriver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers."""
 
@@ -119,7 +120,7 @@ class RgbFusion2(UsbHidDriver):
         # single handle is returned for that device interface (see: 259)
 
         if (handle.hidinfo['usage_page'] == _USAGE_PAGE and
-            handle.hidinfo['usage'] == _OTHER_USAGE):
+                handle.hidinfo['usage'] == _OTHER_USAGE):
             return
 
         yield from super().probe(handle, **kwargs)
@@ -142,7 +143,7 @@ class RgbFusion2(UsbHidDriver):
         fw_version = tuple(data[4:8])
         return [
             ('Hardware name', dev_name, ''),
-            ('Firmware version', '%d.%d.%d.%d' % fw_version, ''),
+            ('Firmware version', '{}.{}.{}.{}'.format(*fw_version), ''),
         ]
 
     def get_status(self, **kwargs):
@@ -153,7 +154,7 @@ class RgbFusion2(UsbHidDriver):
         non-empty list would contain `(property, value, unit)` tuples.
         """
 
-        LOGGER.info(f'Status reports not available from {self.description}')
+        _LOGGER.info('status reports not available from %s', self.description)
         return []
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
@@ -182,10 +183,6 @@ class RgbFusion2(UsbHidDriver):
         `slower`, `normal` (default), `faster`, `fastest` or `ludicrous`.
         """
 
-        if mode.lower() == 'static':
-            # TODO if today > 30 August 2020: remove this custom error
-            raise ValueError("This mode was renamed to 'fixed' before the 1.4.0 release, to be consistent with other devices")
-
         mode = _COLOR_MODES[mode.lower()]
         colors = iter(colors)
         channel = channel.lower()
@@ -201,11 +198,11 @@ class RgbFusion2(UsbHidDriver):
             single_color = (0, 0, 0)
         remaining = sum(1 for _ in colors)
         if remaining:
-            LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
+            _LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
 
         brightness = clamp(100, 0, mode.max_brightness)  # hardcode this for now
         data = [_REPORT_ID, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                  0x00, 0x00, 0x00, mode.value, brightness, 0x00]
+                0x00, 0x00, 0x00, mode.value, brightness, 0x00]
         data += single_color
         data += [0x00, 0x00, 0x00, 0x00, 0x00]
         if mode.speed_values:

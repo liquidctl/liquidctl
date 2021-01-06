@@ -28,6 +28,7 @@ ASUS_STRIX_RTX_2080_TI_OC = 0x866a
 EVGA = 0x3842
 EVGA_GTX_1080_FTW = 0x6286
 
+
 @unique
 class _ModeEnum(bytes, Enum):
     def __new__(cls, value, required_colors):
@@ -101,8 +102,8 @@ class EvgaPascal(SmbusDriver):
             return []
 
         if not check_unsafe('smbus', **kwargs):
-            _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'smbus'",  self.description)
+            _LOGGER.warning("%s: nothing to return, requires unsafe features 'smbus'",
+                            self.description)
             return []
 
         mode = self.Mode(self._smbus.read_byte_data(self._address, self._REG_MODE))
@@ -274,7 +275,7 @@ class RogTuring(SmbusDriver):
 
         if not check_unsafe('smbus', 'rog_turing', **kwargs):
             _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'smbus,rog_turing'",  self.description)
+                            "'smbus,rog_turing'", self.description)
             return []
 
         assert self._address != self._SENTINEL_ADDRESS, \

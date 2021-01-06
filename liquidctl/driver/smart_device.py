@@ -106,7 +106,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp, Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _ANIMATION_SPEEDS = {
     'slowest':  0x0,
@@ -118,6 +118,7 @@ _ANIMATION_SPEEDS = {
 
 _MIN_DUTY = 0
 _MAX_DUTY = 100
+
 
 class _CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
@@ -140,10 +141,10 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         channel = channel.lower()
         mode = mode.lower()
         speed = speed.lower()
-        directon = direction.lower()
+        direction = direction.lower()
 
         if 'backwards' in mode:
-            LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
@@ -151,15 +152,14 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError('Not enough colors for mode={}, at least {} required'
-                             .format(mode, mincolors))
+            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if colors:
-                LOGGER.warning('too many colors for mode=%s, none needed', mode)
+                _LOGGER.warning('too many colors for mode=%s, none needed', mode)
             colors = [[0, 0, 0]]  # discard the input but ensure at least one step
         elif len(colors) > maxcolors:
-            LOGGER.warning('too many colors for mode=%s, dropping to %i',
-                           mode, maxcolors)
+            _LOGGER.warning('too many colors for mode=%s, dropping to %d',
+                            mode, maxcolors)
             colors = colors[:maxcolors]
 
         sval = _ANIMATION_SPEEDS[speed]
@@ -173,7 +173,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             selected_channels = {channel: self._speed_channels[channel]}
         for cname, (cid, dmin, dmax) in selected_channels.items():
             duty = clamp(duty, dmin, dmax)
-            LOGGER.info('setting %s duty to %i%%', cname, duty)
+            _LOGGER.info('setting %s duty to %i%%', cname, duty)
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -242,7 +242,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+        speed_channels = {f'fan{i + 1}': (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
         color_channels = {'led': (i)
                           for i in range(color_channel_count)}
@@ -271,12 +271,12 @@ class SmartDevice(_CommonSmartDeviceDriver):
             msg = self.device.read(self._READ_LENGTH)
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
-            status.append(('Fan {}'.format(num), ['—', 'DC', 'PWM'][state], ''))
+            status.append((f'Fan {num}', ['—', 'DC', 'PWM'][state], ''))
             noise.append(msg[1])
             if state:
-                status.append(('Fan {} speed'.format(num), msg[3] << 8 | msg[4], 'rpm'))
-                status.append(('Fan {} voltage'.format(num), msg[7] + msg[8]/100, 'V'))
-                status.append(('Fan {} current'.format(num), msg[10]/100, 'A'))
+                status.append((f'Fan {num} speed', msg[3] << 8 | msg[4], 'rpm'))
+                status.append((f'Fan {num} voltage', msg[7] + msg[8]/100, 'V'))
+                status.append((f'Fan {num} current', msg[10]/100, 'A'))
             if i != 0:
                 continue
             fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
@@ -388,9 +388,9 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        speed_channels = {'fan{}'.format(i + 1): (i, _MIN_DUTY, _MAX_DUTY)
+        speed_channels = {f'fan{i + 1}': (i, _MIN_DUTY, _MAX_DUTY)
                           for i in range(speed_channel_count)}
-        color_channels = {'led{}'.format(i + 1): (1 << i)
+        color_channels = {f'led{i + 1}': (1 << i)
                           for i in range(color_channel_count)}
         color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
@@ -448,8 +448,8 @@ class SmartDevice2(_CommonSmartDeviceDriver):
             noise_offset = 56
             for i, _ in enumerate(self._speed_channels):
                 if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
-                    status.append(('Fan {} speed'.format(i + 1), msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                    status.append(('Fan {} duty'.format(i + 1), msg[duty_offset + i], '%'))
+                    status.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                    status.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
                 rpm_offset += 2
             status.append(('Noise level', msg[noise_offset], 'dB'))
 
@@ -475,9 +475,9 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
             leds = list(itertools.chain(*colors)) + led_padding
-            self._write([0x22, 0x10, cid, 0x00] + leds[0:60]) # send first 20 colors to device (3 bytes per color)
+            self._write([0x22, 0x10, cid, 0x00] + leds[0:60])  # send first 20 colors to device (3 bytes per color)
             self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
-            self._write([0x22, 0xA0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
+            self._write([0x22, 0xa0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
                          0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
         elif mode == 'wings':  # wings requires special handling
             for [g, r, b] in colors:
@@ -487,7 +487,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                 color_lists[0] = [g, r, b] * 8
                 color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
                 color_lists[2] = [int(x // 4) for x in color_lists[1]]
-                for i in range(8):   #  send color scheme first, before enabling wings mode
+                for i in range(8):   # send color scheme first, before enabling wings mode
                     mod = 0x05 if i in [3, 7] else 0x01
                     msg = ([0x22, 0x20, cid, i, 0x04, 0x39, 0x00, mod,
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
@@ -496,16 +496,16 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                     self._write(msg + color_lists[i % 4])
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
-            byte7 = movingFlag # sets 'moving' flag for moving alternating modes
-            byte8 = direction == 'backward' # sets 'backwards' flag
-            byte9 = mod3 if mval == 0x03 else color_count  #  specifies 'marquee' LED size
-            byte10 = mod3 if mval == 0x05 else 0x00  #  specifies LED size for 'alternating' modes
+            byte7 = movingFlag  # sets 'moving' flag for moving alternating modes
+            byte8 = direction == 'backward'  # sets 'backwards' flag
+            byte9 = mod3 if mval == 0x03 else color_count  # specifies 'marquee' LED size
+            byte10 = mod3 if mval == 0x05 else 0x00  # specifies LED size for 'alternating' modes
             header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
             self._write(header + list(itertools.chain(*colors)))
 
     def _write_fixed_duty(self, cid, duty):
-        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00] # fan channel passed as bitflag in last 3 bits of 3rd byte
-        msg[cid + 3] = duty # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
+        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00]  # fan channel passed as bitflag in last 3 bits of 3rd byte
+        msg[cid + 3] = duty  # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
         self._write(msg)
 
 

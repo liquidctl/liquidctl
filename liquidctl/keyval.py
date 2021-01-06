@@ -11,7 +11,7 @@ import tempfile
 
 from ast import literal_eval
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR')
 
 
@@ -59,7 +59,7 @@ class _FilesystemBackend:
         if sys.platform == 'linux':
             # set the sticky bit to prevent removal during cleanup
             os.chmod(self._write_dir, 0o1700)
-        LOGGER.debug('data in %s', self._write_dir)
+        _LOGGER.debug('data in %s', self._write_dir)
 
     def load(self, key):
         for base in self._read_dirs:
@@ -73,12 +73,12 @@ class _FilesystemBackend:
                         value = None
                     else:
                         value = literal_eval(data)
-                    LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
+                    _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
             except OSError as err:
-                LOGGER.warning('%s exists but cannot be read: %s', path, err)
+                _LOGGER.warning('%s exists but cannot be read: %s', path, err)
                 continue
             return value
-        LOGGER.debug('no data (file) found for %s', key)
+        _LOGGER.debug('no data (file) found for %s', key)
         return None
 
     def store(self, key, value):
@@ -90,7 +90,7 @@ class _FilesystemBackend:
             f.write(data)
             f.flush()
         os.replace(tmp, path)
-        LOGGER.debug('stored %s=%r (in %s)', key, value, path)
+        _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
 
 class RuntimeStorage:

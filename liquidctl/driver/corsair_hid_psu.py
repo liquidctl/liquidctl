@@ -26,7 +26,7 @@ from liquidctl.pmbus import CommandCode as CMD
 from liquidctl.pmbus import WriteBit, linear_to_float
 from liquidctl.util import clamp
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 _SLAVE_ADDRESS = 0x02
@@ -39,7 +39,7 @@ _CORSAIR_FAN_CONTROL_MODE = CMD.MFR_SPECIFIC_F0
 _RAIL_12V = 0x0
 _RAIL_5V = 0x1
 _RAIL_3P3V = 0x2
-_RAIL_NAMES = {_RAIL_12V : '+12V', _RAIL_5V : '+5V', _RAIL_3P3V : '+3.3V'}
+_RAIL_NAMES = {_RAIL_12V: '+12V', _RAIL_5V: '+5V', _RAIL_3P3V: '+3.3V'}
 _MIN_FAN_DUTY = 0
 
 
@@ -92,10 +92,10 @@ class CorsairHidPsu(UsbHidDriver):
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
         if mode != self._get_12v_ocp_mode():
             # TODO replace log level with info once this has been confimed to work
-            LOGGER.warning('(experimental feature) changing +12V OCP mode to %s', mode)
+            _LOGGER.warning('(experimental feature) changing +12V OCP mode to %s', mode)
             self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
         if self._get_fan_control_mode() != FanControlMode.HARDWARE:
-            LOGGER.info('resetting fan control to hardware mode')
+            _LOGGER.info('resetting fan control to hardware mode')
             self._set_fan_control_mode(FanControlMode.HARDWARE)
 
     def get_status(self, **kwargs):
@@ -107,7 +107,7 @@ class CorsairHidPsu(UsbHidDriver):
         self.device.clear_enqueued_reports()
         ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         if ret[1] == 0xfe:
-            LOGGER.warning('possibly uninitialized device')
+            _LOGGER.warning('possibly uninitialized device')
         status = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
@@ -126,15 +126,15 @@ class CorsairHidPsu(UsbHidDriver):
             status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
-        LOGGER.warning('reading the +12V OCP mode is an experimental feature')
+        _LOGGER.warning('reading the +12V OCP mode is an experimental feature')
         return status
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
         duty = clamp(duty, _MIN_FAN_DUTY, 100)
-        LOGGER.info('ensuring fan control is in software mode')
+        _LOGGER.info('ensuring fan control is in software mode')
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
-        LOGGER.info('setting fan PWM duty to %i%%', duty)
+        _LOGGER.info('setting fan PWM duty to %i%%', duty)
         self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -148,7 +148,7 @@ class CorsairHidPsu(UsbHidDriver):
     def _write(self, data):
         assert len(data) <= _REPORT_LENGTH
         packet = bytearray(1 + _REPORT_LENGTH)
-        packet[1 : 1 + len(data)] = data  # device doesn't use numbered reports
+        packet[1: 1 + len(data)] = data  # device doesn't use numbered reports
         self.device.write(packet)
 
     def _read(self):

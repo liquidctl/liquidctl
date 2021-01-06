@@ -24,13 +24,13 @@ from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, \
                            normalize_profile, check_unsafe
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
-_WRITE_PREFIX = 0x3F
+_WRITE_PREFIX = 0x3f
 
 _FEATURE_COOLING = 0b000
-_CMD_GET_STATUS = 0xFF
+_CMD_GET_STATUS = 0xff
 _CMD_SET_COOLING = 0x14
 
 _FEATURE_LIGHTING = None
@@ -39,13 +39,13 @@ _CMD_SET_LIGHTING2 = 0b101
 
 # cooling data starts at offset 3 and ends just before the PEC byte
 _SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
-_SET_COOLING_DATA_PREFIX = [0x0, 0xFF, 0x5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-_FAN_MODE_OFFSETS = [0x0B - 3, 0x11 - 3]
+_SET_COOLING_DATA_PREFIX = [0x0, 0xff, 0x5, 0xff, 0xff, 0xff, 0xff, 0xff]
+_FAN_MODE_OFFSETS = [0x0b - 3, 0x11 - 3]
 _FAN_DUTY_OFFSETS = [offset + 5 for offset in _FAN_MODE_OFFSETS]
-_FAN_PROFILE_OFFSETS = [0x1E - 3, 0x2C - 3]
+_FAN_PROFILE_OFFSETS = [0x1e - 3, 0x2c - 3]
 _FAN_OFFSETS = list(zip(_FAN_MODE_OFFSETS, _FAN_DUTY_OFFSETS, _FAN_PROFILE_OFFSETS))
 _PUMP_MODE_OFFSET = 0x17 - 3
-_PROFILE_LENGTH_OFFSET = 0x1D - 3
+_PROFILE_LENGTH_OFFSET = 0x1d - 3
 _PROFILE_LENGTH = 7
 _CRITICAL_TEMPERATURE = 60
 
@@ -59,7 +59,7 @@ class _FanMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
+        _LOGGER.debug('falling back to FIXED_DUTY for _FanMode(%s)', value)
         return _FanMode.FIXED_DUTY
 
 
@@ -71,7 +71,7 @@ class _PumpMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        LOGGER.debug("falling back to BALANCED for _PumpMode(%s)", value)
+        _LOGGER.debug('falling back to BALANCED for _PumpMode(%s)', value)
         return _PumpMode.BALANCED
 
 
@@ -110,15 +110,15 @@ class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1B1C, 0x0C18, None, 'Corsair H100i Platinum (experimental)',
+        (0x1b1c, 0x0c18, None, 'Corsair H100i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C19, None, 'Corsair H100i Platinum SE (experimental)',
+        (0x1b1c, 0x0c19, None, 'Corsair H100i Platinum SE (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C17, None, 'Corsair H115i Platinum (experimental)',
+        (0x1b1c, 0x0c17, None, 'Corsair H115i Platinum (experimental)',
             {'fan_count': 2, 'rgb_fans': True}),
-        (0x1B1C, 0x0C20, None, 'Corsair H100i Pro XT (experimental)',
+        (0x1b1c, 0x0c20, None, 'Corsair H100i Pro XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
-        (0x1B1C, 0x0C21, None, 'Corsair H115i Pro XT (experimental)',
+        (0x1b1c, 0x0c21, None, 'Corsair H115i Pro XT (experimental)',
             {'fan_count': 2, 'rgb_fans': False}),
     ]
 
@@ -181,8 +181,8 @@ class HydroPlatinum(UsbHidDriver):
         fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
         if fw_version < (1, 1, 0):
             # see: #201 ("Fan settings affects Fan 1 only and disables fan2")
-            LOGGER.warning('outdated and possibly unsupported firmware version')
-        return [('Firmware version', '%d.%d.%d' % fw_version, '')]
+            _LOGGER.warning('outdated and possibly unsupported firmware version')
+        return [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -305,9 +305,9 @@ class HydroPlatinum(UsbHidDriver):
         except KeyError:
             raise ValueError(f'Unsupported (channel, mode) pair, should be one of: {_quoted(*self._mincolors)}')
         if len(colors) < mincolors:
-            raise ValueError(f'At least {mincolors} required for {_quoted((channel, mode))}')
+            raise ValueError(f'At least {mincolors} required for {_quoted(channel, mode)}')
         if len(colors) > maxcolors:
-            LOGGER.warning('too many colors, dropping to %d', maxcolors)
+            _LOGGER.warning('too many colors, dropping to %d', maxcolors)
             return maxcolors
         return len(colors)
 
@@ -332,19 +332,19 @@ class HydroPlatinum(UsbHidDriver):
             buf[2] |= command
             start_at = 3
         if data:
-            buf[start_at : start_at + len(data)] = data
+            buf[start_at: start_at + len(data)] = data
         buf[-1] = compute_pec(buf[2:-1])
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
         if compute_pec(buf[1:]):
-            LOGGER.warning('response checksum does not match data')
+            _LOGGER.warning('response checksum does not match data')
         return buf
 
     def _send_set_cooling(self):
         assert len(self._fan_names) <= 2, 'cannot yet fit all fan data'
         data = bytearray(_SET_COOLING_DATA_LENGTH)
-        data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
+        data[0: len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
         for fan, (imode, iduty, iprofile) in zip(self._fan_names, _FAN_OFFSETS):
             mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
@@ -352,17 +352,17 @@ class HydroPlatinum(UsbHidDriver):
                 stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
                 data[iduty] = fraction_of_byte(percentage=duty)
-                LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
+                _LOGGER.info('setting %s to %i%% duty cycle', fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
                 stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
-                data[iprofile : iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
-                LOGGER.info('setting %s to follow profile %r', fan, profile)
+                data[iprofile: iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
+                _LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
                 raise ValueError(f'Unsupported fan {mode}')
             data[imode] = mode.value
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
-        LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
+        _LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)

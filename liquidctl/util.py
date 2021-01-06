@@ -12,7 +12,7 @@ from enum import Enum, unique
 
 from liquidctl.error import UnsafeFeaturesNotEnabled
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 HUE2_MAX_ACCESSORIES_IN_CHANNEL = 6
 
@@ -93,7 +93,7 @@ class LazyHexRepr:
         self.sep = sep
 
     def __repr__(self):
-        hexvals = map(lambda x: '%02x' % x, self.data[self.start : self.end])
+        hexvals = map(lambda x: f'{x:02x}', self.data[self.start: self.end])
         return self.sep.join(hexvals)
 
 
@@ -114,7 +114,7 @@ def clamp(value, clampmin, clampmax):
     """Clamp numeric `value` to interval [`clampmin`, `clampmax`]."""
     clamped = max(clampmin, min(clampmax, value))
     if clamped != value:
-        LOGGER.debug('clamped %s to interval [%s, %s]', value, clampmin, clampmax)
+        _LOGGER.debug('clamped %s to interval [%s, %s]', value, clampmin, clampmax)
     return clamped
 
 
@@ -143,7 +143,8 @@ def u16le_from(buffer, offset=0):
     >>> u16le_from(b'\x45\x05\x03', offset=1)
     773
     """
-    return int.from_bytes(buffer[offset : offset + 2], byteorder='little')
+    return int.from_bytes(buffer[offset: offset + 2], byteorder='little')
+
 
 def u16be_from(buffer, offset=0):
     """Read an unsigned 16-bit big-endian integer from `buffer`.
@@ -153,13 +154,13 @@ def u16be_from(buffer, offset=0):
     >>> u16be_from(b'\x45\x05\x03', offset=1)
     1283
     """
-    return int.from_bytes(buffer[offset : offset + 2], byteorder='big')
+    return int.from_bytes(buffer[offset: offset + 2], byteorder='big')
 
 
 def delta(profile):
     """Compute a profile's Δx and Δy."""
     return [(cur[0]-prev[0], cur[1]-prev[1])
-            for cur,prev in zip(profile[1:], profile[:-1])]
+            for cur, prev in zip(profile[1:], profile[:-1])]
 
 
 def normalize_profile(profile, critx, max_value=100):
