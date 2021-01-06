@@ -12,6 +12,12 @@ class _MockPyUsbHandle(usb.core.Device):
         self.idProduct = 0x170e
         self._serial_number = serial_number
 
+        class MockResourceManager():
+            def dispose(self, *args, **kwargs):
+                pass
+
+        self._ctx = MockResourceManager()
+
 
 def _mock_enumerate(vendor_id=0, product_id=0):
     return [
