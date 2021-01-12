@@ -110,29 +110,31 @@ The following devices are supported by this version of liquidctl.  See each guid
     <img src="https://repology.org/badge/vertical-allrepos/liquidctl.svg" alt="Packaging status" align="right">
 </a>
 
-Packages are available for some Linux distributions.  On others, or when more control is desired, liquidctl can be installed from PyPI or directly from the source code repository.  In these cases the following runtime dependencies are necessary:
+Packages are available for some Linux distributions.  On others, or when more control is desired, liquidctl can be installed from PyPI or directly from the source code repository.
 
-| Dependency | Arch Linux | Fedora | Ubuntu |
-| --- | --- | --- | --- |
-| Python 3.6+ | python | python3 | python3 |
-| pkg_resources | python-setuptools | python3-setuptools | python3-pkg-resources |
-| docopt | python-docopt | python3-docopt | python3-docopt |
-| cython-hidapi | python-hidapi | python3-hidapi | python3-hid |
-| PyUSB | python-pyusb | python3-pyusb | python3-usb |
-| libusb-1.0 | libusb-1.0 | libusbx | libusb-1.0-0 |
-| smbus | i2c-tools | python3-i2c-tools | python3-smbus |
+The following dependencies are required at runtime (common package names are listed in parenthesis):
 
-Setuptools and, optionally, pip and pytest are needed to locally test and manually install liquidctl:
+- Python 3.6+ (python3, python)
+- pkg_resources Python package (python3-setuptools, python3-pkg-resources, python-setuptools)
+- docopt Python package (python3-docopt, python-docopt)
+- cython-hidapi Python package (python3-hidapi, python3-hid, python-hidapi)
+- PyUSB Python package (python3-pyusb, python3-usb, python-pyusb)
+- LibUSB 1.0 (libusb-1.0, libusb-1.0-0, libusbx)
+- smbus Python package (python3-i2c-tools, python3-smbus, i2c-tools)
 
-| Dependency | Arch Linux | Fedora | Ubuntu |
-| --- | --- | --- | --- |
-| setuptools | python-setuptools | python3-setuptools | python3-setuptools |
-| pip (optional) | python-pip | python3-pip | python3-pip |
-| pytest (optional) | python-pytest | pytest | python3-pytest |
+To locally test and manually install, a few more dependencies are needed:
 
-If cython-hidapi is installed from sources or directly from PyPI, then build tools and development headers for Python, libusb-1.0 and libudev are also needed.
+- setuptools Python package (python3-setuptools, python-setuptools)
+- pip [optional] (python3-pip, python-pip)
+- pytest [optional] (python3-pytest, pytest, python-pytest)
 
-To install a release from PyPI, *pip* should be used:
+Finally, if cython-hidapi will be installed from source or directly from PyPI, then some additional build tools and development headers are also required:
+
+- Python development headers (python3-dev, python3-devel)
+- LibUSB 1.0 development headers (libusb-1.0-0-dev, libusbx-devel)
+- libudev (libudev-dev, libudev-devel)
+
+Once all necessary dependencies are installed, *pip* can be used to install a release from PyPI:
 
 ```
 # pip install liquidctl
