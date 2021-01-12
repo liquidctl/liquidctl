@@ -24,8 +24,7 @@ resumes from a suspended state.
 # liquidctl initialize
 Gigabyte RGB Fusion 2.0 5702 Controller
 ├── Hardware name       IT5702-GIGABYTE V1.0.10.0
-├── Firmware version                     1.0.10.0
-└── LED channnels                               7
+└── Firmware version                     1.0.10.0
 ```
 
 ## Lighting
