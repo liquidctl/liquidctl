@@ -114,25 +114,25 @@ Packages are available for some Linux distributions.  On others, or when more co
 
 The following dependencies are required at runtime (common package names are listed in parenthesis):
 
-- Python 3.6+ (python3, python)
-- pkg_resources Python package (python3-setuptools, python3-pkg-resources, python-setuptools)
-- docopt Python package (python3-docopt, python-docopt)
-- cython-hidapi Python package (python3-hidapi, python3-hid, python-hidapi)
-- PyUSB Python package (python3-pyusb, python3-usb, python-pyusb)
-- LibUSB 1.0 (libusb-1.0, libusb-1.0-0, libusbx)
-- smbus Python package (python3-i2c-tools, python3-smbus, i2c-tools)
+- Python 3.6+ _(python3, python)_
+- pkg_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
+- docopt _(python3-docopt, python-docopt)_
+- cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
+- PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
+- LibUSB 1.0 _(libusb-1.0, libusb-1.0-0, libusbx)_
+- smbus Python package _(python3-i2c-tools, python3-smbus, i2c-tools)_
 
 To locally test and manually install, a few more dependencies are needed:
 
-- setuptools Python package (python3-setuptools, python-setuptools)
-- pip [optional] (python3-pip, python-pip)
-- pytest [optional] (python3-pytest, pytest, python-pytest)
+- setuptools Python package _(python3-setuptools, python-setuptools)_
+- pip (optional) _(python3-pip, python-pip)_
+- pytest (optional) _(python3-pytest, pytest, python-pytest)_
 
-Finally, if cython-hidapi will be installed from source or directly from PyPI, then some additional build tools and development headers are also required:
+Finally, if cython-hidapi will be installed from source or directly from PyPI, then some additional build tools and development headers may also be required:
 
-- Python development headers (python3-dev, python3-devel)
-- LibUSB 1.0 development headers (libusb-1.0-0-dev, libusbx-devel)
-- libudev (libudev-dev, libudev-devel)
+- Python development headers _(python3-dev, python3-devel)_
+- LibUSB 1.0 development headers _(libusb-1.0-0-dev, libusbx-devel)_
+- libudev developemnt headers _(libudev-dev, libudev-devel)_
 
 Once all necessary dependencies are installed, *pip* can be used to install a release from PyPI:
 
