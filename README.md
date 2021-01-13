@@ -380,49 +380,7 @@ As an alternative to using Task Scheduler, the batch file can simply be placed i
 
 ### Set up macOS using launchd
 
-You can use a shell script and launchd to automatically configure your devices during login.
-
-Create a script in `/usr/local/bin/liquidcfg.sh` and make it executable; it should contain the calls to liquidctl necessary to initialize and configure your devices.
-
-```bash
-#!/bin/bash -xe
-liquidctl set pump speed 90
-liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-liquidctl set ring color fading 350017 ff2608
-liquidctl set logo color spectrum-wave
-```
-
-Afterwards, create a new global daemon in `/Library/LaunchDaemons/local.liquidcfg.plist` that executes the previous script.
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>ProgramArguments</key>
-	<array>
-		<string>/usr/local/bin/liquidcfg.sh</string>
-	</array>
-	<key>Label</key>
-	<string>local.liquidcfg</string>
-	<key>RunAtLoad</key>
-	<true/>
-	<key>KeepAlive</key>
-	<false/>
-	<key>EnvironmentVariables</key>
-	<dict>
-		<key>PATH</key>
-		<string>/Library/Frameworks/Python.framework/Versions/?.?/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
-	</dict>
-</dict>
-</plist>
-```
-
-It is important to adjust the location of Python 3 framework in the PATH environment variable above.  launchd agents use the system profile and thus will by default only find the Apple-provided Python 2.7 and its packages.
-
-You can enable and disable the agent with `launchctl load|unload /Library/LaunchDaemons/local.liquidcfg.plist`.  Errors can be found in `system.log` using Console; search for `liquidcfg` or `liquidctl`.
-
-A real world example can be seen in [icedterminal/ga-z270x-ug](https://github.com/icedterminal/ga-z270x-ug/tree/master/post_install/pump_control).
+You can use a shell script and launchd to automatically configure your devices during login or after waking from sleep.  A [detailed guide](https://www.tonymacx86.com/threads/gigabyte-z490-vision-d-thunderbolt-3-i5-10400-amd-rx-580.298642/page-24#post-2138475) is available in a post on tonymac86.
 
 
 ## Troubleshooting
