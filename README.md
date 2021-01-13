@@ -380,7 +380,7 @@ As an alternative to using Task Scheduler, the batch file can simply be placed i
 
 ### Set up macOS using launchd
 
-You can use a shell script and launchd to automatically configure your devices during login or after waking from sleep.  A [detailed guide](https://www.tonymacx86.com/threads/gigabyte-z490-vision-d-thunderbolt-3-i5-10400-amd-rx-580.298642/page-24#post-2138475) is available in a post on tonymac86.
+You can use a shell script and launchd to automatically configure your devices during login or after waking from sleep.  A [detailed guide](https://www.tonymacx86.com/threads/gigabyte-z490-vision-d-thunderbolt-3-i5-10400-amd-rx-580.298642/page-24#post-2138475) is available on tonymacx86.
 
 
 ## Troubleshooting
