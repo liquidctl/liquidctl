@@ -45,3 +45,11 @@ Notes:
 - on the service unit file `Requires=` is used instead of `Wants=` because we want a [strong dependency](https://www.freedesktop.org/software/systemd/man/systemd.unit.html#%5BUnit%5D%20Section%20Options)
 - rebooting the system is not technically necessary, but triggering the new udev rules without a reboot is outside the scope of this document
 - some devices may still not be able to response just after being discovered by udev, in which case a delay is really necessary
+
+## Alternative approach
+
+An alternative approach is to have systemd start the configuration service when the device is found by udev, by making the device depend on the service:
+
+```
+ACTION=="add", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="170e", ATTRS{serial}=="<serial number>" ENV{SYSTEMD_WANTS}="liquidcfg.service"
+```
