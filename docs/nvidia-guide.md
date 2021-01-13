@@ -19,7 +19,7 @@ Jump to a specific section:
 
 ## EVGA GTX 1080 FTW
 
-Experimental.  Only RGB lighting supported.
+Only RGB lighting supported.
 
 Unsafe features:
 
@@ -35,7 +35,7 @@ In verbose mode `status` reports the current RGB lighting settings.
 
 ```
 # liquidctl status --verbose --unsafe=smbus
-EVGA GTX 1080 FTW (experimental)
+EVGA GTX 1080 FTW
 ├── Mode      Fixed  
 └── Color    2aff00  
 ```
@@ -80,7 +80,7 @@ preferable, if the use case allows for them.
 
 ## ASUS Strix RTX 2080 Ti OC
 
-Experimental. Only RGB lighting supported.
+Only RGB lighting supported.
 
 Unsafe features:
 
@@ -96,7 +96,7 @@ In verbose mode `status` reports the current RGB lighting settings.
 
 ```
 # liquidctl status --verbose --unsafe=smbus
-ASUS Strix RTX 2080 Ti OC (experimental)
+ASUS Strix RTX 2080 Ti OC
 ├── Mode      Fixed  
 └── Color    ff0000  
 ```

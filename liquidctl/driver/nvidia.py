@@ -73,7 +73,7 @@ class EvgaPascal(SmbusDriver):
             return
 
         supported = [
-            (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, 'EVGA GTX 1080 FTW (experimental)'),
+            (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, 'EVGA GTX 1080 FTW'),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
@@ -221,7 +221,7 @@ class RogTuring(SmbusDriver):
 
         supported = [
             (NVIDIA_RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
-                'ASUS Strix RTX 2080 Ti OC (experimental)'),
+                'ASUS Strix RTX 2080 Ti OC'),
         ]
 
         for (dev_id, sub_dev_id, desc) in supported:
