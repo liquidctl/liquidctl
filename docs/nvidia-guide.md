@@ -85,7 +85,6 @@ Experimental. Only RGB lighting supported.
 Unsafe features:
 
 - `smbus`: see [Inherent unsafeness of I²C/SMBus]
-- `rog_turing`: access a few predefined addresses
 
 ### Initialization
 
@@ -96,7 +95,7 @@ Not required for this device.
 In verbose mode `status` reports the current RGB lighting settings.
 
 ```
-# liquidctl status --verbose --unsafe=smbus,rog_turing
+# liquidctl status --verbose --unsafe=smbus
 ASUS Strix RTX 2080 Ti OC (experimental)
 ├── Mode      Fixed  
 └── Color    ff0000  
@@ -117,13 +116,13 @@ each device family.
 | `led`      | `rainbow`     |      0 |
 
 ```
-# liquidctl set led color off --unsafe=smbus,rog_turing
-# liquidctl set led color rainbow --unsafe=smbus,rog_turing
-# liquidctl set led color fixed ff8000 --unsafe=smbus,rog_turing
-# liquidctl set led color flash ff8000 --unsafe=smbus,rog_turing
-# liquidctl set led color breathing "hsv(90,85,70)" --unsafe=smbus,rog_turing
-                ^^^       ^^^^^^^^^  ^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^
-              channel        mode        color        enable unsafe features
+# liquidctl set led color off --unsafe=smbus
+# liquidctl set led color rainbow --unsafe=smbus
+# liquidctl set led color fixed ff8000 --unsafe=smbus
+# liquidctl set led color flash ff8000 --unsafe=smbus
+# liquidctl set led color breathing "hsv(90,85,70)" --unsafe=smbus
+                ^^^       ^^^^^^^^^  ^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^
+              channel        mode        color     unsafe features
 ```
 
 The LED color can be specified using any of the
@@ -139,7 +138,7 @@ number of write cycles, volatile settings are preferable, if the use case
 allows for them.
 
 ```
-# liquidctl set led color fixed 00ff00 --non-volatile --unsafe=smbus,rog_turing
+# liquidctl set led color fixed 00ff00 --non-volatile --unsafe=smbus
 ```
 
 Note: The `off` mode is simply an alias for `fixed 000000`.

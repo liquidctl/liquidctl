@@ -234,7 +234,7 @@ class RogTuring(SmbusDriver):
 
             selected_address = None
 
-            if check_unsafe('smbus', 'rog_turing', **kwargs):
+            if check_unsafe('smbus', **kwargs):
                 for address in ADDRESSES:
                     val1 = 0
                     val2 = 0
@@ -273,9 +273,9 @@ class RogTuring(SmbusDriver):
         if not verbose:
             return []
 
-        if not check_unsafe('smbus', 'rog_turing', **kwargs):
+        if not check_unsafe('smbus', **kwargs):
             _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'smbus,rog_turing'", self.description)
+                            "'smbus'", self.description)
             return []
 
         assert self._address != self._SENTINEL_ADDRESS, \
@@ -323,7 +323,7 @@ class RogTuring(SmbusDriver):
 
         """
 
-        check_unsafe('smbus', 'rog_turing', error=True, **kwargs)
+        check_unsafe('smbus', error=True, **kwargs)
 
         assert self._address != self._SENTINEL_ADDRESS, \
                'invalid address (probing may not have had access to SMbus)'

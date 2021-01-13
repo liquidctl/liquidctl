@@ -212,7 +212,7 @@ def test_rog_turing_does_not_find_devices(monkeypatch):
                 f'changing {attr} did not cause a mismatch'
 
     # with unsafe features addresses can be checked and none match
-    assert list(map(type, RogTuring.probe(smbus, unsafe='smbus,rog_turing'))) == []
+    assert list(map(type, RogTuring.probe(smbus, unsafe='smbus'))) == []
 
 
 def test_rog_turing_assumes_device_if_unsafe_bus_unavailable(monkeypatch):
@@ -226,7 +226,7 @@ def test_rog_turing_finds_devices_on_any_addresses(monkeypatch):
     addresses = [0x29, 0x2a, 0x60]
     for addr in addresses:
         smbus = create_strix_2080ti_oc_bus(controller_address=addr)
-        cards = list(RogTuring.probe(smbus, unsafe='smbus,rog_turing'))
+        cards = list(RogTuring.probe(smbus, unsafe='smbus'))
         assert list(map(type, cards)) == [RogTuring]
         assert cards[0].address == hex(addr)
 
@@ -241,14 +241,14 @@ def test_rog_turing_only_use_one_address(monkeypatch):
         smbus.write_byte_data(addr, 0x21, 0x89)
     smbus.close()
 
-    cards = list(RogTuring.probe(smbus, unsafe='smbus,rog_turing'))
+    cards = list(RogTuring.probe(smbus, unsafe='smbus'))
     assert list(map(type, cards)) == [RogTuring]
     assert cards[0].address == hex(addresses[0])
 
 
 def test_rog_turing_unsafely_probed_is_not_usable(strix_2080ti_oc_bus):
     card = next(RogTuring.probe(strix_2080ti_oc_bus))
-    too_late = 'smbus,rog_turing'
+    too_late = 'smbus'
 
     with pytest.raises(AssertionError):
         card.get_status(verbose=True, unsafe=too_late)
@@ -265,13 +265,10 @@ def test_rog_turing_get_status_is_noop(strix_2080ti_oc_bus):
 def test_rog_turing_get_verbose_status_is_unsafe(strix_2080ti_oc_bus):
     card = next(RogTuring.probe(strix_2080ti_oc_bus))
     assert card.get_status(verbose=True) == []
-    assert card.get_status(verbose=True) == []
-    assert card.get_status(verbose=True, unsafe='rog_turing') == []
-    assert card.get_status(verbose=True, unsafe='smbus') == []
 
 
 def test_rog_turing_gets_verbose_status(strix_2080ti_oc_bus):
-    enable = ['smbus', 'rog_turing']
+    enable = ['smbus']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -295,15 +292,9 @@ def test_rog_turing_set_color_is_unsafe(strix_2080ti_oc_bus):
     with pytest.raises(UnsafeFeaturesNotEnabled):
         assert card.set_color('led', 'off', [])
 
-    with pytest.raises(UnsafeFeaturesNotEnabled):
-        assert card.set_color('led', 'off', [], unsafe='rog_turing')
-
-    with pytest.raises(UnsafeFeaturesNotEnabled):
-        assert card.set_color('led', 'off', [], unsafe='smbus')
-
 
 def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
-    enable = ['smbus', 'rog_turing']
+    enable = ['smbus']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -324,7 +315,7 @@ def test_rog_turing_sets_color_to_off(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
-    enable = ['smbus', 'rog_turing']
+    enable = ['smbus']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -341,7 +332,7 @@ def test_rog_turing_sets_color_to_fixed(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
-    enable = ['smbus', 'rog_turing']
+    enable = ['smbus']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -353,7 +344,7 @@ def test_rog_turing_sets_color_to_rainbow(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
-    enable = ['smbus', 'rog_turing']
+    enable = ['smbus']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
@@ -370,7 +361,7 @@ def test_rog_turing_sets_color_to_breathing(strix_2080ti_oc_bus):
 
 
 def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
-    enable = ['smbus', 'rog_turing']
+    enable = ['smbus']
     card = next(RogTuring.probe(strix_2080ti_oc_bus, unsafe=enable))
 
     with card.connect(unsafe=enable):
