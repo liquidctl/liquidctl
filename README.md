@@ -456,7 +456,7 @@ file.
 [SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
 
 
-## Related projects (2020 edition)
+## Related projects
 
 ### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 
