@@ -338,6 +338,7 @@ def main():
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
             log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
+            _LOGGER.error('More information is provided in the corresponding device guide')
         except Exception as err:
             log_error(err, f'Unexpected error with {dev.description}: {err}')
         finally:
