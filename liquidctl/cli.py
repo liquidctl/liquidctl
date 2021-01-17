@@ -330,7 +330,7 @@ def main():
             elif err.args == ('open failed', ):
                 log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, 'Unexpected OS error with {dev.description}: {err}')
+                log_error(err, f'Unexpected OS error with {dev.description}: {err}')
         except NotSupportedByDevice as err:
             log_error(err, f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
