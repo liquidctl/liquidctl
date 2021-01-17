@@ -5,7 +5,7 @@ Supported devices:
 - NZXT Kraken X (X53, X63 and Z73)
 - NZXT Kraken Z (Z63 and Z73); no OLED screen control yet
 
-Copyright (C) 2020–2020  Tom Frey, Jonas Malaco and contributors
+Copyright (C) 2020–2021  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -95,7 +95,7 @@ the devices must be manually initialized by calling `initialize()`.  This will
 cause all connected fans and LED accessories to be detected, and enable status
 updates.  It is recommended to initialize the devices at every boot.
 
-Copyright (C) 2018–2020  Jonas Malaco, CaseySJ and contributors
+Copyright (C) 2018–2021  Jonas Malaco, CaseySJ and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

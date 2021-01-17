@@ -9,7 +9,7 @@ Features:
 - fan control: missing
 - 12V multiple rail configuration: missing
 
-Copyright (C) 2019–2020  Jonas Malaco and contributors
+Copyright (C) 2019–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -49,7 +49,7 @@ Other interface options:
 Deprecated:
   --hid <ignored>                Deprecated
 
-Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey, Marshall Asch and
+Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey and
 contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens

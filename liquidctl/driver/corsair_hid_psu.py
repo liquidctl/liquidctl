@@ -5,7 +5,7 @@ Supported devices:
 - Corsair HXi (HX750i, HX850i, HX1000i and HX1200i)
 - Corsair RMi (RM650i, RM750i, RM850i and RM1000i)
 
-Copyright (C) 2019–2020  Jonas Malaco and contributors
+Copyright (C) 2019–2021  Jonas Malaco and contributors
 
 Port of corsaiRMi by notaz and realies.
 Copyright (c) notaz, 2016

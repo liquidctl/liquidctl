@@ -1,6 +1,6 @@
 """liquidctl drivers for NVIDIA graphics cards.
 
-Copyright (C) 2020–2020  Jonas Malaco, Marshall Asch and contributors
+Copyright (C) 2020–2021  Jonas Malaco, Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -13,7 +13,7 @@ The Kraken M22 shares similar RGB funcionality to the X models of the same
 generation, but has no liquid temperature sensor and no hability to report or
 set fan or pump speeds.
 
-Copyright (C) 2018–2020  Jonas Malaco and contributors
+Copyright (C) 2018–2021  Jonas Malaco and contributors
 
 Incorporates work by leaty, Ksenija Stanojevic, Alexander Tong and Jens
 Neumaier.

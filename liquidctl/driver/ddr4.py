@@ -1,6 +1,6 @@
 """liquidctl drivers for DDR4 memory.
 
-Copyright (C) 2020–2020  Jonas Malaco and contributors
+Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

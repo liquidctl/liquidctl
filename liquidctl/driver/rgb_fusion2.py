@@ -5,7 +5,7 @@ Supported controllers:
 - ITE 5702: found in Gigabyte Z490 Vision D
 - ITE 8297: found in Gigabyte X570 Aorus Elite
 
-Copyright (C) 2020–2020  CaseySJ, Jonas Malaco and contributors
+Copyright (C) 2020–2021  CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -11,7 +11,7 @@ NOTE:
     Software control will be enabled at a future time.
 
 
-Copyright (C) 2020–2020  Marshall Asch and contributors
+Copyright (C) 2020–2021  Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

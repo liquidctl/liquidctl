@@ -426,7 +426,7 @@ You are also encouraged to contribute to the documentation and to these examples
 ## License
 
 liquidctl – monitor and control liquid coolers and other devices.  
-Copyright (C) 2018–2020  Jonas Malaco, CaseySJ, Tom Frey, Marshall Asch and
+Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey and
 contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
