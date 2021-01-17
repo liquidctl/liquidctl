@@ -1,28 +1,42 @@
 # Changelog
 
-## [Unreleased]
+## [1.5.0] – Unreleased
+_Summary for the 1.5.0 release: Corsair Commander Pro and Lighting Node Pro
+support; EVGA GTX 1080 FTW and ASUS Strix RTX 2080 Ti OC support on Linux;
+Corsair Vengeance RGB and TSE2004-compatible DDR4 modules support on Intel on
+Linux; `--direction` flag, replacing previous "backwards-" modes; improved
+error handling and reporting; new project home; other improvements and fixes._
+
+_Node for Linux package maintainers: this release introduces a new dependency,
+Python 'smbus' (from the i2c-tools project); additionally, since trying to
+access I²C/SMBus devices without having the i2c-dev kernel module loaded will
+result in errors, `extra/linux/modules-load.conf` is provided as a suggestion;
+finally, `extra/linux/71-liquidctl.rules` will now (as provided) give
+unprivileged access to i801_smbus adapters._
 
 Changelog since 1.4.2:
 ### Added
  - Add SMBus and I²C support on Linux
- - Add experimental partial support for EVGA GTX 1080 FTW
- - Add experimental partial support for ASUS Strix RTX 2080 Ti OC
- - Add experimental support for DIMMs with TSE2004-compatible temperature sensors
- - Add experimental support for Corsair Vengeance RGB
+ - Add support for EVGA GTX 1080 FTW on Linux
+ - Add support for ASUS Strix RTX 2080 Ti OC on Linux
+ - Add experimental support for DIMMs with TSE2004-compatible temperature sensors on Intel/Linux
+ - Add experimental support for Corsair Vengeance RGB on Intel/Linux
  - Add experimental support for the Corsair Commander Pro
- - Add experimental support for the Corsair Lighting Node Pro 
+ - Add experimental support for the Corsair Lighting Node Pro
  - Add `--direction` modifier to animations
  - Add `--non-volatile` to control persistence of settings (NVIDIA GPUs)
  - Add `--start-led`, `--maximum-leds` and `--temperature-sensor` options (Corsair Commander/Lighting Node devices)
  - Add support for CSS-style hexadecimal triples
- - Added completion script for bash
  - Implement the context manager protocol in the driver API
  - Export `find_liquidctl_devices` from the top-level `liquidctl` package
+ - Added completion script for bash
  - [extra] Add `LQiNFO.py` exporter (liquidctl -> HWiNFO)
+ - [extra] Add `prometheus-liquidctl-exporter` exporter (liquidctl -> Prometheus)
 ### Changed
+ - Move GitHub project into liquidctl organization
+ - Improve error handling and reporting
  - Make vendor and product IDs optional in drivers
  - Change casing of "PRO" device names to "Pro"
- - Improve error handling and reporting
  - Improve the documentation
 ### Fixed
  - Fix potential exception when a release number is not available
@@ -35,7 +49,7 @@ Changelog since 1.4.2:
 ## [1.4.2] – 2020-11-01
 _Summary for the 1.4.2 release: standardized hexadecimal parsing in the CLI;
 fixes for Windows and mac OS; improvements to Hydro Platinum/Pro XT and Kraken
-X3 drivers.._
+X3 drivers._
 
 Changelog since 1.4.1:
 ### Added
