@@ -138,24 +138,24 @@ _²: This is not a real mode but it is fixed with RGB values of 0_
 
 
 To specify which LED's on the channel the effect should apply to the
-`--start-led` and `--num-leds` flags must be given.
+`--start-led` and `--maximum-leds` flags must be given.
 
 If you have 3 Corsair LL fans connected to channel one and you want to set
 the first and third to green and the middle to blue you can use the following
 commands:
 
 ```
-# liquidctl set led1 color fixed 00ff00 --start-led 1 --num-leds 48
-# liquidctl set led1 color fixed 0000ff --start-led 16 --num-leds 16
+# liquidctl set led1 color fixed 00ff00 --start-led 1 --maximum-leds 48
+# liquidctl set led1 color fixed 0000ff --start-led 16 --maximum-leds 16
 ```
 
 This will first set all 48 leds to green then will set leds 16-32 to blue.
 Alternatively you could do:
 
 ```
-# liquidctl set led1 color fixed 00ff00 --start-led 1 --num-leds 16
-# liquidctl set led1 color fixed 0000ff --start-led 16 --num-leds 16
-# liquidctl set led1 color fixed 00ff00 --start-led 32 --num-leds 16
+# liquidctl set led1 color fixed 00ff00 --start-led 1 --maximum-leds 16
+# liquidctl set led1 color fixed 0000ff --start-led 16 --maximum-leds 16
+# liquidctl set led1 color fixed 00ff00 --start-led 32 --maximum-leds 16
 ```
 
 
