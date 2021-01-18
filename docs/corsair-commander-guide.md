@@ -104,7 +104,7 @@ Behaviour is unspecified if the specified temperature probe is not connected.
 _Note: pass `--verbose` to see the raw settings being sent to the cooler._
 
 After normalization of the profile and enforcement of the (60°C, 5000) fail-safe.
-This temperature failsafe can be over-ridden by using the `--unsafe=high_tempature` flag.
+This temperature failsafe can be over-ridden by using the `--unsafe=high_temperature` flag.
 This will use a maximum temperature of 100 degrees.
 
 ## Controlling the LEDs

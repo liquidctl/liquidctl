@@ -348,7 +348,7 @@ class CommanderPro(UsbHidDriver):
 
         profile = list(profile)
 
-        criticalTemp = _CRITICAL_TEMPERATURE_HIGH if check_unsafe('high_tempature', **kwargs) else _CRITICAL_TEMPERATURE
+        criticalTemp = _CRITICAL_TEMPERATURE_HIGH if check_unsafe('high_temperature', **kwargs) else _CRITICAL_TEMPERATURE
         profile = _prepare_profile(profile, criticalTemp)
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
