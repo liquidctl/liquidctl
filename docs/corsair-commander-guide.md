@@ -1,7 +1,7 @@
 # Corsair Commander Pro
 _Driver API and source code available in [`liquidctl.driver.commander_pro`](../liquidctl/driver/commander_pro.py)._
 
-This driver will also work for the Corsair Lighting Node Pro, and Lighting Node Core Devices.
+This driver will also work for the Corsair Lighting Node Pro Devices.
 
 ## Initializing the device
 
@@ -37,7 +37,7 @@ Corsair Lighting Node Pro (experimental)
 
 ## Retrieving the fan speeds, temperatures and voltages
 
-The Lighting Node Pro and Lighting Node Core do not have a status message.
+The Lighting Node Pro does not have a status message.
 
 
 The Commander Pro is able to retrieve the current fan speeds as well as
@@ -69,7 +69,7 @@ Corsair Commander Pro (experimental)
 
 ## Programming the fan speeds
 
-The Lighting Node Pro and Lighting Node Core do not have any fans to control.
+The Lighting Node Pro Does not have any fans to control.
 
 
 Each fan can be set to either a fixed duty cycle, or a profile consisting of up
@@ -110,7 +110,7 @@ This will use a maximum temperature of 100 degrees.
 ## Controlling the LEDs
 
 
-The devices have 2 lighting channels.
+The devices have 2 lighting channels that can have up to 96 leds connected to each.
 LED channels are specified as either `led1` or `led2` with channel 1 being the default.
 
 The table bellow summarizes the available modes, and their associated
