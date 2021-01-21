@@ -121,8 +121,6 @@ class CommanderPro(UsbHidDriver):
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
         (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro (experimental)',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
-        (0x1b1c, 0x0c1a, None, 'Corsair Lighting Node Core (experimental)',
-            {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
     ]
 
     def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
@@ -203,7 +201,7 @@ class CommanderPro(UsbHidDriver):
         """
 
         if self.device.product_id != 0x0c10:
-            _LOGGER.debug('only the Commander Pro supports this')
+            _LOGGER.debug('only the commander pro supports this')
             return []
 
         connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
@@ -446,8 +444,8 @@ class CommanderPro(UsbHidDriver):
 
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
-        start_led = clamp(start_led, 1, 255) - 1
-        num_leds = clamp(maximum_leds, 1, 255 - start_led - 1) # limit the value to 1 byte
+        start_led = clamp(start_led, 1, 96) - 1
+        num_leds = clamp(maximum_leds, 1, 96-start_led-1)  # there is a current firmware limitation of 96 led's per channel
         random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
         mode = _MODES.get(mode, -1)
 
@@ -467,12 +465,6 @@ class CommanderPro(UsbHidDriver):
 
         saved_effects = [] if mode_str == 'off' else self._data.load('saved_effects', default=[])
         saved_effects += [lighting_effect]
-
-        # check to make sure that too many LED effects are not being sent.
-        # the max seems to be 8 as found here https://github.com/liquidctl/liquidctl/issues/154#issuecomment-762372583
-        if len(saved_effects) > 8:
-            _LOGGER.warning(f'too many lighting effects. Run `liquidctl set {channel} color clear` to reset the effect')
-            return
 
         self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
 
