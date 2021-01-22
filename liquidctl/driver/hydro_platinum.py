@@ -36,6 +36,7 @@ _CMD_SET_COOLING = 0x14
 _FEATURE_LIGHTING = None
 _CMD_SET_LIGHTING1 = 0b100
 _CMD_SET_LIGHTING2 = 0b101
+_CMD_SET_LIGHTING3 = 0b110
 
 # cooling data starts at offset 3 and ends just before the PEC byte
 _SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
@@ -111,20 +112,20 @@ class HydroPlatinum(UsbHidDriver):
 
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c18, None, 'Corsair H100i Platinum (experimental)',
-            {'fan_count': 2, 'rgb_fans': True}),
+            {'fan_count': 2, 'fan_leds': 4}),
         (0x1b1c, 0x0c19, None, 'Corsair H100i Platinum SE (experimental)',
-            {'fan_count': 2, 'rgb_fans': True}),
+            {'fan_count': 2, 'fan_leds': 16}),
         (0x1b1c, 0x0c17, None, 'Corsair H115i Platinum (experimental)',
-            {'fan_count': 2, 'rgb_fans': True}),
+            {'fan_count': 2, 'fan_leds': 4}),
         (0x1b1c, 0x0c20, None, 'Corsair H100i Pro XT (experimental)',
-            {'fan_count': 2, 'rgb_fans': False}),
+            {'fan_count': 2, 'fan_leds': 0}),
         (0x1b1c, 0x0c21, None, 'Corsair H115i Pro XT (experimental)',
-            {'fan_count': 2, 'rgb_fans': False}),
+            {'fan_count': 2, 'fan_leds': 0}),
     ]
 
-    def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
+    def __init__(self, device, description, fan_count, fan_leds, **kwargs):
         super().__init__(device, description, **kwargs)
-        self._led_count = 16 + 4 * fan_count * rgb_fans
+        self._led_count = 16 + fan_count * fan_leds
         self._fan_names = [f'fan{i + 1}' for i in range(fan_count)]
         self._mincolors = {
             ('led', 'super-fixed'): 1,
@@ -294,9 +295,14 @@ class HydroPlatinum(UsbHidDriver):
             self._data.store('leds_enabled', 1)
 
         data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
-        data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:])))
+        data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:40])))
+        data3 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[40:])))
+
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
+
+        if self._led_count > 40:
+            self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING3, data=data3)
 
     def _check_color_args(self, channel, mode, colors):
         try:

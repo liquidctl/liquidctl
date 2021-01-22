@@ -14,8 +14,22 @@ _WIN_MAX_PATH = 260  # Windows API should be the bottleneck
 @pytest.fixture
 def h115iPlatinumDevice():
     description = 'Mock H115i Platinum'
-    kwargs = {'fan_count': 2, 'rgb_fans': True}
-    device = _H115iPlatinumDevice()
+    kwargs = {'fan_count': 2, 'fan_leds': 4}
+    device = _MockHydroPlatinumDevice()
+    dev = HydroPlatinum(device, description, **kwargs)
+
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage.store('leds_enabled', 0)
+
+    dev.connect(runtime_storage=runtime_storage)
+
+    return dev
+
+@pytest.fixture
+def h100iPlatinumSeDevice():
+    description = 'Mock H100i Platinum SE'
+    kwargs = {'fan_count': 2, 'fan_leds': 16}
+    device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
 
     runtime_storage = MockRuntimeStorage(key_prefixes='testing')
@@ -26,7 +40,7 @@ def h115iPlatinumDevice():
     return dev
 
 
-class _H115iPlatinumDevice(MockHidapiDevice):
+class _MockHydroPlatinumDevice(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0xffff, product_id=0x0c17, address=_SAMPLE_PATH)
         self.fw_version = (1, 1, 15)
@@ -213,6 +227,23 @@ def test_h115i_platinum_device_address_leds(h115iPlatinumDevice):
     assert dev.device.sent[4].data[1] & 0b111 == 0b101
     assert dev.device.sent[4].data[2:14] == encoded[60:]
 
+def test_h100i_platinum_se_device_address_leds(h100iPlatinumSeDevice):
+    dev = h100iPlatinumSeDevice
+    colors = [[i + 3, i + 2, i + 1] for i in range(0, 48 * 3, 3)]
+    encoded = list(range(1, 48 * 3 + 1))
+    dev.set_color(channel='led', mode='super-fixed', colors=iter(colors))
+
+    assert len(dev.device.sent) == 6  # 3 for enable, 3 for the leds
+    assert dev.device.sent[0].data[1] & 0b111 == 0b001
+    assert dev.device.sent[1].data[1] & 0b111 == 0b010
+    assert dev.device.sent[2].data[1] & 0b111 == 0b011
+    assert dev.device.sent[3].data[1] & 0b111 == 0b100
+    assert dev.device.sent[3].data[2:62] == encoded[:60]
+    assert dev.device.sent[4].data[1] & 0b111 == 0b101
+    assert dev.device.sent[4].data[2:62] == encoded[60:120]
+    assert dev.device.sent[5].data[1] & 0b111 == 0b110
+    assert dev.device.sent[5].data[2:26] == encoded[120:]
+
 
 def test_h115i_platinum_device_synchronize(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
@@ -256,8 +287,8 @@ def test_h115i_platinum_device_invalid_color_modes(h115iPlatinumDevice):
 
 def test_h115i_platinum_device_short_enough_storage_path():
     description = 'Mock H115i Platinum'
-    kwargs = {'fan_count': 2, 'rgb_fans': True}
-    device = _H115iPlatinumDevice()
+    kwargs = {'fan_count': 2, 'fan_leds': 4}
+    device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
     dev.connect()
 
