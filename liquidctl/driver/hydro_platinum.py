@@ -299,7 +299,9 @@ class HydroPlatinum(UsbHidDriver):
         data3 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[40:])))
 
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
-        self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
+        
+        if self._led_count > 20:
+            self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
 
         if self._led_count > 40:
             self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING3, data=data3)
