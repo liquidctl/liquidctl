@@ -267,7 +267,7 @@ class Modern690Lc(_CommonAsetekDriver):
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
         adjusted = self._prepare_profile(profile, dmin, dmax)
         for temp, duty in adjusted:
-            _LOGGER.info('setting %i PWM point: (%i°C, %i%%), device interpolated',
+            _LOGGER.info('setting %s PWM point: (%i°C, %i%%), device interpolated',
                          channel, temp, duty)
         temps, duties = map(list, zip(*adjusted))
         self._begin_transaction()
