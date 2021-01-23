@@ -260,8 +260,16 @@ class PyUsbDevice:
 
     def release(self):
         """Release the device to other programs."""
-        _LOGGER.debug('ensure interface is released')
-        usb.util.release_interface(self.usbdev, self.bInterfaceNumber)
+        if sys.platform == 'win32':
+            # on Windows we need to release the entire device for other
+            # programs to be able to access it
+            _LOGGER.debug('explicitly release device')
+            usb.util.dispose_resources(self.usbdev)
+        else:
+            # on Linux, and possibly on Mac and BSDs, releasing the specific
+            # interface is enough
+            _LOGGER.debug('explicitly release interface')
+            usb.util.release_interface(self.usbdev, self.bInterfaceNumber)
 
     def close(self):
         """Disconnect from the device.
