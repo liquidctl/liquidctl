@@ -22,7 +22,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, \
-                           normalize_profile, check_unsafe
+                           normalize_profile
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -271,13 +271,7 @@ class HydroPlatinum(UsbHidDriver):
         | led      | off         | synchronized |        0 |      0 |
         | led      | fixed       | synchronized |        1 |      1 |
         | led      | super-fixed | independent  |       24 |     16 |
-
-        Note: lighting control of Pro XT devices is experimental and requires
-        the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
         """
-
-        if 'Pro XT' in self.description:
-            check_unsafe('pro_xt_lighting', error=True, **kwargs)
 
         channel, mode, colors = channel.lower(), mode.lower(), list(colors)
         self._check_color_args(channel, mode, colors)

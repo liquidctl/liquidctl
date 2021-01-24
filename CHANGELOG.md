@@ -23,6 +23,7 @@ Changelog since 1.4.2:
  - Add experimental support for Corsair Vengeance RGB on Intel/Linux
  - Add experimental support for the Corsair Commander Pro
  - Add experimental support for the Corsair Lighting Node Pro
+ - Add experimental support for the Corsair H150i Pro XT
  - Add `--direction` modifier to animations
  - Add `--non-volatile` to control persistence of settings (NVIDIA GPUs)
  - Add `--start-led`, `--maximum-leds` and `--temperature-sensor` options (Corsair Commander/Lighting Node devices)
