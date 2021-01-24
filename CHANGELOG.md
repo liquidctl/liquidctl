@@ -43,6 +43,7 @@ Changelog since 1.4.2:
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
  - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
+ - Fix LEDs on the second fan for the H100i Platinum SE
 ### Deprecated
  - Deprecate `backwards-` modes; use `--direction=backwards` instead
 
