@@ -132,7 +132,7 @@ class _CommonAsetekDriver(UsbDriver):
             # somewhere, and would need another call to initialize() to clear
             # that up.  Padding with (CRIT, 100%) appears to avoid all issues,
             # at least within the reasonable range of operating temperatures.
-            _LOGGER.info('filling missing %i PWM points with (60°C, 100%%)', missing)
+            _LOGGER.info('filling missing %d PWM points with (60°C, 100%%)', missing)
             opt = opt + [(_CRITICAL_TEMPERATURE, 100)]*missing
         return opt
 
@@ -267,7 +267,7 @@ class Modern690Lc(_CommonAsetekDriver):
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
         adjusted = self._prepare_profile(profile, dmin, dmax)
         for temp, duty in adjusted:
-            _LOGGER.info('setting %s PWM point: (%i°C, %i%%), device interpolated',
+            _LOGGER.info('setting %s PWM point: (%d°C, %d%%), device interpolated',
                          channel, temp, duty)
         temps, duties = map(list, zip(*adjusted))
         self._begin_transaction()
@@ -291,7 +291,7 @@ class Modern690Lc(_CommonAsetekDriver):
         total_levels = _MAX_PUMP_SPEED_CODE - _MIN_PUMP_SPEED_CODE + 1
         level = round((duty - dmin)/(dmax - dmin)*total_levels)
         effective_duty = round(dmin + level*(dmax - dmin)/total_levels)
-        _LOGGER.info('setting %s PWM duty to %i%% (level %i)', channel, effective_duty, level)
+        _LOGGER.info('setting %s PWM duty to %d%% (level %d)', channel, effective_duty, level)
         self._begin_transaction()
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
         self._end_transaction_and_read()
@@ -331,7 +331,7 @@ class Legacy690Lc(_CommonAsetekDriver):
         for channel in ['pump', 'fan']:
             mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
             duty = clamp(self._data.load_int(f'{channel}_duty', default=dmax), dmin, dmax)
-            _LOGGER.info('setting %s duty to %i%%', channel, duty)
+            _LOGGER.info('setting %s duty to %d%%', channel, duty)
             self._write([mtype, duty])
         return self._end_transaction_and_read()
 

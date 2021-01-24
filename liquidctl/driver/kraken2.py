@@ -216,7 +216,7 @@ class Kraken2(UsbHidDriver):
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         for i, (temp, duty) in enumerate(interp):
             duty = clamp(duty, dmin, dmax)
-            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+            _LOGGER.info('setting %s PWM duty to %d%% for liquid temperature >= %d°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
@@ -235,7 +235,7 @@ class Kraken2(UsbHidDriver):
             raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        _LOGGER.info('setting %d PWM duty to %i%%', channel, duty)
+        _LOGGER.info('setting %s PWM duty to %d%%', channel, duty)
         self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
 
     @property

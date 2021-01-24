@@ -360,7 +360,7 @@ class HydroPlatinum(UsbHidDriver):
                 stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
                 data[iduty] = fraction_of_byte(percentage=duty)
-                _LOGGER.info('setting %s to %i%% duty cycle', fan, duty)
+                _LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
                 stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)

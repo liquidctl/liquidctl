@@ -259,7 +259,7 @@ class KrakenX3(UsbHidDriver):
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
         interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
         for temp, duty in zip(stdtemps, interp):
-            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+            _LOGGER.info('setting %s PWM duty to %d%% for liquid temperature >= %d°C',
                          channel, duty, temp)
         self._write(header + interp)
 

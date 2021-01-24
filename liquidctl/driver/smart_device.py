@@ -173,7 +173,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             selected_channels = {channel: self._speed_channels[channel]}
         for cname, (cid, dmin, dmax) in selected_channels.items():
             duty = clamp(duty, dmin, dmax)
-            _LOGGER.info('setting %s duty to %i%%', cname, duty)
+            _LOGGER.info('setting %s duty to %d%%', cname, duty)
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):
