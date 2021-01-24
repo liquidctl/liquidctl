@@ -80,7 +80,7 @@ maximum number of colors for each device family.
 | -------- | ----------- | ------------ | ------------ | -------- | ------ | ----------- |
 | led      | off         | synchronized | all off      |        0 |      0 |           0 |
 | led      | fixed       | synchronized | independent  |        1 |      1 |           1 |
-| led      | super-fixed | independent  | independent  |       24 |     16 |           48 |
+| led      | super-fixed | independent  | independent  |       24 |     16 |          48 |
 
 The `led` channel can be used to address individual LEDs, and supports the
 `super-fixed`, `fixed` and `off` modes.
