@@ -76,11 +76,11 @@ modes, but liquidctl provides a few for convenience.
 The table bellow summarizes the available channels, modes, and their associated
 maximum number of colors for each device family.
 
-| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT |
-| -------- | ----------- | ------------ | ------------ | -------- | ------ |
-| led      | off         | synchronized | all off      |        0 |      0 |
-| led      | fixed       | synchronized | independent  |        1 |      1 |
-| led      | super-fixed | independent  | independent  |       24 |     16 |
+| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT | Platinum SE |
+| -------- | ----------- | ------------ | ------------ | -------- | ------ | ----------- |
+| led      | off         | synchronized | all off      |        0 |      0 |           0 |
+| led      | fixed       | synchronized | independent  |        1 |      1 |           1 |
+| led      | super-fixed | independent  | independent  |       24 |     16 |           48 |
 
 The `led` channel can be used to address individual LEDs, and supports the
 `super-fixed`, `fixed` and `off` modes.
