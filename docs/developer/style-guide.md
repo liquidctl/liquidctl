@@ -1,8 +1,6 @@
 # Style guide
 
-> This is not the code; this is just a tribute.
-
-A style guide is meant to make the code more pleasant to look at or modify.
+This is not the code; this is just a tribute.
 
 ## General guidelines
 
@@ -11,14 +9,13 @@ This section has yet to be written, but for a start...
 Read [PEP 8], then immediately watch Raymond Hettinger's [Beyond PEP 8] talk.
 Write code somewhere between those lines.
 
-In this repository, newer drivers are usually better examples than older ones.
-Experience with the domain helps to write better code...  Who would have
-thought that, right?
+In this repository, newer drivers are usually better examples than older
+ones.  Experience with the domain helps to write better code.
 
 Try to keep lines around 80-ish columns wide; in some modules 100-ish columns
 may be more suited, but definitively try to avoid going beyond that.
 
-Be consistent within a given module.  Try to be consistent between similar
+Be consistent within a given module; *try* to be consistent between similar
 modules.
 
 [PEP 8]: https://pep8.org/
@@ -30,14 +27,16 @@ modules.
 - prefer to continue lines vertically, aligned with the opening delimiter
 - prefer single quotes for string literals, unless double quotes will avoid
   some escaping
+- use f-strings whenever applicable, except for `logging` messages (more about
+  those bellow) which wont necessarily be shown
 - use lowercase hexadecimal literals
 
 ## Use of automatic formatters
 
 Pull requests are welcome.
 
-For a suggestion of a formatter and associated configuration to use, not just
-to fill this section.
+_(For a suggestion of a formatter and associated configuration to use, not just
+to fill this section)._
 
 ## Writing messages
 
@@ -110,14 +109,19 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 ```
 
-Prefer old-style %-formatting, since this is evaluated lazyly by `logging`, and
-the message will only be formated if the logging level is enabled.
+Prefer old-style %-formatting for logging messages, since this is evaluated
+lazyly by `logging`, and the message will only be formated if the logging level
+is enabled.
 
 ```py
 _LOGGER.warning('value %d, expected %d', current, expected)
 ```
 
-The rest of the time using `f-strings` are preferred, to follow the `PEP 498` guideline.
+_(While `%d` and `%i` are equivalent, and both print integers, prefer the
+former over the latter)._
+
+_(The rest of the time `f-strings` are preferred, following the `PEP 498`
+guideline)._
 
 When writing informational or debug messages, pay attention to the cost of
 computing each value.  A classic example is hex formatting some bytes, which
