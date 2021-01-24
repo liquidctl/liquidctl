@@ -33,7 +33,7 @@ Examples:
   liquiddump > file.jsonl
   liquiddump | jq -c .
 
-Copyright (C) 2019–2020  Jonas Malaco
+Copyright (C) 2019–2021  Jonas Malaco
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -51,7 +51,7 @@ from liquidctl.driver import *
 LOGGER = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='0.1.0')
+    args = docopt(__doc__, version='0.1.1')
     frwd = _borrow._make_opts(args)
     devs = list(find_liquidctl_devices(**frwd))
     update_interval = float(args['--interval'])
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     try:
         for d in devs:
-            LOGGER.info('Initializing %s', d.description)
+            LOGGER.info('initializing %s', d.description)
             d.connect()
         status = {}
         while True:
@@ -75,19 +75,19 @@ if __name__ == '__main__':
                 try:
                     status[d.description] = d.get_status()
                 except usb.core.USBError as err:
-                    LOGGER.warning('Failed to read from the device, possibly serving stale data')
+                    LOGGER.warning('failed to read from the device, possibly serving stale data')
                     LOGGER.debug(err, exc_info=True)
             print(json.dumps(status), flush=True)
             time.sleep(update_interval)
     except KeyboardInterrupt:
-        LOGGER.info('Canceled by user')
+        LOGGER.info('canceled by user')
     except:
-        LOGGER.exception('Unexpected error')
+        LOGGER.exception('unexpected error')
         sys.exit(1)
     finally:
         for d in devs:
             try:
-                LOGGER.info('Disconnecting from %s', d.description)
+                LOGGER.info('disconnecting from %s', d.description)
                 d.disconnect()
             except:
-                LOGGER.exception('Unexpected error when disconnecting')
+                LOGGER.exception('unexpected error when disconnecting')
