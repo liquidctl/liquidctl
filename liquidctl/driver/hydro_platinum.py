@@ -258,11 +258,11 @@ class HydroPlatinum(UsbHidDriver):
         The table bellow summarizes the available channels, modes, and their
         associated maximum number of colors for each device family.
 
-        | Channel  | Mode        | LEDs         | Platinum | Pro XT |
-        | -------- | ----------- | ------------ | -------- | ------ |
-        | led      | off         | synchronized |        0 |      0 |
-        | led      | fixed       | synchronized |        1 |      1 |
-        | led      | super-fixed | independent  |       24 |     16 |
+        | Channel  | Mode        | LEDs         | Platinum | Pro XT | Platinum SE |
+        | -------- | ----------- | ------------ | -------- | ------ | ----------- |
+        | led      | off         | synchronized |        0 |      0 |           0 |
+        | led      | fixed       | synchronized |        1 |      1 |           1 |
+        | led      | super-fixed | independent  |       24 |     16 |          48 |
 
         Note: lighting control of Pro XT devices is experimental and requires
         the `pro_xt_lighting` constant to be supplied in the `unsafe` iterable.
