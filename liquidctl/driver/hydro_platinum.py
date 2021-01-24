@@ -30,6 +30,7 @@ _REPORT_LENGTH = 64
 _WRITE_PREFIX = 0x3f
 
 _FEATURE_COOLING = 0b000
+_FEATURE_COOLING2 = 0b110
 _CMD_GET_STATUS = 0xff
 _CMD_SET_COOLING = 0x14
 
@@ -121,6 +122,8 @@ class HydroPlatinum(UsbHidDriver):
             {'fan_count': 2, 'fan_leds': 0}),
         (0x1b1c, 0x0c21, None, 'Corsair H115i Pro XT (experimental)',
             {'fan_count': 2, 'fan_leds': 0}),
+        (0x1b1c, 0x0c22, None, 'Corsair H150i Pro XT (experimental)',
+            {'fan_count': 3, 'fan_leds': 0}),
     ]
 
     def __init__(self, device, description, fan_count, fan_leds, **kwargs):
@@ -192,13 +195,18 @@ class HydroPlatinum(UsbHidDriver):
         """
 
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
-        assert len(self._fan_names) == 2, f'cannot yet parse with {len(self._fan_names)} fans'
-        return [
+
+        info = [
             ('Liquid temperature', res[8] + res[7] / 255, '°C'),
             ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
             ('Fan 2 speed', u16le_from(res, offset=22), 'rpm'),
             ('Pump speed', u16le_from(res, offset=29), 'rpm'),
         ]
+
+        if len(self._fan_names) == 3:
+            info.insert(3, ('Fan 3 speed', u16le_from(res, offset=43), 'rpm'))
+
+        return info
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -350,12 +358,13 @@ class HydroPlatinum(UsbHidDriver):
             _LOGGER.warning('response checksum does not match data')
         return buf
 
-    def _send_set_cooling(self):
-        assert len(self._fan_names) <= 2, 'cannot yet fit all fan data'
+    def _generate_cooling_payload(self, fan_names):
+
         data = bytearray(_SET_COOLING_DATA_LENGTH)
         data[0: len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
-        for fan, (imode, iduty, iprofile) in zip(self._fan_names, _FAN_OFFSETS):
+
+        for fan, (imode, iduty, iprofile) in zip(fan_names, _FAN_OFFSETS):
             mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
             if mode is _FanMode.FIXED_DUTY:
                 stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
@@ -371,7 +380,19 @@ class HydroPlatinum(UsbHidDriver):
             else:
                 raise ValueError(f'unsupported fan {mode}')
             data[imode] = mode.value
+
+        return data
+
+    def _send_set_cooling(self):
+        data = self._generate_cooling_payload(self._fan_names[0:2])
+        data2 = self._generate_cooling_payload(self._fan_names[2:])
+
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
         _LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
+        data2[_PUMP_MODE_OFFSET] = 0xff
+
+        if len(self._fan_names) == 3:
+            self._send_command(_FEATURE_COOLING2, _CMD_SET_COOLING, data=data2)
+
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
