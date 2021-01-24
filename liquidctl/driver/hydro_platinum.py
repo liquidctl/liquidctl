@@ -7,6 +7,7 @@ Supported devices:
 - Corsair H115i Platinum
 - Corsair H100i Pro XT
 - Corsair H115i Pro XT
+- Corsair H150i Pro XT
 
 Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
