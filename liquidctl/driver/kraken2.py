@@ -183,7 +183,7 @@ class Kraken2(UsbHidDriver):
     def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
         colors = list(colors)
         if len(colors) < mincolors:
-            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
+            raise ValueError(f'not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if len(colors) > 0:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)

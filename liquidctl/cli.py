@@ -321,7 +321,7 @@ def main():
             elif args['set'] and args['color']:
                 _device_set_color(dev, args, **opts)
             else:
-                raise Exception('Not sure what to do')
+                raise Exception('not sure what to do')
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues

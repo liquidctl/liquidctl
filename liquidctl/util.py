@@ -130,9 +130,9 @@ def fraction_of_byte(ratio=None, percentage=None):
         ratio = percentage / 100
     if ratio is not None:
         if ratio < 0 or ratio > 1:
-            raise ValueError('Cannot express ratios outside of [0, 1]')
+            raise ValueError('cannot express ratios outside of [0, 1]')
         return round(ratio * 255)
-    raise ValueError('Either ratio or percentage must not be None')
+    raise ValueError('either ratio or percentage must not be None')
 
 
 def u16le_from(buffer, offset=0):
@@ -255,42 +255,42 @@ def color_from_str(x):
     >>> color_from_str('fF7f3f1f')
     Traceback (most recent call last):
         ...
-    ValueError: Cannot parse color: fF7f3f1f
+    ValueError: cannot parse color: fF7f3f1f
     >>> color_from_str('0bff00ff')
     Traceback (most recent call last):
         ...
-    ValueError: Cannot parse color: 0bff00ff
+    ValueError: cannot parse color: 0bff00ff
     >>> color_from_str('rgb()')
     Traceback (most recent call last):
         ...
-    ValueError: Expected 3-element triple: rgb()
+    ValueError: expected 3-element triple: rgb()
     >>> color_from_str('rgb(255)')
     Traceback (most recent call last):
         ...
-    ValueError: Expected 3-element triple: rgb(255)
+    ValueError: expected 3-element triple: rgb(255)
     >>> color_from_str('rgb(300, 255, 255)')
     Traceback (most recent call last):
         ...
-    ValueError: Expected value in range [0, 255]: 300 in rgb(300, 255, 255)
+    ValueError: expected value in range [0, 255]: 300 in rgb(300, 255, 255)
     >>> color_from_str('hsv(360, 150, 100)')
     Traceback (most recent call last):
         ...
-    ValueError: Expected value in range [0, 100]: 150 in hsv(360, 150, 100)
+    ValueError: expected value in range [0, 100]: 150 in hsv(360, 150, 100)
     >>> color_from_str('hsl(360, 100, 150)')
     Traceback (most recent call last):
         ...
-    ValueError: Expected value in range [0, 100]: 150 in hsl(360, 100, 150)
+    ValueError: expected value in range [0, 100]: 150 in hsl(360, 100, 150)
     """
 
     def parse_triple(sub, maxvalues):
         literal = literal_eval(sub)
         if not isinstance(literal, tuple) or len(literal) != 3:
-            raise ValueError(f'Expected 3-element triple: {x}')
+            raise ValueError(f'expected 3-element triple: {x}')
         for value, maxvalue in zip(literal, maxvalues):
             if not isinstance(value, int) and not isinstance(value, float):
-                raise ValueError(f'Expected float or int: {value} in {x}')
+                raise ValueError(f'expected float or int: {value} in {x}')
             if value < 0 or value > maxvalue:
-                raise ValueError(f'Expected value in range [0, {maxvalue}]: {value} in {x}')
+                raise ValueError(f'expected value in range [0, {maxvalue}]: {value} in {x}')
         return literal
 
     xl = x.lower()
@@ -311,7 +311,7 @@ def color_from_str(x):
     elif len(x) == 8 and xl.startswith('0x'):
         return list(bytes.fromhex(x[2:]))
     else:
-        raise ValueError(f'Cannot parse color: {x}')
+        raise ValueError(f'cannot parse color: {x}')
 
 
 def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):

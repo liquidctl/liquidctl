@@ -119,9 +119,9 @@ class _CommonAsetekDriver(UsbDriver):
         opt = list(profile)
         size = len(opt)
         if size < 1:
-            raise ValueError('At least one PWM point required')
+            raise ValueError('at least one PWM point required')
         elif size > _MAX_PROFILE_POINTS:
-            raise ValueError(f'Too many PWM points ({size}), only 6 supported')
+            raise ValueError(f'too many PWM points ({size}), only 6 supported')
         for i, (temp, duty) in enumerate(opt):
             opt[i] = (temp, clamp(duty, min_duty, max_duty))
         missing = _MAX_PROFILE_POINTS - size
@@ -259,7 +259,7 @@ class Modern690Lc(_CommonAsetekDriver):
             self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
-            raise KeyError(f'Unknown lighting mode {mode}')
+            raise KeyError(f'unknown lighting mode {mode}')
         self._end_transaction_and_read()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -385,7 +385,7 @@ class Legacy690Lc(_CommonAsetekDriver):
             self._configure_device(blackout=True, alert_temp=clamp(alert_threshold, 0, 100),
                                    color3=alert_color)
         else:
-            raise KeyError(f'Unsupported lighting mode {mode}')
+            raise KeyError(f'unsupported lighting mode {mode}')
         self._end_transaction_and_read()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -421,7 +421,7 @@ class Hydro690Lc(Modern690Lc):
     def set_color(self, channel, mode, colors, **kwargs):
         """Set the color mode for a specific channel."""
         if mode == 'rainbow':
-            raise KeyError(f'Unsupported lighting mode {mode}')
+            raise KeyError(f'unsupported lighting mode {mode}')
         super().set_color(channel, mode, colors, **kwargs)
 
 

@@ -152,7 +152,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
+            raise ValueError(f'not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if colors:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)

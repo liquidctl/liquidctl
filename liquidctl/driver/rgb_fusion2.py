@@ -193,7 +193,7 @@ class RgbFusion2(UsbHidDriver):
                 r, g, b = next(colors)
                 single_color = (b, g, r)
             except StopIteration:
-                raise ValueError(f'One color required for mode={mode.name}')
+                raise ValueError(f'one color required for mode={mode.name}') from None
         else:
             single_color = (0, 0, 0)
         remaining = sum(1 for _ in colors)

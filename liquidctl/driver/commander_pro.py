@@ -75,7 +75,7 @@ _MODES = {
     'color_pulse': 0x02,
     'color_wave': 0x03,
     'fixed': 0x04,
-    # 'tempature': 0x05,    # ignore this
+    # 'temperature': 0x05,    # ignore this
     'visor': 0x06,
     'marquee': 0x07,
     'blink': 0x08,
@@ -207,7 +207,7 @@ class CommanderPro(UsbHidDriver):
         connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
-        # get the tempature sensor values
+        # get the temperature sensor values
         temp = [0]*self._temp_probs
         for num, enabled in enumerate(connected_temp_sensors):
             if enabled:
@@ -244,13 +244,13 @@ class CommanderPro(UsbHidDriver):
         return status
 
     def _get_temp(self, sensor_num):
-        """This will get the tempature in degrees celsius for the specified temp sensor.
+        """This will get the temperature in degrees celsius for the specified temp sensor.
 
         sensor number MUST be in range of 0-3
         """
 
         if self._temp_probs == 0:
-            raise ValueError('this device does not have a tempature sensor')
+            raise ValueError('this device does not have a temperature sensor')
 
         if sensor_num < 0 or sensor_num > 3:
             raise ValueError(f'sensor_num {sensor_num} invalid, must be between 0 and 3')
@@ -357,7 +357,7 @@ class CommanderPro(UsbHidDriver):
         sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
 
         if sensors[temp_sensor-1] != 1:
-            raise ValueError('the specified tempature sensor is not connected')
+            raise ValueError('the specified temperature sensor is not connected')
 
         buf = bytearray(26)
         buf[1] = temp_sensor-1  # 0  # use temp sensor 1

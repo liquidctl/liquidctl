@@ -97,7 +97,7 @@ def _prepare_profile(original):
     normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
-        raise ValueError(f'Too many points in profile (remove {-missing})')
+        raise ValueError(f'too many points in profile (remove {-missing})')
     if missing > 0:
         normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
     return normal
@@ -299,7 +299,7 @@ class HydroPlatinum(UsbHidDriver):
         data3 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[40:])))
 
         self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING1, data=data1)
-        
+
         if self._led_count > 20:
             self._send_command(_FEATURE_LIGHTING, _CMD_SET_LIGHTING2, data=data2)
 
@@ -311,9 +311,10 @@ class HydroPlatinum(UsbHidDriver):
             mincolors = self._mincolors[(channel, mode)]
             maxcolors = self._maxcolors[(channel, mode)]
         except KeyError:
-            raise ValueError(f'Unsupported (channel, mode) pair, should be one of: {_quoted(*self._mincolors)}')
+            raise ValueError(f'unsupported (channel, mode) pair, '
+                             f'should be one of: {_quoted(*self._mincolors)}') from None
         if len(colors) < mincolors:
-            raise ValueError(f'At least {mincolors} required for {_quoted(channel, mode)}')
+            raise ValueError(f'at least {mincolors} required for {_quoted(channel, mode)}')
         if len(colors) > maxcolors:
             _LOGGER.warning('too many colors, dropping to %d', maxcolors)
             return maxcolors
@@ -325,7 +326,7 @@ class HydroPlatinum(UsbHidDriver):
             return self._fan_names
         if channel in self._fan_names:
             return [channel]
-        raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+        raise ValueError(f'unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
 
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
@@ -368,7 +369,7 @@ class HydroPlatinum(UsbHidDriver):
                 data[iprofile: iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
                 _LOGGER.info('setting %s to follow profile %r', fan, profile)
             else:
-                raise ValueError(f'Unsupported fan {mode}')
+                raise ValueError(f'unsupported fan {mode}')
             data[imode] = mode.value
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
         data[_PUMP_MODE_OFFSET] = pump_mode.value
