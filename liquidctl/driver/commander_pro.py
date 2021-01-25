@@ -122,7 +122,7 @@ class CommanderPro(UsbHidDriver):
         (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro (experimental)',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
         (0x1b1c, 0x0c1a, None, 'Corsair Lighting Node Core (experimental)',
-            {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
+            {'fan_count': 0, 'temp_probs': 0, 'led_channels': 1}),
     ]
 
     def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
@@ -442,12 +442,12 @@ class CommanderPro(UsbHidDriver):
         mode = mode_str.lower()
 
         # default to channel 1 if channel 2 is not specified.
-        led_channel = 1 if channel == 'led2' else 0
+        led_channel = 1 if channel == 'led2' && len(self._led_names) != 1 else 0
 
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
-        start_led = clamp(start_led, 1, 255) - 1
-        num_leds = clamp(maximum_leds, 1, 255 - start_led - 1)
+        start_led = clamp(start_led, 1, 204) - 1
+        num_leds = clamp(maximum_leds, 1, 204 - start_led - 1)
         random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
         mode = _MODES.get(mode, -1)
 
