@@ -29,7 +29,7 @@ What does it do: <fan controller, AIO, graphics card, RAM,...>
 ----
 Include this for any USB based device:
 ```
-<put the output of lsusb -v  here>
+<put the output of lsusb -v or system_profiler SPUSBDataType  here>
 ```
 
 Could you attach some Wireshark captures between the device and the actual software?
