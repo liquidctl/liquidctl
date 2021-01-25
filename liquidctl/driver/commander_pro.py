@@ -442,7 +442,7 @@ class CommanderPro(UsbHidDriver):
         mode = mode_str.lower()
 
         # default to channel 1 if channel 2 is not specified.
-        led_channel = 1 if channel == 'led2' && len(self._led_names) != 1 else 0
+        led_channel = 1 if channel == 'led2' and len(self._led_names) != 1 else 0
 
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
