@@ -428,45 +428,46 @@ def test_get_hw_fan_channels_lowercase(commanderProDevice):
     assert res == [1]
 
 
-def test_get_hw_fan_channels_invalid(commanderProDevice):
+@pytest.mark.parametrize('channel', [
+    'fan23', 'fan7', 'fan0', 'fan', 'led', 'led1', 'bob'
+    ])
+def test_get_hw_fan_channels_invalid(commanderProDevice, channel):
     with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('fan23')
+        commanderProDevice._get_hw_fan_channels(channel)
 
+
+@pytest.mark.parametrize('channel,expected', [
+    ('led1', 0), ('led2', 1), ('LED1', 0), ('lEd2', 1)
+    ])
+def test_get_hw_led_channel_valid(commanderProDevice, channel, expected):
+
+    res = commanderProDevice._get_hw_led_channel(channel)
+    assert res == expected
+
+
+@pytest.mark.parametrize('channel,expected', [
+    ('led', 0), ('LeD', 0), ('LED', 0)
+    ])
+def test_get_hw_led_channel_valid_node_core(lightingNodeCoreDevice, channel, expected):
+
+    res = lightingNodeCoreDevice._get_hw_led_channel(channel)
+    assert res == expected
+
+
+@pytest.mark.parametrize('channel', [
+    'led0', 'led3', 'led', 'fan', 'fan1', 'bob'
+    ])
+def test_get_hw_led_channel_invalid(commanderProDevice, channel):
     with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('fan7')
+        commanderProDevice._get_hw_led_channel(channel)
 
+
+@pytest.mark.parametrize('channel', [
+    'led0', 'led1', 'led2', 'fan', 'fan1', 'bob'
+    ])
+def test_get_hw_led_channel_invalid_node_core(lightingNodeCoreDevice, channel):
     with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('fan0')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('bob')
-
-
-def test_get_hw_led_channels_all(commanderProDevice):
-
-    res = commanderProDevice._get_hw_led_channels('led')
-    assert res == [0, 1]
-
-
-def test_get_hw_led_channels_uppercase(commanderProDevice):
-    res = commanderProDevice._get_hw_led_channels('LeD2')
-    assert res == [1]
-
-
-def test_get_hw_led_channels_lowercase(commanderProDevice):
-    res = commanderProDevice._get_hw_led_channels('led1')
-    assert res == [0]
-
-
-def test_get_hw_led_channels_invalid(commanderProDevice):
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_led_channels('led0')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_led_channels('led3')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_led_channels('bob')
+        lightingNodeCoreDevice._get_hw_led_channel(channel)
 
 
 def test_set_fixed_speed_low(commanderProDevice):
@@ -1123,7 +1124,7 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
 
 
 @pytest.mark.parametrize('channel,expected', [
-    ('led1', 0x00), ('led', 0x00), ('LeD1', 0x00),
+    ('led1', 0x00), ('LeD1', 0x00),
     ('led2', 0x01), ('LED2', 0x01), ('LeD2', 0x01)
     ])
 def test_set_color_hardware_channel(commanderProDevice, channel, expected):

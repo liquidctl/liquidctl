@@ -131,7 +131,7 @@ class CommanderPro(UsbHidDriver):
         # the following fields are only initialized in connect()
         self._data = None
         self._fan_names = [f'fan{i+1}' for i in range(fan_count)]
-        self._led_names = [f'led{i+1}' for i in range(led_channels)]
+        self._led_names = ['led'] if led_channels == 1 else [f'led{i+1}' for i in range(led_channels)]
         self._temp_probs = temp_probs
         self._fan_count = fan_count
 
@@ -291,17 +291,15 @@ class CommanderPro(UsbHidDriver):
         else:
             raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
 
-    def _get_hw_led_channels(self, channel):
+    def _get_hw_led_channel(self, channel):
         """This will get a list of all the led channels that the command should be sent to
         It will look up the name of the led channel given and return a list of the real led device number
         """
         channel = channel.lower()
-        if channel == 'led':
-            return [i for i in range(len(self._led_names))]
-        elif channel in self._led_names:
-            return [self._led_names.index(channel)]
+        if channel in self._led_names:
+            return self._led_names.index(channel)
         else:
-            raise ValueError(f'unknown channel, should be one of: {_quoted("led", *self._led_names)}')
+            raise ValueError(f'unknown channel, should be one of: {_quoted(*self._led_names)}')
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -438,11 +436,8 @@ class CommanderPro(UsbHidDriver):
 
         direction = direction.lower()
         speed = speed.lower()
-        channel = channel.lower()
+        led_channel = self._get_hw_led_channel(channel.lower())
         mode = mode_str.lower()
-
-        # default to channel 1 if channel 2 is not specified.
-        led_channel = 1 if channel == 'led2' and len(self._led_names) != 1 else 0
 
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
