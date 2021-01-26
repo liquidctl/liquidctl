@@ -29,22 +29,27 @@ Changelog since 1.4.2:
  - Add support for CSS-style hexadecimal triples
  - Implement the context manager protocol in the driver API
  - Export `find_liquidctl_devices` from the top-level `liquidctl` package
- - Added completion script for bash
+ - Add modules-load configuration file for Linux
+ - Add completion script for bash
  - [extra] Add `LQiNFO.py` exporter (liquidctl -> HWiNFO)
  - [extra] Add `prometheus-liquidctl-exporter` exporter (liquidctl -> Prometheus)
 ### Changed
  - Move GitHub project into liquidctl organization
  - Improve error handling and reporting
  - Make vendor and product IDs optional in drivers
+ - Mark Kraken X53, X63, X73 as no longer experimental
+ - Mark NZXT RGB & Fan Controller as no longer experimental
+ - Mark RGB Fusion 2.0 controllers as no longer experimental
  - Change casing of "PRO" device names to "Pro"
  - Improve the documentation
 ### Fixed
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
  - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
- - Fix LEDs on the second fan for the H100i Platinum SE
+ - Fix compatibility with hidapi 0.10 and multi-usage devices (RGB Fusion 2.0 controllers)
+ - Fix lighting settings in Platinum SE and Pro XT coolers
 ### Deprecated
- - Deprecate `backwards-` modes; use `--direction=backwards` instead
+ - Deprecate `backwards-` pseudo modes; use `--direction=backwards` instead
 
 
 ## [1.4.2] – 2020-11-01
