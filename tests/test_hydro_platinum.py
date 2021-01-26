@@ -1,5 +1,5 @@
 import pytest
-from liquidctl.driver.hydro_platinum import HydroPlatinum
+from liquidctl.driver.hydro_platinum import HydroPlatinum, _sequence
 from liquidctl.pmbus import compute_pec
 from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
@@ -63,6 +63,17 @@ class _MockHydroPlatinumDevice(MockHidapiDevice):
         buf[29:31] = self.pump_speed.to_bytes(length=2, byteorder='little')
         buf[-1] = compute_pec(buf[1:-1])
         return buf[:length]
+
+
+def test_sequence_numbers_are_correctly_generated():
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    sequence = _sequence(runtime_storage)
+
+    for i in range(1, 32):
+        assert next(sequence) == i
+
+    for i in range(1, 32):
+        assert next(sequence) == i
 
 
 def test_h115i_platinum_device_connect(h115iPlatinumDevice):
