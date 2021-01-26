@@ -5,8 +5,10 @@ Closes # .
 This added X awesome new feature....
 
 ---
-### Tasks that must be compleeted:
-- [ ] Update changelog
+### Tasks that must be completed:
 - [ ] Update the man page file
-- [ ] did any flags change? does the bash completion script need updating?
-- [ ] new Driver? is there a protocol description and wireshark captures in [liquidctl/collected-device-data](/liquidctl/collected-device-data)
+- [ ] Do your changes conform to this projects [style guide](docs/developer/style-guide.md)?
+- [ ] Did you write tests?
+- [ ] Did any flags change? Doe the completion scripts need updating?
+- [ ] New Driver? Is there a protocol description and wireshark captures in [liquidctl/collected-device-data](/liquidctl/collected-device-data)
+- [ ] Have these changes been tested on real devices?
