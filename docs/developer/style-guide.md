@@ -31,12 +31,46 @@ modules.
   those bellow) which wont necessarily be shown
 - use lowercase hexadecimal literals
 
+
 ## Use of automatic formatters
 
 Pull requests are welcome.
 
 _(For a suggestion of a formatter and associated configuration to use, not just
 to fill this section)._
+
+
+## Driver behavior
+
+### Fixing or raising on user errors
+
+Drivers should fix as most user errors as possible, without making actual
+choices for the user.
+
+For example, it is fine to clamp an integer, like a fan duty cycle, to its
+minimum and maximum allowed values, since values bellow or above the possible
+range can safely be interpreted as requests for, respectively, the "minimum"
+and "maximum" values themselves.
+
+On the other hand, if a device has two channels, and the user specifies a third
+one, the driver should raise a suitable error (`ValueError`, in this case) so
+the user can check the documentation and decide for *themselves* which channel
+to use.
+
+### Case sensitivity of string constants
+
+Channel and mode names, as well as some other values, must be specified as
+strings.  While this is more explicit then using magic numbers, it introduces
+the problem of whether comparisons are case sensitive.
+
+In fact, from the point of view of a CLI user, the comparisons are case
+*insensitive.*  And, as of this version of the style guide, ensuring
+case-insensitive comparisons is the responsibility of the drivers.
+
+Note that this may change in the future; on a related note, the liquidctl APIs
+are **not** specified to ignore casing issues, even though in the current
+implementation they generally do.
+
 
 ## Writing messages
 
