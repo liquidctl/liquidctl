@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from collections import deque, namedtuple
 
 Report = namedtuple('Report', ['number', 'data'])
@@ -20,11 +21,11 @@ class MockRuntimeStorage:
             value = None
 
         if value is None:
-            return default
+            return deepcopy(default)
         elif of_type and not isinstance(value, of_type):
-            return default
+            return deepcopy(default)
         else:
-            return value
+            return deepcopy(value)
 
     def store(self, key, value):
         """Unstable API."""

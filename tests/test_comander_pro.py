@@ -42,6 +42,15 @@ def lightingNodeProDevice():
     node._data = MockRuntimeStorage(key_prefixes='testing')
     return node
 
+@pytest.fixture
+def lightingNodeCoreDevice():
+    device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c1a, address='addr')
+    node = CommanderPro(device, 'Corsair Lighting Node Core (experimental)', 0, 0, 1)
+    node.connect()
+    node._data = MockRuntimeStorage(key_prefixes='testing')
+    return node
+
+
 
 # prepare profile
 def test_prepare_profile_valid_max_rpm():
@@ -690,7 +699,7 @@ def test_set_speed_profile_valid(commanderProDevice):
     assert sent[0].data[16] == 0xf4
 
 
-def test_set_speed_profile_lighting(lightingNodeProDevice):
+def test_set_speed_profile_node(lightingNodeProDevice):
     responses = [
         '00000000000000000000000000000000',
         '00000000000000000000000000000000',
@@ -710,6 +719,29 @@ def test_set_speed_profile_lighting(lightingNodeProDevice):
 
     # check the commands sent
     sent = lightingNodeProDevice.device.sent
+    assert len(sent) == 0
+
+
+def test_set_speed_profile_core(lightingNodeCoreDevice):
+    responses = [
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000'
+    ]
+
+    for d in responses:
+        lightingNodeCoreDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+
+    lightingNodeCoreDevice._data.store('temp_sensors_connected', [0x01, 0x00, 0x00, 0x00])
+    lightingNodeCoreDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
+
+    with pytest.raises(NotSupportedByDevice):
+        lightingNodeCoreDevice.set_speed_profile('sync', [(10, 500), (20, 1000)])
+
+    # check the commands sent
+    sent = lightingNodeCoreDevice.device.sent
     assert len(sent) == 0
 
 
@@ -999,7 +1031,7 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
 
 
 @pytest.mark.parametrize('numLED,expected', [
-    (1, 0x01), (30, 0x1e), (96, 0x5f)
+    (1, 0x01), (30, 0x1e), (96, 0x60)
     ])
 def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     responses = [
@@ -1044,15 +1076,15 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
-    commanderProDevice.set_color('led1', 'fixed', colors, start_led=50, maximum_leds=50)
+    commanderProDevice.set_color('led1', 'fixed', colors, start_led=200, maximum_leds=50)
 
     # check the commands sent
     sent = commanderProDevice.device.sent
     assert len(sent) == 5
 
     assert sent[3].data[0] == 0x35
-    assert sent[3].data[2] == 0x31  # start led
-    assert sent[3].data[3] == 0x2e  # num led
+    assert sent[3].data[2] == 0xc7  # start led
+    assert sent[3].data[3] == 0x04  # num led
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -1347,6 +1379,98 @@ def test_set_color_hardware_multipe_commands(commanderProDevice):
 
     assert effects is not None
     assert len(effects) == 2
+
+
+def test_set_color_hardware_last_commands(commanderProDevice):
+
+    for i in range(15):
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex('00000000000000000000000000000000')))
+
+    effect = {
+            'channel': 0x01,
+            'start_led': 0x00,
+            'num_leds': 0x0f,
+            'mode': 0x0a,
+            'speed': 0x00,
+            'direction': 0x00,
+            'random_colors': 0x00,
+            'colors': [0xaa, 0xbb, 0xcc]
+        }
+    commanderProDevice._data.store('saved_effects', [effect, effect, effect, effect, effect, effect, effect])
+
+    commanderProDevice.set_color('led1', 'fixed', [[0x00, 0x11, 0x22]], start_led=16, maximum_leds=5)
+
+    # check the commands sent
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 12
+
+    effects = commanderProDevice._data.load('saved_effects', default=None)
+
+    assert effects is not None
+    assert len(effects) == 8
+
+
+
+def test_set_color_hardware_max_commands(commanderProDevice):
+
+    for i in range(15):
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex('00000000000000000000000000000000')))
+
+    effect = {
+            'channel': 0x01,
+            'start_led': 0x00,
+            'num_leds': 0x0f,
+            'mode': 0x0a,
+            'speed': 0x00,
+            'direction': 0x00,
+            'random_colors': 0x00,
+            'colors': [0xaa, 0xbb, 0xcc]
+        }
+    commanderProDevice._data.store('saved_effects', [effect, effect, effect, effect, effect, effect, effect, effect])
+
+    commanderProDevice.set_color('led1', 'fixed', [[0x00, 0x11, 0x22]], start_led=16, maximum_leds=5)
+
+    # check the commands sent
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 0
+
+    effects = commanderProDevice._data.load('saved_effects', default=None)
+
+    assert effects is not None
+    assert len(effects) == 8
+
+
+def test_set_color_hardware_too_many_commands(commanderProDevice):
+    responses = [
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000',
+        '00000000000000000000000000000000'
+    ]
+
+    for d in responses:
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+
+    effect = {
+            'channel': 0x01,
+            'start_led': 0x00,
+            'num_leds': 0x0f,
+            'mode': 0x0a,
+            'speed': 0x00,
+            'direction': 0x00,
+            'random_colors': 0x00,
+            'colors': [0xaa, 0xbb, 0xcc]
+        }
+    commanderProDevice._data.store('saved_effects', [effect, effect, effect, effect, effect, effect, effect, effect, effect])
+
+    commanderProDevice.set_color('led1', 'fixed', [[0x00, 0x11, 0x22]], start_led=16, maximum_leds=5)
+
+    # check the commands sent
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 0
 
 
 def test_send_command_valid_data(commanderProDevice):
