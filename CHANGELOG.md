@@ -48,6 +48,7 @@ Changelog since 1.4.2:
  - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
  - Fix compatibility with hidapi 0.10 and multi-usage devices (RGB Fusion 2.0 controllers)
  - Fix lighting settings in Platinum SE and Pro XT coolers
+ - Generate and verify the checksums of zip and exe built on AppVeyor
 ### Deprecated
  - Deprecate `backwards-` pseudo modes; use `--direction=backwards` instead
 

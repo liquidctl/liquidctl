@@ -60,6 +60,8 @@ after_build:
   - cmd: copy extra\windows\included.txt %DIST_PACKAGE%\included.txt
   - cmd: copy CHANGELOG.md %DIST_PACKAGE%\
   - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
+  - cmd: CertUtil -hashfile liquidctl.exe SHA256
+  - cmd: CertUtil -hashfile %DIST_PACKAGE%.zip SHA256
 
 test_script:
   - cmd: liquidctl.exe list --verbose --debug
