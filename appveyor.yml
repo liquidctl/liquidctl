@@ -31,22 +31,22 @@ install:
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v%LIBUSB_VERSION%/libusb-%LIBUSB_VERSION%.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
   # python build and package tools
-  - cmd: C:\Python38-x64\python -m pip install --upgrade pip setuptools --ignore-installed
+  - cmd: C:\Python39-x64\python -m pip install --upgrade pip setuptools --ignore-installed
   # remaining dependencies
-  - cmd: C:\Python38-x64\python setup.py install
+  - cmd: C:\Python39-x64\python setup.py install
   # generate list of packages that will be included
-  - cmd: C:\Python38-x64\python -m pip freeze | find /V "virtualenv" > extra\windows\included.txt
+  - cmd: C:\Python39-x64\python -m pip freeze | find /V "virtualenv" > extra\windows\included.txt
   # install pyinstaller last to not pollute included.txt with its dependencies
-  - cmd: C:\Python38-x64\python -m pip install pyinstaller
-  - cmd: C:\Python38-x64\python -m pip freeze | find "pyinstaller" >> extra\windows\included.txt
+  - cmd: C:\Python39-x64\python -m pip install pyinstaller
+  - cmd: C:\Python39-x64\python -m pip freeze | find "pyinstaller" >> extra\windows\included.txt
   - cmd: echo libusb %LIBUSB_VERSION% >> extra\windows\included.txt
-  - cmd: C:\Python38-x64\python --version >> extra\windows\included.txt
+  - cmd: C:\Python39-x64\python --version >> extra\windows\included.txt
   # run unit tests and module doctests
-  - cmd: C:\Python38-x64\python -m pip install pytest
-  - cmd: C:\Python38-x64\python -m pytest
+  - cmd: C:\Python39-x64\python -m pip install pytest
+  - cmd: C:\Python39-x64\python -m pytest
 
 build_script:
-  - cmd: C:\Python38-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --onefile --distpath .
+  - cmd: C:\Python39-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --onefile --distpath .
 
 after_build:
   - cmd: mkdir %DIST_PACKAGE%\docs
