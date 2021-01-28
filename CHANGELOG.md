@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased 1.6.0]
+
+Changelog since 1.4.2:
+### Added
+ - Add experimental support for the Corsair Hydro H150i Pro XT
+### Changed
+ - Remove `pro_xt_lighting` unsafe feature guard
+
 ## [1.5.0] – 2021-01-27
 _Summary for the 1.5.0 release: Corsair Commander Pro and Lighting Node Pro
 support; EVGA GTX 1080 FTW and ASUS Strix RTX 2080 Ti OC support on Linux;
@@ -23,7 +31,6 @@ Changelog since 1.4.2:
  - Add experimental support for Corsair Vengeance RGB on Intel/Linux
  - Add experimental support for the Corsair Commander Pro
  - Add experimental support for the Corsair Lighting Node Pro
- - Add experimental support for the Corsair H150i Pro XT
  - Add `--direction` modifier to animations
  - Add `--non-volatile` to control persistence of settings (NVIDIA GPUs)
  - Add `--start-led`, `--maximum-leds` and `--temperature-sensor` options (Corsair Commander/Lighting Node devices)
