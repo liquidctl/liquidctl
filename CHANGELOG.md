@@ -1,13 +1,13 @@
 # Changelog
 
-## [1.5.0] – Unreleased
+## [1.5.0] – 2021-01-27
 _Summary for the 1.5.0 release: Corsair Commander Pro and Lighting Node Pro
 support; EVGA GTX 1080 FTW and ASUS Strix RTX 2080 Ti OC support on Linux;
 Corsair Vengeance RGB and TSE2004-compatible DDR4 modules support on Intel on
 Linux; `--direction` flag, replacing previous "backwards-" modes; improved
 error handling and reporting; new project home; other improvements and fixes._
 
-_Node for Linux package maintainers: this release introduces a new dependency,
+_Note for Linux package maintainers: this release introduces a new dependency,
 Python 'smbus' (from the i2c-tools project); additionally, since trying to
 access I²C/SMBus devices without having the i2c-dev kernel module loaded will
 result in errors, `extra/linux/modules-load.conf` is provided as a suggestion;
