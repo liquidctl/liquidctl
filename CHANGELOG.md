@@ -51,6 +51,11 @@ Changelog since 1.4.2:
  - Generate and verify the checksums of zip and exe built on AppVeyor
 ### Deprecated
  - Deprecate `backwards-` pseudo modes; use `--direction=backwards` instead
+### Checksums
+```
+370eb9c662111b51465ac5e2649f7eaf423bd22799ef983c4957468e9d957c15  liquidctl-1.5.0-bin-windows-x86_64.zip
+762561a8b491aa98f0ccbbab4f9770813a82cc7fd776fa4c21873b994d63e892  liquidctl-1.5.0.tar.gz
+```
 
 
 ## [1.4.2] – 2020-11-01
