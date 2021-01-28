@@ -81,18 +81,18 @@ The following devices are supported by this version of liquidctl.  See each guid
 | AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
-| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
-| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
-| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
+| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
+| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
-| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
+| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
+| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
 | Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
@@ -173,7 +173,7 @@ Optional steps:
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.5.0-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.5.0/liquidctl-1.5.0-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 

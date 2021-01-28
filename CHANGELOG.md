@@ -1,13 +1,13 @@
 # Changelog
 
-## [1.5.0] – Unreleased
+## [1.5.0] – 2021-01-27
 _Summary for the 1.5.0 release: Corsair Commander Pro and Lighting Node Pro
 support; EVGA GTX 1080 FTW and ASUS Strix RTX 2080 Ti OC support on Linux;
 Corsair Vengeance RGB and TSE2004-compatible DDR4 modules support on Intel on
 Linux; `--direction` flag, replacing previous "backwards-" modes; improved
 error handling and reporting; new project home; other improvements and fixes._
 
-_Node for Linux package maintainers: this release introduces a new dependency,
+_Note for Linux package maintainers: this release introduces a new dependency,
 Python 'smbus' (from the i2c-tools project); additionally, since trying to
 access I²C/SMBus devices without having the i2c-dev kernel module loaded will
 result in errors, `extra/linux/modules-load.conf` is provided as a suggestion;
@@ -29,22 +29,33 @@ Changelog since 1.4.2:
  - Add support for CSS-style hexadecimal triples
  - Implement the context manager protocol in the driver API
  - Export `find_liquidctl_devices` from the top-level `liquidctl` package
- - Added completion script for bash
+ - Add modules-load configuration file for Linux
+ - Add completion script for bash
  - [extra] Add `LQiNFO.py` exporter (liquidctl -> HWiNFO)
  - [extra] Add `prometheus-liquidctl-exporter` exporter (liquidctl -> Prometheus)
 ### Changed
  - Move GitHub project into liquidctl organization
  - Improve error handling and reporting
  - Make vendor and product IDs optional in drivers
+ - Mark Kraken X53, X63, X73 as no longer experimental
+ - Mark NZXT RGB & Fan Controller as no longer experimental
+ - Mark RGB Fusion 2.0 controllers as no longer experimental
  - Change casing of "PRO" device names to "Pro"
  - Improve the documentation
 ### Fixed
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
  - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
- - Fix LEDs on the second fan for the H100i Platinum SE
+ - Fix compatibility with hidapi 0.10 and multi-usage devices (RGB Fusion 2.0 controllers)
+ - Fix lighting settings in Platinum SE and Pro XT coolers
+ - Generate and verify the checksums of zip and exe built on AppVeyor
 ### Deprecated
- - Deprecate `backwards-` modes; use `--direction=backwards` instead
+ - Deprecate `backwards-` pseudo modes; use `--direction=backwards` instead
+### Checksums
+```
+370eb9c662111b51465ac5e2649f7eaf423bd22799ef983c4957468e9d957c15  liquidctl-1.5.0-bin-windows-x86_64.zip
+762561a8b491aa98f0ccbbab4f9770813a82cc7fd776fa4c21873b994d63e892  liquidctl-1.5.0.tar.gz
+```
 
 
 ## [1.4.2] – 2020-11-01

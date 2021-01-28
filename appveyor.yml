@@ -46,7 +46,7 @@ install:
   - cmd: C:\Python38-x64\python -m pytest
 
 build_script:
-  - cmd: C:\Python38-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --onefile --icon extra\windows\liquidctl_logo_v1_circle_256.ico --distpath .
+  - cmd: C:\Python38-x64\Scripts\pyinstaller --add-data MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --onefile --distpath .
 
 after_build:
   - cmd: mkdir %DIST_PACKAGE%\docs
@@ -60,6 +60,8 @@ after_build:
   - cmd: copy extra\windows\included.txt %DIST_PACKAGE%\included.txt
   - cmd: copy CHANGELOG.md %DIST_PACKAGE%\
   - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
+  - cmd: CertUtil -hashfile liquidctl.exe SHA256
+  - cmd: CertUtil -hashfile %DIST_PACKAGE%.zip SHA256
 
 test_script:
   - cmd: liquidctl.exe list --verbose --debug
