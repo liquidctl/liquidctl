@@ -173,9 +173,11 @@ Optional steps:
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.5.0-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.5.0/liquidctl-1.5.0-bin-windows-x86_64.zip).
+_Note: in what we believe to be a false positive, Windows Defender is currently [heuristically flagging](https://www.microsoft.com/en-us/wdsi/threats/malware-encyclopedia-description?Name=Trojan%3aWin32%2fFuerboos.D!cl) the executable for the latest stable release of liquidctl.  We have submitted the file to Microsoft for manually analysis; in the meantime, please continue to use the previous release._
 
-Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
+A pre-built executable for the *previous* stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
+
+Executables for older releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
 Products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/)¹: open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disapear from liquidctl.
 
