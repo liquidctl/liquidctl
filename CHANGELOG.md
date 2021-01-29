@@ -3,9 +3,12 @@
 ## [Unreleased]
 
 ### Added
+ - Add experimental support for the Corsair Lighting Node Core
  - Add experimental support for the Corsair Hydro H150i Pro XT
 ### Changed
  - Remove `pro_xt_lighting` unsafe feature guard
+### Fixed
+ - Handle corrupted runtime data (#278)
 
 
 ## [1.5.0] – 2021-01-27
