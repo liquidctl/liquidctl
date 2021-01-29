@@ -49,11 +49,11 @@ class _FilesystemBackend:
             raise ValueError('key must be valid Python identifier')
         return key
 
-    def __init__(self, key_prefixes):
+    def __init__(self, key_prefixes, runtime_dirs=get_runtime_dirs()):
         key_prefixes = map(self._sanitize, key_prefixes)
         # compute read and write dirs from base runtime dirs: the first base
         # dir is selected for writes and prefered for reads
-        self._read_dirs = [os.path.join(x, *key_prefixes) for x in get_runtime_dirs()]
+        self._read_dirs = [os.path.join(x, *key_prefixes) for x in runtime_dirs]
         self._write_dir = self._read_dirs[0]
         os.makedirs(self._write_dir, exist_ok=True)
         if sys.platform == 'linux':
@@ -75,9 +75,12 @@ class _FilesystemBackend:
                         value = literal_eval(data)
                     _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
             except OSError as err:
-                _LOGGER.warning('%s exists but cannot be read: %s', path, err)
-                continue
-            return value
+                _LOGGER.warning('%s exists but could not be read: %s', path, err)
+            except ValueError as err:
+                _LOGGER.warning('%s exists but was corrupted: %s', key, err)
+            else:
+                return value
+
         _LOGGER.debug('no data (file) found for %s', key)
         return None
 
