@@ -250,11 +250,15 @@ def test_h150i_pro_xt_device_fixed_fan_speeds(h150iProXTDevice):
     dev.set_fixed_speed(channel='fan1', duty=84)
     dev.set_fixed_speed(channel='fan3', duty=50)
 
+    assert dev.device.sent[-1].data[0x01] & 0x7 == 0b000
+    assert dev.device.sent[-2].data[0x02] == 0x14
     assert dev.device.sent[-1].data[0x0b] == 0x2
     assert dev.device.sent[-1].data[0x10] / 2.55 == pytest.approx(84, abs=1 / 2.55)
     assert dev.device.sent[-1].data[0x11] == 0x2
     assert dev.device.sent[-1].data[0x16] / 2.55 == pytest.approx(42, abs=1 / 2.55)
 
+    assert dev.device.sent[-2].data[0x01] & 0x7 == 0b011
+    assert dev.device.sent[-2].data[0x02] == 0x14
     assert dev.device.sent[-2].data[0x0b] == 0x2
     assert dev.device.sent[-2].data[0x10] / 2.55 == pytest.approx(50, abs=1 / 2.55)
     assert dev.device.sent[-2].data[0x11] == 0x00
@@ -313,7 +317,7 @@ def test_h100i_platinum_se_device_address_leds(h100iPlatinumSeDevice):
     assert dev.device.sent[5].data[2:26] == encoded[120:]
 
 
-def test_h150i_pro_xt_device_fixed_fan_speeds(h150iProXTDevice):
+def test_h150i_pro_xt_device_address_leds(h150iProXTDevice):
     dev = h150iProXTDevice
     colors = [[i + 3, i + 2, i + 1] for i in range(0, 16 * 3, 3)]
     encoded = list(range(1, 16 * 3 + 1))
