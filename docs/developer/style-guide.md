@@ -64,12 +64,14 @@ strings.  While this is more explicit then using magic numbers, it introduces
 the problem of whether comparisons are case sensitive.
 
 In fact, from the point of view of a CLI user, the comparisons are case
-*insensitive.*  And, as of this version of the style guide, ensuring
-case-insensitive comparisons is the responsibility of the drivers.
+*insensitive.*  As of this version of the style guide, ensuring
+case-insensitive comparisons is a shared responsibility of both CLI and
+drivers; but whenever possible this should be kept in the CLI code, making the
+drivers simpler and the behavior more consistent.
 
-Note that this may change in the future; on a related note, the liquidctl APIs
-are **not** specified to ignore casing issues, even though in the current
-implementation they generally do.
+On the other hand, the liquidctl APIs are **not** specified to ignore casing
+issues; when that happens it is usually just to keep the implementation
+simpler.
 
 
 ## Writing messages
