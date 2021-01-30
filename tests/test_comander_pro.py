@@ -423,40 +423,35 @@ def test_get_hw_fan_channels_lowercase(commanderProDevice):
     assert res == [1]
 
 
-def test_get_hw_fan_channels_invalid(commanderProDevice):
+@pytest.mark.parametrize('channel', [
+    'fan23', 'fan7', 'fan0', 'fan', 'led', 'led1', 'bob'
+    ])
+def test_get_hw_fan_channels_invalid(commanderProDevice, channel):
     with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('fan23')
+        commanderProDevice._get_hw_fan_channels(channel)
 
+
+@pytest.mark.parametrize('channel,expected', [
+    ('led1', [0]), ('led2', [1]), ('sync', [0, 1])
+    ])
+def test_get_hw_led_channel_valid(commanderProDevice, channel, expected):
+    res = commanderProDevice._get_hw_led_channels(channel)
+    assert res == expected
+
+
+@pytest.mark.parametrize('channel,expected', [('led', [0])])
+def test_get_hw_led_channel_valid_node_core(lightingNodeCoreDevice, channel,
+                                            expected):
+    res = lightingNodeCoreDevice._get_hw_led_channels(channel)
+    assert res == expected
+
+
+@pytest.mark.parametrize('channel', [
+    'led0', 'led3', 'led', 'fan', 'fan1', 'bob'
+    ])
+def test_get_hw_led_channels_invalid(commanderProDevice, channel):
     with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('fan7')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('fan0')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_fan_channels('bob')
-
-
-def test_get_hw_led_channels_all(commanderProDevice):
-
-    res = commanderProDevice._get_hw_led_channels('led')
-    assert res == [0, 1]
-
-
-def test_get_hw_led_channels_lowercase(commanderProDevice):
-    res = commanderProDevice._get_hw_led_channels('led1')
-    assert res == [0]
-
-
-def test_get_hw_led_channels_invalid(commanderProDevice):
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_led_channels('led0')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_led_channels('led3')
-
-    with pytest.raises(ValueError):
-        commanderProDevice._get_hw_led_channels('bob')
+        commanderProDevice._get_hw_led_channels(channel)
 
 
 def test_set_fixed_speed_low(commanderProDevice):
@@ -568,16 +563,9 @@ def test_set_fixed_speed_lighting(lightingNodeProDevice):
 
 
 def test_set_speed_profile_valid_multi_fan(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -606,16 +594,9 @@ def test_set_speed_profile_valid_multi_fan(commanderProDevice):
 
 
 def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -637,16 +618,9 @@ def test_set_speed_profile_invalid_temp_sensor(commanderProDevice):
 
 
 def test_set_speed_profile_no_temp_sensors(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._data.store('temp_sensors_connected', [0x00, 0x00, 0x00, 0x00])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -660,16 +634,9 @@ def test_set_speed_profile_no_temp_sensors(commanderProDevice):
 
 
 def test_set_speed_profile_valid(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -690,16 +657,9 @@ def test_set_speed_profile_valid(commanderProDevice):
 
 
 def test_set_speed_profile_node(lightingNodeProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        lightingNodeProDevice.device.preload_read(ignore)
 
     lightingNodeProDevice._data.store('temp_sensors_connected', [0x01, 0x00, 0x00, 0x00])
     lightingNodeProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -713,16 +673,9 @@ def test_set_speed_profile_node(lightingNodeProDevice):
 
 
 def test_set_speed_profile_core(lightingNodeCoreDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        lightingNodeCoreDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        lightingNodeCoreDevice.device.preload_read(ignore)
 
     lightingNodeCoreDevice._data.store('temp_sensors_connected', [0x01, 0x00, 0x00, 0x00])
     lightingNodeCoreDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -736,16 +689,9 @@ def test_set_speed_profile_core(lightingNodeCoreDevice):
 
 
 def test_set_speed_profile_valid_unconfigured(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(5):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._data.store('temp_sensors_connected', [0x00, 0x00, 0x00, 0x00])
     commanderProDevice._data.store('fan_modes', [0x01, 0x00, 0x01, 0x01, 0x00, 0x00])
@@ -759,15 +705,9 @@ def test_set_speed_profile_valid_unconfigured(commanderProDevice):
 
 
 def test_set_color_hardware_clear(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
     effect = {
             'channel': 0x01,
@@ -781,8 +721,6 @@ def test_set_color_hardware_clear(commanderProDevice):
         }
     commanderProDevice._data.store('saved_effects', [effect])
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     commanderProDevice.set_color('led1', 'clear', [], )
 
     # check the commands sent
@@ -795,15 +733,9 @@ def test_set_color_hardware_clear(commanderProDevice):
 
 
 def test_set_color_hardware_off(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
     effect = {
             'channel': 0x01,
@@ -817,8 +749,6 @@ def test_set_color_hardware_off(commanderProDevice):
         }
     commanderProDevice._data.store('saved_effects', [effect])
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     commanderProDevice.set_color('led1', 'off', [])
 
     # check the commands sent
@@ -836,18 +766,10 @@ def test_set_color_hardware_off(commanderProDevice):
 @pytest.mark.parametrize('directionStr,expected',
                          [('forward', 0x01), ('backward', 0x00)])
 def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expected):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors, direction=directionStr)
 
@@ -865,18 +787,10 @@ def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expecte
 
 
 def test_set_color_hardware_direction_default(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors)
 
@@ -894,18 +808,10 @@ def test_set_color_hardware_direction_default(commanderProDevice):
 
 
 def test_set_color_hardware_speed_default(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors)
 
@@ -925,18 +831,10 @@ def test_set_color_hardware_speed_default(commanderProDevice):
 @pytest.mark.parametrize('speedStr,expected',
                          [('slow', 0x02), ('fast', 0x00), ('medium', 0x01)])
 def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors, speed=speedStr)
 
@@ -954,18 +852,10 @@ def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
 
 
 def test_set_color_hardware_default_start_end(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors)
 
@@ -987,18 +877,10 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
     (1, 0x00), (30, 0x1d), (92, 0x5b)
     ])
 def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors, start_led=startLED)
 
@@ -1019,18 +901,10 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
     (1, 0x01), (30, 0x1e), (96, 0x60)
     ])
 def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors, start_led=1, maximum_leds=numLED)
 
@@ -1048,18 +922,10 @@ def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
 
 
 def test_set_color_hardware_too_many_leds(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors, start_led=200, maximum_leds=50)
 
@@ -1078,18 +944,10 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
 
 
 def test_set_color_hardware_too_few_leds(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors, start_led=1, maximum_leds=0)
 
@@ -1108,20 +966,12 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
 
 
 @pytest.mark.parametrize('channel,expected',
-                         [('led1', 0x00), ('led', 0x00), ('led2', 0x01)])
+                         [('led1', 0x00), ('led2', 0x01)])
 def test_set_color_hardware_channel(commanderProDevice, channel, expected):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color(channel, 'fixed', colors)
 
@@ -1141,19 +991,43 @@ def test_set_color_hardware_channel(commanderProDevice, channel, expected):
     assert len(effects) == 1
 
 
-def test_set_color_hardware_random_color(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+def test_set_color_hardware_sync_channel(commanderProDevice):
+    ignore = Report(0, bytes(16))
+    for _ in range(9):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    colors = [[0xaa, 0xbb, 0xcc]]
+    commanderProDevice.set_color('sync', 'fixed', colors)
+
+    # check the commands sent
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 2*(3 + 1) + 1
+
+    assert sent[0].data[1] == 0
+    assert sent[1].data[1] == 0
+    assert sent[2].data[1] == 0
+
+    assert sent[3].data[1] == 1
+    assert sent[4].data[1] == 1
+    assert sent[5].data[1] == 1
+
+    assert sent[6].data[0] == 0x35
+    assert sent[6].data[1] == 0
+
+    assert sent[7].data[0] == 0x35
+    assert sent[7].data[1] == 1
+
+    effects = commanderProDevice._data.load('saved_effects', default=None)
+
+    assert effects is not None
+    assert len(effects) == 2
+
+
+def test_set_color_hardware_random_color(commanderProDevice):
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
+
     colors = []
     commanderProDevice.set_color('led1', 'fixed', colors)
 
@@ -1171,18 +1045,10 @@ def test_set_color_hardware_random_color(commanderProDevice):
 
 
 def test_set_color_hardware_not_random_color(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
     commanderProDevice.set_color('led1', 'fixed', colors)
 
@@ -1200,18 +1066,10 @@ def test_set_color_hardware_not_random_color(commanderProDevice):
 
 
 def test_set_color_hardware_too_many_colors(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc], [0x00, 0x11, 0x22], [0x33, 0x44, 0x55]]
     commanderProDevice.set_color('led1', 'fixed', colors)
 
@@ -1233,18 +1091,10 @@ def test_set_color_hardware_too_many_colors(commanderProDevice):
 
 
 def test_set_color_hardware_too_few_colors(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     commanderProDevice.set_color('led1', 'fixed', [])
 
     # check the commands sent
@@ -1270,18 +1120,10 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
     ('blink', 0x08), ('sequential', 0x09), ('rainbow2', 0x0a),
     ])
 def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     commanderProDevice.set_color('led1', modeStr, [])
 
     # check the commands sent
@@ -1298,18 +1140,10 @@ def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
 
 
 def test_set_color_hardware_invalid_mode(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
     colors = [[0xaa, 0xbb, 0xcc]]
 
     with pytest.raises(ValueError):
@@ -1324,18 +1158,9 @@ def test_set_color_hardware_invalid_mode(commanderProDevice):
 
 
 def test_set_color_hardware_multipe_commands(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
     effect = {
             'channel': 0x01,
@@ -1424,18 +1249,9 @@ def test_set_color_hardware_max_commands(commanderProDevice):
 
 
 def test_set_color_hardware_too_many_commands(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(6):
+        commanderProDevice.device.preload_read(ignore)
 
     effect = {
             'channel': 0x01,
@@ -1457,13 +1273,9 @@ def test_set_color_hardware_too_many_commands(commanderProDevice):
 
 
 def test_send_command_valid_data(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(2):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._send_command(6, [255, 0, 20, 10, 15])
 
@@ -1476,13 +1288,9 @@ def test_send_command_valid_data(commanderProDevice):
 
 
 def test_send_command_no_data(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(2):
+        commanderProDevice.device.preload_read(ignore)
 
     commanderProDevice._send_command(6)
 
@@ -1495,13 +1303,9 @@ def test_send_command_no_data(commanderProDevice):
 
 
 def test_send_command_data_too_long(commanderProDevice):
-    responses = [
-        '00000000000000000000000000000000',
-        '00000000000000000000000000000000'
-    ]
-
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    ignore = Report(0, bytes(16))
+    for _ in range(2):
+        commanderProDevice.device.preload_read(ignore)
 
     data = bytearray(100)
     commanderProDevice._send_command(3, data)

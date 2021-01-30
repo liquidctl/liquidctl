@@ -111,9 +111,11 @@ degrees.
 
 ## Controlling the LEDs
 
-The Commander Pro and Lighting Node Pro devices have 2 lighting channels,
-specified as either `led1` or `led2`.  The Lighting Node Core has a single
-`led` channel.
+The Commander Pro and Lighting Node Pro devices have two physical lighting
+channels, specified as either `led1` or `led2`.  A third `sync` pseudo channel
+is provided for convenience.
+
+On the other hand, the Lighting Node Core has a single `led` channel.
 
 The table bellow summarizes the available modes, and their associated
 maximum number of colors. Note that for any effect if no colors are specified then
