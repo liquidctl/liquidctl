@@ -104,7 +104,7 @@ _PARSE_ARG = {
     '--maximum-leds': int,
 
     '--single-12v-ocp': bool,
-    '--pump-mode': str,
+    '--pump-mode': str.lower,
     '--legacy-690lc': bool,
     '--non-volatile': bool,
     '--unsafe': lambda x: x.lower().split(','),

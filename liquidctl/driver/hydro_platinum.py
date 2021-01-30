@@ -22,8 +22,8 @@ from enum import Enum, unique
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
-from liquidctl.util import clamp, fraction_of_byte, u16le_from, \
-                           normalize_profile
+from liquidctl.util import RelaxedNamesEnum, clamp, fraction_of_byte, \
+                           u16le_from, normalize_profile
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class _FanMode(Enum):
 
 
 @unique
-class _PumpMode(Enum):
+class _PumpMode(RelaxedNamesEnum):
     QUIET = 0x0
     BALANCED = 0x1
     EXTREME = 0x2
@@ -181,7 +181,7 @@ class HydroPlatinum(UsbHidDriver):
         # set the flag so the LED command will need to be set again
         self._data.store('leds_enabled', 0)
 
-        self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
+        self._data.store('pump_mode', _PumpMode[pump_mode].value)
         res = self._send_set_cooling()
         fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
         if fw_version < (1, 1, 0):

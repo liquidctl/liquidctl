@@ -8,7 +8,7 @@ import colorsys
 import logging
 
 from ast import literal_eval
-from enum import Enum, unique
+from enum import Enum, EnumMeta, unique
 
 from liquidctl.error import UnsafeFeaturesNotEnabled
 
@@ -95,6 +95,16 @@ class LazyHexRepr:
     def __repr__(self):
         hexvals = map(lambda x: f'{x:02x}', self.data[self.start: self.end])
         return self.sep.join(hexvals)
+
+
+class _RelaxedNamesEnum(EnumMeta):
+    def __getitem__(cls, name):
+        return super().__getitem__(name.upper())
+
+
+class RelaxedNamesEnum(Enum, metaclass=_RelaxedNamesEnum):
+    """Enum class where name lookup is case insensitive."""
+    pass
 
 
 def rpadlist(list, width, fillitem=0):
