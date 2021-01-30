@@ -765,7 +765,7 @@ def test_set_color_hardware_off(commanderProDevice):
 
 @pytest.mark.parametrize('directionStr,expected',
                          [('forward', 0x01), ('backward', 0x00)])
-def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expected):
+def test_set_color_hardware_direction(commanderProDevice, directionStr, expected):
     ignore = Report(0, bytes(16))
     for _ in range(6):
         commanderProDevice.device.preload_read(ignore)
