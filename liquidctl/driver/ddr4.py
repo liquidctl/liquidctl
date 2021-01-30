@@ -11,7 +11,7 @@ import logging
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver
-from liquidctl.util import check_unsafe, clamp
+from liquidctl.util import RelaxedNamesEnum, check_unsafe, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -282,7 +282,7 @@ class VengeanceRgb(Ddr4Temperature):
             return self.name.lower()
 
     @unique
-    class SpeedTimings(Enum):
+    class SpeedTimings(RelaxedNamesEnum):
         SLOWEST = 63
         SLOWER = 48
         NORMAL = 32
@@ -337,7 +337,7 @@ class VengeanceRgb(Ddr4Temperature):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
 
         try:
-            common = self.SpeedTimings[speed.upper()].value
+            common = self.SpeedTimings[speed].value
             tp1 = tp2 = common
         except KeyError:
             raise ValueError(f'invalid speed preset: {speed!r}') from None
