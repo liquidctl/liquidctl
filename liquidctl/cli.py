@@ -93,7 +93,7 @@ _PARSE_ARG = {
     '--match': str.lower,
     '--pick': int,
 
-    '--speed': str,
+    '--speed': str.lower,
     '--time-per-color': int,
     '--time-off': int,
     '--alert-threshold': int,

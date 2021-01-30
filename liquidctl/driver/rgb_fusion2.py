@@ -186,7 +186,6 @@ class RgbFusion2(UsbHidDriver):
         mode = _COLOR_MODES[mode.lower()]
         colors = iter(colors)
         channel = channel.lower()
-        speed = speed.lower()
 
         if mode.takes_color:
             try:

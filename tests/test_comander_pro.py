@@ -934,11 +934,8 @@ def test_set_color_hardware_speed_default(commanderProDevice):
     assert len(effects) == 1
 
 
-@pytest.mark.parametrize('speedStr,expected', [
-    ('slow', 0x02), ('SLOW', 0x02), ('SlOw', 0x02),
-    ('fast', 0x00), ('FAST', 0x00), ('fAsT', 0x00),
-    ('medium', 0x01), ('MEDIUM', 0x01), ('MeDiUm', 0x01)
-    ])
+@pytest.mark.parametrize('speedStr,expected',
+                         [('slow', 0x02), ('fast', 0x00), ('medium', 0x01)])
 def test_set_color_hardware_speed(commanderProDevice, speedStr, expected):
     responses = [
         '00000000000000000000000000000000',

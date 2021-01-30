@@ -149,7 +149,6 @@ class Kraken2(UsbHidDriver):
 
         channel = channel.lower()
         mode = mode.lower()
-        speed = speed.lower()
         direction = direction.lower()
 
         if mode == 'super':

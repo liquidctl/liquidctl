@@ -140,7 +140,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 
         channel = channel.lower()
         mode = mode.lower()
-        speed = speed.lower()
         direction = direction.lower()
 
         if 'backwards' in mode:

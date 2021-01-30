@@ -112,7 +112,7 @@ def test_fusion2_5702_device_flash_with_some_channel_and_speed(mockRgbFusion2_57
 def test_fusion2_5702_device_double_flash_with_some_channel_and_speed_and_uppercase(mockRgbFusion2_5702Device):
     colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
     mockRgbFusion2_5702Device.set_color(channel='LED5', mode='DOUBLE-FLASH', colors=iter(colors),
-                                        speed='LUDICROUS')
+                                        speed='ludicrous')
     set_color, execute = mockRgbFusion2_5702Device.device.sent
 
     assert set_color.data[0:2] == [0x24, 0x10]

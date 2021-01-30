@@ -437,7 +437,6 @@ class CommanderPro(UsbHidDriver):
         colors = list(c)
 
         direction = direction.lower()
-        speed = speed.lower()
         channel = channel.lower()
         mode = mode_str.lower()
 
