@@ -283,7 +283,6 @@ class CommanderPro(UsbHidDriver):
         """This will get a list of all the fan channels that the command should be sent to
         It will look up the name of the fan channel given and return a list of the real fan number
         """
-        channel = channel.lower()
         if channel == 'sync':
             return [i for i in range(len(self._fan_names))]
         elif channel in self._fan_names:
@@ -295,7 +294,6 @@ class CommanderPro(UsbHidDriver):
         """This will get a list of all the led channels that the command should be sent to
         It will look up the name of the led channel given and return a list of the real led device number
         """
-        channel = channel.lower()
         if channel == 'led':
             return [i for i in range(len(self._led_names))]
         elif channel in self._led_names:
@@ -383,7 +381,7 @@ class CommanderPro(UsbHidDriver):
                 buf[0] = fan
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
-    def set_color(self, channel, mode_str, colors, direction='forward', speed='medium', start_led=1, maximum_leds=1, **kwargs):
+    def set_color(self, channel, mode, colors, direction='forward', speed='medium', start_led=1, maximum_leds=1, **kwargs):
         """Set the color of each LED.
 
         In reality the device does not have the concept of different channels
@@ -427,7 +425,7 @@ class CommanderPro(UsbHidDriver):
 
         # a special mode to clear the current led settings.
         # this is usefull if the the user wants to use a led mode for multiple devices
-        if mode_str == 'clear':
+        if mode == 'clear':
             self._data.store('saved_effects', None)
             return
 
@@ -436,8 +434,6 @@ class CommanderPro(UsbHidDriver):
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
         colors = list(c)
 
-        mode = mode_str.lower()
-
         # default to channel 1 if channel 2 is not specified.
         led_channel = 1 if channel == 'led2' and len(self._led_names) != 1 else 0
 
@@ -445,24 +441,24 @@ class CommanderPro(UsbHidDriver):
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
         start_led = clamp(start_led, 1, 204) - 1
         num_leds = clamp(maximum_leds, 1, 204 - start_led - 1)
-        random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
-        mode = _MODES.get(mode, -1)
+        random_colors = 0x00 if mode == 'off' or len(colors) != 0 else 0x01
+        mode_val = _MODES.get(mode, -1)
 
-        if mode == -1:
-            raise ValueError(f'mode "{mode_str}" is not valid')
+        if mode_val == -1:
+            raise ValueError(f'mode "{mode}" is not valid')
 
         lighting_effect = {
                 'channel': led_channel,
                 'start_led': start_led,
                 'num_leds': num_leds,
-                'mode': mode,
+                'mode': mode_val,
                 'speed': speed,
                 'direction': direction,
                 'random_colors': random_colors,
                 'colors': colors
             }
 
-        saved_effects = [] if mode_str == 'off' else self._data.load('saved_effects', default=[])
+        saved_effects = [] if mode == 'off' else self._data.load('saved_effects', default=[])
         saved_effects += [lighting_effect]
 
         # check to make sure that too many LED effects are not being sent.
@@ -471,7 +467,7 @@ class CommanderPro(UsbHidDriver):
             _LOGGER.warning(f'too many lighting effects. Run `liquidctl set {channel} color clear` to reset the effect')
             return
 
-        self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
+        self._data.store('saved_effects', None if mode == 'off' else saved_effects)
 
         # start sending the led commands
         self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel])

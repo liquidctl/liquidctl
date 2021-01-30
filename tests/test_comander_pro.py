@@ -418,11 +418,6 @@ def test_get_hw_fan_channels_all(commanderProDevice):
     assert res == [0, 1, 2, 3, 4, 5]
 
 
-def test_get_hw_fan_channels_uppercase(commanderProDevice):
-    res = commanderProDevice._get_hw_fan_channels('FaN3')
-    assert res == [2]
-
-
 def test_get_hw_fan_channels_lowercase(commanderProDevice):
     res = commanderProDevice._get_hw_fan_channels('fan2')
     assert res == [1]
@@ -446,11 +441,6 @@ def test_get_hw_led_channels_all(commanderProDevice):
 
     res = commanderProDevice._get_hw_led_channels('led')
     assert res == [0, 1]
-
-
-def test_get_hw_led_channels_uppercase(commanderProDevice):
-    res = commanderProDevice._get_hw_led_channels('LeD2')
-    assert res == [1]
 
 
 def test_get_hw_led_channels_lowercase(commanderProDevice):
@@ -1276,8 +1266,8 @@ def test_set_color_hardware_too_few_colors(commanderProDevice):
 
 @pytest.mark.parametrize('modeStr,expected', [
     ('rainbow', 0x00), ('color_shift', 0x01), ('color_pulse', 0x02),
-    ('color_wave', 0x03), ('fixed', 0x04), ('visor', 0x06), ('marquee', 0x07), ('blink', 0x08),
-    ('sequential', 0x09), ('sEqUeNtIaL', 0x09), ('rainbow2', 0x0a)
+    ('color_wave', 0x03), ('fixed', 0x04), ('visor', 0x06), ('marquee', 0x07),
+    ('blink', 0x08), ('sequential', 0x09), ('rainbow2', 0x0a),
     ])
 def test_set_color_hardware_valid_mode(commanderProDevice, modeStr, expected):
     responses = [
