@@ -274,7 +274,7 @@ class HydroPlatinum(UsbHidDriver):
         | led      | super-fixed | independent  |       24 |     16 |          48 |
         """
 
-        channel, mode, colors = channel.lower(), mode.lower(), list(colors)
+        mode, colors = mode.lower(), list(colors)
         self._check_color_args(channel, mode, colors)
         if mode == 'off':
             expanded = []
@@ -324,7 +324,6 @@ class HydroPlatinum(UsbHidDriver):
         return len(colors)
 
     def _get_hw_fan_channels(self, channel):
-        channel = channel.lower()
         if channel == 'fan':
             return self._fan_names
         if channel in self._fan_names:

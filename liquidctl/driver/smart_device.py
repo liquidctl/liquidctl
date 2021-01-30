@@ -138,7 +138,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         if not self._color_channels:
             raise NotSupportedByDevice()
 
-        channel = channel.lower()
         mode = mode.lower()
 
         if 'backwards' in mode:

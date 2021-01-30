@@ -213,15 +213,15 @@ def _print_dev_status(dev, status):
 
 def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, **opts)
+    dev.set_color(args['<channel>'].lower(), args['<mode>'], color, **opts)
 
 
 def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile, **opts)
+        dev.set_speed_profile(args['<channel>'].lower(), profile, **opts)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **opts)
+        dev.set_fixed_speed(args['<channel>'].lower(), int(args['<percentage>'][0]), **opts)
 
 
 def _make_opts(args):

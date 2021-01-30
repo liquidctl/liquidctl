@@ -1117,10 +1117,8 @@ def test_set_color_hardware_too_few_leds(commanderProDevice):
     assert len(effects) == 1
 
 
-@pytest.mark.parametrize('channel,expected', [
-    ('led1', 0x00), ('led', 0x00), ('LeD1', 0x00),
-    ('led2', 0x01), ('LED2', 0x01), ('LeD2', 0x01)
-    ])
+@pytest.mark.parametrize('channel,expected',
+                         [('led1', 0x00), ('led', 0x00), ('led2', 0x01)])
 def test_set_color_hardware_channel(commanderProDevice, channel, expected):
     responses = [
         '00000000000000000000000000000000',

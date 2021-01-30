@@ -147,7 +147,6 @@ class Kraken2(UsbHidDriver):
         if not self.supports_lighting:
             raise NotSupportedByDevice()
 
-        channel = channel.lower()
         mode = mode.lower()
 
         if mode == 'super':

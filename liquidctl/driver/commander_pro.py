@@ -436,7 +436,6 @@ class CommanderPro(UsbHidDriver):
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
         colors = list(c)
 
-        channel = channel.lower()
         mode = mode_str.lower()
 
         # default to channel 1 if channel 2 is not specified.
