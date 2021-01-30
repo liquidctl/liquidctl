@@ -99,7 +99,7 @@ _PARSE_ARG = {
     '--alert-threshold': int,
     '--alert-color': color_from_str,
     '--temperature-sensor': int,
-    '--direction': str,
+    '--direction': str.lower,
     '--start-led': int,
     '--maximum-leds': int,
 

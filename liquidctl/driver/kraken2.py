@@ -149,7 +149,6 @@ class Kraken2(UsbHidDriver):
 
         channel = channel.lower()
         mode = mode.lower()
-        direction = direction.lower()
 
         if mode == 'super':
             _LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')

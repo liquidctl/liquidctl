@@ -140,7 +140,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 
         channel = channel.lower()
         mode = mode.lower()
-        direction = direction.lower()
 
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')

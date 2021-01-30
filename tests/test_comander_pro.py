@@ -843,10 +843,8 @@ def test_set_color_hardware_off(commanderProDevice):
     assert effects is None
 
 
-@pytest.mark.parametrize('directionStr,expected', [
-    ('forward', 0x01), ('FORWARD', 0x01), ('fOrWaRd', 0x01),
-    ('backward', 0x00), ('BACKWARD', 0x00), ('BaCkWaRd', 0x00)
-    ])
+@pytest.mark.parametrize('directionStr,expected',
+                         [('forward', 0x01), ('backward', 0x00)])
 def test_set_color_hardware_dirrection(commanderProDevice, directionStr, expected):
     responses = [
         '00000000000000000000000000000000',
