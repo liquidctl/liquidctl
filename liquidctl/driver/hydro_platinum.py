@@ -199,13 +199,14 @@ class HydroPlatinum(UsbHidDriver):
 
         info = [
             ('Liquid temperature', res[8] + res[7] / 255, '°C'),
-            ('Fan 1 speed', u16le_from(res, offset=15), 'rpm'),
-            ('Fan 2 speed', u16le_from(res, offset=22), 'rpm'),
-            ('Pump speed', u16le_from(res, offset=29), 'rpm'),
         ]
 
-        if len(self._fan_names) == 3:
-            info.insert(3, ('Fan 3 speed', u16le_from(res, offset=43), 'rpm'))
+        channels = [('Fan 1', 14), ('Fan 2', 21), ('Fan 3', 42)][:len(self._fan_names)]
+        channels.append(('Pump', 28))
+
+        for name, base in channels:
+            info.append((f'{name} speed', u16le_from(res, offset=base + 1), 'rpm'))
+            info.append((f'{name} duty', round(res[base] / 255 * 100), '%'))
 
         return info
 

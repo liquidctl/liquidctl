@@ -9,7 +9,7 @@ the system resumes from suspending to memory.
 ```
 # liquidctl initialize
 Corsair H100i Platinum (experimental)
-└── Firmware version    1.1.15  
+└── Firmware version    1.1.15
 ```
 
 By default the pump mode will be set to `balanced`, but a different mode can be
@@ -19,7 +19,7 @@ specified with `--pump-mode`.  The valid values for this option are `quiet`,
 ```
 # liquidctl initialize --pump-mode extreme
 Corsair H100i Platinum (experimental)
-└── Firmware version    1.1.15  
+└── Firmware version    1.1.15
 ```
 
 Unconfigured fan channels may default to 100% duty, so [reprogramming their
@@ -36,7 +36,9 @@ The cooler reports the liquid temperature and the speeds of all fans and pump.
 Corsair H100i Platinum (experimental)
 ├── Liquid temperature    27.0  °C
 ├── Fan 1 speed           1386  rpm
+├── Fan 1 duty              50  %
 ├── Fan 2 speed           1389  rpm
+├── Fan 2 duty              50  %
 └── Pump speed            2357  rpm
 ```
 

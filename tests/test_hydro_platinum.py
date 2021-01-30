@@ -72,9 +72,13 @@ class _MockHydroPlatinumDevice(MockHidapiDevice):
         buf[3] = self.fw_version[2]
         buf[7] = int((self.temperature - int(self.temperature)) * 255)
         buf[8] = int(self.temperature)
+        buf[14] = round(.10 * 255)
         buf[15:17] = self.fan1_speed.to_bytes(length=2, byteorder='little')
+        buf[21] = round(.20 * 255)
         buf[22:24] = self.fan2_speed.to_bytes(length=2, byteorder='little')
+        buf[28] = round(.70 * 255)
         buf[29:31] = self.pump_speed.to_bytes(length=2, byteorder='little')
+        buf[42] = round(.30 * 255)
         buf[43:44] = self.fan3_speed.to_bytes(length=2, byteorder='little')
         buf[-1] = compute_pec(buf[1:-1])
         return buf[:length]
@@ -145,25 +149,32 @@ def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
 
 def test_h115i_platinum_device_get_status(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
-    temp, fan1, fan2, pump = dev.get_status()
+    temp, fan1, fan1d, fan2, fan2d, pump, pumpd = dev.get_status()
 
     assert temp[1] == pytest.approx(dev.device.temperature, abs=1 / 255)
     assert fan1[1] == dev.device.fan1_speed
+    assert fan1d[1] == 10
     assert fan2[1] == dev.device.fan2_speed
+    assert fan2d[1] == 20
     assert pump[1] == dev.device.pump_speed
+    assert pumpd[1] == 70
     assert dev.device.sent[0].data[1] & 0b111 == 0
     assert dev.device.sent[0].data[2] == 0xff
 
 
 def test_h150i_pro_xt_device_get_status(h150iProXTDevice):
     dev = h150iProXTDevice
-    temp, fan1, fan2, fan3, pump = dev.get_status()
+    temp, fan1, fan1d, fan2, fan2d, fan3, fan3d, pump, pumpd = dev.get_status()
 
     assert temp[1] == pytest.approx(dev.device.temperature, abs=1 / 255)
     assert fan1[1] == dev.device.fan1_speed
+    assert fan1d[1] == 10
     assert fan2[1] == dev.device.fan2_speed
+    assert fan2d[1] == 20
     assert fan3[1] == dev.device.fan3_speed
+    assert fan3d[1] == 30
     assert pump[1] == dev.device.pump_speed
+    assert pumpd[1] == 70
     assert dev.device.sent[0].data[1] & 0b111 == 0
     assert dev.device.sent[0].data[2] == 0xff
 
@@ -183,7 +194,7 @@ def test_h115i_platinum_device_handle_real_statuses(h115iPlatinumDevice):
     for sample in samples:
         dev.device.preload_read(Report(0, bytes.fromhex(sample)))
         status = dev.get_status()
-        assert len(status) == 4
+        assert len(status) == 7
         assert status[0][1] != dev.device.temperature
 
 
