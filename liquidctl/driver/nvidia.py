@@ -78,7 +78,7 @@ class EvgaPascal(SmbusDriver):
 
         for (dev_id, sub_dev_id, desc) in supported:
             if (product and product != sub_dev_id) \
-                    or (match and match.lower() not in desc.lower()) \
+                    or (match and match not in desc.lower()) \
                     or smbus.parent_subsystem_device != sub_dev_id \
                     or smbus.parent_device != dev_id \
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
@@ -226,7 +226,7 @@ class RogTuring(SmbusDriver):
 
         for (dev_id, sub_dev_id, desc) in supported:
             if (product and product != sub_dev_id) \
-                    or (match and match.lower() not in desc.lower()) \
+                    or (match and match not in desc.lower()) \
                     or smbus.parent_subsystem_device != sub_dev_id \
                     or smbus.parent_device != dev_id \
                     or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
