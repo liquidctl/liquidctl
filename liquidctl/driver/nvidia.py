@@ -4,12 +4,12 @@ Copyright (C) 2020–2021  Jonas Malaco, Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from enum import Enum, unique
+from enum import unique
 import logging
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import check_unsafe
+from liquidctl.util import RelaxedNamesEnum, check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ EVGA_GTX_1080_FTW = 0x6286
 
 
 @unique
-class _ModeEnum(bytes, Enum):
+class _ModeEnum(bytes, RelaxedNamesEnum):
     def __new__(cls, value, required_colors):
         obj = bytes.__new__(cls, [value])
         obj._value_ = value
@@ -145,7 +145,7 @@ class EvgaPascal(SmbusDriver):
         colors = list(colors)
 
         try:
-            mode = self.Mode[mode.upper()]
+            mode = self.Mode[mode]
         except KeyError:
             raise ValueError(f'invalid mode: {mode!r}') from None
 
@@ -331,7 +331,7 @@ class RogTuring(SmbusDriver):
         colors = list(colors)
 
         try:
-            mode = self.Mode[mode.upper()]
+            mode = self.Mode[mode]
         except KeyError:
             raise ValueError(f'invalid mode: {mode!r}') from None
 

@@ -264,7 +264,7 @@ class VengeanceRgb(Ddr4Temperature):
     _UNSAFE = ['smbus', 'vengeance_rgb']
 
     @unique
-    class Mode(bytes, Enum):
+    class Mode(bytes, RelaxedNamesEnum):
         def __new__(cls, value, min_colors, max_colors):
             obj = bytes.__new__(cls, [value])
             obj._value_ = value
@@ -350,7 +350,7 @@ class VengeanceRgb(Ddr4Temperature):
         colors = list(colors)
 
         try:
-            mode = self.Mode[mode.upper()]
+            mode = self.Mode[mode]
         except KeyError:
             raise ValueError(f'invalid mode: {mode!r}') from None
 

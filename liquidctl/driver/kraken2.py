@@ -147,8 +147,6 @@ class Kraken2(UsbHidDriver):
         if not self.supports_lighting:
             raise NotSupportedByDevice()
 
-        mode = mode.lower()
-
         if mode == 'super':
             _LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'

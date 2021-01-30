@@ -213,7 +213,7 @@ def _print_dev_status(dev, status):
 
 def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
-    dev.set_color(args['<channel>'].lower(), args['<mode>'], color, **opts)
+    dev.set_color(args['<channel>'].lower(), args['<mode>'].lower(), color, **opts)
 
 
 def _device_set_speed(dev, args, **opts):

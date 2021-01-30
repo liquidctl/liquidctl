@@ -138,8 +138,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         if not self._color_channels:
             raise NotSupportedByDevice()
 
-        mode = mode.lower()
-
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')

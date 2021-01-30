@@ -274,7 +274,7 @@ class HydroPlatinum(UsbHidDriver):
         | led      | super-fixed | independent  |       24 |     16 |          48 |
         """
 
-        mode, colors = mode.lower(), list(colors)
+        colors = list(colors)
         self._check_color_args(channel, mode, colors)
         if mode == 'off':
             expanded = []

@@ -225,8 +225,6 @@ class KrakenX3(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
 
-        mode = mode.lower()
-
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')

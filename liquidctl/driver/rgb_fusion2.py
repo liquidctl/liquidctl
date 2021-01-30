@@ -183,7 +183,7 @@ class RgbFusion2(UsbHidDriver):
         `slower`, `normal` (default), `faster`, `fastest` or `ludicrous`.
         """
 
-        mode = _COLOR_MODES[mode.lower()]
+        mode = _COLOR_MODES[mode]
         colors = iter(colors)
 
         if mode.takes_color:
