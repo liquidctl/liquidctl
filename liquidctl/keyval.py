@@ -122,11 +122,3 @@ class RuntimeStorage:
         self._backend.store(key, value)
         self._cache[key] = value
         return value
-
-    def load_int(self, key, default=None):
-        """Unstable API.  Soon to be removed."""
-        return self.load(key, of_type=int, default=default)
-
-    def store_int(self, key, value):
-        """Unstable API.  Soon to be removed."""
-        self.store(key, value)

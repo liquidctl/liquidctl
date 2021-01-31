@@ -330,15 +330,15 @@ class Legacy690Lc(_CommonAsetekDriver):
         self._begin_transaction()
         for channel in ['pump', 'fan']:
             mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
-            duty = clamp(self._data.load_int(f'{channel}_duty', default=dmax), dmin, dmax)
+            duty = clamp(self._data.load(f'{channel}_duty', of_type=int, default=dmax), dmin, dmax)
             _LOGGER.info('setting %s duty to %d%%', channel, duty)
             self._write([mtype, duty])
         return self._end_transaction_and_read()
 
     def initialize(self, **kwargs):
         super().initialize(**kwargs)
-        self._data.store_int('pump_duty', None)
-        self._data.store_int('fan_duty', None)
+        self._data.store('pump_duty', None)
+        self._data.store('fan_duty', None)
         self._set_all_fixed_speeds()
 
     def get_status(self, **kwargs):
@@ -392,7 +392,7 @@ class Legacy690Lc(_CommonAsetekDriver):
         """Set channel to a fixed speed duty."""
         mtype, dmin, dmax = _LEGACY_FIXED_SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        self._data.store_int(f'{channel}_duty', duty)
+        self._data.store(f'{channel}_duty', duty)
         self._set_all_fixed_speeds()
 
     def set_speed_profile(self, channel, profile, **kwargs):
