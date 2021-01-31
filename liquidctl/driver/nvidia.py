@@ -14,14 +14,18 @@ from liquidctl.util import RelaxedNamesEnum, check_unsafe
 _LOGGER = logging.getLogger(__name__)
 
 # vendor, devices
+# FWUPD_GUID = [vendor]:[device] - use hwinfo to inspect
 NVIDIA = 0x10de
+NVIDIA_GTX_1070 = 0x1b81
 NVIDIA_GTX_1080 = 0x1b80
 NVIDIA_RTX_2080_TI_REV_A = 0x1e07
 # https://www.nv-drivers.eu/nvidia-all-devices.html
 # https://pci-ids.ucw.cz/pci.ids
 
 # subsystem vendor ASUS, subsystem devices
+# PCI_SUBSYS_ID = [subsystem vendor]:[subsystem device] - use hwinfo to inspect
 ASUS = 0x1043
+ASUS_STRIX_GTX_1070 = 0x8599
 ASUS_STRIX_RTX_2080_TI_OC = 0x866a
 
 # subsystem vendor EVGA, subsystem devices
@@ -223,6 +227,8 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
     _MATCHES = [
         (NVIDIA_RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
             'ASUS Strix RTX 2080 Ti OC'),
+        (NVIDIA_GTX_1070, ASUS_STRIX_GTX_1070,
+            'ASUS STRIX GTX 1070'),
     ]
 
     _SENTINEL_ADDRESS = 0xffff  # intentionally invalid
@@ -384,3 +390,4 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
+
