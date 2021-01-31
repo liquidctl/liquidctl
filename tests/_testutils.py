@@ -1,6 +1,6 @@
 import os
-from copy import deepcopy
 from collections import deque, namedtuple
+from copy import deepcopy
 
 Report = namedtuple('Report', ['number', 'data'])
 

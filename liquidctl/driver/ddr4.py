@@ -4,10 +4,10 @@ Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from enum import Enum, unique
-from collections import namedtuple
 import itertools
 import logging
+from collections import namedtuple
+from enum import Enum, unique
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver

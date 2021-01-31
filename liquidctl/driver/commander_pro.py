@@ -18,14 +18,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 import re
-
 from enum import Enum, unique
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile, check_unsafe
-from liquidctl.error import NotSupportedByDevice
 
 _LOGGER = logging.getLogger(__name__)
 

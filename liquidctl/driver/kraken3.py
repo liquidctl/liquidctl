@@ -9,8 +9,8 @@ Copyright (C) 2020–2021  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import logging
 import itertools
+import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \

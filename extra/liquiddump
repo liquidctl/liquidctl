@@ -44,7 +44,6 @@ import time
 
 import liquidctl.cli as _borrow
 import usb
-
 from docopt import docopt
 from liquidctl.driver import *
 

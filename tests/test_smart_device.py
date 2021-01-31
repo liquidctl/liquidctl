@@ -1,6 +1,7 @@
 import pytest
-from liquidctl.driver.smart_device import SmartDevice
 from _testutils import MockHidapiDevice, Report
+
+from liquidctl.driver.smart_device import SmartDevice
 
 
 @pytest.fixture

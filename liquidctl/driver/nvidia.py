@@ -4,8 +4,8 @@ Copyright (C) 2020–2021  Jonas Malaco, Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from enum import unique
 import logging
+from enum import unique
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice

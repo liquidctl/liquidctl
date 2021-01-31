@@ -1,8 +1,8 @@
+import pytest
+from _testutils import VirtualSmbus
+
 from liquidctl.driver.ddr4 import *
 from liquidctl.error import *
-import pytest
-
-from _testutils import VirtualSmbus
 
 
 # SPD samples

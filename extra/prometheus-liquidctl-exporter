@@ -29,12 +29,12 @@ import logging
 import sys
 import time
 import usb
+from datetime import timedelta
 
 from docopt import docopt
 from liquidctl.driver import *
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY, InfoMetricFamily
-from datetime import timedelta
 
 LOGGER = logging.getLogger(__name__)
 

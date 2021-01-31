@@ -1,4 +1,5 @@
 import pytest
+
 from liquidctl.driver.base import BaseDriver
 
 

@@ -8,7 +8,6 @@ import logging
 import os
 import sys
 import tempfile
-
 from ast import literal_eval
 
 _LOGGER = logging.getLogger(__name__)

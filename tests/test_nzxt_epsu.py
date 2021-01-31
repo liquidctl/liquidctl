@@ -1,6 +1,7 @@
 import pytest
-from liquidctl.driver.nzxt_epsu import NzxtEPsu
 from _testutils import MockHidapiDevice, Report
+
+from liquidctl.driver.nzxt_epsu import NzxtEPsu
 
 
 class _MockPsuDevice(MockHidapiDevice):

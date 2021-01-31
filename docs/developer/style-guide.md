@@ -31,6 +31,17 @@ modules.
   those bellow) which wont necessarily be shown
 - use lowercase hexadecimal literals
 
+### Grouping and sorting of import statements
+
+In normal modules, import statements should be grouped into standard library
+modules, modules from third-party libraries, and local modules.
+
+In test modules, an additional group for test scaffolding modules (inclunding
+`pytest` and `_testutils`) should come before the standard library modules.
+
+Within each group, `import` statements should come before `from <...> import`
+ones.  After that, they should be sorted ascending order.
+
 
 ## Use of automatic formatters
 

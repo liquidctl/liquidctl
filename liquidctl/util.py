@@ -6,7 +6,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import colorsys
 import logging
-
 from ast import literal_eval
 from enum import Enum, EnumMeta, unique
 

@@ -63,7 +63,6 @@ import sys
 import time
 
 from docopt import docopt
-
 import liquidctl.cli as _borrow
 from liquidctl.util import normalize_profile, interpolate_profile
 from liquidctl.driver import *

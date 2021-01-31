@@ -1,7 +1,9 @@
 import pytest
-from collections import deque
-from liquidctl.driver.rgb_fusion2 import RgbFusion2
 from _testutils import MockHidapiDevice, Report
+
+from collections import deque
+
+from liquidctl.driver.rgb_fusion2 import RgbFusion2
 
 # Sample data for 5702 controller from a Gigabyte Z490 Vision D
 # https://github.com/liquidctl/liquidctl/issues/151#issuecomment-663213956

@@ -1,6 +1,6 @@
-from pathlib import Path
-
 import pytest
+
+from pathlib import Path
 
 
 def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):

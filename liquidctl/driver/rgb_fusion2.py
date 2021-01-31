@@ -9,9 +9,9 @@ Copyright (C) 2020–2021  CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from collections import namedtuple
 import logging
 import sys
+from collections import namedtuple
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice

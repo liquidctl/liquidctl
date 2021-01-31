@@ -6,11 +6,11 @@ Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from collections import namedtuple
-from pathlib import Path
 import logging
 import os
 import sys
+from collections import namedtuple
+from pathlib import Path
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 from liquidctl.util import check_unsafe, LazyHexRepr

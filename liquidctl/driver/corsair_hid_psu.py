@@ -16,7 +16,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-
 from datetime import timedelta
 from enum import Enum
 

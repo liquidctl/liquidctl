@@ -22,16 +22,16 @@ import sys
 
 from liquidctl.driver.base import BaseBus, find_all_subclasses
 
+# automatically enabled drivers
 from liquidctl.driver import asetek
+from liquidctl.driver import commander_pro
 from liquidctl.driver import corsair_hid_psu
 from liquidctl.driver import hydro_platinum
-from liquidctl.driver import commander_pro
 from liquidctl.driver import kraken2
 from liquidctl.driver import kraken3
 from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
-
 if sys.platform == 'linux':
     from liquidctl.driver import ddr4
     from liquidctl.driver import nvidia

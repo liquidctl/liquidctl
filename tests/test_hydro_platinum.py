@@ -1,7 +1,8 @@
 import pytest
+from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
+
 from liquidctl.driver.hydro_platinum import HydroPlatinum, _sequence
 from liquidctl.pmbus import compute_pec
-from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
 _SAMPLE_PATH = (r'IOService:/AppleACPIPlatformExpert/PCI0@0/AppleACPIPCI/XHC@14/XH'
                 r'C@14000000/HS11@14a00000/USB2.0 Hub@14a00000/AppleUSB20InternalH'

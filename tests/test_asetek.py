@@ -1,7 +1,9 @@
 import pytest
-from collections import deque
-from liquidctl.driver.asetek import Modern690Lc, Legacy690Lc, Hydro690Lc
 from _testutils import noop
+
+from collections import deque
+
+from liquidctl.driver.asetek import Modern690Lc, Legacy690Lc, Hydro690Lc
 
 
 class _Mock690LcDevice():

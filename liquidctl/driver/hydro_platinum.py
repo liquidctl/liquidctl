@@ -16,7 +16,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 import re
-
 from enum import Enum, unique
 
 from liquidctl.driver.usb import UsbHidDriver

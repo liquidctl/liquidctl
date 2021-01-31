@@ -64,11 +64,11 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
 import datetime
+import errno
 import inspect
 import logging
 import os
 import sys
-import errno
 
 from docopt import docopt
 
@@ -76,7 +76,6 @@ from liquidctl.driver import *
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
-
 
 # conversion from CLI arg to internal option; as options as forwarded to bused
 # and drivers, they must:

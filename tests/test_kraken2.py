@@ -1,6 +1,7 @@
 import pytest
-from liquidctl.driver.kraken2 import Kraken2
 from _testutils import MockHidapiDevice
+
+from liquidctl.driver.kraken2 import Kraken2
 from liquidctl.error import NotSupportedByDevice
 
 

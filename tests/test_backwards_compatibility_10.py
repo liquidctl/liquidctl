@@ -6,9 +6,10 @@ community.
 """
 
 import pytest
+from _testutils import MockHidapiDevice
+
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.version import __version__
-from _testutils import MockHidapiDevice
 
 SPECTRUM = [
     (235, 77, 40),

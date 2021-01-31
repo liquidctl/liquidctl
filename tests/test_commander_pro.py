@@ -1,9 +1,9 @@
 import pytest
+from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
 from liquidctl.driver.commander_pro import _quoted, _prepare_profile, _get_fan_mode_description, CommanderPro
 from liquidctl.error import NotSupportedByDevice
 
-from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
 # hardcoded responce data expected for some of the calls:
 # commander pro: firmware request (0.9.214)
