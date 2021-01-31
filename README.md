@@ -9,36 +9,29 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 
 ```
 # liquidctl list
-Device ID 0: NZXT Smart Device (V1)
-Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
+Device ID 0: ASUS Strix RTX 2080 Ti OC
+Device ID 1: Corsair Vengeance RGB DIMM2 (experimental)
+Device ID 2: Corsair Vengeance RGB DIMM4 (experimental)
+Device ID 3: NZXT Smart Device (V1)
+Device ID 4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
 
 # liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
-# liquidctl --match kraken set sync color spectrum-wave
+# liquidctl --match kraken set pump speed 70
 
-# liquidctl --match smart set led color fading 350017 ff2608
-# liquidctl --match smart set fan1 speed 50
-
-# liquidctl status
-NZXT Smart Device (V1)
-├── Fan 1                        PWM  
-├── Fan 1 current               0.04  A
-├── Fan 1 speed                 1035  rpm
-├── Fan 1 voltage              11.91  V
-├── Fan 2                          —  
-├── Fan 3                          —  
-├── Firmware version           1.0.7  
-├── LED accessories                2  
-├── LED accessory type    HUE+ Strip  
-├── LED count (total)             20  
-└── Noise level                   60  dB
-
+# liquidctl --match nzxt status
 NZXT Kraken X (X42, X52, X62 or X72)
-├── Liquid temperature     28.1  °C
-├── Fan speed               851  rpm
-├── Pump speed             1953  rpm
+├── Liquid temperature     31.7  °C
+├── Fan speed               801  rpm
+├── Pump speed             2239  rpm
 └── Firmware version      6.0.2  
+
+# liquidctl --match kraken set sync color fixed 0080ff
+# liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower 
+# liquidctl --match "rtx 2080" set led color fixed 2aff00 --unsafe=smbus
+# liquidctl --match dimm2 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
+# liquidctl --match dimm4 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
 ```
 
 <!-- stop here for PyPI -->
