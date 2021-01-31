@@ -17,15 +17,29 @@ Device ID 4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
 
-# liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
-# liquidctl --match kraken set pump speed 70
+# liquidctl status
+NZXT Smart Device (V1)
+├── Fan 1                        PWM  
+├── Fan 1 current               0.04  A
+├── Fan 1 speed                 1368  rpm
+├── Fan 1 voltage              11.91  V
+├── Fan 2                          —  
+├── Fan 3                          —  
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+├── LED count (total)             20  
+└── Noise level                   67  dB
 
-# liquidctl --match kraken status
 NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     31.7  °C
 ├── Fan speed               801  rpm
 ├── Pump speed             2239  rpm
 └── Firmware version      6.0.2  
+
+# liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+# liquidctl --match kraken set pump speed 70
+# liquidctl --match "smart device" set sync speed 50
 
 # liquidctl --match kraken set sync color fixed 0080ff
 # liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower 
