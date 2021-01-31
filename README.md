@@ -20,7 +20,7 @@ Device ID 4: NZXT Kraken X (X42, X52, X62 or X72)
 # liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
 # liquidctl --match kraken set pump speed 70
 
-# liquidctl --match nzxt status
+# liquidctl --match kraken status
 NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     31.7  °C
 ├── Fan speed               801  rpm
