@@ -213,7 +213,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
 
 
 class RogTuring(SmbusDriver, _NvidiaI2CDriver):
-    """NVIDIA series 20 (Turing) graphics card from ASUS."""
+    """NVIDIA series 10 (Pascal) or 20 (Turing) graphics card from ASUS."""
 
     _REG_RED = 0x04
     _REG_GREEN = 0x05
@@ -225,10 +225,10 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
     _VENDOR = ASUS
     _ADDRESSES = [0x29, 0x2a, 0x60]
     _MATCHES = [
+        (NVIDIA_GTX_1070, ASUS_STRIX_GTX_1070,
+            'ASUS Strix GTX 1070'),
         (NVIDIA_RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
             'ASUS Strix RTX 2080 Ti OC'),
-        (NVIDIA_GTX_1070, ASUS_STRIX_GTX_1070,
-            'ASUS STRIX GTX 1070'),
     ]
 
     _SENTINEL_ADDRESS = 0xffff  # intentionally invalid
@@ -390,4 +390,3 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
-

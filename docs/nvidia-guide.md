@@ -11,10 +11,10 @@ also be met:
 Jump to a specific section:
 
 * _Series 10/Pascal:_
+    - [ASUS Strix GTX 1070](#asus-strix-gtx-and-rtx)
     - [EVGA GTX 1080 FTW](#evga-gtx-1080-ftw)
 * _Series 20/Turing:_
-    - [ASUS Strix GTX 1070[(#asus-strix-gtx-1070)
-    - [ASUS Strix RTX 2080 Ti OC](#asus-strix-rtx-2080-ti-oc)
+    - [ASUS Strix RTX 2080 Ti OC](#asus-strix-gtx-and-rtx)
 * _[Inherent unsafeness of I²C/SMBus]_
 
 
@@ -78,11 +78,7 @@ preferable, if the use case allows for them.
 # liquidctl set led color fixed 00ff00 --non-volatile --unsafe=smbus
 ```
 
-## ASUS Strix GTX 1070
-Only RGB lighting supported.
-See ASUS Strix RTX 2080 Ti OC content
-
-## ASUS Strix RTX 2080 Ti OC
+## ASUS Strix GTX and RTX
 
 Only RGB lighting supported.
 
