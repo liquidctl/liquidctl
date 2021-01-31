@@ -5,10 +5,16 @@
 ### Added
  - Add experimental support for the Corsair Lighting Node Core
  - Add experimental support for the Corsair Hydro H150i Pro XT
+ - Enable support for the ASUS Strix GTX 1070
+ - Add `sync` pseudo lighting channel to Commander/Lighting Node Pro devices
+ - Add duty cycles to Hydro Platinum and Pro XT status output
 ### Changed
  - Remove `pro_xt_lighting` unsafe feature guard
+ - Remove caching of temporarily stored data (see commit 35326b2b7bb4)
+ - Improve the documentation
 ### Fixed
  - Handle corrupted runtime data (#278)
+ - Fix item prefixes in list output when `--match` is passed
 
 
 ## [1.5.0] – 2021-01-27
