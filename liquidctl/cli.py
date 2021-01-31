@@ -120,6 +120,7 @@ _FILTER_OPTIONS = [
     'bus',
     'address',
     'usb-port',
+    'match',
     'pick',
     # --device generates no option
 ]
