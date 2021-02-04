@@ -1,6 +1,6 @@
 '\" t
 .nr is_macos 0
-.TH LIQUIDCTL 8 2020\-11\-01 "liquidctl" "System Manager's Manual"
+.TH LIQUIDCTL 8 2021\-01\-25 "liquidctl" "System Manager's Manual"
 .
 .SH NAME
 liquidctl \- monitor and control liquid coolers and other devices
@@ -212,9 +212,11 @@ Internal data used by some drivers.
 .
 .SS Corsair Commander Pro
 .SS Corsair Lighting Node Pro
-Cooling channels: \fIsync\fR, \fIfan[1\-5]\fR. (Commander Pro only)
+.SS Corsair Lighting Node Core
+Cooling channels (only Commander Pro): \fIsync\fR, \fIfan[1\-5]\fR.
 .PP
-Lighting channels: \fIled1\fR, \fIled2\fR.
+Lighting channels: (only Lighting Node Core:) \fIled\fR;
+(only Commander Pro and and Lighting Node Pro:) \fIsync\fR, \fIled[1\-2]\fR.
 .TS
 l c
 ---
@@ -284,20 +286,20 @@ and
 .BR \-\-alert\-color .
 .
 .SS Corsair H100i Platinum, H100i Platinum SE, H115i Platinum
-.SS Corsair H100i Pro XT, H115i Pro XT
-Fan channels: \fIfan\fR, \fIfan[1\(en2]\fR.
+.SS Corsair H100i Pro XT, H115i Pro XT , H150i Pro XT
+Fan channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro XT:) \fIfan3\fR.
 .PP
 Pump mode (\fBinitialize \-\-pump\-mode \fImode\fR): \fIquiet\fR, \fIbalanced\fR (default), \fIextreme\fR.
 .PP
 Lighting channels: \fIsync\fR, \fIled\fR.
 .TS
-l l c c
-----
-l l c c .
-Channel	Mode	#colors (Platinum)	#colors (Pro XT)
-\fIled\fR	\fIoff\fR	0	0
-\fIled\fR	\fIfixed\fR	1	1
-\fIled\fR	\fIsuper\-fixed\fR	24	16
+l l c c c
+-----
+l l c c c .
+Channel	Mode	#colors (Platinum)	#colors (Pro XT)	#colors (Platinum SE)
+\fIled\fR	\fIoff\fR	0	0	0
+\fIled\fR	\fIfixed\fR	1	1	1
+\fIled\fR	\fIsuper\-fixed\fR	24	16	48
 .TE
 .
 .SS NZXT Kraken X40, X60
@@ -459,6 +461,7 @@ The animation direction can be set with
 .BI \-\-direction= value ,
 where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .
+.SS ASUS Strix GTX 1070
 .SS ASUS Strix RTX 2080 Ti OC
 Fan channels: none.
 .PP

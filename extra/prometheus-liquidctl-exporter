@@ -21,7 +21,7 @@ Options:
   --version               Display the version number
   --help                  Show this message
 
-Copyright (C) 2020  Alex Berryman
+Copyright (C) 2020–2021  Alex Berryman, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -29,12 +29,12 @@ import logging
 import sys
 import time
 import usb
+from datetime import timedelta
 
 from docopt import docopt
 from liquidctl.driver import *
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY, InfoMetricFamily
-from datetime import timedelta
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class LiquidCollector(object):
                             '%s: %s InfoMetric labeled with %s => %s',
                             d.description, metric, sanitized_name, sample_value)
             except usb.core.USBError as err:
-                LOGGER.warning('Failed to read from the device, possibly serving stale data')
+                LOGGER.warning('failed to read from the device, possibly serving stale data')
                 LOGGER.debug(err, exc_info=True)
         yield g
         yield i
@@ -97,11 +97,11 @@ _PARSE_ARG = {
 }
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='0.1.0')
+    args = docopt(__doc__, version='0.1.1')
     opts = _make_opts(args)
     devs = list(find_liquidctl_devices(**opts))
     for d in devs:
-        LOGGER.info('Initializing %s', d.description)
+        LOGGER.info('initializing %s', d.description)
         d.connect()
 
     if args['--debug']:
@@ -121,18 +121,18 @@ if __name__ == '__main__':
         server_port = 8098
 
     start_http_server(server_port)
-    LOGGER.debug('Server started on port %s', server_port)
+    LOGGER.debug('server started on port %s', server_port)
 
     try:
         while True:
             # Keep HTTP server alive in a loop
             time.sleep(2)
     except KeyboardInterrupt:
-        LOGGER.info('Canceled by user')
+        LOGGER.info('canceled by user')
     finally:
         for d in devs:
             try:
-                LOGGER.info('Disconnecting from %s', d.description)
+                LOGGER.info('disconnecting from %s', d.description)
                 d.disconnect()
             except:
-                LOGGER.exception('Unexpected error when disconnecting')
+                LOGGER.exception('unexpected error when disconnecting')

@@ -147,11 +147,6 @@ class Kraken2(UsbHidDriver):
         if not self.supports_lighting:
             raise NotSupportedByDevice()
 
-        channel = channel.lower()
-        mode = mode.lower()
-        speed = speed.lower()
-        direction = direction.lower()
-
         if mode == 'super':
             _LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
@@ -183,7 +178,7 @@ class Kraken2(UsbHidDriver):
     def _generate_steps(self, colors, mincolors, maxcolors, mode, ringonly):
         colors = list(colors)
         if len(colors) < mincolors:
-            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
+            raise ValueError(f'not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if len(colors) > 0:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)
@@ -216,7 +211,7 @@ class Kraken2(UsbHidDriver):
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         for i, (temp, duty) in enumerate(interp):
             duty = clamp(duty, dmin, dmax)
-            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+            _LOGGER.info('setting %s PWM duty to %d%% for liquid temperature >= %d°C',
                          channel, duty, temp)
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
@@ -235,7 +230,7 @@ class Kraken2(UsbHidDriver):
             raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
-        _LOGGER.info('setting %d PWM duty to %i%%', channel, duty)
+        _LOGGER.info('setting %s PWM duty to %d%%', channel, duty)
         self._write([0x2, 0x4d, cbase & 0x70, 0, duty])
 
     @property

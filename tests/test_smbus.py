@@ -1,8 +1,8 @@
+import pytest
+
 from pathlib import Path
 
 from liquidctl.driver.smbus import LinuxI2c, LinuxI2cBus, SmbusDriver
-
-import pytest
 
 
 class Canary(SmbusDriver):

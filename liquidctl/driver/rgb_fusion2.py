@@ -9,9 +9,9 @@ Copyright (C) 2020–2021  CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from collections import namedtuple
 import logging
 import sys
+from collections import namedtuple
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -183,17 +183,15 @@ class RgbFusion2(UsbHidDriver):
         `slower`, `normal` (default), `faster`, `fastest` or `ludicrous`.
         """
 
-        mode = _COLOR_MODES[mode.lower()]
+        mode = _COLOR_MODES[mode]
         colors = iter(colors)
-        channel = channel.lower()
-        speed = speed.lower()
 
         if mode.takes_color:
             try:
                 r, g, b = next(colors)
                 single_color = (b, g, r)
             except StopIteration:
-                raise ValueError(f'One color required for mode={mode.name}')
+                raise ValueError(f'one color required for mode={mode.name}') from None
         else:
             single_color = (0, 0, 0)
         remaining = sum(1 for _ in colors)

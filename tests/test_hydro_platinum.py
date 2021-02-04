@@ -1,7 +1,8 @@
 import pytest
-from liquidctl.driver.hydro_platinum import HydroPlatinum
-from liquidctl.pmbus import compute_pec
 from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
+
+from liquidctl.driver.hydro_platinum import HydroPlatinum, _sequence
+from liquidctl.pmbus import compute_pec
 
 _SAMPLE_PATH = (r'IOService:/AppleACPIPlatformExpert/PCI0@0/AppleACPIPCI/XHC@14/XH'
                 r'C@14000000/HS11@14a00000/USB2.0 Hub@14a00000/AppleUSB20InternalH'
@@ -14,8 +15,8 @@ _WIN_MAX_PATH = 260  # Windows API should be the bottleneck
 @pytest.fixture
 def h115iPlatinumDevice():
     description = 'Mock H115i Platinum'
-    kwargs = {'fan_count': 2, 'rgb_fans': True}
-    device = _H115iPlatinumDevice()
+    kwargs = {'fan_count': 2, 'fan_leds': 4}
+    device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
 
     runtime_storage = MockRuntimeStorage(key_prefixes='testing')
@@ -25,14 +26,42 @@ def h115iPlatinumDevice():
 
     return dev
 
+@pytest.fixture
+def h100iPlatinumSeDevice():
+    description = 'Mock H100i Platinum SE'
+    kwargs = {'fan_count': 2, 'fan_leds': 16}
+    device = _MockHydroPlatinumDevice()
+    dev = HydroPlatinum(device, description, **kwargs)
 
-class _H115iPlatinumDevice(MockHidapiDevice):
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage.store('leds_enabled', 0)
+
+    dev.connect(runtime_storage=runtime_storage)
+
+    return dev
+
+@pytest.fixture
+def h150iProXTDevice():
+    description = 'Mock H150i Pro XT'
+    kwargs = {'fan_count': 3, 'fan_leds': 0}
+    device = _MockHydroPlatinumDevice()
+    dev = HydroPlatinum(device, description, **kwargs)
+
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage.store('leds_enabled', 0)
+
+    dev.connect(runtime_storage=runtime_storage)
+
+    return dev
+
+class _MockHydroPlatinumDevice(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0xffff, product_id=0x0c17, address=_SAMPLE_PATH)
         self.fw_version = (1, 1, 15)
         self.temperature = 30.9
         self.fan1_speed = 1499
         self.fan2_speed = 1512
+        self.fan3_speed = 1777
         self.pump_speed = 2702
 
     def read(self, length):
@@ -44,11 +73,27 @@ class _H115iPlatinumDevice(MockHidapiDevice):
         buf[3] = self.fw_version[2]
         buf[7] = int((self.temperature - int(self.temperature)) * 255)
         buf[8] = int(self.temperature)
+        buf[14] = round(.10 * 255)
         buf[15:17] = self.fan1_speed.to_bytes(length=2, byteorder='little')
+        buf[21] = round(.20 * 255)
         buf[22:24] = self.fan2_speed.to_bytes(length=2, byteorder='little')
+        buf[28] = round(.70 * 255)
         buf[29:31] = self.pump_speed.to_bytes(length=2, byteorder='little')
+        buf[42] = round(.30 * 255)
+        buf[43:44] = self.fan3_speed.to_bytes(length=2, byteorder='little')
         buf[-1] = compute_pec(buf[1:-1])
         return buf[:length]
+
+
+def test_sequence_numbers_are_correctly_generated():
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    sequence = _sequence(runtime_storage)
+
+    for i in range(1, 32):
+        assert next(sequence) == i
+
+    for i in range(1, 32):
+        assert next(sequence) == i
 
 
 def test_h115i_platinum_device_connect(h115iPlatinumDevice):
@@ -105,12 +150,32 @@ def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
 
 def test_h115i_platinum_device_get_status(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
-    temp, fan1, fan2, pump = dev.get_status()
+    temp, fan1, fan1d, fan2, fan2d, pump, pumpd = dev.get_status()
 
     assert temp[1] == pytest.approx(dev.device.temperature, abs=1 / 255)
     assert fan1[1] == dev.device.fan1_speed
+    assert fan1d[1] == 10
     assert fan2[1] == dev.device.fan2_speed
+    assert fan2d[1] == 20
     assert pump[1] == dev.device.pump_speed
+    assert pumpd[1] == 70
+    assert dev.device.sent[0].data[1] & 0b111 == 0
+    assert dev.device.sent[0].data[2] == 0xff
+
+
+def test_h150i_pro_xt_device_get_status(h150iProXTDevice):
+    dev = h150iProXTDevice
+    temp, fan1, fan1d, fan2, fan2d, fan3, fan3d, pump, pumpd = dev.get_status()
+
+    assert temp[1] == pytest.approx(dev.device.temperature, abs=1 / 255)
+    assert fan1[1] == dev.device.fan1_speed
+    assert fan1d[1] == 10
+    assert fan2[1] == dev.device.fan2_speed
+    assert fan2d[1] == 20
+    assert fan3[1] == dev.device.fan3_speed
+    assert fan3d[1] == 30
+    assert pump[1] == dev.device.pump_speed
+    assert pumpd[1] == 70
     assert dev.device.sent[0].data[1] & 0b111 == 0
     assert dev.device.sent[0].data[2] == 0xff
 
@@ -130,7 +195,7 @@ def test_h115i_platinum_device_handle_real_statuses(h115iPlatinumDevice):
     for sample in samples:
         dev.device.preload_read(Report(0, bytes.fromhex(sample)))
         status = dev.get_status()
-        assert len(status) == 4
+        assert len(status) == 7
         assert status[0][1] != dev.device.temperature
 
 
@@ -180,6 +245,27 @@ def test_h115i_platinum_device_fixed_fan_speeds(h115iPlatinumDevice):
         dev.set_fixed_speed('invalid', 0)
 
 
+def test_h150i_pro_xt_device_fixed_fan_speeds(h150iProXTDevice):
+    dev = h150iProXTDevice
+    dev.set_fixed_speed(channel='fan', duty=42)
+    dev.set_fixed_speed(channel='fan1', duty=84)
+    dev.set_fixed_speed(channel='fan3', duty=50)
+
+    assert dev.device.sent[-1].data[0x01] & 0x7 == 0b000
+    assert dev.device.sent[-2].data[0x02] == 0x14
+    assert dev.device.sent[-1].data[0x0b] == 0x2
+    assert dev.device.sent[-1].data[0x10] / 2.55 == pytest.approx(84, abs=1 / 2.55)
+    assert dev.device.sent[-1].data[0x11] == 0x2
+    assert dev.device.sent[-1].data[0x16] / 2.55 == pytest.approx(42, abs=1 / 2.55)
+
+    assert dev.device.sent[-2].data[0x01] & 0x7 == 0b011
+    assert dev.device.sent[-2].data[0x02] == 0x14
+    assert dev.device.sent[-2].data[0x0b] == 0x2
+    assert dev.device.sent[-2].data[0x10] / 2.55 == pytest.approx(50, abs=1 / 2.55)
+    assert dev.device.sent[-2].data[0x11] == 0x00
+    assert dev.device.sent[-2].data[0x16] == 0x00
+
+
 def test_h115i_platinum_device_custom_fan_profiles(h115iPlatinumDevice):
     dev = h115iPlatinumDevice
     dev.set_speed_profile(channel='fan', profile=iter([(20, 0), (55, 100)]))
@@ -212,6 +298,38 @@ def test_h115i_platinum_device_address_leds(h115iPlatinumDevice):
     assert dev.device.sent[3].data[2:62] == encoded[:60]
     assert dev.device.sent[4].data[1] & 0b111 == 0b101
     assert dev.device.sent[4].data[2:14] == encoded[60:]
+
+
+def test_h100i_platinum_se_device_address_leds(h100iPlatinumSeDevice):
+    dev = h100iPlatinumSeDevice
+    colors = [[i + 3, i + 2, i + 1] for i in range(0, 48 * 3, 3)]
+    encoded = list(range(1, 48 * 3 + 1))
+    dev.set_color(channel='led', mode='super-fixed', colors=iter(colors))
+
+    assert len(dev.device.sent) == 6  # 3 for enable, 3 for the leds
+    assert dev.device.sent[0].data[1] & 0b111 == 0b001
+    assert dev.device.sent[1].data[1] & 0b111 == 0b010
+    assert dev.device.sent[2].data[1] & 0b111 == 0b011
+    assert dev.device.sent[3].data[1] & 0b111 == 0b100
+    assert dev.device.sent[3].data[2:62] == encoded[:60]
+    assert dev.device.sent[4].data[1] & 0b111 == 0b101
+    assert dev.device.sent[4].data[2:62] == encoded[60:120]
+    assert dev.device.sent[5].data[1] & 0b111 == 0b110
+    assert dev.device.sent[5].data[2:26] == encoded[120:]
+
+
+def test_h150i_pro_xt_device_address_leds(h150iProXTDevice):
+    dev = h150iProXTDevice
+    colors = [[i + 3, i + 2, i + 1] for i in range(0, 16 * 3, 3)]
+    encoded = list(range(1, 16 * 3 + 1))
+    dev.set_color(channel='led', mode='super-fixed', colors=iter(colors))
+
+    assert len(dev.device.sent) == 4  # 3 for enable, 1 for the leds
+    assert dev.device.sent[0].data[1] & 0b111 == 0b001
+    assert dev.device.sent[1].data[1] & 0b111 == 0b010
+    assert dev.device.sent[2].data[1] & 0b111 == 0b011
+    assert dev.device.sent[3].data[1] & 0b111 == 0b100
+    assert dev.device.sent[3].data[2:50] == encoded[:48]
 
 
 def test_h115i_platinum_device_synchronize(h115iPlatinumDevice):
@@ -256,8 +374,8 @@ def test_h115i_platinum_device_invalid_color_modes(h115iPlatinumDevice):
 
 def test_h115i_platinum_device_short_enough_storage_path():
     description = 'Mock H115i Platinum'
-    kwargs = {'fan_count': 2, 'rgb_fans': True}
-    device = _H115iPlatinumDevice()
+    kwargs = {'fan_count': 2, 'fan_leds': 4}
+    device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
     dev.connect()
 

@@ -1,8 +1,7 @@
 import pytest
+from _testutils import MockHidapiDevice
 
 from liquidctl.driver.usb import UsbDriver, UsbHidDriver
-
-from _testutils import MockHidapiDevice
 
 
 @pytest.fixture

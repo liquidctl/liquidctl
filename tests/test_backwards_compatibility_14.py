@@ -1,5 +1,4 @@
 import pytest
-
 from _testutils import MockHidapiDevice
 
 RADICAL_RED = [0xff, 0x35, 0x5e]

@@ -9,8 +9,8 @@ Copyright (C) 2020–2021  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import logging
 import itertools
+import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
@@ -225,11 +225,6 @@ class KrakenX3(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
 
-        channel = channel.lower()
-        mode = mode.lower()
-        speed = speed.lower()
-        direction = direction.lower()
-
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')
@@ -239,7 +234,7 @@ class KrakenX3(UsbHidDriver):
         _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
+            raise ValueError(f'not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if colors:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)
@@ -259,7 +254,7 @@ class KrakenX3(UsbHidDriver):
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
         interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
         for temp, duty in zip(stdtemps, interp):
-            _LOGGER.info('setting %s PWM duty to %i%% for liquid temperature >= %i°C',
+            _LOGGER.info('setting %s PWM duty to %d%% for liquid temperature >= %d°C',
                          channel, duty, temp)
         self._write(header + interp)
 

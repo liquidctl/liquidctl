@@ -1,6 +1,7 @@
 import pytest
-from liquidctl.driver.corsair_hid_psu import CorsairHidPsu
 from _testutils import MockHidapiDevice, Report
+
+from liquidctl.driver.corsair_hid_psu import CorsairHidPsu
 
 
 class _MockPsuDevice(MockHidapiDevice):

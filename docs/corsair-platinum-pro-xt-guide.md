@@ -9,7 +9,7 @@ the system resumes from suspending to memory.
 ```
 # liquidctl initialize
 Corsair H100i Platinum (experimental)
-└── Firmware version    1.1.15  
+└── Firmware version    1.1.15
 ```
 
 By default the pump mode will be set to `balanced`, but a different mode can be
@@ -19,7 +19,7 @@ specified with `--pump-mode`.  The valid values for this option are `quiet`,
 ```
 # liquidctl initialize --pump-mode extreme
 Corsair H100i Platinum (experimental)
-└── Firmware version    1.1.15  
+└── Firmware version    1.1.15
 ```
 
 Unconfigured fan channels may default to 100% duty, so [reprogramming their
@@ -36,7 +36,9 @@ The cooler reports the liquid temperature and the speeds of all fans and pump.
 Corsair H100i Platinum (experimental)
 ├── Liquid temperature    27.0  °C
 ├── Fan 1 speed           1386  rpm
+├── Fan 1 duty              50  %
 ├── Fan 2 speed           1389  rpm
+├── Fan 2 duty              50  %
 └── Pump speed            2357  rpm
 ```
 
@@ -76,11 +78,11 @@ modes, but liquidctl provides a few for convenience.
 The table bellow summarizes the available channels, modes, and their associated
 maximum number of colors for each device family.
 
-| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT |
-| -------- | ----------- | ------------ | ------------ | -------- | ------ |
-| led      | off         | synchronized | all off      |        0 |      0 |
-| led      | fixed       | synchronized | independent  |        1 |      1 |
-| led      | super-fixed | independent  | independent  |       24 |     16 |
+| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT | Platinum SE |
+| -------- | ----------- | ------------ | ------------ | -------- | ------ | ----------- |
+| led      | off         | synchronized | all off      |        0 |      0 |           0 |
+| led      | fixed       | synchronized | independent  |        1 |      1 |           1 |
+| led      | super-fixed | independent  | independent  |       24 |     16 |          48 |
 
 The `led` channel can be used to address individual LEDs, and supports the
 `super-fixed`, `fixed` and `off` modes.
@@ -105,6 +107,3 @@ Each color can be specified using any of the [supported formats](../README.md#su
 
 Animations are not supported at the hardware level, and require successive
 invocations of the commands shown above, or use of the liquidctl APIs.
-
-Note: lighting control of Pro XT devices is experimental and requires the
-`--unsafe pro_xt_lighting` flag to be supplied on the command line.

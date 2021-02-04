@@ -4,14 +4,14 @@ Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from enum import Enum, unique
-from collections import namedtuple
 import itertools
 import logging
+from collections import namedtuple
+from enum import Enum, unique
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver
-from liquidctl.util import check_unsafe, clamp
+from liquidctl.util import RelaxedNamesEnum, check_unsafe, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -170,7 +170,7 @@ class Ddr4Temperature(SmbusDriver):
             desc += f' DIMM{dimm + 1} (experimental)'
 
             if (address and int(address, base=16) != spd_addr) \
-                    or (match and match.lower() not in desc.lower()):
+                    or (match and match not in desc.lower()):
                 continue
 
             # set the default device address to a weird value to prevent
@@ -264,7 +264,7 @@ class VengeanceRgb(Ddr4Temperature):
     _UNSAFE = ['smbus', 'vengeance_rgb']
 
     @unique
-    class Mode(bytes, Enum):
+    class Mode(bytes, RelaxedNamesEnum):
         def __new__(cls, value, min_colors, max_colors):
             obj = bytes.__new__(cls, [value])
             obj._value_ = value
@@ -282,7 +282,7 @@ class VengeanceRgb(Ddr4Temperature):
             return self.name.lower()
 
     @unique
-    class SpeedTimings(Enum):
+    class SpeedTimings(RelaxedNamesEnum):
         SLOWEST = 63
         SLOWER = 48
         NORMAL = 32
@@ -337,7 +337,7 @@ class VengeanceRgb(Ddr4Temperature):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
 
         try:
-            common = self.SpeedTimings[speed.upper()].value
+            common = self.SpeedTimings[speed].value
             tp1 = tp2 = common
         except KeyError:
             raise ValueError(f'invalid speed preset: {speed!r}') from None
@@ -350,7 +350,7 @@ class VengeanceRgb(Ddr4Temperature):
         colors = list(colors)
 
         try:
-            mode = self.Mode[mode.upper()]
+            mode = self.Mode[mode]
         except KeyError:
             raise ValueError(f'invalid mode: {mode!r}') from None
 

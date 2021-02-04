@@ -35,7 +35,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import math
-
 from enum import IntEnum, IntFlag, unique
 
 

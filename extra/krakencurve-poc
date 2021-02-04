@@ -2,12 +2,7 @@
 
 """Adjust Kraken X42/X52/X62/X72 speeds dynamically, with software.
 
-Periodicatly adjusts the pump and fan speeds according to user-specified
-profiles.
-
-Different sensors can be used for the pump and fans; when no sensor
-is specified, the coolant temperatue is used.  Use show-sensors to view the
-available sensors.
+Deprecated proof of concept, use ./yoda instead.
 
 Usage:
   krakencurve-poc [options] show-sensors
@@ -26,11 +21,6 @@ Options:
   --version               Display the version number
   --help                  Show this message
 
-Examples:
-  krakencurve-poc show-sensors
-  krakencurve-poc control --pump '(25,50),(35,100)' --fan '(25,40),(45,100)'
-  krakencurve-poc control --pump '(25,50),(35,100)' --fan '(20,25),(60,100)' --fan-sensor 'istats.cpu'
-
 Requirements:
   all platforms  liquidctl, including the Python APIs (pip install liquidctl)
   Linux/FreeBSD  psutil (pip install psutil)
@@ -38,10 +28,11 @@ Requirements:
   Windows        none, system sensors not yet supported
 
 Changelog:
+  0.0.3  Fix casing of log and error messages
   0.0.2  MacOS support for iStats; breaking refresh of the CLI and sensor names
   0.0.1  Initial proof-of-concept; system sensors only supported on Linux
 
-Copyright (C) 2018–2020  Jonas Malaco
+Copyright (C) 2018–2021  Jonas Malaco
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -60,7 +51,7 @@ if sys.platform == 'darwin':
 elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
     import psutil
 
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 LOGGER = logging.getLogger(__name__)
 
 LIQUID_SENSOR = 'kraken.coolant'
@@ -135,15 +126,15 @@ def parse_profile(arg, mintemp, maxtemp, minduty=0, maxduty=100):
             # for arg == '<number>' set fixed duty between mintemp and maxtemp - 1
             val = [(mintemp, val[0]), (maxtemp - 1, val[0])]
     except:
-        raise ValueError("Profile must be comma-separated (temperature, duty) tuples")
+        raise ValueError('profile must be comma-separated (temperature, duty) tuples')
     for step in val:
         if not isinstance(step, tuple) or len(step) != 2:
-            raise ValueError("Profile must be comma-separated (temperature, duty) tuples")
+            raise ValueError('profile must be comma-separated (temperature, duty) tuples')
         temp, duty = step
         if not isinstance(temp, int) or temp < mintemp or temp > maxtemp:
-            raise ValueError("Temperature must be integer between {} and {}".format(mintemp, maxtemp))
+            raise ValueError('temperature must be integer between {} and {}'.format(mintemp, maxtemp))
         if not isinstance(duty, int) or duty < minduty or duty > maxduty:
-            raise ValueError('Duty must be integer between {} and {}'.format(minduty, maxduty))
+            raise ValueError('duty must be integer between {} and {}'.format(minduty, maxduty))
     return normalize_profile(val, critx=maxtemp)
 
 
@@ -202,8 +193,8 @@ if __name__ == '__main__':
                     pump_sensor=pump_sensor,
                     fan_sensor=fan_sensor)
         else:
-            raise Exception('Nothing to do')
+            raise Exception('nothing to do')
     except KeyboardInterrupt:
-        LOGGER.info('Stopped by user')
+        LOGGER.info('stopped by user')
     finally:
         device.disconnect()

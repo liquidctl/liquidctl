@@ -138,11 +138,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         if not self._color_channels:
             raise NotSupportedByDevice()
 
-        channel = channel.lower()
-        mode = mode.lower()
-        speed = speed.lower()
-        direction = direction.lower()
-
         if 'backwards' in mode:
             _LOGGER.warning('deprecated mode, move to direction=backwards option')
             mode = mode.replace('backwards-', '')
@@ -152,7 +147,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         _, _, _, mincolors, maxcolors = self._COLOR_MODES[mode]
         colors = [[g, r, b] for [r, g, b] in colors]
         if len(colors) < mincolors:
-            raise ValueError(f'Not enough colors for mode={mode}, at least {mincolors} required')
+            raise ValueError(f'not enough colors for mode={mode}, at least {mincolors} required')
         elif maxcolors == 0:
             if colors:
                 _LOGGER.warning('too many colors for mode=%s, none needed', mode)
@@ -173,7 +168,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             selected_channels = {channel: self._speed_channels[channel]}
         for cname, (cid, dmin, dmax) in selected_channels.items():
             duty = clamp(duty, dmin, dmax)
-            _LOGGER.info('setting %s duty to %i%%', cname, duty)
+            _LOGGER.info('setting %s duty to %d%%', cname, duty)
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):

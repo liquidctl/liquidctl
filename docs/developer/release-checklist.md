@@ -10,12 +10,13 @@
  - [ ] Update last update data in the man page
  - [ ] Make sure the CHANGELOG is up to date
  - [ ] Update the link in the README to the stable executable for Windows
- - [ ] Remove "U/Starting with upcoming..." notes from the table of supported devices
+ - [ ] Remove "N/New driver, ..." notes from the table of supported devices
  - [ ] Commit "release: prepare for v<version>"
 
 ## Test
 
- - with `"$(liquidctl --version) = "liquidclt v<version>"`...
+_with `"$(liquidctl --version) = "liquidclt v<version>"`:_
+
  - [ ] Run unit and doc tests: `pytest`
  - [ ] Run my setup scripts: `liquidcfg && liquiddyncfg`
  - [ ] Run old HW tests: `extra/old-tests/asetek_*` and `extra/old-tests/kraken_two`
@@ -47,4 +48,6 @@
 
 ## Post release
 
+ - [ ] Merge the release branch into the main branch
+ - [ ] Update the HEAD release-checklist with this checklist
  - [ ] Update ArchLinux `liquidctl-git`

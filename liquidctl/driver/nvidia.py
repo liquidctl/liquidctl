@@ -4,24 +4,28 @@ Copyright (C) 2020–2021  Jonas Malaco, Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from enum import Enum, unique
 import logging
+from enum import unique
 
 from liquidctl.driver.smbus import SmbusDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import check_unsafe
+from liquidctl.util import RelaxedNamesEnum, check_unsafe
 
 _LOGGER = logging.getLogger(__name__)
 
 # vendor, devices
+# FWUPD_GUID = [vendor]:[device] - use hwinfo to inspect
 NVIDIA = 0x10de
+NVIDIA_GTX_1070 = 0x1b81
 NVIDIA_GTX_1080 = 0x1b80
 NVIDIA_RTX_2080_TI_REV_A = 0x1e07
 # https://www.nv-drivers.eu/nvidia-all-devices.html
 # https://pci-ids.ucw.cz/pci.ids
 
 # subsystem vendor ASUS, subsystem devices
+# PCI_SUBSYS_ID = [subsystem vendor]:[subsystem device] - use hwinfo to inspect
 ASUS = 0x1043
+ASUS_STRIX_GTX_1070 = 0x8599
 ASUS_STRIX_RTX_2080_TI_OC = 0x866a
 
 # subsystem vendor EVGA, subsystem devices
@@ -30,7 +34,7 @@ EVGA_GTX_1080_FTW = 0x6286
 
 
 @unique
-class _ModeEnum(bytes, Enum):
+class _ModeEnum(bytes, RelaxedNamesEnum):
     def __new__(cls, value, required_colors):
         obj = bytes.__new__(cls, [value])
         obj._value_ = value
@@ -41,7 +45,41 @@ class _ModeEnum(bytes, Enum):
         return self.name.capitalize()
 
 
-class EvgaPascal(SmbusDriver):
+class _NvidiaI2CDriver():
+    """Generic NVIDIA I²C driver."""
+
+    _VENDOR = None
+    _ADDRESSES = []
+    _MATCHES = []
+
+    @classmethod
+    def pre_probe(cls, smbus, vendor=None, product=None, address=None, match=None,
+              release=None, serial=None, **kwargs):
+
+        if (vendor and vendor != cls._VENDOR) \
+                or (address and int(address, base=16) not in cls._ADDRESSES) \
+                or release or serial:  # filters can never match, always None
+            return
+
+        if smbus.parent_subsystem_vendor != cls._VENDOR \
+                or smbus.parent_vendor != NVIDIA \
+                or smbus.parent_driver != 'nvidia':
+            return
+
+        for dev_id, sub_dev_id, desc in cls._MATCHES:
+            if (product and product != sub_dev_id) \
+                    or (match and match not in desc.lower()):
+                continue
+
+            if smbus.parent_subsystem_device != sub_dev_id \
+                    or smbus.parent_device != dev_id \
+                    or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
+                continue
+
+            yield (dev_id, sub_dev_id, desc)
+
+
+class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
     """NVIDIA series 10 (Pascal) graphics card from EVGA."""
 
     _REG_MODE = 0x0c
@@ -50,6 +88,12 @@ class EvgaPascal(SmbusDriver):
     _REG_BLUE = 0x0b
     _REG_PERSIST = 0x23
     _PERSIST = 0xe5
+
+    _VENDOR = EVGA
+    _ADDRESSES = [0x49]
+    _MATCHES = [
+        (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, 'EVGA GTX 1080 FTW'),
+    ]
 
     @unique
     class Mode(_ModeEnum):
@@ -62,30 +106,15 @@ class EvgaPascal(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
-        ADDRESS = 0x49
+        assert len(cls._ADDRESSES) == 1, 'unexpected extra address candidates'
 
-        if (vendor and vendor != EVGA) \
-                or (address and int(address, base=16) != ADDRESS) \
-                or smbus.parent_subsystem_vendor != EVGA \
-                or smbus.parent_vendor != NVIDIA \
-                or smbus.parent_driver != 'nvidia' \
-                or release or serial:  # will never match: always None
-            return
+        pre_probed = super().pre_probe(smbus, vendor, product, address, match,
+                                        release, serial, **kwargs)
 
-        supported = [
-            (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, 'EVGA GTX 1080 FTW'),
-        ]
 
-        for (dev_id, sub_dev_id, desc) in supported:
-            if (product and product != sub_dev_id) \
-                    or (match and match.lower() not in desc.lower()) \
-                    or smbus.parent_subsystem_device != sub_dev_id \
-                    or smbus.parent_device != dev_id \
-                    or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
-                continue
-
+        for dev_id, sub_dev_id, desc in pre_probed:
             dev = cls(smbus, desc, vendor_id=EVGA, product_id=EVGA_GTX_1080_FTW,
-                      address=ADDRESS)
+                      address=cls._ADDRESSES[0])
             _LOGGER.debug('instanced driver for %s', desc)
             yield dev
 
@@ -145,7 +174,7 @@ class EvgaPascal(SmbusDriver):
         colors = list(colors)
 
         try:
-            mode = self.Mode[mode.upper()]
+            mode = self.Mode[mode]
         except KeyError:
             raise ValueError(f'invalid mode: {mode!r}') from None
 
@@ -183,8 +212,8 @@ class EvgaPascal(SmbusDriver):
         raise NotSupportedByDevice()
 
 
-class RogTuring(SmbusDriver):
-    """NVIDIA series 20 (Turing) graphics card from ASUS."""
+class RogTuring(SmbusDriver, _NvidiaI2CDriver):
+    """NVIDIA series 10 (Pascal) or 20 (Turing) graphics card from ASUS."""
 
     _REG_RED = 0x04
     _REG_GREEN = 0x05
@@ -192,6 +221,15 @@ class RogTuring(SmbusDriver):
     _REG_MODE = 0x07
     _REG_APPLY = 0x0e
     _SYNC_REG = 0x0c  # unused
+
+    _VENDOR = ASUS
+    _ADDRESSES = [0x29, 0x2a, 0x60]
+    _MATCHES = [
+        (NVIDIA_GTX_1070, ASUS_STRIX_GTX_1070,
+            'ASUS Strix GTX 1070'),
+        (NVIDIA_RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
+            'ASUS Strix RTX 2080 Ti OC'),
+    ]
 
     _SENTINEL_ADDRESS = 0xffff  # intentionally invalid
     _ASUS_GPU_APPLY_VAL = 0x01
@@ -208,34 +246,16 @@ class RogTuring(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
-        ADDRESSES = [0x29, 0x2a, 0x60]
         ASUS_GPU_MAGIC_VALUE = 0x1589
 
-        if (vendor and vendor != ASUS) \
-                or (address and int(address, base=16) not in ADDRESSES) \
-                or smbus.parent_subsystem_vendor != ASUS \
-                or smbus.parent_vendor != NVIDIA \
-                or smbus.parent_driver != 'nvidia' \
-                or release or serial:  # will never match: always None
-            return
+        pre_probed = super().pre_probe(smbus, vendor, product, address, match,
+                                        release, serial, **kwargs)
 
-        supported = [
-            (NVIDIA_RTX_2080_TI_REV_A, ASUS_STRIX_RTX_2080_TI_OC,
-                'ASUS Strix RTX 2080 Ti OC'),
-        ]
-
-        for (dev_id, sub_dev_id, desc) in supported:
-            if (product and product != sub_dev_id) \
-                    or (match and match.lower() not in desc.lower()) \
-                    or smbus.parent_subsystem_device != sub_dev_id \
-                    or smbus.parent_device != dev_id \
-                    or not smbus.description.startswith('NVIDIA i2c adapter 1 '):
-                continue
-
+        for dev_id, sub_dev_id, desc in pre_probed:
             selected_address = None
 
             if check_unsafe('smbus', **kwargs):
-                for address in ADDRESSES:
+                for address in cls._ADDRESSES:
                     val1 = 0
                     val2 = 0
 
@@ -331,7 +351,7 @@ class RogTuring(SmbusDriver):
         colors = list(colors)
 
         try:
-            mode = self.Mode[mode.upper()]
+            mode = self.Mode[mode]
         except KeyError:
             raise ValueError(f'invalid mode: {mode!r}') from None
 

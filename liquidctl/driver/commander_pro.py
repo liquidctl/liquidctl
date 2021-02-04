@@ -18,14 +18,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 import re
-
 from enum import Enum, unique
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile, check_unsafe
-from liquidctl.error import NotSupportedByDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,7 +74,7 @@ _MODES = {
     'color_pulse': 0x02,
     'color_wave': 0x03,
     'fixed': 0x04,
-    # 'tempature': 0x05,    # ignore this
+    # 'temperature': 0x05,    # ignore this
     'visor': 0x06,
     'marquee': 0x07,
     'blink': 0x08,
@@ -121,6 +120,8 @@ class CommanderPro(UsbHidDriver):
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
         (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro (experimental)',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
+        (0x1b1c, 0x0c1a, None, 'Corsair Lighting Node Core (experimental)',
+            {'fan_count': 0, 'temp_probs': 0, 'led_channels': 1}),
     ]
 
     def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
@@ -129,7 +130,10 @@ class CommanderPro(UsbHidDriver):
         # the following fields are only initialized in connect()
         self._data = None
         self._fan_names = [f'fan{i+1}' for i in range(fan_count)]
-        self._led_names = [f'led{i+1}' for i in range(led_channels)]
+        if led_channels == 1:
+            self._led_names = ['led']
+        else:
+            self._led_names = [f'led{i+1}' for i in range(led_channels)]
         self._temp_probs = temp_probs
         self._fan_count = fan_count
 
@@ -201,13 +205,13 @@ class CommanderPro(UsbHidDriver):
         """
 
         if self.device.product_id != 0x0c10:
-            _LOGGER.debug('only the commander pro supports this')
+            _LOGGER.debug('only the Commander Pro supports this')
             return []
 
         connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
-        # get the tempature sensor values
+        # get the temperature sensor values
         temp = [0]*self._temp_probs
         for num, enabled in enumerate(connected_temp_sensors):
             if enabled:
@@ -244,13 +248,13 @@ class CommanderPro(UsbHidDriver):
         return status
 
     def _get_temp(self, sensor_num):
-        """This will get the tempature in degrees celsius for the specified temp sensor.
+        """This will get the temperature in degrees celsius for the specified temp sensor.
 
         sensor number MUST be in range of 0-3
         """
 
         if self._temp_probs == 0:
-            raise ValueError('this device does not have a tempature sensor')
+            raise ValueError('this device does not have a temperature sensor')
 
         if sensor_num < 0 or sensor_num > 3:
             raise ValueError(f'sensor_num {sensor_num} invalid, must be between 0 and 3')
@@ -281,25 +285,23 @@ class CommanderPro(UsbHidDriver):
         """This will get a list of all the fan channels that the command should be sent to
         It will look up the name of the fan channel given and return a list of the real fan number
         """
-        channel = channel.lower()
         if channel == 'sync':
-            return [i for i in range(len(self._fan_names))]
+            return list(range(len(self._fan_names)))
         elif channel in self._fan_names:
             return [self._fan_names.index(channel)]
-        else:
+        elif len(self._fan_names) > 1:
             raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
 
     def _get_hw_led_channels(self, channel):
         """This will get a list of all the led channels that the command should be sent to
         It will look up the name of the led channel given and return a list of the real led device number
         """
-        channel = channel.lower()
-        if channel == 'led':
-            return [i for i in range(len(self._led_names))]
+        if channel == 'sync':
+            return list(range(len(self._led_names)))
         elif channel in self._led_names:
             return [self._led_names.index(channel)]
-        else:
-            raise ValueError(f'unknown channel, should be one of: {_quoted("led", *self._led_names)}')
+        elif len(self._led_names) > 1:
+            raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._led_names)}')
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -348,7 +350,7 @@ class CommanderPro(UsbHidDriver):
 
         profile = list(profile)
 
-        criticalTemp = _CRITICAL_TEMPERATURE_HIGH if check_unsafe('high_tempature', **kwargs) else _CRITICAL_TEMPERATURE
+        criticalTemp = _CRITICAL_TEMPERATURE_HIGH if check_unsafe('high_temperature', **kwargs) else _CRITICAL_TEMPERATURE
         profile = _prepare_profile(profile, criticalTemp)
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
@@ -357,7 +359,7 @@ class CommanderPro(UsbHidDriver):
         sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
 
         if sensors[temp_sensor-1] != 1:
-            raise ValueError('the specified tempature sensor is not connected')
+            raise ValueError('the specified temperature sensor is not connected')
 
         buf = bytearray(26)
         buf[1] = temp_sensor-1  # 0  # use temp sensor 1
@@ -381,28 +383,9 @@ class CommanderPro(UsbHidDriver):
                 buf[0] = fan
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
-    def set_color(self, channel, mode_str, colors, direction='forward', speed='medium', start_led=1, maximum_leds=1, **kwargs):
+    def set_color(self, channel, mode, colors, direction='forward',
+                  speed='medium', start_led=1, maximum_leds=1, **kwargs):
         """Set the color of each LED.
-
-        In reality the device does not have the concept of different channels
-        or modes, but this driver provides a few for convenience.  Animations
-        still require successive calls to this API.
-
-        The 'led' channel can be used to address individual LEDs, and supports
-        the 'super-fixed', 'fixed' and 'off' modes.
-
-        In 'super-fixed' mode, each color in `colors` is applied to one
-        individual LED, successively.  LEDs for which no color has been
-        specified default to off/solid black.  This is closest to how the
-        device works.
-
-        In 'fixed' mode, all LEDs are set to the first color taken from
-        `colors`.  The `off` mode is equivalent to calling this function with
-        'fixed' and a single solid black color in `colors`.
-
-        The `colors` argument should be an iterable of one or more `[red, blue,
-        green]` triples, where each red/blue/green component is a value in the
-        range 0–255.
 
         The table bellow summarizes the available channels, modes, and their
         associated maximum number of colors for each device family.
@@ -420,12 +403,11 @@ class CommanderPro(UsbHidDriver):
         | led      | sequential  |          1 |
         | led      | rainbow     |          0 |
         | led      | rainbow2    |          0 |
-
         """
 
         # a special mode to clear the current led settings.
         # this is usefull if the the user wants to use a led mode for multiple devices
-        if mode_str == 'clear':
+        if mode == 'clear':
             self._data.store('saved_effects', None)
             return
 
@@ -434,44 +416,47 @@ class CommanderPro(UsbHidDriver):
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
         colors = list(c)
 
-        direction = direction.lower()
-        speed = speed.lower()
-        channel = channel.lower()
-        mode = mode_str.lower()
-
-        # default to channel 1 if channel 2 is not specified.
-        led_channel = 1 if channel == 'led2' else 0
-
         direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
-        start_led = clamp(start_led, 1, 96) - 1
-        num_leds = clamp(maximum_leds, 1, 96-start_led-1)  # there is a current firmware limitation of 96 led's per channel
-        random_colors = 0x00 if mode_str == 'off' or len(colors) != 0 else 0x01
-        mode = _MODES.get(mode, -1)
+        start_led = clamp(start_led, 1, 204) - 1
+        num_leds = clamp(maximum_leds, 1, 204 - start_led - 1)
+        random_colors = 0x00 if mode == 'off' or len(colors) != 0 else 0x01
+        mode_val = _MODES.get(mode, -1)
 
-        if mode == -1:
-            raise ValueError(f'mode "{mode_str}" is not valid')
+        if mode_val == -1:
+            raise ValueError(f'mode "{mode}" is not valid')
 
-        lighting_effect = {
-                'channel': led_channel,
-                'start_led': start_led,
-                'num_leds': num_leds,
-                'mode': mode,
-                'speed': speed,
-                'direction': direction,
-                'random_colors': random_colors,
-                'colors': colors
-            }
+        # FIXME clears on 'off', while the docs only mention this behavior for 'clear'
+        saved_effects = [] if mode == 'off' else self._data.load('saved_effects', default=[])
 
-        saved_effects = [] if mode_str == 'off' else self._data.load('saved_effects', default=[])
-        saved_effects += [lighting_effect]
+        for led_channel in self._get_hw_led_channels(channel):
 
-        self._data.store('saved_effects', None if mode_str == 'off' else saved_effects)
+            lighting_effect = {
+                    'channel': led_channel,
+                    'start_led': start_led,
+                    'num_leds': num_leds,
+                    'mode': mode_val,
+                    'speed': speed,
+                    'direction': direction,
+                    'random_colors': random_colors,
+                    'colors': colors
+                }
 
-        # start sending the led commands
-        self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel])
-        self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel])
-        self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01])
+            saved_effects += [lighting_effect]
+
+            # check to make sure that too many LED effects are not being sent.
+            # the max seems to be 8 as found here https://github.com/liquidctl/liquidctl/issues/154#issuecomment-762372583
+            if len(saved_effects) > 8:
+                _LOGGER.warning(f'too many lighting effects. Run `liquidctl set {channel} color clear` to reset the effect')
+                return
+
+            # start sending the led commands
+            self._send_command(_CMD_RESET_LED_CHANNEL, [led_channel])
+            self._send_command(_CMD_BEGIN_LED_EFFECT, [led_channel])
+            self._send_command(_CMD_SET_LED_CHANNEL_STATE, [led_channel, 0x01])
+
+        # FIXME clears on 'off', while the docs only mention this behavior for 'clear'
+        self._data.store('saved_effects', None if mode == 'off' else saved_effects)
 
         for effect in saved_effects:
             config = [effect.get('channel'),

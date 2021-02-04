@@ -16,7 +16,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-
 from datetime import timedelta
 from enum import Enum
 
@@ -134,7 +133,7 @@ class CorsairHidPsu(UsbHidDriver):
         duty = clamp(duty, _MIN_FAN_DUTY, 100)
         _LOGGER.info('ensuring fan control is in software mode')
         self._set_fan_control_mode(FanControlMode.SOFTWARE)
-        _LOGGER.info('setting fan PWM duty to %i%%', duty)
+        _LOGGER.info('setting fan PWM duty to %d%%', duty)
         self._exec(WriteBit.WRITE, CMD.FAN_COMMAND_1, [duty])
 
     def set_color(self, channel, mode, colors, **kwargs):

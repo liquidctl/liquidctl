@@ -9,22 +9,19 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 
 ```
 # liquidctl list
-Device ID 0: NZXT Smart Device (V1)
-Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
+Device ID 0: ASUS Strix RTX 2080 Ti OC
+Device ID 1: Corsair Vengeance RGB DIMM2 (experimental)
+Device ID 2: Corsair Vengeance RGB DIMM4 (experimental)
+Device ID 3: NZXT Smart Device (V1)
+Device ID 4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
-
-# liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
-# liquidctl --match kraken set sync color spectrum-wave
-
-# liquidctl --match smart set led color fading 350017 ff2608
-# liquidctl --match smart set fan1 speed 50
 
 # liquidctl status
 NZXT Smart Device (V1)
 ├── Fan 1                        PWM  
 ├── Fan 1 current               0.04  A
-├── Fan 1 speed                 1035  rpm
+├── Fan 1 speed                 1368  rpm
 ├── Fan 1 voltage              11.91  V
 ├── Fan 2                          —  
 ├── Fan 3                          —  
@@ -32,13 +29,23 @@ NZXT Smart Device (V1)
 ├── LED accessories                2  
 ├── LED accessory type    HUE+ Strip  
 ├── LED count (total)             20  
-└── Noise level                   60  dB
+└── Noise level                   67  dB
 
 NZXT Kraken X (X42, X52, X62 or X72)
-├── Liquid temperature     28.1  °C
-├── Fan speed               851  rpm
-├── Pump speed             1953  rpm
+├── Liquid temperature     31.7  °C
+├── Fan speed               801  rpm
+├── Pump speed             2239  rpm
 └── Firmware version      6.0.2  
+
+# liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+# liquidctl --match kraken set pump speed 70
+# liquidctl --match "smart device" set sync speed 50
+
+# liquidctl --match kraken set sync color fixed 0080ff
+# liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower 
+# liquidctl --match "rtx 2080" set led color fixed 2aff00 --unsafe=smbus
+# liquidctl --match dimm2 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
+# liquidctl --match dimm4 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
 ```
 
 <!-- stop here for PyPI -->
@@ -71,6 +78,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | Type | Device/guide | Bus | Notes |
 | :-: | :-- | :-: | :-- |
 | AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_EN_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
@@ -81,17 +89,19 @@ The following devices are supported by this version of liquidctl.  See each guid
 | AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
-| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
-| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUXN_</sup> |
-| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander.md) | USB HID | <sup>_EN_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander.md) | USB HID | <sup>_EN_</sup> |
+| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
+| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Core](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
-| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
+| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
+| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
+| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
 | Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
@@ -172,7 +182,7 @@ Optional steps:
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.4.2-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.4.2/liquidctl-1.4.2-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.5.0-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.5.0/liquidctl-1.5.0-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
@@ -456,7 +466,7 @@ file.
 [SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
 
 
-## Related projects (2020 edition)
+## Related projects
 
 ### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 

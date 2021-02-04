@@ -64,11 +64,11 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
 import datetime
+import errno
 import inspect
 import logging
 import os
 import sys
-import errno
 
 from docopt import docopt
 
@@ -76,7 +76,6 @@ from liquidctl.driver import *
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
-
 
 # conversion from CLI arg to internal option; as options as forwarded to bused
 # and drivers, they must:
@@ -90,21 +89,21 @@ _PARSE_ARG = {
     '--bus': str,
     '--address': str,
     '--usb-port': lambda x: tuple(map(int, x.split('.'))),
-    '--match': str,
+    '--match': str.lower,
     '--pick': int,
 
-    '--speed': str,
+    '--speed': str.lower,
     '--time-per-color': int,
     '--time-off': int,
     '--alert-threshold': int,
     '--alert-color': color_from_str,
     '--temperature-sensor': int,
-    '--direction': str,
+    '--direction': str.lower,
     '--start-led': int,
     '--maximum-leds': int,
 
     '--single-12v-ocp': bool,
-    '--pump-mode': str,
+    '--pump-mode': str.lower,
     '--legacy-690lc': bool,
     '--non-volatile': bool,
     '--unsafe': lambda x: x.lower().split(','),
@@ -121,6 +120,7 @@ _FILTER_OPTIONS = [
     'bus',
     'address',
     'usb-port',
+    'match',
     'pick',
     # --device generates no option
 ]
@@ -213,15 +213,15 @@ def _print_dev_status(dev, status):
 
 def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
-    dev.set_color(args['<channel>'], args['<mode>'], color, **opts)
+    dev.set_color(args['<channel>'].lower(), args['<mode>'].lower(), color, **opts)
 
 
 def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
         profile = zip(map(int, args['<temperature>']), map(int, args['<percentage>']))
-        dev.set_speed_profile(args['<channel>'], profile, **opts)
+        dev.set_speed_profile(args['<channel>'].lower(), profile, **opts)
     else:
-        dev.set_fixed_speed(args['<channel>'], int(args['<percentage>'][0]), **opts)
+        dev.set_fixed_speed(args['<channel>'].lower(), int(args['<percentage>'][0]), **opts)
 
 
 def _make_opts(args):
@@ -321,7 +321,7 @@ def main():
             elif args['set'] and args['color']:
                 _device_set_color(dev, args, **opts)
             else:
-                raise Exception('Not sure what to do')
+                raise Exception('not sure what to do')
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues

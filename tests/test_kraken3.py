@@ -1,13 +1,13 @@
 import pytest
+from _testutils import MockHidapiDevice, Report
 
 from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3
 from liquidctl.driver.kraken3 import _COLOR_CHANNELS_KRAKENX
 from liquidctl.driver.kraken3 import _SPEED_CHANNELS_KRAKENX
 from liquidctl.driver.kraken3 import _SPEED_CHANNELS_KRAKENZ
-from liquidctl.util import Hue2Accessory
 from liquidctl.util import HUE2_MAX_ACCESSORIES_IN_CHANNEL as MAX_ACCESSORIES
+from liquidctl.util import Hue2Accessory
 
-from _testutils import MockHidapiDevice, Report
 
 # https://github.com/liquidctl/liquidctl/issues/160#issuecomment-664044103
 _SAMPLE_STATUS = bytes.fromhex(
