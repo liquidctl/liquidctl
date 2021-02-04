@@ -80,7 +80,7 @@ def test_set_pump_to_rainbow_mode(emulate):
     with cooler.connect():
         cooler.initialize()
 
-        cooler.set_color(channel='pump', mode='rainbow', colors=iter([]), speed='slower')
+        cooler.set_color(channel='logo', mode='rainbow', colors=iter([]), speed='slower')
 
         _begin, _pump, color_mode, color_end = usb_dev._sent_xfers
         assert color_mode == ('write', 1, [0x53, 0x30])
@@ -93,7 +93,7 @@ def test_set_pump_to_fixed_color(emulate):
     with cooler.connect():
         cooler.initialize()
 
-        cooler.set_color(channel='pump', mode='fixed', colors=iter([[0xff, 0x88, 0x44]]))
+        cooler.set_color(channel='logo', mode='fixed', colors=iter([[0xff, 0x88, 0x44]]))
 
         _begin, _pump, color_change, color_end = usb_dev._sent_xfers
         assert color_change == ('write', 1, [0x56, 0x02, 0xff, 0x88,
@@ -107,7 +107,7 @@ def test_set_pump_to_blinking_mode(emulate):
     with cooler.connect():
         cooler.initialize()
 
-        cooler.set_color(channel='pump', mode='blinking', speed='normal',
+        cooler.set_color(channel='logo', mode='blinking', speed='normal',
             colors=iter([[0xff, 0x88, 0x44], [0xff, 0xff, 0xff], [0x00, 0x00, 0x00]]))
 
         _begin, _pump, color_change, color_mode, color_end = usb_dev._sent_xfers
