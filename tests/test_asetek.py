@@ -1,47 +1,14 @@
 import pytest
-from _testutils import noop
+from _testutils import MockPyusbDevice
 
 from collections import deque
 
 from liquidctl.driver.asetek import Modern690Lc, Legacy690Lc, Hydro690Lc
 
 
-class _Mock690LcDevice():
-    def __init__(self, vendor_id=None, product_id=None, release_number=None,
-                 serial_number=None, bus=None, address=None, port=None):
-        self.vendor_id = vendor_id
-        self.product_id = product_id
-        self.release_numer = release_number
-        self.serial_number = serial_number
-        self.bus = bus
-        self.address = address
-        self.port = port
-
-        self.open = noop
-        self.claim = noop
-        self.release = noop
-        self.close = noop
-
-        self._reset_sent()
-
-    def read(self, endpoint, length, timeout=None):
-        return [0] * length
-
-    def write(self, endpoint, data, timeout=None):
-        self._sent_xfers.append(('write', endpoint, data))
-
-    def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-                      data_or_wLength=None, timeout=None):
-        self._sent_xfers.append(('ctrl_transfer', bmRequestType, bRequest,
-                                 wValue, wIndex, data_or_wLength))
-
-    def _reset_sent(self):
-        self._sent_xfers = deque()
-
-
 @pytest.fixture
 def mockModern690LcDevice():
-    device = _Mock690LcDevice()
+    device = MockPyusbDevice()
     dev = Modern690Lc(device, 'Mock Modern 690LC')
 
     dev.connect()
@@ -50,7 +17,7 @@ def mockModern690LcDevice():
 
 @pytest.fixture
 def mockLegacy690LcDevice():
-    device = _Mock690LcDevice(vendor_id=0xffff, product_id=0xb200, bus=1, port=(1,))
+    device = MockPyusbDevice(vendor_id=0xffff, product_id=0xb200, bus=1, port=(1,))
     dev = Legacy690Lc(device, 'Mock Legacy 690LC')
 
     dev.connect()

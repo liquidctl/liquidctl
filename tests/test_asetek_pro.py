@@ -1,50 +1,14 @@
 import pytest
-from _testutils import noop
+from _testutils import MockPyusbDevice
 
 from collections import deque
 
 from liquidctl.driver.asetek_pro import CorsairAsetekProDriver
 
 
-class VirtualPyusbDevice():
-    def __init__(self, vendor_id=None, product_id=None, release_number=None,
-                 serial_number=None, bus=None, address=None, port=None):
-        self.vendor_id = vendor_id
-        self.product_id = product_id
-        self.release_numer = release_number
-        self.serial_number = serial_number
-        self.bus = bus
-        self.address = address
-        self.port = port
-
-        self.open = noop
-        self.claim = noop
-        self.release = noop
-        self.close = noop
-
-        self._reset()
-
-    def read(self, endpoint, length, timeout=None):
-        if len(self._responses):
-            return self._responses.popleft()
-        return [0] * length
-
-    def write(self, endpoint, data, timeout=None):
-        self._sent_xfers.append(('write', endpoint, data))
-
-    def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-                      data_or_wLength=None, timeout=None):
-        self._sent_xfers.append(('ctrl_transfer', bmRequestType, bRequest,
-                                 wValue, wIndex, data_or_wLength))
-
-    def _reset(self):
-        self._sent_xfers = deque()
-        self._responses = deque()
-
-
 @pytest.fixture
 def emulate():
-    usb_dev = VirtualPyusbDevice()
+    usb_dev = MockPyusbDevice()
     cooler = CorsairAsetekProDriver(usb_dev, 'Emulated Asetek Pro cooler', fan_count=2)
     return (usb_dev, cooler)
 
