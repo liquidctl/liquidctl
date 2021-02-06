@@ -75,25 +75,27 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 The following devices are supported by this version of liquidctl.  See each guide for specific usage instructions and other pertinent information.
 
+<!-- the table is manually sorted to keep certain devices (confusing Corsair coolers and NZXT Smart Devices) in chronological order -->
+
 | Type | Device/guide | Bus | Notes |
 | :-: | :-- | :-: | :-- |
-| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
-| AIO liquid cooler | [Corsair Hydro H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_EN_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_EN_</sup> |
 | AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
 | AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
+| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
 | AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
 | DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
 | DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
