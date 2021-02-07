@@ -21,19 +21,21 @@ def test_matches_platinum_and_pro_xt_coolers_regardless_of_hydro(monkeypatch):
         {'vendor_id': 0xffff, 'product_id': 0x0c22},  # nothing
     ]
 
-    ignored_infos = {
-        'path': b'',
-        'serial_number': '',
-        'release_number': 0,
-        'manufacturer_string': '',
-        'product_string': '',
-        'usage_page': 0,
-        'usage': 0,
-        'interface_number': 0
-    }
+    mock_hids = mock_match + mock_skip
+
+    for info in mock_hids:
+        info.setdefault('path', b'')
+        info.setdefault('path', b'')
+        info.setdefault('serial_number', '')
+        info.setdefault('release_number', 0)
+        info.setdefault('manufacturer_string', '')
+        info.setdefault('product_string', '')
+        info.setdefault('usage_page', 0)
+        info.setdefault('usage', 0)
+        info.setdefault('interface_number', 0)
 
     def mock_enumerate(vid=0, pid=0):
-        return [infos | ignored_infos for infos in mock_match + mock_skip]
+        return mock_hids
 
     monkeypatch.setattr(hid, 'enumerate', mock_enumerate)
 
