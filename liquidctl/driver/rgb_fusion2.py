@@ -112,20 +112,18 @@ class RgbFusion2(UsbHidDriver):
         handles matching other usages have to be ignored.
         """
 
-        for candidate in super().probe(handle, **kwargs):
+        # if usage_page/usage are not available due to hidapi limitations
+        # (version, platform or backend), they are unfortunately left
+        # uninitialized; because of this, we explicitly exclude the undesired
+        # usage_page/usage pair, and assume in all other cases that we either
+        # have the desired usage page/usage pair, or that on that system a
+        # single handle is returned for that device interface (see: 259)
 
-            # if usage_page/usage are not available due to hidapi limitations
-            # (version, platform or backend), they are unfortunately left
-            # uninitialized; because of this, we explicitly exclude the undesired
-            # usage_page/usage pair, and assume in all other cases that we either
-            # have the desired usage page/usage pair, or that on that system a
-            # single handle is returned for that device interface (see: 259)
+        if (handle.hidinfo['usage_page'] == _USAGE_PAGE and
+                handle.hidinfo['usage'] == _OTHER_USAGE):
+            return
 
-            if (handle.hidinfo['usage_page'] == _USAGE_PAGE and
-                    handle.hidinfo['usage'] == _OTHER_USAGE):
-                continue
-
-            yield candidate
+        yield from super().probe(handle, **kwargs)
 
     def initialize(self, **kwargs):
         """Initialize the device.
