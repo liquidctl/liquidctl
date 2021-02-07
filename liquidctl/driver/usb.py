@@ -98,7 +98,7 @@ class BaseUsbDriver(BaseDriver):
                 continue
             if serial and handle.serial_number != serial:
                 continue
-            if match and match not in description.lower():
+            if match and match.lower() not in description.lower():
                 continue
             consargs = devargs.copy()
             consargs.update(kwargs)

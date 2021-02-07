@@ -89,7 +89,7 @@ _PARSE_ARG = {
     '--bus': str,
     '--address': str,
     '--usb-port': lambda x: tuple(map(int, x.split('.'))),
-    '--match': str.lower,
+    '--match': str,
     '--pick': int,
 
     '--speed': str.lower,

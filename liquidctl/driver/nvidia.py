@@ -68,7 +68,7 @@ class _NvidiaI2CDriver():
 
         for dev_id, sub_dev_id, desc in cls._MATCHES:
             if (product and product != sub_dev_id) \
-                    or (match and match not in desc.lower()):
+                    or (match and match.lower() not in desc.lower()):
                 continue
 
             if smbus.parent_subsystem_device != sub_dev_id \

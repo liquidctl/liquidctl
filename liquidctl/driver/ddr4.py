@@ -170,7 +170,7 @@ class Ddr4Temperature(SmbusDriver):
             desc += f' DIMM{dimm + 1} (experimental)'
 
             if (address and int(address, base=16) != spd_addr) \
-                    or (match and match not in desc.lower()):
+                    or (match and match.lower() not in desc.lower()):
                 continue
 
             # set the default device address to a weird value to prevent
