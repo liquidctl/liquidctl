@@ -370,7 +370,7 @@ After reloading the configuration, the new unit can be started manually or set t
 
 A slightly more complex example can be seen at [jonasmalacofilho/dotfiles](https://github.com/jonasmalacofilho/dotfiles/tree/master/liquidctl), which includes dynamic adjustments of the lighting depending on the time of day.
 
-If necessary, it is also possible to have the service unit explicitly wait for the device to be available: see [making systemd units wait for devices](docs/linux/making-systemd-units-wait-for-devices).
+If necessary, it is also possible to have the service unit explicitly wait for the device to be available: see [making systemd units wait for devices](docs/linux/making-systemd-units-wait-for-devices.md).
 
 ### Set up Windows using Task Scheduler
 
