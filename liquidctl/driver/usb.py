@@ -238,15 +238,24 @@ class PyUsbDevice:
         Ensure the device is configured and replace the kernel kernel on the
         selected interface, if necessary.
         """
+
+        # we assume the device is already configured, there is only one
+        # configuration, or the first one is desired
+
         try:
             cfg = self.usbdev.get_active_configuration()
-        except usb.core.USBError:
-            _LOGGER.debug('setting the (first) configuration')
-            self.usbdev.set_configuration()  # assume the first configuration
-            # FIXME device or handle might not be ready for use after set_configuration()
-            cfg = self.usbdev.get_active_configuration()
+        except usb.core.USBError as err:
+            if err.args[0] == 'Configuration not set':
+                _LOGGER.debug('setting the (first) configuration')
+                self.usbdev.set_configuration()
+                # FIXME device or handle might not be ready for use yet
+                cfg = self.usbdev.get_active_configuration()
+            else:
+                raise
+
         self.bInterfaceNumber = self._select_interface(cfg)
         _LOGGER.debug('selected interface: %d', self.bInterfaceNumber)
+
         if (sys.platform.startswith('linux') and
                 self.usbdev.is_kernel_driver_active(self.bInterfaceNumber)):
             _LOGGER.debug('replacing stock kernel driver with libusb')
