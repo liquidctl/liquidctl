@@ -317,17 +317,17 @@ def main():
     for dev in selected:
         _LOGGER.debug('device: %s', dev.description)
         try:
-            dev.connect(**opts)
-            if args['initialize']:
-                _print_dev_status(dev, dev.initialize(**opts))
-            elif args['status']:
-                _print_dev_status(dev, dev.get_status(**opts))
-            elif args['set'] and args['speed']:
-                _device_set_speed(dev, args, **opts)
-            elif args['set'] and args['color']:
-                _device_set_color(dev, args, **opts)
-            else:
-                raise Exception('not sure what to do')
+            with dev.connect(**opts):
+                if args['initialize']:
+                    _print_dev_status(dev, dev.initialize(**opts))
+                elif args['status']:
+                    _print_dev_status(dev, dev.get_status(**opts))
+                elif args['set'] and args['speed']:
+                    _device_set_speed(dev, args, **opts)
+                elif args['set'] and args['color']:
+                    _device_set_color(dev, args, **opts)
+                else:
+                    assert False, 'unreachable'
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
@@ -347,8 +347,6 @@ def main():
             _LOGGER.error('More information is provided in the corresponding device guide')
         except Exception as err:
             log_error(err, f'Unexpected error with {dev.description}', append_err=True)
-        finally:
-            dev.disconnect(**opts)
 
     if errors:
         sys.exit(errors)
