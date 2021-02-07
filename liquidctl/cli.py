@@ -69,6 +69,7 @@ import inspect
 import logging
 import os
 import sys
+from traceback import format_exception
 
 from docopt import docopt
 
@@ -302,11 +303,15 @@ def main():
 
     errors = 0
 
-    def log_error(err, msg, *args):
+    def log_error(err, msg, append_err=False, *args):
         nonlocal errors
         errors += 1
         _LOGGER.info('%s', err, exc_info=True)
-        _LOGGER.error(msg, *args)
+        if append_err:
+            exception = list(format_exception(Exception, err, None))[-1].rstrip()
+            _LOGGER.error(f'{msg}: {exception}', *args)
+        else:
+            _LOGGER.error(msg, *args)
 
     for dev in selected:
         _LOGGER.debug('device: %s', dev.description)
@@ -330,7 +335,7 @@ def main():
             elif err.args == ('open failed', ):
                 log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, f'Unexpected OS error with {dev.description}: {err}')
+                log_error(err, f'Unexpected OS error with {dev.description}', append_err=True)
         except NotSupportedByDevice as err:
             log_error(err, f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
@@ -340,7 +345,7 @@ def main():
             log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
             _LOGGER.error('More information is provided in the corresponding device guide')
         except Exception as err:
-            log_error(err, f'Unexpected error with {dev.description}: {err}')
+            log_error(err, f'Unexpected error with {dev.description}', append_err=True)
         finally:
             dev.disconnect(**opts)
 
