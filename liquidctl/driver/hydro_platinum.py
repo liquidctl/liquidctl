@@ -2,12 +2,12 @@
 
 Supported devices:
 
-- Corsair H100i Platinum
-- Corsair H100i Platinum SE
-- Corsair H115i Platinum
-- Corsair H100i Pro XT
-- Corsair H115i Pro XT
-- Corsair H150i Pro XT
+- Corsair Hydro H100i Platinum
+- Corsair Hydro H100i Platinum SE
+- Corsair Hydro H115i Platinum
+- Corsair Hydro H100i Pro XT
+- Corsair Hydro H115i Pro XT
+- Corsair Hydro H150i Pro XT
 
 Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -112,19 +112,48 @@ class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c18, None, 'Corsair H100i Platinum (experimental)',
+        (0x1b1c, 0x0c18, None, 'Corsair Hydro H100i Platinum (experimental)',
             {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c19, None, 'Corsair H100i Platinum SE (experimental)',
+        (0x1b1c, 0x0c19, None, 'Corsair Hydro H100i Platinum SE (experimental)',
             {'fan_count': 2, 'fan_leds': 16}),
-        (0x1b1c, 0x0c17, None, 'Corsair H115i Platinum (experimental)',
+        (0x1b1c, 0x0c17, None, 'Corsair Hydro H115i Platinum (experimental)',
             {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c20, None, 'Corsair H100i Pro XT (experimental)',
+        (0x1b1c, 0x0c20, None, 'Corsair Hydro H100i Pro XT (experimental)',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c21, None, 'Corsair H115i Pro XT (experimental)',
+        (0x1b1c, 0x0c21, None, 'Corsair Hydro H115i Pro XT (experimental)',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c22, None, 'Corsair H150i Pro XT (experimental)',
+        (0x1b1c, 0x0c22, None, 'Corsair Hydro H150i Pro XT (experimental)',
             {'fan_count': 3, 'fan_leds': 0}),
     ]
+
+    @classmethod
+    def probe(cls, handle, vendor=None, product=None, release=None,
+              serial=None, match=None, **kwargs):
+        """Probe `handle` and yield corresponding driver instances."""
+
+        # this is modified from BaseUsbDriver.probe to match regardless of
+        # presence of "Hydro", for backwards compatibility with 1.5.0 and
+        # previous versions
+
+        for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
+            if (vendor and vendor != vid) or handle.vendor_id != vid:
+                continue
+            if (product and product != pid) or handle.product_id != pid:
+                continue
+            if release and handle.release_number != release:
+                continue
+            if serial and handle.serial_number != serial:
+                continue
+            if match:
+                match = match.lower()
+                descr = description.lower()
+                if not (match in descr or match in descr.replace('hydro ', '')):
+                    continue
+            consargs = devargs.copy()
+            consargs.update(kwargs)
+            dev = cls(handle, description, **consargs)
+            _LOGGER.debug('instanced driver for %s', description)
+            yield dev
 
     def __init__(self, device, description, fan_count, fan_leds, **kwargs):
         super().__init__(device, description, **kwargs)
