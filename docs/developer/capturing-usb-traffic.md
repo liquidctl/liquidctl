@@ -13,6 +13,7 @@ to communicate with the device, and the captured traffic is analyzed to
 understand what the device is capable of and what it expects from the host
 application.
 
+
 ## Capturing USB traffic on a native Windows host
 
 Get [Wireshark].  During the Wireshark setup, enable the installation of
@@ -23,6 +24,9 @@ interface to start capturing all traffic on it, and proceed to [Finding the targ
 
 _If you have more than one USBPcap interface, you may need to look for the
 target devices in each of them._
+
+
+
 
 ## Capturing USB traffic on Linux
 _and capturing USB traffic in a Windows VM, through the Linux host_
@@ -36,16 +40,15 @@ Some extra steps may be needed, you can follow the instructions [here](https://w
 Note you may need to logout and login agin for these changes to take effect.
 
 The general steps are as follows:
-There are a number of different virtualization tools you can use, such as [virt-manager](https://virt-manager.org/) a front
-end for [kvm/qemu](https://www.qemu.org/), [virtualbox](https://www.virtualbox.org/), and many more. You can google how
-to do the specific tasks for the one you wish to use.
 
-1. Create a windows VM using your favourite virtual machine manager
-2. Install the software to control the device
-3. Start Wireshark to capture the traffic
-3. Pass the usb device through to the virtual machine
-4. Start changing settings using the app and watch the messages appear in the Wireshark interface.
+1. [Create and configure a Windows VM](./creating-vm-for-capture.md).
+2. Start listening for the device USB traffic on Wireshark.
+4. Start changing device settings using the application running in the Windows VM and watch the messages appear in the Wireshark interface running on the host OS.
 5. Success!
+
+To capture USB traffic after setting up the VM, start Wireshark and select the appropriate `usbmon` interface for capturing traffic to your device.  You can select them on the main screen, or in the Capture -> Options menu.  If you aren't sure which usbmon device is correct, select them all then proceed to [Finding the target device](#finding-the-target-device).
+
+![usbmon interface](./images/wireshark_1.png)
 
 ## Finding the target device
 [Finding the target device](#finding-the-target-device)
@@ -54,25 +57,26 @@ Wireshark captures USB traffic at the bus level, which means that all devices
 on that bus will be captured.  This is a lot of noise, so the first step is
 find the target device among all others and filter the traffic to that device.
 
-_For this example, assume the target device has vendor and product IDs `0x1e71`
-and `0x170e`, respectively._
+_For this example, assume the target device has vendor and product IDs `0x1b1c`
+and `0x0c1a`, respectively._
 
-First, filter (top bar) the `GET DESCRIPTOR` response for this device:
-
-```
-usb.idVendor == 0x1e71 && usb.idProduct == 0x170e
-```
-
-Next, select the filtered packet and, on the middle panel, expand the USB URB
-details, right click "Device address" and select Apply as Filter -> Selected.
-
-This should result in a new filter that resembles:
+First, capture some USB traffic and apply a filter to the captured traffic (via the top bar) to filter out everything except the `GET DESCRIPTOR` response for this device. 
 
 ```
-usb.device_address == 2
+usb.idVendor == 0x1b1c && usb.idProduct == 0x0c1a
 ```
+![Wireshark 4](./images/wireshark_2.png)  
 
-And only packets to or from that device should be displayed.
+
+Next step is to get the device address so that we can tell wireshark to only capture traffic to our desired device.
+Select one of the `GET DESCRIPTOR` response packets, expand the USB URB section in the packet details, and find the "Device: #" line. This is the device address.   Right click the "Device: #" entry, choose "Apply As Filter", then "Selected".  In the screenshot below the device number was 9.
+![Wireshark 5](./images/wireshark_3.png)  
+
+This will change your packet filter to something like `usb.device_address == 9`, which is exactly what we want.  Now only traffic sent to that specific device will be displayed.
+![Wireshark 6](./images/wireshark_4.png)  
+
+For convenience, you may want to save your filter for future captures.  Click on the bookmark icon immediately next to the filter to save it.
+
 
 ## Exporting captured data
 
@@ -103,7 +107,7 @@ so that I can easily only show the fields I can about and can use other bash com
 some of the extraneous messages (for example Corsair iCue sends a get status message every second which I am generally not
 interested in).
 
-Next steps would be to take a look at (analyzing USB protocols)[techniques-for-analyzing-usb-protocols.md]
+Next steps would be to take a look at [analyzing USB protocols](techniques-for-analyzing-usb-protocols.md)
 
 [Wireshark]: https://www.wireshark.org
 [USBPcap]: https://desowin.org/usbpcap/
