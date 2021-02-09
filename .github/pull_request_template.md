@@ -15,7 +15,7 @@ Checklist:
 <!-- To check an item, fill the brackets with the letter x; the result should look like `[x]`.  Feel free to leave unchecked items that are not applicable or that you could not perform. -->
 
 - [ ] Add automated tests cases
-- [ ] Conform to the style guide in [`docs/developer/style-guide.md`]
+- [ ] Conform to the style guide in `docs/developer/style-guide.md`
 - [ ] Verify that all automated tests pass
 - [ ] Verify that the changes work as expected on real hardware
 - [ ] [New CLI flag?] Adjust the completion scripts in `extra/completions/`
