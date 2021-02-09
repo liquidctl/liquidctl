@@ -142,9 +142,9 @@ class _CommonAsetekDriver(UsbDriver):
         Enables the device to send data to the host.
         """
 
-        super().connect(**kwargs)
+        ret = super().connect(**kwargs)
         self._configure_flow_control(clear_to_send=True)
-        return self
+        return ret
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -317,14 +317,14 @@ class Legacy690Lc(_CommonAsetekDriver):
         self._data = None
 
     def connect(self, runtime_storage=None, **kwargs):
-        super().connect(**kwargs)
-        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
-        loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
-
+        ret = super().connect(**kwargs)
         if runtime_storage:
             self._data = runtime_storage
         else:
+            ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+            loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
             self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
+        return ret
 
     def _set_all_fixed_speeds(self):
         self._begin_transaction()
