@@ -144,22 +144,21 @@ class HydroPlatinum(UsbHidDriver):
 
     def connect(self, runtime_storage=None, **kwargs):
         """Connect to the device."""
-        super().connect(**kwargs)
-
-        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
-        # must use the HID path because there is no serial number; however,
-        # these can be quite long on Windows and macOS, so only take the
-        # numbers, since they are likely the only parts that vary between two
-        # devices of the same model
-        loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
+        ret = super().connect(**kwargs)
 
         if runtime_storage:
             self._data = runtime_storage
         else:
+            ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+            # must use the HID path because there is no serial number; however,
+            # these can be quite long on Windows and macOS, so only take the
+            # numbers, since they are likely the only parts that vary between two
+            # devices of the same model
+            loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
 
         self._sequence = _sequence(self._data)
-        return self
+        return ret
 
     def initialize(self, pump_mode='balanced', **kwargs):
         """Initialize the device and set the pump mode.
