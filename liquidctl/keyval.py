@@ -6,9 +6,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 import os
+import fcntl
 import sys
 import tempfile
+
 from ast import literal_eval
+from contextlib import contextmanager
 
 _LOGGER = logging.getLogger(__name__)
 XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR')
@@ -87,12 +90,15 @@ class _FilesystemBackend:
         data = repr(value)
         assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
-        fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
         with open(fd, mode='w') as f:
             f.write(data)
             f.flush()
         os.replace(tmp, path)
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
+
+    def lockFile(self, key):
+        return os.path.join(self._write_dir, f`${key}.lock`)
+
 
 
 class RuntimeStorage:
@@ -103,7 +109,12 @@ class RuntimeStorage:
 
     def load(self, key, of_type=None, default=None):
         """Unstable API."""
-        value = self._backend.load(key)
+
+
+        with _shared_lock(key):
+            value = self._backend.load(key)
+
+
         if value is None:
             return default
         elif of_type and not isinstance(value, of_type):
@@ -111,7 +122,79 @@ class RuntimeStorage:
         else:
             return value
 
+    def load_store(self, key, func, of_type=None, default=None):
+        """Unstable API."""
+
+        with _exclusive_lock(key):
+            value = self._backend.load(key)
+
+            if value is None:
+                value = default
+            elif of_type and not isinstance(value, of_type):
+                value = default
+            else:
+                value = value
+
+            newValue = func(value)
+            self._backend.store(key, newValue)
+
+        return vlue
+
     def store(self, key, value):
         """Unstable API."""
-        self._backend.store(key, value)
+        with _exclusive_lock(key):
+            self._backend.store(key, value)
         return value
+
+    @contextmanager
+    def _shared_lock(key):
+
+        lockFile = self._backend.lockFile(key)
+
+        if sys.platform == 'win32':
+            again = True
+            while not again:
+                try:
+                    f = open(lockFile, 'x')
+                    again = False
+                except FileExistsError:
+                    again = True
+        else:
+            f = open(lockFile, 'r')
+            fcntl.lockf(f, fcntl.LOCK_SH)
+
+        try:
+            yield
+        finally:
+            if sys.platform == 'win32':
+                f.close()
+                os.remove(f.name)
+            else:
+                fcntl.lockf(f, fcntl.LOCK_UN)
+                f.close()
+
+    @contextmanager
+    def _exclusive_lock(key):
+        lockFile = self._backend.lockFile(key)
+
+        if sys.platform == 'win32':
+            again = True
+            while not again:
+                try:
+                    f = open(lockFile, 'x')
+                    again = False
+                except FileExistsError:
+                    again = True
+        else:
+            f = open(lockFile, 'w')
+            fcntl.lockf(f, fcntl.LOCK_EX)
+
+        try:
+            yield
+        finally:
+            if sys.platform == 'win32':
+                f.close()
+                os.remove(f.name)
+            else:
+                fcntl.lockf(f, fcntl.LOCK_UN)
+                f.close()
