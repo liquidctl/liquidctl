@@ -6,9 +6,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 import os
-import fcntl
 import sys
 import tempfile
+if sys.platform != 'win32':
+    import fcntl
 
 from ast import literal_eval
 from contextlib import contextmanager
@@ -90,6 +91,7 @@ class _FilesystemBackend:
         data = repr(value)
         assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
+        fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
         with open(fd, mode='w') as f:
             f.write(data)
             f.flush()
@@ -97,23 +99,21 @@ class _FilesystemBackend:
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
     def lockFile(self, key):
-        return os.path.join(self._write_dir, f`${key}.lock`)
+        return os.path.join(self._write_dir, f'${key}.lock')
 
 
 
 class RuntimeStorage:
     """Unstable API."""
 
-    def __init__(self, key_prefixes):
-        self._backend = _FilesystemBackend(key_prefixes)
+    def __init__(self, key_prefixes, backend=None):
+        self._backend = backend if backend is not None else _FilesystemBackend(key_prefixes)
 
     def load(self, key, of_type=None, default=None):
         """Unstable API."""
 
-
         with _shared_lock(key):
             value = self._backend.load(key)
-
 
         if value is None:
             return default
@@ -161,7 +161,7 @@ class RuntimeStorage:
                     again = True
         else:
             f = open(lockFile, 'r')
-            fcntl.lockf(f, fcntl.LOCK_SH)
+            fcntl.flock(f, fcntl.LOCK_SH)
 
         try:
             yield
@@ -170,7 +170,7 @@ class RuntimeStorage:
                 f.close()
                 os.remove(f.name)
             else:
-                fcntl.lockf(f, fcntl.LOCK_UN)
+                fcntl.flock(f, fcntl.LOCK_UN)
                 f.close()
 
     @contextmanager
@@ -187,7 +187,7 @@ class RuntimeStorage:
                     again = True
         else:
             f = open(lockFile, 'w')
-            fcntl.lockf(f, fcntl.LOCK_EX)
+            fcntl.flock(f, fcntl.LOCK_EX)
 
         try:
             yield
@@ -196,5 +196,5 @@ class RuntimeStorage:
                 f.close()
                 os.remove(f.name)
             else:
-                fcntl.lockf(f, fcntl.LOCK_UN)
+                fcntl.flock(f, fcntl.LOCK_UN)
                 f.close()

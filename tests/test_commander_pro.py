@@ -29,8 +29,10 @@ def lightingNodeProDeviceUnconnected():
 def commanderProDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
     pro = CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
-    pro.connect()
-    pro._data = MockRuntimeStorage(key_prefixes='testing')
+
+
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    pro.connect(runtime_storage=runtime_storage)
     return pro
 
 
@@ -38,16 +40,16 @@ def commanderProDevice():
 def lightingNodeProDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c0b, address='addr')
     node = CommanderPro(device, 'Corsair Lighting Node Pro (experimental)', 0, 0, 2)
-    node.connect()
-    node._data = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    node.connect(runtime_storage=runtime_storage)
     return node
 
 @pytest.fixture
 def lightingNodeCoreDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c1a, address='addr')
     node = CommanderPro(device, 'Corsair Lighting Node Core (experimental)', 0, 0, 1)
-    node.connect()
-    node._data = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    node.connect(runtime_storage=runtime_storage)
     return node
 
 
