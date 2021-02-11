@@ -112,7 +112,7 @@ class RuntimeStorage:
     def load(self, key, of_type=None, default=None):
         """Unstable API."""
 
-        with _shared_lock(key):
+        with self._shared_lock(key):
             value = self._backend.load(key)
 
         if value is None:
@@ -125,7 +125,7 @@ class RuntimeStorage:
     def load_store(self, key, func, of_type=None, default=None):
         """Unstable API."""
 
-        with _exclusive_lock(key):
+        with self._exclusive_lock(key):
             value = self._backend.load(key)
 
             if value is None:
@@ -138,16 +138,16 @@ class RuntimeStorage:
             newValue = func(value)
             self._backend.store(key, newValue)
 
-        return vlue
+        return value
 
     def store(self, key, value):
         """Unstable API."""
-        with _exclusive_lock(key):
+        with self._exclusive_lock(key):
             self._backend.store(key, value)
         return value
 
     @contextmanager
-    def _shared_lock(key):
+    def _shared_lock(self, key):
 
         lockFile = self._backend.lockFile(key)
 
@@ -174,7 +174,7 @@ class RuntimeStorage:
                 f.close()
 
     @contextmanager
-    def _exclusive_lock(key):
+    def _exclusive_lock(self, key):
         lockFile = self._backend.lockFile(key)
 
         if sys.platform == 'win32':
