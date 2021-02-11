@@ -138,7 +138,7 @@ class RuntimeStorage:
             newValue = func(value)
             self._backend.store(key, newValue)
 
-        return value
+        return newValue
 
     def store(self, key, value):
         """Unstable API."""

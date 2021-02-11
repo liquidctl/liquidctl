@@ -32,6 +32,27 @@ class MockRuntimeStorage:
         self._cache[key] = value
         return value
 
+    def load_store(self, key, func, of_type=None, default=None):
+        """Unstable API."""
+
+        if key in self._cache:
+            value = self._cache[key]
+        else:
+            value = None
+
+        if value is None:
+            value = deepcopy(default)
+        elif of_type and not isinstance(value, of_type):
+            value = deepcopy(default)
+        else:
+            value = deepcopy(value)
+
+        newValue = func(value)
+        self._cache[key] = newValue
+
+        return newValue
+
+
 
 class MockHidapiDevice:
     def __init__(self, vendor_id=None, product_id=None, release_number=None,

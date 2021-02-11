@@ -88,8 +88,7 @@ def _sequence(storage):
     """
 
     while True:
-        seq = storage.load('sequence', of_type=int, default=0) % 31 + 1
-        storage.store('sequence', seq)
+        seq = storage.load_store('sequence', lambda x : x % 31 + 1, of_type=int, default=0)
         yield seq
 
 
