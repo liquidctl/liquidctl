@@ -64,19 +64,22 @@ class _FilesystemBackend:
             os.chmod(self._write_dir, 0o1700)
         _LOGGER.debug('data in %s', self._write_dir)
 
-    def load(self, key):
+    def load(self, key, locked=False):
         for base in self._read_dirs:
             path = os.path.join(base, key)
             if not os.path.isfile(path):
                 continue
             try:
-                with open(path, mode='r') as f:
-                    data = f.read().strip()
-                    if len(data) == 0:
-                        value = None
-                    else:
-                        value = literal_eval(data)
-                    _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
+
+                with self._shared_lock(key, locked):
+                    with open(path, mode='r') as f:
+                        data = f.read().strip()
+
+                if len(data) == 0:
+                    value = None
+                else:
+                    value = literal_eval(data)
+                _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
             except OSError as err:
                 _LOGGER.warning('%s exists but could not be read: %s', path, err)
             except ValueError as err:
@@ -87,20 +90,85 @@ class _FilesystemBackend:
         _LOGGER.debug('no data (file) found for %s', key)
         return None
 
-    def store(self, key, value):
+    def store(self, key, value, locked=False):
         data = repr(value)
         assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
-        fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
-        with open(fd, mode='w') as f:
-            f.write(data)
-            f.flush()
-        os.replace(tmp, path)
+
+        with self._exclusive_lock(key, locked):
+            fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
+            with open(fd, mode='w') as f:
+                f.write(data)
+                f.flush()
+            os.replace(tmp, path)
+
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
     def lockFile(self, key):
         return os.path.join(self._write_dir, f'${key}.lock')
 
+    def load_store(self, key, func):
+        with self._exclusive_lock(key):
+            value = self.load(key, locked=True)
+            newValue = func(value)
+            self.store(key, newValue, locked=True)
+
+
+    @contextmanager
+    def _shared_lock(self, key, locked):
+
+        lockFile = self.lockFile(key)
+        if not locked:
+            if sys.platform == 'win32':
+                again = True
+                while not again:
+                    try:
+                        f = open(lockFile, 'x')
+                        again = False
+                    except FileExistsError:
+                        again = True
+            else:
+                f = open(lockFile, 'r')
+                fcntl.flock(f, fcntl.LOCK_SH)
+
+        try:
+            yield
+        finally:
+            if not locked:
+                if sys.platform == 'win32':
+                    f.close()
+                    os.remove(f.name)
+                else:
+                    fcntl.flock(f, fcntl.LOCK_UN)
+                    f.close()
+
+    @contextmanager
+    def _exclusive_lock(self, key, locked):
+        lockFile = self.lockFile(key)
+
+        if not locked:
+            if sys.platform == 'win32':
+                again = True
+                while not again:
+                    try:
+                        f = open(lockFile, 'x')
+                        again = False
+                    except FileExistsError:
+                        again = True
+            else:
+                f = open(lockFile, 'w')
+                fcntl.flock(f, fcntl.LOCK_EX)
+
+        try:
+            yield
+        finally:
+            if not locked:
+                if sys.platform == 'win32':
+                    f.close()
+                    os.remove(f.name)
+                else:
+                    fcntl.flock(f, fcntl.LOCK_UN)
+                    f.close()
 
 
 class RuntimeStorage:
@@ -112,8 +180,7 @@ class RuntimeStorage:
     def load(self, key, of_type=None, default=None):
         """Unstable API."""
 
-        with self._shared_lock(key):
-            value = self._backend.load(key)
+        value = self._backend.load(key)
 
         if value is None:
             return default
@@ -125,8 +192,7 @@ class RuntimeStorage:
     def load_store(self, key, func, of_type=None, default=None):
         """Unstable API."""
 
-        with self._exclusive_lock(key):
-            value = self._backend.load(key)
+        def l(value):
 
             if value is None:
                 value = default
@@ -134,67 +200,11 @@ class RuntimeStorage:
                 value = default
             else:
                 value = value
+            return func(value)
 
-            newValue = func(value)
-            self._backend.store(key, newValue)
-
-        return newValue
+        return self._backend.load_store(key, l)
 
     def store(self, key, value):
         """Unstable API."""
-        with self._exclusive_lock(key):
-            self._backend.store(key, value)
+        self._backend.store(key, value)
         return value
-
-    @contextmanager
-    def _shared_lock(self, key):
-
-        lockFile = self._backend.lockFile(key)
-
-        if sys.platform == 'win32':
-            again = True
-            while not again:
-                try:
-                    f = open(lockFile, 'x')
-                    again = False
-                except FileExistsError:
-                    again = True
-        else:
-            f = open(lockFile, 'r')
-            fcntl.flock(f, fcntl.LOCK_SH)
-
-        try:
-            yield
-        finally:
-            if sys.platform == 'win32':
-                f.close()
-                os.remove(f.name)
-            else:
-                fcntl.flock(f, fcntl.LOCK_UN)
-                f.close()
-
-    @contextmanager
-    def _exclusive_lock(self, key):
-        lockFile = self._backend.lockFile(key)
-
-        if sys.platform == 'win32':
-            again = True
-            while not again:
-                try:
-                    f = open(lockFile, 'x')
-                    again = False
-                except FileExistsError:
-                    again = True
-        else:
-            f = open(lockFile, 'w')
-            fcntl.flock(f, fcntl.LOCK_EX)
-
-        try:
-            yield
-        finally:
-            if sys.platform == 'win32':
-                f.close()
-                os.remove(f.name)
-            else:
-                fcntl.flock(f, fcntl.LOCK_UN)
-                f.close()
