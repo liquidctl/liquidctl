@@ -8,7 +8,9 @@ import logging
 import os
 import sys
 import tempfile
-if sys.platform != 'win32':
+if sys.platform == 'win32':
+    import msvcrt
+else:
     import fcntl
 
 from ast import literal_eval
@@ -119,16 +121,10 @@ class _FilesystemBackend:
 
         lockFile = self._lock_file(key)
         if not locked:
+            f = os.open(lockFile, os.O_CREAT | os.O_RDONLY)
             if sys.platform == 'win32':
-                again = True
-                while again:
-                    try:
-                        f = open(lockFile, 'x')
-                        again = False
-                    except FileExistsError:
-                        again = True
+                msvcrt.locking(f, msvcrt.LK_LOCK, 1)
             else:
-                f = open(lockFile, 'w')
                 fcntl.flock(f, fcntl.LOCK_SH)
 
         try:
@@ -136,27 +132,19 @@ class _FilesystemBackend:
         finally:
             if not locked:
                 if sys.platform == 'win32':
-                    f.close()
-                    os.remove(f.name)
+                    msvcrt.locking(f, msvcrt.LK_UNLCK, 1)
                 else:
                     fcntl.flock(f, fcntl.LOCK_UN)
-                    f.close()
 
     @contextmanager
     def _exclusive_lock(self, key, locked=False):
-        lockFile = self._lock_file(key)
 
+        lockFile = self._lock_file(key)
         if not locked:
+            f = os.open(lockFile, os.O_CREAT | os.O_RDONLY)
             if sys.platform == 'win32':
-                again = True
-                while again:
-                    try:
-                        f = open(lockFile, 'x')
-                        again = False
-                    except FileExistsError:
-                        again = True
+                msvcrt.locking(f, msvcrt.LK_LOCK, 1)
             else:
-                f = open(lockFile, 'w')
                 fcntl.flock(f, fcntl.LOCK_EX)
 
         try:
@@ -164,11 +152,9 @@ class _FilesystemBackend:
         finally:
             if not locked:
                 if sys.platform == 'win32':
-                    f.close()
-                    os.remove(f.name)
+                    msvcrt.locking(f, msvcrt.LK_UNLCK, 1)
                 else:
                     fcntl.flock(f, fcntl.LOCK_UN)
-                    f.close()
 
 
 class RuntimeStorage:
