@@ -103,8 +103,7 @@ def test_fs_backend_shared_lock(tmpdir):
     with store._shared_lock('key'):
         assert os.path.exists(store._lock_file('key'))
 
-    if sys.platform == 'win32':
-        assert not os.path.exists(store._lock_file('key'))
+    assert os.path.exists(store._lock_file('key'))
 
 
 def test_fs_backend_exclusive_lock(tmpdir):
@@ -115,8 +114,7 @@ def test_fs_backend_exclusive_lock(tmpdir):
     with store._exclusive_lock('key'):
         assert os.path.exists(store._lock_file('key'))
 
-    if sys.platform == 'win32':
-        assert not os.path.exists(store._lock_file('key'))
+    assert os.path.exists(store._lock_file('key'))
 
 
 # this is the process that will test if multiple proccesses can share a lock
