@@ -104,8 +104,8 @@ class _FilesystemBackend:
 
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
-    def lockFile(self, key):
-        return os.path.join(self._write_dir, f'${key}.lock')
+    def _lock_file(self, key):
+        return os.path.join(self._write_dir, f'{key}.lock')
 
     def load_store(self, key, func):
         with self._exclusive_lock(key):
@@ -115,9 +115,9 @@ class _FilesystemBackend:
 
 
     @contextmanager
-    def _shared_lock(self, key, locked):
+    def _shared_lock(self, key, locked=False):
 
-        lockFile = self.lockFile(key)
+        lockFile = self._lock_file(key)
         if not locked:
             if sys.platform == 'win32':
                 again = True
@@ -128,7 +128,7 @@ class _FilesystemBackend:
                     except FileExistsError:
                         again = True
             else:
-                f = open(lockFile, 'r')
+                f = open(lockFile, 'w')
                 fcntl.flock(f, fcntl.LOCK_SH)
 
         try:
@@ -143,8 +143,8 @@ class _FilesystemBackend:
                     f.close()
 
     @contextmanager
-    def _exclusive_lock(self, key, locked):
-        lockFile = self.lockFile(key)
+    def _exclusive_lock(self, key, locked=False):
+        lockFile = self._lock_file(key)
 
         if not locked:
             if sys.platform == 'win32':
