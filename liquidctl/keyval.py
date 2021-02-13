@@ -121,7 +121,7 @@ class _FilesystemBackend:
         if not locked:
             if sys.platform == 'win32':
                 again = True
-                while not again:
+                while again:
                     try:
                         f = open(lockFile, 'x')
                         again = False
@@ -149,7 +149,7 @@ class _FilesystemBackend:
         if not locked:
             if sys.platform == 'win32':
                 again = True
-                while not again:
+                while again:
                     try:
                         f = open(lockFile, 'x')
                         again = False
