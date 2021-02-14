@@ -30,29 +30,26 @@ def test_fs_backend_load_store(tmpdir):
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
-    p2 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
-    p3 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
-    p4 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
+    p1 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
+    p2 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
+    p3 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
 
     startTime = time.time()
     p1.start()
     p2.start()
     p3.start()
-    p4.start()
 
     p1.join()
     p2.join()
     p3.join()
-    p4.join()
 
     endTime = time.time()
     diffTime = (endTime-startTime)
 
     val = store.load('key')
 
-    assert val == 46
-    assert diffTime == pytest.approx(8, rel=1)   # check that the sleeps add up
+    assert val == 45
+    assert diffTime == pytest.approx(1.5, abs=.25)   # check that the sleeps add up
 
 
 @pytest.mark.parametrize('key', [
@@ -113,31 +110,27 @@ def test_fs_backend_share_lock(tmpdir):
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p4 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
 
     startTime = time.time()
     p1.start()
     p2.start()
     p3.start()
-    p4.start()
 
     p1.join()
     p2.join()
     p3.join()
-    p4.join()
 
     endTime = time.time()
     diffTime = (endTime-startTime)
 
-
-    # no shared locks on windows
     if sys.platform == 'win32':
-        assert diffTime == pytest.approx(8, rel=1)   # check that the sleeps add up
+        # no shared locks on windows
+        assert diffTime == pytest.approx(1.5, abs=.25)
     else:
-        assert diffTime == pytest.approx(2, rel=1)   # check that the sleeps add up
+        assert diffTime == pytest.approx(.5, abs=.25)
 
 
 def test_fs_backend_exclusive_lock(tmpdir):
@@ -146,26 +139,20 @@ def test_fs_backend_exclusive_lock(tmpdir):
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p2 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p4 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p2 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
 
     startTime = time.time()
     p1.start()
     p2.start()
-    p3.start()
-    p4.start()
 
     p1.join()
     p2.join()
-    p3.join()
-    p4.join()
 
     endTime = time.time()
     diffTime = (endTime-startTime)
 
-    assert diffTime == pytest.approx(8, rel=1)   # check that the sleeps add up
+    assert diffTime == pytest.approx(1, abs=.25)
 
 
 def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
@@ -174,31 +161,28 @@ def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p4 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
 
     startTime = time.time()
     p1.start()
     time.sleep(0.1)
     p2.start()
     p3.start()
-    p4.start()
 
     p1.join()
     p2.join()
     p3.join()
-    p4.join()
 
     endTime = time.time()
     diffTime = (endTime-startTime)
 
-    # no shared locks on windows
     if sys.platform == 'win32':
-        assert diffTime == pytest.approx(8.1, rel=1)   # check that the sleeps add up
+        # no shared locks on windows
+        assert diffTime == pytest.approx(1.5, abs=.25)
     else:
-        assert diffTime == pytest.approx(4.1, rel=1)   # check that the sleeps add up
+        assert diffTime == pytest.approx(1.0, abs=.25)
 
 
 def test_fs_backend_mixed_lock_shared_first(tmpdir):
@@ -207,32 +191,28 @@ def test_fs_backend_mixed_lock_shared_first(tmpdir):
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
-    p4 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
 
     startTime = time.time()
     p1.start()
-    time.sleep(0.1)
     p2.start()
-    p3.start()
     time.sleep(0.1)
-    p4.start()
+    p3.start()
 
     p1.join()
     p2.join()
     p3.join()
-    p4.join()
 
     endTime = time.time()
     diffTime = (endTime-startTime)
 
-    # no shared locks on windows
     if sys.platform == 'win32':
-        assert diffTime == pytest.approx(8.2, rel=1)   # check that the sleeps add up
+        # no shared locks on windows
+        assert diffTime == pytest.approx(1.5, abs=.25)
     else:
-        assert diffTime == pytest.approx(4.2, rel=1)   # check that the sleeps add up
+        assert diffTime == pytest.approx(1.0, abs=.25)
 
 
 def _mp_increment_key(run_dir, prefix, key, sleep):
