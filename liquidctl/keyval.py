@@ -55,7 +55,7 @@ class _FilesystemBackend:
         return key
 
     def __init__(self, key_prefixes, runtime_dirs=get_runtime_dirs()):
-        key_prefixes = map(self._sanitize, key_prefixes)
+        key_prefixes = [self._sanitize(p) for p in key_prefixes]
         # compute read and write dirs from base runtime dirs: the first base
         # dir is selected for writes and prefered for reads
         self._read_dirs = [os.path.join(x, *key_prefixes) for x in runtime_dirs]
