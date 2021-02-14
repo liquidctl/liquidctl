@@ -189,7 +189,7 @@ class CorsairAsetekProDriver(_CommonAsetekDriver):
             # one, the temperatures are hardcoded; additionally, it may also be
             # possible to combine it with other modes, but exploring that would
             # require some experimentation
-            temps = (35, 45, 55)
+            temps = (30, 40, 50)
             self._post([0x5f, temps[0], 0x00, temps[1], 0x00, temps[1], 0x00]
                        + colors[0] + colors[1] + colors[2], read_length=6)
             self._post([0x5e, 0x01], read_length=3)
