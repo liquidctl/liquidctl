@@ -34,7 +34,7 @@ def test_fs_backend_load_store(tmpdir):
     p2 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
     p3 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
 
-    startTime = time.time()
+    start_time = time.monotonic()
     p1.start()
     p2.start()
     p3.start()
@@ -43,13 +43,13 @@ def test_fs_backend_load_store(tmpdir):
     p2.join()
     p3.join()
 
-    endTime = time.time()
-    diffTime = (endTime-startTime)
+    end_time = time.monotonic()
+    elapsed = (end_time-start_time)
 
     val = store.load('key')
 
     assert val == 45
-    assert diffTime == pytest.approx(1.5, abs=.25)   # check that the sleeps add up
+    assert elapsed >= 1.5
 
 
 @pytest.mark.parametrize('key', [
@@ -114,7 +114,7 @@ def test_fs_backend_share_lock(tmpdir):
     p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
     p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
 
-    startTime = time.time()
+    start_time = time.monotonic()
     p1.start()
     p2.start()
     p3.start()
@@ -123,14 +123,14 @@ def test_fs_backend_share_lock(tmpdir):
     p2.join()
     p3.join()
 
-    endTime = time.time()
-    diffTime = (endTime-startTime)
+    end_time = time.monotonic()
+    elapsed = (end_time-start_time)
 
     if sys.platform == 'win32':
         # no shared locks on windows
-        assert diffTime == pytest.approx(1.5, abs=.25)
+        assert elapsed >= 1.5
     else:
-        assert diffTime == pytest.approx(.5, abs=.25)
+        assert 0.5 <= elapsed < 1.5
 
 
 def test_fs_backend_exclusive_lock(tmpdir):
@@ -142,17 +142,17 @@ def test_fs_backend_exclusive_lock(tmpdir):
     p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
     p2 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
 
-    startTime = time.time()
+    start_time = time.monotonic()
     p1.start()
     p2.start()
 
     p1.join()
     p2.join()
 
-    endTime = time.time()
-    diffTime = (endTime-startTime)
+    end_time = time.monotonic()
+    elapsed = (end_time-start_time)
 
-    assert diffTime == pytest.approx(1, abs=.25)
+    assert elapsed >= 1
 
 
 def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
@@ -165,7 +165,7 @@ def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
     p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
     p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
 
-    startTime = time.time()
+    start_time = time.monotonic()
     p1.start()
     time.sleep(0.1)
     p2.start()
@@ -175,14 +175,14 @@ def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
     p2.join()
     p3.join()
 
-    endTime = time.time()
-    diffTime = (endTime-startTime)
+    end_time = time.monotonic()
+    elapsed = (end_time-start_time)
 
     if sys.platform == 'win32':
         # no shared locks on windows
-        assert diffTime == pytest.approx(1.5, abs=.25)
+        assert elapsed >= 1.5
     else:
-        assert diffTime == pytest.approx(1.0, abs=.25)
+        assert 1 <= elapsed < 1.5
 
 
 def test_fs_backend_mixed_lock_shared_first(tmpdir):
@@ -195,7 +195,7 @@ def test_fs_backend_mixed_lock_shared_first(tmpdir):
     p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
     p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
 
-    startTime = time.time()
+    start_time = time.monotonic()
     p1.start()
     p2.start()
     time.sleep(0.1)
@@ -205,14 +205,14 @@ def test_fs_backend_mixed_lock_shared_first(tmpdir):
     p2.join()
     p3.join()
 
-    endTime = time.time()
-    diffTime = (endTime-startTime)
+    end_time = time.monotonic()
+    elapsed = (end_time-start_time)
 
     if sys.platform == 'win32':
         # no shared locks on windows
-        assert diffTime == pytest.approx(1.5, abs=.25)
+        assert elapsed >= 1.5
     else:
-        assert diffTime == pytest.approx(1.0, abs=.25)
+        assert 1 <= elapsed < 1.5
 
 
 def _mp_increment_key(run_dir, prefix, key, sleep):
