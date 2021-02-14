@@ -160,8 +160,6 @@ def test_fs_backend_share_lock(tmpdir):
     # no shared locks on windows
     if sys.platform == 'win32':
         assert diffTime == pytest.approx(8, rel=1)   # check that the sleeps add up
-    elif sys.platform == 'dawrin':
-        diffTime == pytest.approx(8, rel=1)
     else:
         assert diffTime == pytest.approx(2, rel=1)   # check that the sleeps add up
 
@@ -225,8 +223,6 @@ def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
     # no shared locks on windows
     if sys.platform == 'win32':
         assert diffTime == pytest.approx(8.1, rel=1)   # check that the sleeps add up
-    elif sys.platform == 'dawrin':
-        diffTime == pytest.approx(8.1, rel=1)
     else:
         assert diffTime == pytest.approx(4.1, rel=1)   # check that the sleeps add up
 
@@ -262,7 +258,5 @@ def test_fs_backend_mixed_lock_shared_first(tmpdir):
     # no shared locks on windows
     if sys.platform == 'win32':
         assert diffTime == pytest.approx(8.2, rel=1)   # check that the sleeps add up
-    elif sys.platform == 'dawrin':
-        diffTime == pytest.approx(8.2, rel=1)
     else:
-        assert diffTime == pytest.approx(4.2, rel=1)  # check that the sleeps add up
+        assert diffTime == pytest.approx(4.2, rel=1)   # check that the sleeps add up
