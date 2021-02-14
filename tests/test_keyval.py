@@ -7,6 +7,7 @@ from pathlib import Path
 
 from liquidctl.keyval import _FilesystemBackend
 
+
 def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):
 
     run_dir = tmpdir.mkdir('run_dir')
@@ -23,27 +24,16 @@ def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):
     assert 'was corrupted' in caplog.text
 
 
-# this is the process that will test the load store code
-def inc_proccess(store):
-
-    def l(x):
-        time.sleep(2)
-        return x+1
-
-    store.load_store('key', l)
-
-
 def test_fs_backend_load_store(tmpdir):
-
     run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
 
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=inc_proccess, args=(store,))
-    p2 = Process(target=inc_proccess, args=(store,))
-    p3 = Process(target=inc_proccess, args=(store,))
-    p4 = Process(target=inc_proccess, args=(store,))
+    p1 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
+    p2 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
+    p3 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
+    p4 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', 2))
 
     startTime = time.time()
     p1.start()
@@ -117,30 +107,16 @@ def test_fs_backend_exclusive_lock(tmpdir):
     assert os.path.exists(store._lock_file('key'))
 
 
-# this is the process that will test if multiple proccesses can share a lock
-def shared_lock_sleep(store):
-
-    with store._shared_lock('key'):
-        time.sleep(2)
-
-# this is the process that will test if multiple proccesses can share a lock def shared_lock_sleep(store):
-def exclusive_lock_sleep(store):
-
-    with store._exclusive_lock('key'):
-        time.sleep(2)
-
-
 def test_fs_backend_share_lock(tmpdir):
-
     run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
 
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=shared_lock_sleep, args=(store,))
-    p2 = Process(target=shared_lock_sleep, args=(store,))
-    p3 = Process(target=shared_lock_sleep, args=(store,))
-    p4 = Process(target=shared_lock_sleep, args=(store,))
+    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p4 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
 
     startTime = time.time()
     p1.start()
@@ -165,16 +141,15 @@ def test_fs_backend_share_lock(tmpdir):
 
 
 def test_fs_backend_exclusive_lock(tmpdir):
-
     run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
 
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=exclusive_lock_sleep, args=(store,))
-    p2 = Process(target=exclusive_lock_sleep, args=(store,))
-    p3 = Process(target=exclusive_lock_sleep, args=(store,))
-    p4 = Process(target=exclusive_lock_sleep, args=(store,))
+    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p2 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p4 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
 
     startTime = time.time()
     p1.start()
@@ -194,16 +169,15 @@ def test_fs_backend_exclusive_lock(tmpdir):
 
 
 def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
-
     run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
 
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=exclusive_lock_sleep, args=(store,))
-    p2 = Process(target=shared_lock_sleep, args=(store,))
-    p3 = Process(target=shared_lock_sleep, args=(store,))
-    p4 = Process(target=shared_lock_sleep, args=(store,))
+    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p4 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
 
     startTime = time.time()
     p1.start()
@@ -228,16 +202,15 @@ def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
 
 
 def test_fs_backend_mixed_lock_shared_first(tmpdir):
-
     run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
 
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=shared_lock_sleep, args=(store,))
-    p2 = Process(target=shared_lock_sleep, args=(store,))
-    p3 = Process(target=exclusive_lock_sleep, args=(store,))
-    p4 = Process(target=shared_lock_sleep, args=(store,))
+    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', 2))
+    p4 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', 2))
 
     startTime = time.time()
     p1.start()
@@ -260,3 +233,50 @@ def test_fs_backend_mixed_lock_shared_first(tmpdir):
         assert diffTime == pytest.approx(8.2, rel=1)   # check that the sleeps add up
     else:
         assert diffTime == pytest.approx(4.2, rel=1)   # check that the sleeps add up
+
+
+def _mp_increment_key(run_dir, prefix, key, sleep):
+    """Open a _FilesystemBackend and increment `key`.
+
+    For the `multiprocessing` tests.
+
+    Opens the storage on `run_dir` and with `prefix`.  Sleeps for `sleep`
+    seconds within the increment closure.
+    """
+
+    def l(x):
+        time.sleep(sleep)
+        return x + 1
+
+    store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
+    store.load_store(key, l)
+
+
+def _mp_exclusive_sleep(run_dir, prefix, key, sleep):
+    """Open a _FilesystemBackend and sleep on `key` holding a exclusive lock.
+
+    For the `multiprocessing` tests.
+
+    Opens the storage on `run_dir` and with `prefix`.  Sleeps for `sleep`
+    seconds.
+    """
+
+    store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
+
+    with store._exclusive_lock(key):
+        time.sleep(sleep)
+
+
+def _mp_shared_sleep(run_dir, prefix, key, sleep):
+    """Open a _FilesystemBackend and sleep on `key` holding a shared lock.
+
+    For the `multiprocessing` tests.
+
+    Opens the storage on `run_dir` and with `prefix`.  Sleeps for `sleep`
+    seconds.
+    """
+
+    store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
+
+    with store._shared_lock(key):
+        time.sleep(sleep)
