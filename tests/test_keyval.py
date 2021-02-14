@@ -8,6 +8,26 @@ from pathlib import Path
 from liquidctl.keyval import _FilesystemBackend
 
 
+def test_fs_stores_truncate_appropriately(tmpdir):
+    run_dir = tmpdir.mkdir('run_dir')
+
+    # use a separate reader to prevent caching from masking issues
+    writer = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
+    reader = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
+
+    writer.store('key', 42)
+    assert reader.load('key') == 42
+
+    writer.store('key', 1)
+    assert reader.load('key') == 1
+
+    writer.load_store('key', lambda _: 42)
+    assert reader.load('key') == 42
+
+    writer.load_store('key', lambda _: 1)
+    assert reader.load('key') == 1
+
+
 def test_fs_backend_loads_from_fallback_dir(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
     fb_dir = tmpdir.mkdir('fb_dir')

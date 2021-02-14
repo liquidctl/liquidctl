@@ -148,6 +148,7 @@ class _FilesystemBackend:
             data = repr(new_value)
             assert literal_eval(data) == new_value, 'encode/decode roundtrip fails'
             f.write(data)
+            f.truncate()
             f.flush()  # ensure flushing before automatic unlocking
 
             _LOGGER.debug('replaced with %s=%r (stored in %s)', key, new_value, path)
