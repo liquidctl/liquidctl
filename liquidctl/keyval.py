@@ -66,21 +66,21 @@ class _FilesystemBackend:
             os.chmod(self._write_dir, 0o1700)
         _LOGGER.debug('data in %s', self._write_dir)
 
-    def load(self, key, locked=False):
+    def load(self, key):
+        _LOGGER.debug('%r', self._read_dirs)
         for base in self._read_dirs:
             path = os.path.join(base, key)
+            _LOGGER.debug('%s', key)
             if not os.path.isfile(path):
                 continue
             try:
+                with self._open_with_lock(path, os.O_RDONLY, shared=True) as f:
+                    data = f.read().strip()
 
-                with self._shared_lock(key, locked):
-                    with open(path, mode='r') as f:
-                        data = f.read().strip()
+                if not data:
+                    continue
 
-                if len(data) == 0:
-                    value = None
-                else:
-                    value = literal_eval(data)
+                value = literal_eval(data)
                 _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
             except OSError as err:
                 _LOGGER.warning('%s exists but could not be read: %s', path, err)
@@ -92,67 +92,84 @@ class _FilesystemBackend:
         _LOGGER.debug('no data (file) found for %s', key)
         return None
 
-    def store(self, key, value, locked=False):
+    def store(self, key, value):
         data = repr(value)
         assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
 
-        with self._exclusive_lock(key, locked):
-            fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
-            with open(fd, mode='w') as f:
-                f.write(data)
-                f.flush()
-            os.replace(tmp, path)
+        with self._open_with_lock(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC) as f:
+            f.write(data)
+            f.flush()  # ensure flushing before automatic unlocking
 
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
-    def _lock_file(self, key):
-        return os.path.join(self._write_dir, f'{key}.lock')
-
     def load_store(self, key, func):
-        with self._exclusive_lock(key):
-            value = self.load(key, locked=True)
-            newValue = func(value)
-            self.store(key, newValue, locked=True)
+        value = None
+        new_value = None
 
+        path = os.path.join(self._write_dir, key)
 
-    @contextmanager
-    def _shared_lock(self, key, locked=False):
+        # lock the destination as soon as possible
+        with self._open_with_lock(path, os.O_RDWR | os.O_CREAT) as f:
 
-        lockFile = self._lock_file(key)
-        if not locked:
-            f = os.open(lockFile, os.O_CREAT | os.O_RDONLY)
-            if sys.platform == 'win32':
-                msvcrt.locking(f, msvcrt.LK_LOCK, 1)
-            else:
-                fcntl.flock(f, fcntl.LOCK_SH)
+            # still traverse all possible locations to find the current value
+            for base in self._read_dirs:
+                read_path = os.path.join(base, key)
+                if not os.path.isfile(read_path):
+                    continue
+                try:
+                    if read_path == path:
+                        # we already have an exclusive lock to this file
+                        data = f.read().strip()
+                        f.seek(0)
+                    else:
+                        # it appears that in some cases, if `read_file` and `path` point
+                        # to the same file, acquiring a shared lock on `aux` could
+                        # downgrade our lock on `f`
+                        with self._open_with_lock(read_path, os.O_RDWR) as aux:
+                            data = aux.read().strip()
 
-        try:
-            yield
-        finally:
-            if not locked:
-                if sys.platform == 'win32':
-                    msvcrt.locking(f, msvcrt.LK_UNLCK, 1)
+                    if not data:
+                        continue
+
+                    value = literal_eval(data)
+                    _LOGGER.debug('loaded %s=%r (from %s)', key, value, read_path)
+                except OSError as err:
+                    _LOGGER.warning('%s exists but could not be read: %s', read_path, err)
+                except ValueError as err:
+                    _LOGGER.warning('%s exists but was corrupted: %s', key, err)
                 else:
-                    fcntl.flock(f, fcntl.LOCK_UN)
+                    break
+            else:
+                _LOGGER.debug('no data (file) found for %s', key)
+
+            new_value = func(value)
+
+            data = repr(new_value)
+            assert literal_eval(data) == new_value, 'encode/decode roundtrip fails'
+            f.write(data)
+            f.flush()  # ensure flushing before automatic unlocking
+
+            _LOGGER.debug('replaced with %s=%r (stored in %s)', key, new_value, path)
+
+        return (value, new_value)
 
     @contextmanager
-    def _exclusive_lock(self, key, locked=False):
-
-        lockFile = self._lock_file(key)
-        if not locked:
-            f = os.open(lockFile, os.O_CREAT | os.O_RDONLY)
+    def _open_with_lock(self, path, flags, *, shared=False):
+        with os.fdopen(os.open(path, flags), mode='r+') as f:
             if sys.platform == 'win32':
-                msvcrt.locking(f, msvcrt.LK_LOCK, 1)
+                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+            elif shared:
+                fcntl.flock(f, fcntl.LOCK_SH)
             else:
                 fcntl.flock(f, fcntl.LOCK_EX)
 
-        try:
-            yield
-        finally:
-            if not locked:
+            try:
+                yield f
+            finally:
                 if sys.platform == 'win32':
-                    msvcrt.locking(f, msvcrt.LK_UNLCK, 1)
+                    f.seek(0)
+                    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
                 else:
                     fcntl.flock(f, fcntl.LOCK_UN)
 
@@ -179,7 +196,6 @@ class RuntimeStorage:
         """Unstable API."""
 
         def l(value):
-
             if value is None:
                 value = default
             elif of_type and not isinstance(value, of_type):

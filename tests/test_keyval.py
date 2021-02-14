@@ -8,8 +8,22 @@ from pathlib import Path
 from liquidctl.keyval import _FilesystemBackend
 
 
-def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):
+def test_fs_backend_loads_from_fallback_dir(tmpdir):
+    run_dir = tmpdir.mkdir('run_dir')
+    fb_dir = tmpdir.mkdir('fb_dir')
 
+    fallback = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[fb_dir])
+    fallback.store('key', 42)
+
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir, fb_dir])
+    assert store.load('key') == 42
+
+    store.store('key', -1)
+    assert store.load('key') == -1
+    assert fallback.load('key') == 42, 'fallback location was changed'
+
+
+def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):
     run_dir = tmpdir.mkdir('run_dir')
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
 
@@ -24,198 +38,101 @@ def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):
     assert 'was corrupted' in caplog.text
 
 
-def test_fs_backend_load_store(tmpdir):
+def test_fs_backend_load_store_returns_old_and_new_values(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
 
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
-    p2 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
-    p3 = Process(target=_mp_increment_key, args=(run_dir, 'prefix', 'key', .5))
-
-    start_time = time.monotonic()
-    p1.start()
-    p2.start()
-    p3.start()
-
-    p1.join()
-    p2.join()
-    p3.join()
-
-    end_time = time.monotonic()
-    elapsed = (end_time-start_time)
-
-    val = store.load('key')
-
-    assert val == 45
-    assert elapsed >= 1.5
+    assert store.load_store('key', lambda x: x + 1) == (42, 43)
 
 
-@pytest.mark.parametrize('key', [
-    'key1', 'key-value', 'new_key', 'ob1', 'abracadabra'
-    ])
-def test_fs_backend_lock_file(tmpdir, key):
-
+def test_fs_backend_load_store_loads_from_fallback_dir(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
+    fb_dir = tmpdir.mkdir('fb_dir')
 
-    file = store._lock_file(key)
-    assert os.path.basename(file) == f'{key}.lock'
+    fallback = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[fb_dir])
+    fallback.store('key', 42)
 
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir, fb_dir])
+    assert store.load_store('key', lambda x: x + 1) == (42, 43)
 
-def test_fs_backend_shared_lock_locked(tmpdir):
-
-    run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
-
-    with store._shared_lock('key', locked=True):
-        assert not os.path.exists(store._lock_file('key'))
+    assert fallback.load('key') == 42, 'fallback location was changed'
 
 
-def test_fs_backend_exclusive_lock_locked(tmpdir):
-
-    run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
-
-    with store._exclusive_lock('key', locked=True):
-        assert not os.path.exists(store._lock_file('key'))
-
-
-def test_fs_backend_shared_lock(tmpdir):
-
-    run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
-
-    with store._shared_lock('key'):
-        assert os.path.exists(store._lock_file('key'))
-
-    assert os.path.exists(store._lock_file('key'))
-
-
-def test_fs_backend_exclusive_lock(tmpdir):
-
-    run_dir = tmpdir.mkdir('run_dir')
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
-
-    with store._exclusive_lock('key'):
-        assert os.path.exists(store._lock_file('key'))
-
-    assert os.path.exists(store._lock_file('key'))
-
-
-def test_fs_backend_share_lock(tmpdir):
+def test_fs_backend_load_store_is_atomic(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
 
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    ps = [
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+    ]
 
     start_time = time.monotonic()
-    p1.start()
-    p2.start()
-    p3.start()
 
-    p1.join()
-    p2.join()
-    p3.join()
+    for p in ps:
+        p.start()
 
-    end_time = time.monotonic()
-    elapsed = (end_time-start_time)
+    for p in ps:
+        p.join()
 
-    if sys.platform == 'win32':
-        # no shared locks on windows
-        assert elapsed >= 1.5
-    else:
-        assert 0.5 <= elapsed < 1.5
+    elapsed = (time.monotonic() - start_time)
+
+    assert store.load('key') == 45
+    assert elapsed >= .5 * len(ps)
 
 
-def test_fs_backend_exclusive_lock(tmpdir):
+def test_fs_backend_loads_honor_load_store_locking(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
 
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p2 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
+    ps = [
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_check_key, args=(run_dir, 'prefix', 'key', 43)),
+    ]
 
-    start_time = time.monotonic()
-    p1.start()
-    p2.start()
+    ps[0].start()
+    time.sleep(.1)
+    ps[1].start()
 
-    p1.join()
-    p2.join()
-
-    end_time = time.monotonic()
-    elapsed = (end_time-start_time)
-
-    assert elapsed >= 1
+    for p in ps:
+        p.join()
 
 
-def test_fs_backend_mixed_lock_exclusive_first(tmpdir):
+def test_fs_backend_stores_honor_load_store_locking(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
 
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
     store.store('key', 42)
 
-    p1 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p3 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
+    ps = [
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_store_key, args=(run_dir, 'prefix', 'key', -1)),
+    ]
 
     start_time = time.monotonic()
-    p1.start()
-    time.sleep(0.1)
-    p2.start()
-    p3.start()
 
-    p1.join()
-    p2.join()
-    p3.join()
+    ps[0].start()
+    time.sleep(.1)
+    ps[1].start()
 
-    end_time = time.monotonic()
-    elapsed = (end_time-start_time)
+    # join second process first
+    ps[1].join()
 
-    if sys.platform == 'win32':
-        # no shared locks on windows
-        assert elapsed >= 1.5
-    else:
-        assert 1 <= elapsed < 1.5
+    elapsed = (time.monotonic() - start_time)
+    assert elapsed >= .5
+
+    ps[0].join()
+    assert store.load('key') == -1
 
 
-def test_fs_backend_mixed_lock_shared_first(tmpdir):
-    run_dir = tmpdir.mkdir('run_dir')
-
-    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
-    store.store('key', 42)
-
-    p1 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p2 = Process(target=_mp_shared_sleep, args=(run_dir, 'prefix', 'key', .5))
-    p3 = Process(target=_mp_exclusive_sleep, args=(run_dir, 'prefix', 'key', .5))
-
-    start_time = time.monotonic()
-    p1.start()
-    p2.start()
-    time.sleep(0.1)
-    p3.start()
-
-    p1.join()
-    p2.join()
-    p3.join()
-
-    end_time = time.monotonic()
-    elapsed = (end_time-start_time)
-
-    if sys.platform == 'win32':
-        # no shared locks on windows
-        assert elapsed >= 1.5
-    else:
-        assert 1 <= elapsed < 1.5
-
-
-def _mp_increment_key(run_dir, prefix, key, sleep):
+def _fs_mp_increment_key(run_dir, prefix, key, sleep):
     """Open a _FilesystemBackend and increment `key`.
 
     For the `multiprocessing` tests.
@@ -232,31 +149,25 @@ def _mp_increment_key(run_dir, prefix, key, sleep):
     store.load_store(key, l)
 
 
-def _mp_exclusive_sleep(run_dir, prefix, key, sleep):
-    """Open a _FilesystemBackend and sleep on `key` holding a exclusive lock.
+def _fs_mp_check_key(run_dir, prefix, key, expected):
+    """Open a _FilesystemBackend and check `key` value against `expected`.
 
     For the `multiprocessing` tests.
 
-    Opens the storage on `run_dir` and with `prefix`.  Sleeps for `sleep`
-    seconds.
+    Opens the storage on `run_dir` and with `prefix`.
     """
 
-    store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
-
-    with store._exclusive_lock(key):
-        time.sleep(sleep)
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
+    assert store.load(key) == expected
 
 
-def _mp_shared_sleep(run_dir, prefix, key, sleep):
-    """Open a _FilesystemBackend and sleep on `key` holding a shared lock.
+def _fs_mp_store_key(run_dir, prefix, key, new_value):
+    """Open a _FilesystemBackend and store `new_value` for `key`.
 
     For the `multiprocessing` tests.
 
-    Opens the storage on `run_dir` and with `prefix`.  Sleeps for `sleep`
-    seconds.
+    Opens the storage on `run_dir` and with `prefix`.
     """
 
-    store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
-
-    with store._shared_lock(key):
-        time.sleep(sleep)
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
+    store.store(key, new_value)
