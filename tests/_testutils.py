@@ -1,6 +1,8 @@
 import os
 from collections import deque, namedtuple
-from copy import deepcopy
+from tempfile import mkdtemp
+
+from liquidctl.keyval import RuntimeStorage, _FilesystemBackend
 
 Report = namedtuple('Report', ['number', 'data'])
 
@@ -9,49 +11,12 @@ def noop(*args, **kwargs):
     return None
 
 
-class MockRuntimeStorage:
-    def __init__(self, key_prefixes):
-        self._cache = {}
-
-    def load(self, key, of_type=None, default=None):
-        """Unstable API."""
-        if key in self._cache:
-            value = self._cache[key]
-        else:
-            value = None
-
-        if value is None:
-            return deepcopy(default)
-        elif of_type and not isinstance(value, of_type):
-            return deepcopy(default)
-        else:
-            return deepcopy(value)
-
-    def store(self, key, value):
-        """Unstable API."""
-        self._cache[key] = value
-        return value
-
-    def load_store(self, key, func, of_type=None, default=None):
-        """Unstable API."""
-
-        if key in self._cache:
-            value = self._cache[key]
-        else:
-            value = None
-
-        if value is None:
-            value = deepcopy(default)
-        elif of_type and not isinstance(value, of_type):
-            value = deepcopy(default)
-        else:
-            value = deepcopy(value)
-
-        new_value = func(value)
-        self._cache[key] = new_value
-
-        return (value, new_value)
-
+class MockRuntimeStorage(RuntimeStorage):
+    def __init__(self, key_prefixes, backend=None):
+        if not backend:
+            run_dir = mkdtemp('run_dir')
+            backend = _FilesystemBackend(key_prefixes, runtime_dirs=[run_dir])
+        super().__init__(key_prefixes, backend)
 
 
 class MockHidapiDevice:
