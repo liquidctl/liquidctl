@@ -47,10 +47,10 @@ class MockRuntimeStorage:
         else:
             value = deepcopy(value)
 
-        newValue = func(value)
-        self._cache[key] = newValue
+        new_value = func(value)
+        self._cache[key] = new_value
 
-        return newValue
+        return (value, new_value)
 
 
 
