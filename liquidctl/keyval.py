@@ -8,13 +8,14 @@ import logging
 import os
 import sys
 import tempfile
+from ast import literal_eval
+from contextlib import contextmanager
+
 if sys.platform == 'win32':
     import msvcrt
 else:
     import fcntl
 
-from ast import literal_eval
-from contextlib import contextmanager
 
 _LOGGER = logging.getLogger(__name__)
 XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR')
@@ -201,8 +202,6 @@ class RuntimeStorage:
                 value = default
             elif of_type and not isinstance(value, of_type):
                 value = default
-            else:
-                value = value
             return func(value)
 
         return self._backend.load_store(key, l)

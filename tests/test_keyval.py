@@ -1,14 +1,40 @@
-import pytest
-from multiprocessing import Process
-import time
 import os
+import pytest
 import sys
+import time
+from multiprocessing import Process
 from pathlib import Path
 
-from liquidctl.keyval import _FilesystemBackend
+from liquidctl.keyval import RuntimeStorage, _FilesystemBackend
 
 
-def test_fs_stores_truncate_appropriately(tmpdir):
+@pytest.fixture
+def tmpstore(tmpdir):
+    run_dir = tmpdir.mkdir('run_dir')
+    prefixes = ['prefix']
+
+    backend = _FilesystemBackend(key_prefixes=prefixes, runtime_dirs=[run_dir])
+    return RuntimeStorage(prefixes, backend=backend)
+
+
+def test_loads_and_stores(tmpstore):
+    assert tmpstore.load('key') is None
+    assert tmpstore.load('key', default=42) == 42
+
+    tmpstore.store('key', '42')
+
+    assert tmpstore.load('key') == '42'
+    assert tmpstore.load('key', of_type=int) is None
+
+
+def test_updates_with_load_store(tmpstore):
+    assert tmpstore.load_store('key', lambda x: x) == (None, None)
+    assert tmpstore.load_store('key', lambda x: x, default=42) == (None, 42)
+    assert tmpstore.load_store('key', lambda x: str(x)) == (42, '42')
+    assert tmpstore.load_store('key', lambda x: x, of_type=int) == ('42', None)
+
+
+def test_fs_backend_stores_truncate_appropriately(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
 
     # use a separate reader to prevent caching from masking issues
@@ -62,8 +88,8 @@ def test_fs_backend_load_store_returns_old_and_new_values(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')
 
     store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
-    store.store('key', 42)
 
+    assert store.load_store('key', lambda _: 42) == (None, 42)
     assert store.load_store('key', lambda x: x + 1) == (42, 43)
 
 
