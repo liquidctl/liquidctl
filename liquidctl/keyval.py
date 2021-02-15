@@ -119,15 +119,12 @@ class _FilesystemBackend:
                 if not os.path.isfile(read_path):
                     continue
                 try:
-                    if read_path == path:
+                    if os.path.samefile(read_path, path):
                         # we already have an exclusive lock to this file
                         data = f.read().strip()
                         f.seek(0)
                     else:
-                        # it appears that in some cases, if `read_file` and `path` point
-                        # to the same file, acquiring a shared lock on `aux` could
-                        # downgrade our lock on `f`
-                        with self._open_with_lock(read_path, os.O_RDWR) as aux:
+                        with self._open_with_lock(read_path, os.O_RDWR, shared=True) as aux:
                             data = aux.read().strip()
 
                     if not data:
