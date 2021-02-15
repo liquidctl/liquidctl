@@ -20,7 +20,7 @@ def mockLegacy690LcDevice():
     device = MockPyusbDevice(vendor_id=0xffff, product_id=0xb200, bus=1, port=(1,))
     dev = Legacy690Lc(device, 'Mock Legacy 690LC')
 
-    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     runtime_storage.store('leds_enabled', 0)
 
     dev.connect(runtime_storage=runtime_storage)
