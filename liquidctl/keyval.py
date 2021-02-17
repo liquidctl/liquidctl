@@ -9,6 +9,13 @@ import os
 import sys
 import tempfile
 from ast import literal_eval
+from contextlib import contextmanager
+
+if sys.platform == 'win32':
+    import msvcrt
+else:
+    import fcntl
+
 
 _LOGGER = logging.getLogger(__name__)
 XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR')
@@ -40,6 +47,28 @@ def get_runtime_dirs(appname='liquidctl'):
     return dirs
 
 
+@contextmanager
+def _open_with_lock(path, flags, *, shared=False):
+    if flags | os.O_RDWR:
+        write_mode = 'r+'
+    elif flags | os.O_RDONLY:
+        write_mode = 'r'
+    elif flags | os.O_WRONLY:
+        write_mode = 'w'
+    else:
+        assert False, 'unreachable'
+
+    with os.fdopen(os.open(path, flags), mode=write_mode) as f:
+        if sys.platform == 'win32':
+            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+        elif shared:
+            fcntl.flock(f, fcntl.LOCK_SH)
+        else:
+            fcntl.flock(f, fcntl.LOCK_EX)
+
+        yield f
+
+
 class _FilesystemBackend:
     def _sanitize(self, key):
         if not isinstance(key, str):
@@ -49,7 +78,7 @@ class _FilesystemBackend:
         return key
 
     def __init__(self, key_prefixes, runtime_dirs=get_runtime_dirs()):
-        key_prefixes = map(self._sanitize, key_prefixes)
+        key_prefixes = [self._sanitize(p) for p in key_prefixes]
         # compute read and write dirs from base runtime dirs: the first base
         # dir is selected for writes and prefered for reads
         self._read_dirs = [os.path.join(x, *key_prefixes) for x in runtime_dirs]
@@ -66,13 +95,14 @@ class _FilesystemBackend:
             if not os.path.isfile(path):
                 continue
             try:
-                with open(path, mode='r') as f:
+                with _open_with_lock(path, os.O_RDONLY, shared=True) as f:
                     data = f.read().strip()
-                    if len(data) == 0:
-                        value = None
-                    else:
-                        value = literal_eval(data)
-                    _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
+
+                if not data:
+                    continue
+
+                value = literal_eval(data)
+                _LOGGER.debug('loaded %s=%r (from %s)', key, value, path)
             except OSError as err:
                 _LOGGER.warning('%s exists but could not be read: %s', path, err)
             except ValueError as err:
@@ -87,29 +117,93 @@ class _FilesystemBackend:
         data = repr(value)
         assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
-        fd, tmp = tempfile.mkstemp(dir=self._write_dir, text=True)
-        with open(fd, mode='w') as f:
+
+        with _open_with_lock(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC) as f:
             f.write(data)
-            f.flush()
-        os.replace(tmp, path)
+            f.flush()  # ensure flushing before automatic unlocking
+
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
+
+    def load_store(self, key, func):
+        value = None
+        new_value = None
+
+        path = os.path.join(self._write_dir, key)
+
+        # lock the destination as soon as possible
+        with _open_with_lock(path, os.O_RDWR | os.O_CREAT) as f:
+
+            # still traverse all possible locations to find the current value
+            for base in self._read_dirs:
+                read_path = os.path.join(base, key)
+                if not os.path.isfile(read_path):
+                    continue
+                try:
+                    if os.path.samefile(read_path, path):
+                        # we already have an exclusive lock to this file
+                        data = f.read().strip()
+                        f.seek(0)
+                    else:
+                        with _open_with_lock(read_path, os.O_RDONLY, shared=True) as aux:
+                            data = aux.read().strip()
+
+                    if not data:
+                        continue
+
+                    value = literal_eval(data)
+                    _LOGGER.debug('loaded %s=%r (from %s)', key, value, read_path)
+                    break
+                except OSError as err:
+                    _LOGGER.warning('%s exists but could not be read: %s', read_path, err)
+                except ValueError as err:
+                    _LOGGER.warning('%s exists but was corrupted: %s', key, err)
+            else:
+                _LOGGER.debug('no data (file) found for %s', key)
+
+            new_value = func(value)
+
+            data = repr(new_value)
+            assert literal_eval(data) == new_value, 'encode/decode roundtrip fails'
+            f.write(data)
+            f.truncate()
+            f.flush()  # ensure flushing before automatic unlocking
+
+            _LOGGER.debug('replaced with %s=%r (stored in %s)', key, new_value, path)
+
+        return (value, new_value)
 
 
 class RuntimeStorage:
     """Unstable API."""
 
-    def __init__(self, key_prefixes):
-        self._backend = _FilesystemBackend(key_prefixes)
+    def __init__(self, key_prefixes, backend=None):
+        if not backend:
+            backend = _FilesystemBackend(key_prefixes)
+        self._backend = backend
 
     def load(self, key, of_type=None, default=None):
         """Unstable API."""
+
         value = self._backend.load(key)
+
         if value is None:
             return default
         elif of_type and not isinstance(value, of_type):
             return default
         else:
             return value
+
+    def load_store(self, key, func, of_type=None, default=None):
+        """Unstable API."""
+
+        def l(value):
+            if value is None:
+                value = default
+            elif of_type and not isinstance(value, of_type):
+                value = default
+            return func(value)
+
+        return self._backend.load_store(key, l)
 
     def store(self, key, value):
         """Unstable API."""
