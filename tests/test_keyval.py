@@ -107,6 +107,10 @@ def test_fs_backend_load_store_loads_from_fallback_dir(tmpdir):
 
 
 def test_fs_backend_load_store_loads_from_fallback_dir_that_is_symlink(tmpdir):
+    # should deadlock if there is a problem with the lock type or with the
+    # handling of fallback paths that point to the same principal/write
+    # directory
+
     run_dir = tmpdir.mkdir('run_dir')
     fb_dir = os.path.join(run_dir, 'symlink')
     os.symlink(run_dir, fb_dir, target_is_directory=True)
