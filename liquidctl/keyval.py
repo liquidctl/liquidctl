@@ -68,10 +68,8 @@ class _FilesystemBackend:
         _LOGGER.debug('data in %s', self._write_dir)
 
     def load(self, key):
-        _LOGGER.debug('%r', self._read_dirs)
         for base in self._read_dirs:
             path = os.path.join(base, key)
-            _LOGGER.debug('%s', key)
             if not os.path.isfile(path):
                 continue
             try:
