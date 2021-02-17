@@ -177,7 +177,9 @@ class RuntimeStorage:
     """Unstable API."""
 
     def __init__(self, key_prefixes, backend=None):
-        self._backend = backend if backend is not None else _FilesystemBackend(key_prefixes)
+        if not backend:
+            backend = _FilesystemBackend(key_prefixes)
+        self._backend = backend
 
     def load(self, key, of_type=None, default=None):
         """Unstable API."""
