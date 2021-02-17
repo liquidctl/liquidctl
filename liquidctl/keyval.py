@@ -160,14 +160,7 @@ class _FilesystemBackend:
             else:
                 fcntl.flock(f, fcntl.LOCK_EX)
 
-            try:
-                yield f
-            finally:
-                if sys.platform == 'win32':
-                    f.seek(0)
-                    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
-                else:
-                    fcntl.flock(f, fcntl.LOCK_UN)
+            yield f
 
 
 class RuntimeStorage:
