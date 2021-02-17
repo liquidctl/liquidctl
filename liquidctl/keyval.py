@@ -122,7 +122,7 @@ class _FilesystemBackend:
                         data = f.read().strip()
                         f.seek(0)
                     else:
-                        with self._open_with_lock(read_path, os.O_RDWR, shared=True) as aux:
+                        with self._open_with_lock(read_path, os.O_RDONLY, shared=True) as aux:
                             data = aux.read().strip()
 
                     if not data:
