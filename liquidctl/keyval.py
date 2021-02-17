@@ -130,12 +130,11 @@ class _FilesystemBackend:
 
                     value = literal_eval(data)
                     _LOGGER.debug('loaded %s=%r (from %s)', key, value, read_path)
+                    break
                 except OSError as err:
                     _LOGGER.warning('%s exists but could not be read: %s', read_path, err)
                 except ValueError as err:
                     _LOGGER.warning('%s exists but was corrupted: %s', key, err)
-                else:
-                    break
             else:
                 _LOGGER.debug('no data (file) found for %s', key)
 
