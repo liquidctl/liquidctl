@@ -196,6 +196,29 @@ def test_fs_backend_stores_honor_load_store_locking(tmpdir):
     assert store.load('key') == -1
 
 
+def test_fs_backend_releases_locks(tmpdir):
+    # should deadlock if any method does not properly release its lock
+
+    run_dir = tmpdir.mkdir('run_dir')
+    store = _FilesystemBackend(key_prefixes=['prefix'], runtime_dirs=[run_dir])
+
+    def incr_from_other_process():
+        other = Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', 0.))
+        other.start()
+        other.join()
+
+    store.store('key', 42)
+    incr_from_other_process()
+    assert store.load('key') == 43
+
+    store.load_store('key', lambda _: -1)
+    incr_from_other_process()
+    assert store.load('key') == 0
+
+    incr_from_other_process()
+    assert store.load('key') == 1
+
+
 def _fs_mp_increment_key(run_dir, prefix, key, sleep):
     """Open a _FilesystemBackend and increment `key`.
 
