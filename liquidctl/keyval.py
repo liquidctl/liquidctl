@@ -47,6 +47,28 @@ def get_runtime_dirs(appname='liquidctl'):
     return dirs
 
 
+@contextmanager
+def _open_with_lock(path, flags, *, shared=False):
+    if flags | os.O_RDWR:
+        write_mode = 'r+'
+    elif flags | os.O_RDONLY:
+        write_mode = 'r'
+    elif flags | os.O_WRONLY:
+        write_mode = 'w'
+    else:
+        assert False, 'unreachable'
+
+    with os.fdopen(os.open(path, flags), mode=write_mode) as f:
+        if sys.platform == 'win32':
+            msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+        elif shared:
+            fcntl.flock(f, fcntl.LOCK_SH)
+        else:
+            fcntl.flock(f, fcntl.LOCK_EX)
+
+        yield f
+
+
 class _FilesystemBackend:
     def _sanitize(self, key):
         if not isinstance(key, str):
@@ -73,7 +95,7 @@ class _FilesystemBackend:
             if not os.path.isfile(path):
                 continue
             try:
-                with self._open_with_lock(path, os.O_RDONLY, shared=True) as f:
+                with _open_with_lock(path, os.O_RDONLY, shared=True) as f:
                     data = f.read().strip()
 
                 if not data:
@@ -96,7 +118,7 @@ class _FilesystemBackend:
         assert literal_eval(data) == value, 'encode/decode roundtrip fails'
         path = os.path.join(self._write_dir, key)
 
-        with self._open_with_lock(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC) as f:
+        with _open_with_lock(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC) as f:
             f.write(data)
             f.flush()  # ensure flushing before automatic unlocking
 
@@ -109,7 +131,7 @@ class _FilesystemBackend:
         path = os.path.join(self._write_dir, key)
 
         # lock the destination as soon as possible
-        with self._open_with_lock(path, os.O_RDWR | os.O_CREAT) as f:
+        with _open_with_lock(path, os.O_RDWR | os.O_CREAT) as f:
 
             # still traverse all possible locations to find the current value
             for base in self._read_dirs:
@@ -122,7 +144,7 @@ class _FilesystemBackend:
                         data = f.read().strip()
                         f.seek(0)
                     else:
-                        with self._open_with_lock(read_path, os.O_RDONLY, shared=True) as aux:
+                        with _open_with_lock(read_path, os.O_RDONLY, shared=True) as aux:
                             data = aux.read().strip()
 
                     if not data:
@@ -149,18 +171,6 @@ class _FilesystemBackend:
             _LOGGER.debug('replaced with %s=%r (stored in %s)', key, new_value, path)
 
         return (value, new_value)
-
-    @contextmanager
-    def _open_with_lock(self, path, flags, *, shared=False):
-        with os.fdopen(os.open(path, flags), mode='r+') as f:
-            if sys.platform == 'win32':
-                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
-            elif shared:
-                fcntl.flock(f, fcntl.LOCK_SH)
-            else:
-                fcntl.flock(f, fcntl.LOCK_EX)
-
-            yield f
 
 
 class RuntimeStorage:
