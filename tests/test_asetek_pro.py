@@ -21,8 +21,8 @@ def test_not_totally_broken(emulate):
 
         cooler.get_status()
 
-        cooler.set_color(channel='pump', mode='blinking', colors=iter([[3, 2, 1]]))
-        cooler.set_color(channel='pump', mode='pulse', colors=[[3, 2, 1]], speed='normal')
+        cooler.set_color(channel='logo', mode='blinking', colors=iter([[3, 2, 1]]))
+        cooler.set_color(channel='logo', mode='pulse', colors=[[3, 2, 1]], speed='normal')
 
         cooler.set_speed_profile(channel='fan',
                                       profile=iter([(20, 20), (30, 50), (40, 100)]))
