@@ -19,7 +19,7 @@ def h115iPlatinumDevice():
     device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
 
-    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     runtime_storage.store('leds_enabled', 0)
 
     dev.connect(runtime_storage=runtime_storage)
@@ -33,7 +33,7 @@ def h100iPlatinumSeDevice():
     device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
 
-    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     runtime_storage.store('leds_enabled', 0)
 
     dev.connect(runtime_storage=runtime_storage)
@@ -47,7 +47,7 @@ def h150iProXTDevice():
     device = _MockHydroPlatinumDevice()
     dev = HydroPlatinum(device, description, **kwargs)
 
-    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     runtime_storage.store('leds_enabled', 0)
 
     dev.connect(runtime_storage=runtime_storage)
@@ -86,7 +86,7 @@ class _MockHydroPlatinumDevice(MockHidapiDevice):
 
 
 def test_sequence_numbers_are_correctly_generated():
-    runtime_storage = MockRuntimeStorage(key_prefixes='testing')
+    runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     sequence = _sequence(runtime_storage)
 
     for i in range(1, 32):

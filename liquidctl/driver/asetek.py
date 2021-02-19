@@ -5,8 +5,8 @@ Supported devices:
 - EVGA CLC (120 CL12, 240, 280 or 360); modern generic Asetek 690LC
 - NZXT Kraken X (X31, X41 or X61); legacy generic Asetek 690LC
 - NZXT Kraken X (X40 or X60); legacy generic Asetek 690LC
-- Corsair H80i GT, H100i GTX or H110i GTX
-- Corsair H80i v2, H100i v2 or H115i
+- Corsair Hydro H80i GT, H100i GTX or H110i GTX
+- Corsair Hydro H80i v2, H100i v2 or H115i
 
 Copyright (C) 2018–2021  Jonas Malaco and contributors
 
@@ -142,9 +142,9 @@ class _CommonAsetekDriver(UsbDriver):
         Enables the device to send data to the host.
         """
 
-        super().connect(**kwargs)
+        ret = super().connect(**kwargs)
         self._configure_flow_control(clear_to_send=True)
-        return self
+        return ret
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -317,14 +317,14 @@ class Legacy690Lc(_CommonAsetekDriver):
         self._data = None
 
     def connect(self, runtime_storage=None, **kwargs):
-        super().connect(**kwargs)
-        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
-        loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
-
+        ret = super().connect(**kwargs)
         if runtime_storage:
             self._data = runtime_storage
         else:
+            ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+            loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
             self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
+        return ret
 
     def _set_all_fixed_speeds(self):
         self._begin_transaction()

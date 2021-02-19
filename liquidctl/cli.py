@@ -69,6 +69,7 @@ import inspect
 import logging
 import os
 import sys
+from traceback import format_exception
 
 from docopt import docopt
 
@@ -89,7 +90,7 @@ _PARSE_ARG = {
     '--bus': str,
     '--address': str,
     '--usb-port': lambda x: tuple(map(int, x.split('.'))),
-    '--match': str.lower,
+    '--match': str,
     '--pick': int,
 
     '--speed': str.lower,
@@ -302,26 +303,30 @@ def main():
 
     errors = 0
 
-    def log_error(err, msg, *args):
+    def log_error(err, msg, append_err=False, *args):
         nonlocal errors
         errors += 1
         _LOGGER.info('%s', err, exc_info=True)
-        _LOGGER.error(msg, *args)
+        if append_err:
+            exception = list(format_exception(Exception, err, None))[-1].rstrip()
+            _LOGGER.error(f'{msg}: {exception}', *args)
+        else:
+            _LOGGER.error(msg, *args)
 
     for dev in selected:
         _LOGGER.debug('device: %s', dev.description)
         try:
-            dev.connect(**opts)
-            if args['initialize']:
-                _print_dev_status(dev, dev.initialize(**opts))
-            elif args['status']:
-                _print_dev_status(dev, dev.get_status(**opts))
-            elif args['set'] and args['speed']:
-                _device_set_speed(dev, args, **opts)
-            elif args['set'] and args['color']:
-                _device_set_color(dev, args, **opts)
-            else:
-                raise Exception('not sure what to do')
+            with dev.connect(**opts):
+                if args['initialize']:
+                    _print_dev_status(dev, dev.initialize(**opts))
+                elif args['status']:
+                    _print_dev_status(dev, dev.get_status(**opts))
+                elif args['set'] and args['speed']:
+                    _device_set_speed(dev, args, **opts)
+                elif args['set'] and args['color']:
+                    _device_set_color(dev, args, **opts)
+                else:
+                    assert False, 'unreachable'
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
@@ -330,7 +335,7 @@ def main():
             elif err.args == ('open failed', ):
                 log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, f'Unexpected OS error with {dev.description}: {err}')
+                log_error(err, f'Unexpected OS error with {dev.description}', append_err=True)
         except NotSupportedByDevice as err:
             log_error(err, f'Error: operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
@@ -340,9 +345,7 @@ def main():
             log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
             _LOGGER.error('More information is provided in the corresponding device guide')
         except Exception as err:
-            log_error(err, f'Unexpected error with {dev.description}: {err}')
-        finally:
-            dev.disconnect(**opts)
+            log_error(err, f'Unexpected error with {dev.description}', append_err=True)
 
     if errors:
         sys.exit(errors)
