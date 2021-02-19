@@ -14,6 +14,11 @@ Changelog since 1.5.0:
  - Only attempt to set the USB configuration if no other errors have been detected
  - Return the context manager when overriding `connect()`
  - Fix construction of fallback search paths for runtime data
+### Checksums
+```
+e2d97be0319501bcad9af80c837abdbfd820620edcf9381068a443ad971327eb  liquidctl-1.5.1-bin-windows-x86_64.zip
+9480e2dfbb0406fa8d57601a43a0f7c7573de1f5f24920b0e4000786ed236a8b  liquidctl-1.5.1.tar.gz
+```
 
 
 ## [1.5.0] – 2021-01-27
