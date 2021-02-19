@@ -8,13 +8,22 @@
  - Enable support for the ASUS Strix GTX 1070
  - Add `sync` pseudo lighting channel to Commander/Lighting Node Pro devices
  - Add duty cycles to Hydro Platinum and Pro XT status output
+ - Add the Contributor Covenant, version 1.4 as our code of conduct 
 ### Changed
  - Remove `pro_xt_lighting` unsafe feature guard
- - Remove caching of temporarily stored data (see commit 35326b2b7bb4)
+ - Enforce correct casing of constants in driver APIs
  - Improve the documentation
 ### Fixed
  - Handle corrupted runtime data (#278)
  - Fix item prefixes in list output when `--match` is passed
+ - Remove caching of temporarily stored data (see commit 35326b2b7bb4)
+ - Append formated exception to "unknown error" messages
+ - Add "Hydro" to Platinum and Pro XT device descriptions
+ - Only attempt to disconnect from a device if already connected
+ - Only attempt to set the USB configuration if no other errors have been detected
+ - Return the context manager when overriding `connect()`
+ - Fix construction of fallback search paths for runtime data
+ - Add `keyval.load_store` method, atomic at the filesystem level
 
 
 ## [1.5.0] – 2021-01-27
