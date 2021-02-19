@@ -49,8 +49,8 @@ Other interface options:
 Deprecated:
   --hid <ignored>                Deprecated
 
-Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey and
-contributors
+Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
+Robertson  and contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas

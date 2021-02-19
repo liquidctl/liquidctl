@@ -24,6 +24,7 @@ from liquidctl.driver.base import BaseBus, find_all_subclasses
 
 # automatically enabled drivers
 from liquidctl.driver import asetek
+from liquidctl.driver import asetek_pro
 from liquidctl.driver import commander_pro
 from liquidctl.driver import corsair_hid_psu
 from liquidctl.driver import hydro_platinum

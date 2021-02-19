@@ -81,6 +81,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | :-: | :-- | :-: | :-- |
 | AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_EZN_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [Corsair Hydro H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_EN_</sup> |
@@ -439,8 +440,8 @@ You are also encouraged to contribute to the documentation and to these examples
 ## License
 
 liquidctl – monitor and control liquid coolers and other devices.  
-Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey and
-contributors
+Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
+Robertson  and contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
