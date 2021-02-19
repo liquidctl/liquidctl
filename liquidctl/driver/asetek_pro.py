@@ -38,11 +38,6 @@ _PUMP_MODES = ['quiet', 'balanced', 'performance']
 _COLOR_SPEEDS = ['slower', 'normal', 'faster']
 
 _COLOR_SPEEDS_VALUES = {
-    'rainbow': [
-        0x30, # slower
-        0x18, # normal
-        0x0C  # faster
-    ],
     'shift': [
         0x46, # slower
         0x28, # normal
@@ -61,7 +56,6 @@ _COLOR_SPEEDS_VALUES = {
 }
 
 _COLOR_CHANGE_MODES = {
-    'rainbow': [0x55, 0x01],
     'alert': [],
     'shift': [0x55, 0x01],
     'pulse': [0x52, 0x01],
@@ -71,7 +65,6 @@ _COLOR_CHANGE_MODES = {
 
 # FIXME unknown required and maximum values
 _COLOR_COUNT_BOUNDS = {
-    'rainbow': (0, 0),
     'alert': (3, 3),
     'shift': (2, 4),
     'pulse': (1, 4),
@@ -198,12 +191,11 @@ class CorsairAsetekProDriver(_CommonAsetekDriver):
 
         colors = self._check_color_count_bounds(colors, mode)
 
-        if mode != 'rainbow':
-            if mode == 'fixed':
-                colors = [colors[0], colors[0]]
+        if mode == 'fixed':
+            colors = [colors[0], colors[0]]
 
-            set_colors = list(itertools.chain(*colors))
-            self._post([_CMD_WRITE_COLOR_LIST, len(colors)] + set_colors, read_length=3)
+        set_colors = list(itertools.chain(*colors))
+        self._post([_CMD_WRITE_COLOR_LIST, len(colors)] + set_colors, read_length=3)
 
         if mode != 'fixed':
             magic_value = _COLOR_SPEEDS_VALUES[mode][_COLOR_SPEEDS.index(speed)]

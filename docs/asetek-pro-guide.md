@@ -62,7 +62,6 @@ available lighting modes, and the number of colors that each of them expects.
 
 | Mode | Colors | Notes |
 | :-- | :--: | :-- |
-| `rainbow` | 0 ||
 | `alert` | 3 | Good, warning and critical states |
 | `shift` | 2–4 ||
 | `pulse` | 1–4 ||
@@ -70,7 +69,6 @@ available lighting modes, and the number of colors that each of them expects.
 | `fixed` | 1 ||
 
 ```
-# liquidctl set logo color rainbow
 # liquidctl set logo color alert 00ff00 ffff00 ff0000
 # liquidctl set logo color shift ff9000 0090ff
 # liquidctl set logo color pulse ff9000
@@ -82,5 +80,5 @@ All modes except `alert` and `fixed` support an additional `--speed` parameter;
 the allowed values are `slower`, `normal` and `faster`.
 
 ```
-# liquidctl set logo color rainbow --speed faster
+# liquidctl set logo color pulse ff9000 --speed faster
 ```

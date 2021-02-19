@@ -22,7 +22,7 @@ def test_not_totally_broken(emulate):
         cooler.get_status()
 
         cooler.set_color(channel='pump', mode='blinking', colors=iter([[3, 2, 1]]))
-        cooler.set_color(channel='pump', mode='rainbow', colors=[], speed='normal')
+        cooler.set_color(channel='pump', mode='pulse', colors=[[3, 2, 1]], speed='normal')
 
         cooler.set_speed_profile(channel='fan',
                                       profile=iter([(20, 20), (30, 50), (40, 100)]))
@@ -72,19 +72,6 @@ def test_setting_speed_on_single_fan_2(emulate):
 
         _begin, _pump, fan2 = usb_dev._sent_xfers
         assert fan2 == ('write', 1, [0x42, 0x01, 0x64])
-
-
-def test_set_pump_to_rainbow_mode(emulate):
-    usb_dev, cooler = emulate
-
-    with cooler.connect():
-        cooler.initialize()
-
-        cooler.set_color(channel='logo', mode='rainbow', colors=iter([]), speed='slower')
-
-        _begin, _pump, color_mode, color_end = usb_dev._sent_xfers
-        assert color_mode == ('write', 1, [0x53, 0x30])
-        assert color_end == ('write', 1, [0x55, 0x01])
 
 
 def test_set_pump_to_fixed_color(emulate):
