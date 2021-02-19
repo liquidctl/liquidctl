@@ -2,7 +2,7 @@
 
 ## Prepare system
 
- - [ ] Install publishing dependencies: `pacman -S twine`
+ - [ ] Install publishing dependencies: twine
 
 ## Prepare repository
 
@@ -15,7 +15,8 @@
 
 ## Test
 
- - with `"$(liquidctl --version) = "liquidclt v<version>"`...
+With `"$(liquidctl --version) = "liquidclt v<version>"`:
+
  - [ ] Run unit and doc tests: `pytest`
  - [ ] Run my setup scripts: `liquidcfg && liquiddyncfg`
  - [ ] Run old HW tests: `extra/old-tests/asetek_*` and `extra/old-tests/kraken_two`

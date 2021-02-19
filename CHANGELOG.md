@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.5.1] – 2021-02-19
+_Summary for the 1.5.1 release: fixes to error reporting, handling of runtime
+data, and other bugs._
+
+Changelog since 1.5.0:
+### Fixed
+ - Handle corrupted runtime data (#278)
+ - Fix item prefixes in list output when `--match` is passed
+ - Remove caching of temporarily stored data
+ - Append formated exception to "unknown error" messages
+ - Only attempt to disconnect from a device if already connected
+ - Only attempt to set the USB configuration if no other errors have been detected
+ - Return the context manager when overriding `connect()`
+ - Fix construction of fallback search paths for runtime data
+
+
 ## [1.5.0] – 2021-01-27
 _Summary for the 1.5.0 release: Corsair Commander Pro and Lighting Node Pro
 support; EVGA GTX 1080 FTW and ASUS Strix RTX 2080 Ti OC support on Linux;
