@@ -13,6 +13,7 @@ Please also mention the first-party software that is used with it (e.g. Corsair 
 
 The device appears to support the following features:
 
+ - [ ] monitoring of temperatures or other environment sensors
  - [ ] monitoring of fan or pump speeds or duty cycles
  - [ ] monitoring of voltages, currents or power
  - [ ] configurable fan or pump speeds
