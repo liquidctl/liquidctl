@@ -128,11 +128,12 @@ _FILTER_OPTIONS = [
 
 # custom number formats for values of select units
 _VALUE_FORMATS = {
-    '°C': '.1f',
-    'rpm': '.0f',
-    'V': '.2f',
+    '%': '.0f',
     'A': '.2f',
-    'W': '.2f'
+    'V': '.2f',
+    'W': '.2f',
+    'rpm': '.0f',
+    '°C': '.1f',
 }
 
 _LOGGER = logging.getLogger(__name__)
