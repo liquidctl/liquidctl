@@ -171,6 +171,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3008", TAG+="uacc
 # NZXT RGB & Fan Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2009", TAG+="uaccess"
 
+# NZXT RGB & Fan Controller
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200e", TAG+="uaccess"
+
 # NZXT Smart Device (V1)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1714", TAG+="uaccess"
 
