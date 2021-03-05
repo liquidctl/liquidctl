@@ -25,7 +25,9 @@ Corsair RM650i
 ├── Fan control mode                     Hardware
 ├── Fan speed                                   0  rpm
 ├── Input voltage                          230.00  V
-├── Total power                            110.00  W
+├── Total power output                     110.00  W
+├── Estimated input power                  124.09  W
+├── Estimated efficiency                       89  %
 ├── +12V OCP mode                      Multi rail
 ├── +12V output voltage                     12.12  V
 ├── +12V output current                      7.75  A

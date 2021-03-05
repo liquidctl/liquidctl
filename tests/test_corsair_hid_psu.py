@@ -81,8 +81,9 @@ class _MockPsuDevice(MockHidapiDevice):
 
 @pytest.fixture
 def mockPsuDevice():
-    device = _MockPsuDevice(vendor_id=0x1b1c, product_id=0x1c05, address='addr')
-    return CorsairHidPsu(device, 'mock Corsair HX750i PSU')
+    pid, vid, _, desc, kwargs = CorsairHidPsu.SUPPORTED_DEVICES[0]
+    device = _MockPsuDevice(vendor_id=vid, product_id=pid, address='addr')
+    return CorsairHidPsu(device, f'Mock {desc}', **kwargs)
 
 
 def test_corsair_psu_not_totally_broken(mockPsuDevice):
@@ -112,7 +113,7 @@ def test_corsair_psu_get_status(mockPsuDevice):
     assert status['Fan control mode'] == (FanControlMode.SOFTWARE, '')
     assert status['Fan speed'] == (approx(968, rel=1e-3), 'rpm')
     assert status['Input voltage'] == (approx(230, rel=1e-3), 'V')
-    assert status['Total power'] == (approx(140, rel=1e-3), 'W')
+    assert status['Total power output'] == (approx(140, rel=1e-3), 'W')
     assert status['+12V OCP mode'] == (OCPMode.MULTI_RAIL, '')
     assert status['+12V output voltage'] == (approx(11.98, rel=1e-3), 'V')
     assert status['+12V output current'] == (approx(10.75, rel=1e-3), 'A')
@@ -124,4 +125,7 @@ def test_corsair_psu_get_status(mockPsuDevice):
     assert status['+3.3V output current'] == (approx(0.562, rel=1e-3), 'A')
     assert status['+3.3V output power'] == (approx(1.5, rel=1e-3), 'W')
 
-    assert len(status) == 18
+    assert status['Estimated input power'] == (approx(153, abs=1), 'W')
+    assert status['Estimated efficiency'] == (approx(92, abs=1), '%')
+
+    assert len(status) == 20
