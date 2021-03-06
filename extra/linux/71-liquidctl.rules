@@ -1,7 +1,12 @@
 # Rules that grant unprivileged access to devices supported by liquidctl
 #
 # Users and distros are encouraged to use these if they want liquidctl to work
-# without requiring root privileges (possibly with the use of sudo).
+# without requiring root privileges (e.g. with the use of `sudo`).
+#
+# In the case of I²C/SMBus devices, these rules also cause the loading of the
+# `i2c-dev` kernel module.  The module is required for access to I²C/SMBus
+# devices from userspace, and loading kernel modules is in itself a privileged
+# operation.
 #
 # Distros will likely want to place this file in `/usr/lib/udev/rules.d/`,
 # while users installing this manually SHOULD use `/etc/udev/rules.d/` instead.
@@ -27,7 +32,8 @@
 # Section: special cases
 
 # Host SMBus on Intel mainstream/HEDT platforms
-KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess"
+KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
 
 
 # Section: NVIDIA graphics cards
@@ -35,17 +41,20 @@ KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess"
 # ASUS Strix GTX 1070
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
     ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x1043", \
-    ATTRS{subsystem_device}=="0x8599", DRIVERS=="nvidia", TAG+="uaccess"
+    ATTRS{subsystem_device}=="0x8599", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
 
 # ASUS Strix RTX 2080 Ti OC
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
     ATTRS{device}=="0x1e07", ATTRS{subsystem_vendor}=="0x1043", \
-    ATTRS{subsystem_device}=="0x866a", DRIVERS=="nvidia", TAG+="uaccess"
+    ATTRS{subsystem_device}=="0x866a", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
 
 # EVGA GTX 1080 FTW
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
     ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x3842", \
-    ATTRS{subsystem_device}=="0x6286", DRIVERS=="nvidia", TAG+="uaccess"
+    ATTRS{subsystem_device}=="0x6286", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
 
 
 # Section: USB devices and USB HIDs

@@ -15,7 +15,12 @@ HEADER = '''
 # Rules that grant unprivileged access to devices supported by liquidctl
 #
 # Users and distros are encouraged to use these if they want liquidctl to work
-# without requiring root privileges (possibly with the use of sudo).
+# without requiring root privileges (e.g. with the use of `sudo`).
+#
+# In the case of I²C/SMBus devices, these rules also cause the loading of the
+# `i2c-dev` kernel module.  The module is required for access to I²C/SMBus
+# devices from userspace, and loading kernel modules is in itself a privileged
+# operation.
 #
 # Distros will likely want to place this file in `/usr/lib/udev/rules.d/`,
 # while users installing this manually SHOULD use `/etc/udev/rules.d/` instead.
@@ -42,7 +47,8 @@ MANUAL_RULES = r'''
     # Section: special cases
 
     # Host SMBus on Intel mainstream/HEDT platforms
-    KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess"
+    KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess", \
+        RUN{builtin}="kmod load i2c-dev"
 '''
 
 
@@ -78,7 +84,8 @@ for svid, did, sdid, descriptions in nvidia_devs:
     print(cleandoc(f'''
         KERNEL=="i2c-*", ATTR{{name}}=="NVIDIA i2c adapter 1 *", ATTRS{{vendor}}=="0x10de", \\
             ATTRS{{device}}=="{did:#06x}", ATTRS{{subsystem_vendor}}=="{svid:#06x}", \\
-            ATTRS{{subsystem_device}}=="{sdid:#06x}", DRIVERS=="nvidia", TAG+="uaccess"
+            ATTRS{{subsystem_device}}=="{sdid:#06x}", DRIVERS=="nvidia", TAG+="uaccess", \\
+            RUN{{builtin}}="kmod load i2c-dev"
     '''))
 
 print()
