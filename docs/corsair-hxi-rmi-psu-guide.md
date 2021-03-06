@@ -77,4 +77,4 @@ Still, we encourage Corsair to make more of its efficiency data public, which
 would hopefully allow liquidctl to present more precise estimates.
 
 _<sup>1</sup> See comments in [issue #300](https://github.com/liquidctl/liquidctl/issues/300)._  
-_<sup>2</sup> Available at [80 PLUS® Certified Power Supplies and Manufacturers](https://www.clearesult.com/80plus/manufacturers/115V-Internal).  
+_<sup>2</sup> Available at [80 PLUS® Certified Power Supplies and Manufacturers](https://www.clearesult.com/80plus/manufacturers/115V-Internal)._  
