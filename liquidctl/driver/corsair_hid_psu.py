@@ -139,10 +139,6 @@ class CorsairHidPsu(UsbHidDriver):
             _LOGGER.warning('possibly uninitialized device')
 
         input_voltage = self._get_float(CMD.READ_VIN)
-        output_power = self._get_float(_CORSAIR_READ_OUTPUT_POWER)
-
-        input_power = self._input_power_at(input_voltage, output_power)
-        efficiency = output_power / input_power
 
         status = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
@@ -152,9 +148,6 @@ class CorsairHidPsu(UsbHidDriver):
             ('Fan control mode', self._get_fan_control_mode(), ''),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
             ('Input voltage', input_voltage, 'V'),
-            ('Total power output', output_power, 'W'),
-            ('Estimated input power', input_power, 'W'),
-            ('Estimated efficiency', efficiency * 100, '%'),
             ('+12V OCP mode', self._get_12v_ocp_mode(), ''),
         ]
 
@@ -164,6 +157,14 @@ class CorsairHidPsu(UsbHidDriver):
             status.append((f'{name} output voltage', self._get_float(CMD.READ_VOUT), 'V'))
             status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
             status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
+
+        output_power = self._get_float(_CORSAIR_READ_OUTPUT_POWER)
+        input_power = round(self._input_power_at(input_voltage, output_power), 0)
+        efficiency = round(output_power / input_power * 100, 0)
+
+        status.append(('Total power output', output_power, 'W'))
+        status.append(('Estimated input power', input_power, 'W'))
+        status.append(('Estimated efficiency', efficiency, '%'))
 
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         return status
