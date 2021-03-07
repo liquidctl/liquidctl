@@ -121,7 +121,7 @@ class CorsairHidPsu(UsbHidDriver):
         self._read()
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
         if mode != self._get_12v_ocp_mode():
-            _LOGGER.info('(experimental feature) changing +12V OCP mode to %s', mode)
+            _LOGGER.info('changing +12V OCP mode to %s', mode)
             self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
         if self._get_fan_control_mode() != FanControlMode.HARDWARE:
             _LOGGER.info('resetting fan control to hardware mode')
