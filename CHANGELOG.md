@@ -5,13 +5,19 @@
 ### Added
  - Add experimental support for the Corsair Lighting Node Core
  - Add experimental support for the Corsair Hydro H150i Pro XT
+ - Add experimental support for the Corsair Hydro H100i Pro, H115i Pro and H150i Pro coolers
  - Enable support for the ASUS Strix GTX 1070
+ - Enable support for new variant of the NZXT RGB & Fan Controller
  - Add `sync` pseudo lighting channel to Commander/Lighting Node Pro devices
  - Add duty cycles to Hydro Platinum and Pro XT status output
+ - Add input power and efficiency estimates to the status output of Corsair HXi and RMi PSUs
  - Add the Contributor Covenant, version 1.4 as our code of conduct 
 ### Changed
  - Remove `pro_xt_lighting` unsafe feature guard
  - Enforce correct casing of constants in driver APIs
+ - Use udev rules for automatic loading of kernel modules (replaces previous `modules-load.d` configuration)
+ - Remove warnings when reporting or setting the OCP mode of Corsair HXi and RMi PSUs
+ - Rename Corsair HXi and RMi "Total power" status item to "Total power output"
  - Improve the documentation
 ### Fixed
  - Add "Hydro" to Platinum and Pro XT device descriptions
