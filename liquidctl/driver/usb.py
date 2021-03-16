@@ -60,6 +60,9 @@ import sys
 
 import usb
 try:
+    # The hidapi package, depending on how it's compiled, exposes one or two
+    # top level modules: hid and, optionally, hidraw.  When both are available,
+    # hid will be a libusb-based fallback implementation, and we prefer hidraw.
     import hidraw as hid
 except ModuleNotFoundError:
     import hid
