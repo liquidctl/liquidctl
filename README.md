@@ -182,9 +182,11 @@ Optional steps:
 [bash completions]: extra/completions/liquidctl.bash
 
 
-## Installing on FreeBSD
+## Installing on FreeBSD or DragonFlyBSD
 
-liquidctl is maintained in the Ports Collection (thanks to ehaupt@FreeBSD.org), and it is available as a pre-built binary package.
+### FreeBSD
+
+liquidctl is maintained in the FreeBSD Ports Collection (thanks to ehaupt@FreeBSD.org), and it is available as a pre-built binary package.
 
 - port: `sysutils/py-liquidctl`
 - binary: `pkg install py37-liquidctl`
@@ -192,7 +194,13 @@ liquidctl is maintained in the Ports Collection (thanks to ehaupt@FreeBSD.org), 
 
 By default, root privileges (`doas` or `sudo`) are required to run liquidctl.
 
-Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), [ ... ]
+To gain full access as a normal user without `doas` or `sudo`, see devd(8) (FreeBSD-specific guide needed). Also, you might consider manually changing the permission of the file of the USB device for an individual session with `chown`, e.g. `sudo chown [user] /dev/ugen[#.#]`.
+
+Note: as of March 20, 2021, HIDAP (`comms/hidapi`), which is required for `comms/py-hidapi` (and, thus, liquidctl), must be built from the latest port rather than installed as a package, as the latest package is out of date. Make sure that you have HIDAPI version 0.10.1 or later installed prior to installing `comms/py-hidapi` and liquidctl. Then, liquidctl will work as expected.
+
+### DragonFlyBSD
+
+liquidctl is available in DragonFly Ports, having been transferred from the FreeBSD Ports Collection. Installation and use should be the same as in FreeBSD (verification needed).
 
 
 ## Installing on Windows
