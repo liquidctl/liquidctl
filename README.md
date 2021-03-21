@@ -55,7 +55,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 1.  [Supported devices](#supported-devices)
 2.  [Installing on Linux](#installing-on-linux)
-3.  [Installing on FreeBSD](#installing-on-freebsd)
+3.  [Installing on FreeBSD or DragonFlyBSD](#installing-on-freebsd-or-dragonflybsd)
 4.  [Installing on Windows](#installing-on-windows)
 5.  [Installing on macOS](#installing-on-macos)
 6.  [The command-line interface](#introducing-the-command-line-interface)
