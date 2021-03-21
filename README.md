@@ -55,7 +55,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 1.  [Supported devices](#supported-devices)
 2.  [Installing on Linux](#installing-on-linux)
-3.  [Installing on FreeBSD or DragonFlyBSD](#installing-on-freebsd-or-dragonflybsd)
+3.  [Installing on FreeBSD](#installing-on-freebsd)
 4.  [Installing on Windows](#installing-on-windows)
 5.  [Installing on macOS](#installing-on-macos)
 6.  [The command-line interface](#introducing-the-command-line-interface)
@@ -182,9 +182,7 @@ Optional steps:
 [bash completions]: extra/completions/liquidctl.bash
 
 
-## Installing on FreeBSD or DragonFlyBSD
-
-### FreeBSD
+## Installing on FreeBSD (or DragonFlyBSD)
 
 liquidctl is maintained in the FreeBSD Ports Collection (thanks to ehaupt@FreeBSD.org), and it is available as a pre-built binary package.
 
@@ -194,13 +192,9 @@ liquidctl is maintained in the FreeBSD Ports Collection (thanks to ehaupt@FreeBS
 
 By default, root privileges (`doas` or `sudo`) are required to run liquidctl.
 
-To gain full access as a normal user without `doas` or `sudo`, see devd(8) (FreeBSD-specific guide needed). Also, you might consider manually changing the permission of the file of the USB device for an individual session with `chown`, e.g. `sudo chown [user] /dev/ugen[#.#]`.
+To gain full access as a normal user without `doas` or `sudo`, see devd(8). Also, you might consider manually changing the permission of the file of the USB device for an individual session with `chown`, e.g. `sudo chown [user] /dev/ugen[#.#]`.
 
 Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), which is required for `comms/py-hidapi` (and, thus, liquidctl), must be built from the latest port rather than installed as a package, as the latest package is out of date. Make sure that you have HIDAPI version 0.10.1 or later installed prior to installing `comms/py-hidapi` and liquidctl. Then, liquidctl will work as expected.
-
-### DragonFlyBSD
-
-liquidctl is available in DragonFly Ports, having been transferred from the FreeBSD Ports Collection. Installation and use should be the same as in FreeBSD (verification needed).
 
 
 ## Installing on Windows
