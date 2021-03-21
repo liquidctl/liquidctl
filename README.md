@@ -186,21 +186,9 @@ Optional steps:
 
 liquidctl is maintained in the Ports Collection (thanks to ehaupt@FreeBSD.org), and it is available as a pre-built binary package.
 
-Port:
-
-`sysutils/py-liquidctl`
-
-Binary:
-
-`pkg install py37-liquidctl`
-
-Dependencies:
-
-`devel/py-docopt`
-
-`comms/py-hidapi`
-
-`devel/py-pyusb`
+- port: `sysutils/py-liquidctl`
+- binary: `pkg install py37-liquidctl`
+- dependencies: `devel/py-docopt`, `comms/py-hidapi`, `devel/py-pyusb`
 
 liquidctl requires root privileges (doas or sudo) by default.
 
