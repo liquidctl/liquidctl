@@ -190,7 +190,7 @@ liquidctl is maintained in the Ports Collection (thanks to ehaupt@FreeBSD.org), 
 - binary: `pkg install py37-liquidctl`
 - dependencies: `devel/py-docopt`, `comms/py-hidapi`, `devel/py-pyusb`
 
-liquidctl requires root privileges (doas or sudo) by default.
+By default, root privileges (`doas` or `sudo`) are required to run liquidctl.
 
 Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), [ ... ]
 
