@@ -204,7 +204,7 @@ Dependencies:
 
 liquidctl requires root privileges (doas or sudo) by default.
 
-NB: As of March 20, 2021, HIDAP (`comms/hidapi`), which is required for `comms/py-hidapi` (and, thus, liquidctl), must be built from the latest port rather than installed as a package, as the package is out of date. Make sure that you have HIDAPI version 0.10.1 or later installed prior to installing `comms/py-hidapi` and liquidctl. Then, liquidctl will work as expected.
+Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), [ ... ]
 
 
 ## Installing on Windows
