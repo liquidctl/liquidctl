@@ -55,20 +55,21 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 1.  [Supported devices](#supported-devices)
 2.  [Installing on Linux](#installing-on-linux)
-3.  [Installing on Windows](#installing-on-windows)
-4.  [Installing on macOS](#installing-on-macos)
-5.  [The command-line interface](#introducing-the-command-line-interface)
+3.  [Installing on FreeBSD](#installing-on-freebsd)
+4.  [Installing on Windows](#installing-on-windows)
+5.  [Installing on macOS](#installing-on-macos)
+6.  [The command-line interface](#introducing-the-command-line-interface)
      1. [Listing and selecting devices](#listing-and-selecting-devices)
      2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
      3. [Supported color specification formats](#supported-color-specification-formats)
-6.  [Automation and running at boot](#automation-and-running-at-boot)
+7.  [Automation and running at boot](#automation-and-running-at-boot)
      1. [Set up Linux using systemd](#set-up-linux-using-systemd)
      2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
      3. [Set up macOS using launchd](#set-up-macos-using-launchd)
-7.  [Troubleshooting](#troubleshooting)
-8.  [Additional documentation](#additional-documentation)
-9.  [License](#license)
-10. [Related projects](#related-projects-2020-edition)
+8.  [Troubleshooting](#troubleshooting)
+9.  [Additional documentation](#additional-documentation)
+10.  [License](#license)
+11. [Related projects](#related-projects-2020-edition)
 
 
 ## Supported devices
@@ -179,6 +180,25 @@ Optional steps:
 
 [udev rules]: extra/linux/71-liquidctl.rules
 [bash completions]: extra/completions/liquidctl.bash
+
+
+## Installing on FreeBSD
+
+liquidctl is maintained in the FreeBSD Ports Collection (thanks to ehaupt@FreeBSD.org), and it is available as a pre-built binary package.
+
+- port: `sysutils/py-liquidctl`
+- binary: `pkg install py37-liquidctl`
+- dependencies: `devel/py-docopt`, `comms/py-hidapi`, `devel/py-pyusb`
+
+By default, root privileges (`doas` or `sudo`) are required to run liquidctl.
+
+To gain full access as a normal user without `doas` or `sudo`, see devd(8). Also, you might consider manually changing the permission of the file of the USB device for an individual session with `chown`, e.g. `sudo chown [user] /dev/ugen[#.#]`.
+
+Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), which is required for `comms/py-hidapi` (and, thus, liquidctl), must be built from the latest port rather than installed as a package, as the latest package is out of date. Make sure that you have HIDAPI version 0.10.1 or later installed prior to installing `comms/py-hidapi` and liquidctl. Then, liquidctl will work as expected.
+
+### DragonFly BSD
+
+ehaupt@FreeBSD.org's work is also available in DragonFly Ports. 
 
 
 ## Installing on Windows
