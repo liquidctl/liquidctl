@@ -185,7 +185,7 @@ Optional steps:
 
 ## Installing on FreeBSD
 
-liquidctl is maintained in the FreeBSD Ports Collection (thanks to ehaupt@FreeBSD.org), and it is available as a pre-built binary package.
+liquidctl is maintained in the FreeBSD Ports Collection, and it is available as a pre-built binary package.
 
 - port: `sysutils/py-liquidctl`
 - binary: `pkg install py37-liquidctl`
@@ -199,7 +199,7 @@ Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), which is required for `comm
 
 ### DragonFly BSD
 
-ehaupt@FreeBSD.org's work is also available in DragonFly Ports. 
+The port is also available in DragonFly Ports.
 
 
 ## Installing on Windows
