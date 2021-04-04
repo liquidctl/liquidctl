@@ -293,17 +293,20 @@ In case more than one supported device is found, one them can be selected with `
 
 ```
 # liquidctl --match kraken list
-Device ID 0: NZXT Kraken X (X42, X52, X62 or X72)
+Result #0: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
-More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of these can also be used to select a particular product.
+More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of those can also be used to select a particular product.
 
 ```
+# liquidcl --bus hid --address /dev/hidraw4 list
+Result #0: NZXT Smart Device (V1)
+
 # liquidctl --serial 1234567890 list
-Device ID 0: NZXT Kraken X (X42, X52, X62 or X72)
+Result #0: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
-Ambiguities for any given filter can be solved with `--pick <number>`.  Devices can also be selected with `--device <ID>`, but these IDs are not guaranteed to remain stable and will vary with hardware changes, liquidctl updates or simply normal variance in enumeration order.
+Ambiguities for any given filter can be solved with `--pick <number>`.
 
 ### Initializing and interacting with devices
 

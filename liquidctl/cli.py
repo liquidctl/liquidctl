@@ -20,7 +20,6 @@ Device selection options (see: list -v):
   --bus <bus>                    Filter devices by bus
   --address <address>            Filter devices by address in bus
   --usb-port <port>              Filter devices by USB port in bus
-  -d, --device <id>              Select device by listing id
 
 Animation options (devices/modes can support zero or more):
   --speed <value>                Abstract animation speed (device/mode specific)
@@ -48,7 +47,8 @@ Other interface options:
   --help                         Show this message
 
 Deprecated:
-  --hid <ignored>                Deprecated
+  -d, --device <index>           Select device by listing index
+  --hid <ignored>                Ignored
 
 Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson  and contributors
@@ -280,16 +280,17 @@ def main():
     if not args['--device']:
         selected = list(find_liquidctl_devices(**opts))
     else:
+        _LOGGER.warning('-d/--device is deprecated, prefer --match or other selection options')
         device_id = int(args['--device'])
         no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
         compat = list(find_liquidctl_devices(**no_filters))
         if device_id < 0 or device_id >= len(compat):
-            raise SystemExit('Error: device ID out of bounds')
+            raise SystemExit('Error: device index out of bounds')
         if filter_count:
             # check that --device matches other filter criteria
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
-                raise SystemExit('Error: device ID does not match remaining selection criteria')
+                raise SystemExit('Error: device index does not match remaining selection criteria')
             _LOGGER.warning('mixing --device <id> with other filters is not recommended; '
                             'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
