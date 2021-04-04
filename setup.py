@@ -70,7 +70,7 @@ CHANGES_URL = '{}/blob/v{}/CHANGELOG.md'.format(HOME, VERSION)
 
 make_extraversion()
 
-install_requires = ['docopt', 'pyusb', 'hidapi']
+install_requires = ['docopt', 'pyusb', 'hidapi', 'colorlog']
 
 if sys.platform == 'linux':
     install_requires.append('smbus')
