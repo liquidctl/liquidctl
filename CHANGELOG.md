@@ -18,10 +18,14 @@
  - Use udev rules for automatic loading of kernel modules (replaces previous `modules-load.d` configuration)
  - Remove warnings when reporting or setting the OCP mode of Corsair HXi and RMi PSUs
  - Rename Corsair HXi and RMi "Total power" status item to "Total power output"
+ - Handle both US and UK spellings of `--direction` values
  - Improve the documentation
 ### Fixed
  - Add "Hydro" to Platinum and Pro XT device descriptions
  - Add `keyval.load_store` method, atomic at the filesystem level
+ - Replace "ID" with "#" when listing all devices
+### Deprecated
+ - Deprecate `-d`/`--device`; prefer `--match` or other selection options
 
 
 ## [1.5.1] – 2021-02-19
