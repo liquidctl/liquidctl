@@ -24,7 +24,8 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
-from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, normalize_profile, check_unsafe
+from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, \
+                           normalize_profile, check_unsafe, map_direction
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -417,7 +418,7 @@ class CommanderPro(UsbHidDriver):
         c = itertools.chain(*((r, g, b) for r, g, b in expanded))
         colors = list(c)
 
-        direction = _LED_DIRECTION_FORWARD if direction == 'forward' else _LED_DIRECTION_BACKWARD
+        direction = map_direction(direction, _LED_DIRECTION_FORWARD, _LED_DIRECTION_BACKWARD)
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
         start_led = clamp(start_led, 1, 204) - 1
         num_leds = clamp(maximum_leds, 1, 204 - start_led - 1)

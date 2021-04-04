@@ -14,7 +14,8 @@ import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
-                           Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
+                           Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL, \
+                           map_direction
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -226,7 +227,7 @@ class KrakenX3(UsbHidDriver):
         """Set the color mode for a specific channel."""
 
         if 'backwards' in mode:
-            _LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backward option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
@@ -318,14 +319,13 @@ class KrakenX3(UsbHidDriver):
             color = list(itertools.chain(*colors)) + [0, 0, 0] * (16 - color_count)
 
             if 'marquee' in mode:
-                backwards_byte = 0x04
+                backward_byte = 0x04
             elif mode == 'starry-night' or 'moving-alternating' in mode:
-                backwards_byte = 0x01
+                backward_byte = 0x01
             else:
-                backwards_byte = 0x00
+                backward_byte = 0x00
 
-            if direction == 'backward':
-                backwards_byte += 0x02
+            backward_byte += map_direction(direction, 0, 0x02)
 
             if mode == 'fading' or mode == 'pulse' or mode == 'breathing':
                 mode_related = 0x08
@@ -341,7 +341,7 @@ class KrakenX3(UsbHidDriver):
 
             static_byte = _STATIC_VALUE[cid]
             led_size = size_variant if mval == 0x03 or mval == 0x05 else 0x03
-            footer = [backwards_byte, color_count, mode_related, static_byte, led_size]
+            footer = [backward_byte, color_count, mode_related, static_byte, led_size]
             self._write(header + color + footer)
 
 

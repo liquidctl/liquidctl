@@ -104,7 +104,8 @@ import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import clamp, Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL
+from liquidctl.util import clamp, map_direction, Hue2Accessory, \
+                           HUE2_MAX_ACCESSORIES_IN_CHANNEL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             raise NotSupportedByDevice()
 
         if 'backwards' in mode:
-            _LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backward option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
@@ -292,8 +293,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
         # one step, where it is specified to all leds and the device handles the animation;
         # but in super mode there is a single step and each color directly controls a led
 
-        if direction == 'backward':
-            mod3 += 0x10
+        mod3 += map_direction(direction, 0, 0x10)
 
         if 'super' in mode:
             steps = [list(itertools.chain(*colors))]
@@ -496,7 +496,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
             byte7 = movingFlag  # sets 'moving' flag for moving alternating modes
-            byte8 = direction == 'backward'  # sets 'backwards' flag
+            byte8 = map_direction(direction, 0, 1)  # sets 'backward' flag
             byte9 = mod3 if mval == 0x03 else color_count  # specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  # specifies LED size for 'alternating' modes
             header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
@@ -508,7 +508,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         self._write(msg)
 
 
-# backwards compatibility
+# backward compatibility
 NzxtSmartDeviceDriver = SmartDevice
 SmartDeviceDriver = SmartDevice
 SmartDeviceV2Driver = SmartDevice2

@@ -131,7 +131,7 @@ class HydroPlatinum(UsbHidDriver):
         """Probe `handle` and yield corresponding driver instances."""
 
         # this is modified from BaseUsbDriver.probe to match regardless of
-        # presence of "Hydro", for backwards compatibility with 1.5.0 and
+        # presence of "Hydro", for backward compatibility with 1.5.0 and
         # previous versions
 
         for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:

@@ -26,7 +26,8 @@ import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import clamp, normalize_profile, interpolate_profile
+from liquidctl.util import clamp, normalize_profile, interpolate_profile, \
+                           map_direction
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -151,14 +152,12 @@ class Kraken2(UsbHidDriver):
             _LOGGER.warning('deprecated mode, move to super-fixed, super-breathing or super-wave')
             mode = 'super-fixed'
         if 'backwards' in mode:
-            _LOGGER.warning('deprecated mode, move to direction=backwards option')
+            _LOGGER.warning('deprecated mode, move to direction=backward option')
             mode = mode.replace('backwards-', '')
             direction = 'backward'
 
         mval, mod2, mod4, mincolors, maxcolors, ringonly = _COLOR_MODES[mode]
-
-        if direction == 'backward':
-            mod2 += 0x10
+        mod2 += map_direction(direction, 0, 0x10)
 
         if ringonly and channel != 'ring':
             _LOGGER.warning('mode=%s unsupported with channel=%s, dropping to ring',

@@ -90,12 +90,12 @@ Changelog since 1.4.2:
 ### Fixed
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
- - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
+ - Fix backward `rainbow-pulse` mode on Kraken X3 devices
  - Fix compatibility with hidapi 0.10 and multi-usage devices (RGB Fusion 2.0 controllers)
  - Fix lighting settings in Platinum SE and Pro XT coolers
  - Generate and verify the checksums of zip and exe built on AppVeyor
 ### Deprecated
- - Deprecate `backwards-` pseudo modes; use `--direction=backwards` instead
+ - Deprecate `backwards-` pseudo modes; use `--direction=backward` instead
 ### Checksums
 ```
 370eb9c662111b51465ac5e2649f7eaf423bd22799ef983c4957468e9d957c15  liquidctl-1.5.0-bin-windows-x86_64.zip
@@ -143,7 +143,7 @@ Changelog since 1.4.0:
 ### Fixed
  - Don't use report IDs when writing to NZXT E-series PSUs (#166)
  - Recognize and raise Hidapi write errors
- - Use a mocked device to test backwards compatibility with liquidctl 1.1.0
+ - Use a mocked device to test backward compatibility with liquidctl 1.1.0
 ### Checksums
 ```
 895e55fd70e1fdfe3b2941d9139b91ffc4e902a469b077e810c35979dbe1cfdf  liquidctl-1.4.1-bin-windows-x86_64.zip
@@ -180,7 +180,7 @@ Changelog since 1.3.3:
  - Store runtime data on non-Linux systems in `~/Library/Caches` (macOS), `%TEMP%` (Windows) or `/tmp` (Unix)
  - Mark Corsair HXi/RMi PSUs as no longer experimental
  - Mark Smart Device V2 and HUE 2 controllers as no longer experimental
- - Switch to a consistent module, driver and guide naming scheme (aliases are kept for backwards compatibility)
+ - Switch to a consistent module, driver and guide naming scheme (aliases are kept for backward compatibility)
  - Improve the documentation
  - [extra] Refresh `krakencurve-poc` syntax and sensor names, and get CPU temperature on macOS with iStats
 ### Fixed

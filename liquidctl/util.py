@@ -369,3 +369,33 @@ def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
     if error:
         raise UnsafeFeaturesNotEnabled(*reqs)
     return False
+
+
+def map_direction(direction, forward=None, backward=None):
+    """Check a `direction` option and run the appropriate closure.
+
+    Unstable.
+
+    Accepts both US and UK spellings.  Raises a `ValueError` if the option
+    value is neither forward[s] nor backward[s].
+
+    >>> map_direction('forward', 3, 42)
+    3
+    >>> map_direction('forwards', 3, 42)
+    3
+    >>> map_direction('backward', 3, 42)
+    42
+    >>> map_direction('backwards', 3, 42)
+    42
+    >>> map_direction('fooowwd', 3, 42)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid direction: 'fooowwd'
+    """
+
+    if 'forwards'.startswith(direction):
+        return forward
+    elif 'backwards'.startswith(direction):
+        return backward
+    else:
+        raise ValueError(f'invalid direction: {direction!r}')

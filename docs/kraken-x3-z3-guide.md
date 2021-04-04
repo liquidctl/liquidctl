@@ -145,7 +145,7 @@ This can be specified by using the `--direction` flag.
 #### Deprecated modes
 
 The following modes are now deprecated and the use of the `--direction backward` is preferred,
-they will be removed in a future version and are kept for now for backwards compatibility.
+they will be removed in a future version and are kept for now for backward compatibility.
 
 | Mode | Colors | Variable speed |
 | --- | --- | :---: |
