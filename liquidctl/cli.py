@@ -42,8 +42,7 @@ Other device options:
 Other interface options:
   -v, --verbose                  Output additional information
   -g, --debug                    Show debug information on stderr
-  --json                         Output machine readable JSON
-                                 (list/initialization/status)
+  --json                         JSON output (list/initialization/status)
   --version                      Display the version number
   --help                         Show this message
 
