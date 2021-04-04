@@ -352,10 +352,13 @@ class HydroPlatinum(UsbHidDriver):
 
     def _get_hw_fan_channels(self, channel):
         if channel == 'fan':
+            _LOGGER.warning('`fan` channel is deprecated, prefer `sync`')
             return self._fan_names
-        if channel in self._fan_names:
+        elif channel == 'sync':
+            return self._fan_names
+        elif channel in self._fan_names:
             return [channel]
-        raise ValueError(f'unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+        raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
 
     def _send_command(self, feature, command, data=None):
         # self.device.write expects buf[0] to be the report number or 0 if not used
