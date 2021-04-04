@@ -179,7 +179,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         padding = [0x0]*(self._WRITE_LENGTH - len(data))
         self.device.write(data + padding)
 
-    def _write_colors(self, cid, mode, colors, sval):
+    def _write_colors(self, cid, mode, colors, sval, direction):
         raise NotImplementedError()
 
     def _write_fixed_duty(self, cid, duty):
