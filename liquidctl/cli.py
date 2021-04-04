@@ -28,7 +28,8 @@ Animation options (devices/modes can support zero or more):
   --time-off <value>             Time to wait with the LED turned off (seconds)
   --alert-threshold <number>     Threshold temperature for a visual alert (°C)
   --alert-color <color>          Color used by the visual high temperature alert
-  --direction <string>           If the pattern should move forward or backwards. [default: forward]
+  --direction <string>           If the pattern should move forward or backwards.
+                                 [default: forward]
   --start-led <number>           The first led to start the effect at
   --maximum-leds <number>        The number of LED's the effect should apply to
 
