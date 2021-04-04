@@ -1,3 +1,5 @@
+"""Test backward compatibility with liquidctl 1.4.x."""
+
 import pytest
 from _testutils import MockHidapiDevice
 

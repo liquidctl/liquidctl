@@ -1,4 +1,4 @@
-"""Test backwards compatibility with liquidctl 1.5.0."""
+"""Test backward compatibility with liquidctl 1.5.x."""
 
 import pytest
 

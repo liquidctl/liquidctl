@@ -1,3 +1,5 @@
+"""Test backward compatibility with liquidctl 1.3.x."""
+
 import pytest
 
 

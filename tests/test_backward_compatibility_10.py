@@ -1,4 +1,4 @@
-"""Test the use of APIs from liquidctl v1.0.0.
+"""Test API backward compatibility with liquidctl 1.0.x.
 
 While at the time all APIs were undocumented, we choose to support the use
 cases from GKraken as that software is a substantial contribution to the
