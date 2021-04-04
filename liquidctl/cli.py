@@ -365,7 +365,7 @@ def main():
     if args['list']:
         if args['--json']:
             objs = _list_devices_objs(selected)
-            json.dump(objs, sys.stdout, ensure_ascii=(os.getenv('LANG', None) == 'C'))
+            print(json.dumps(objs, ensure_ascii=(os.getenv('LANG', None) == 'C')))
         else:
             _list_devices_human(selected, using_filters=bool(filter_count),
                                 device_id=device_id, json=json, **opts)
@@ -437,7 +437,7 @@ def main():
         sys.exit(errors)
 
     if args['--json']:
-        json.dump(obj_buf, sys.stdout, ensure_ascii=(os.getenv('LANG', None) == 'C'))
+        print(json.dumps(obj_buf, ensure_ascii=(os.getenv('LANG', None) == 'C')))
 
     sys.exit(0)
 
