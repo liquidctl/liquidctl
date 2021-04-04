@@ -9,6 +9,7 @@ Usage:
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl --help
   liquidctl --version
+  liquidctl [-f] --validate
 
 Device selection options (see: list -v):
   -m, --match <substring>        Filter devices by description substring
@@ -44,6 +45,10 @@ Other interface options:
   -g, --debug                    Show debug information on stderr
   --version                      Display the version number
   --help                         Show this message
+
+Config file options:
+  -f, --file <file>              Select a specific config file to use
+  --ignore-config                Do not use any of the config files
 
 Deprecated:
   -d, --device <index>           Select device by listing index
@@ -110,6 +115,8 @@ _PARSE_ARG = {
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
+    '--ignore-config': bool,
+    '--file': str,
 }
 
 # options that cause liquidctl.driver.find_liquidctl_devices to ommit devices
