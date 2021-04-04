@@ -63,7 +63,7 @@ omitted; in the latter case the fan will be set to max out at 60°C.
 ```
 
 Valid channel values are `fanN`, where N >= 1 is the fan number, and
-`fan`, to simultaneously configure all fans.
+`sync`, to simultaneously configure all fans.
 
 As mentioned before, unconfigured fan channels may default to 100% duty.
 
