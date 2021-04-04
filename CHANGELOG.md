@@ -1,6 +1,15 @@
 # Changelog
 
 ## [Unreleased]
+_Summary for the 1.6.0 release: support for Corsair Lighting Node Core, Hydro
+H150i Pro XT, and all Hydro Pro coolers; estimate input power and efficiency
+for Corsair HXi and RMi PSUS; enable support for ASUS Strix GTX 1070 and new
+NZXT RGB & Fan Controller variant; formally deprecate `-d`/`--device`._
+
+_Note for Linux package maintainers: the i2c-dev kernel module may now be
+loaded automatically because of `extra/linux/71-liquidctl.rules`; this
+substitutes the use of `extra/linux/modules-load.conf`, which has been
+removed._
 
 ### Added
  - Add experimental support for the Corsair Lighting Node Core
@@ -21,9 +30,9 @@
  - Handle both US and UK spellings of `--direction` values
  - Improve the documentation
 ### Fixed
- - Add "Hydro" to Platinum and Pro XT device descriptions
- - Add `keyval.load_store` method, atomic at the filesystem level
  - Replace "ID" with "#" when listing all devices
+ - Add `keyval.load_store` method, atomic at the filesystem level
+ - Add "Hydro" to Platinum and Pro XT device descriptions
 ### Deprecated
  - Deprecate `-d`/`--device`; prefer `--match` or other selection options
 
