@@ -145,9 +145,9 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         warnings = []
 
         if not using_filters:
-            print(f'Device ID {i}: {dev.description}')
+            print(f'Device #{i}: {dev.description}')
         elif device_id is not None:
-            print(f'Device ID {device_id}: {dev.description}')
+            print(f'Device #{device_id}: {dev.description}')
         else:
             print(f'Result #{i}: {dev.description}')
         if not verbose:

@@ -10,11 +10,11 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 
 ```
 # liquidctl list
-Device ID 0: ASUS Strix RTX 2080 Ti OC
-Device ID 1: Corsair Vengeance RGB DIMM2 (experimental)
-Device ID 2: Corsair Vengeance RGB DIMM4 (experimental)
-Device ID 3: NZXT Smart Device (V1)
-Device ID 4: NZXT Kraken X (X42, X52, X62 or X72)
+Device #0: ASUS Strix RTX 2080 Ti OC
+Device #1: Corsair Vengeance RGB DIMM2 (experimental)
+Device #2: Corsair Vengeance RGB DIMM4 (experimental)
+Device #3: NZXT Smart Device (V1)
+Device #4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
 
@@ -285,8 +285,8 @@ A good place to start is to ask liquidctl to list all recognized devices.
 
 ```
 # liquidctl list
-Device ID 0: NZXT Smart Device (V1)
-Device ID 1: NZXT Kraken X (X42, X52, X62 or X72)
+Device #0: NZXT Smart Device (V1)
+Device #1: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
 In case more than one supported device is found, one them can be selected with `--match <substring>`, where `<substring>` matches part of the desired device's description using a case insensitive comparison.
