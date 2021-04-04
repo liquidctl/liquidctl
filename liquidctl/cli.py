@@ -42,6 +42,8 @@ Other device options:
 Other interface options:
   -v, --verbose                  Output additional information
   -g, --debug                    Show debug information on stderr
+  --json                         Output machine readable JSON
+                                 (list/initialization/status)
   --version                      Display the version number
   --help                         Show this message
 
@@ -66,9 +68,11 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 import datetime
 import errno
 import inspect
+import json
 import logging
 import os
 import sys
+from numbers import Number
 from traceback import format_exception
 
 import colorlog
@@ -140,7 +144,26 @@ _VALUE_FORMATS = {
 _LOGGER = logging.getLogger(__name__)
 
 
-def _list_devices(devices, using_filters=False, device_id=None, verbose=False, debug=False, **opts):
+def _list_devices_objs(devices):
+    return [
+        {
+            # replace the experimental suffix with a proper field
+            'description': dev.description.replace(' (experimental)', ''),
+            'vendor_id': dev.vendor_id,
+            'product_id': dev.product_id,
+            'release_number': dev.release_number,
+            'serial_number': getattr(dev, 'serial_number', None),
+            'bus': dev.bus,
+            'address': dev.address,
+            'port': dev.port,
+            'driver': type(dev).__name__,
+            'experimental': dev.description.endswith('(experimental)'),
+        }
+        for dev in devices
+    ]
+
+
+def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **opts):
     for i, dev in enumerate(devices):
         warnings = []
 
@@ -189,6 +212,30 @@ def _list_devices(devices, using_filters=False, device_id=None, verbose=False, d
         print('')
 
     assert 'device' not in opts or len(devices) <= 1, 'too many results listed with --device'
+
+
+def _dev_status_obj(dev, status):
+    # unlike the humans, machines want to know everything; don't suppress
+    # devices without status data (typically from initialize)
+    if not status:
+        status = []
+
+    return {
+        'bus': dev.bus,
+        'address': dev.address,
+        # suppress the experimental suffix (check .experimental from list)
+        'description': dev.description.replace(' (experimental)', ''),
+        # JSON values can only be objects, arrays, numbers, strings, or
+        # false/null/true; convert all non-numeric status values to strings
+        'status': [
+            [
+                key,
+                val if isinstance(val, Number) else str(val),
+                unit
+            ]
+            for key, val, unit in status
+        ],
+    }
 
 
 def _print_dev_status(dev, status):
@@ -316,7 +363,12 @@ def main():
         selected = [compat[device_id]]
 
     if args['list']:
-        _list_devices(selected, using_filters=bool(filter_count), device_id=device_id, **opts)
+        if args['--json']:
+            objs = _list_devices_objs(selected)
+            json.dump(objs, sys.stdout, ensure_ascii=(os.getenv('LANG', None) == 'C'))
+        else:
+            _list_devices_human(selected, using_filters=bool(filter_count),
+                                device_id=device_id, json=json, **opts)
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
@@ -336,14 +388,25 @@ def main():
         else:
             _LOGGER.error(msg, *args)
 
+    # for json
+    obj_buf = []
+
     for dev in selected:
         _LOGGER.debug('device: %s', dev.description)
         try:
             with dev.connect(**opts):
                 if args['initialize']:
-                    _print_dev_status(dev, dev.initialize(**opts))
+                    status = dev.initialize(**opts)
+                    if args['--json']:
+                        obj_buf.append(_dev_status_obj(dev, status))
+                    else:
+                        _print_dev_status(dev, status)
                 elif args['status']:
-                    _print_dev_status(dev, dev.get_status(**opts))
+                    status = dev.get_status(**opts)
+                    if args['--json']:
+                        obj_buf.append(_dev_status_obj(dev, status))
+                    else:
+                        _print_dev_status(dev, status)
                 elif args['set'] and args['speed']:
                     _device_set_speed(dev, args, **opts)
                 elif args['set'] and args['color']:
@@ -372,6 +435,11 @@ def main():
 
     if errors:
         sys.exit(errors)
+
+    if args['--json']:
+        json.dump(obj_buf, sys.stdout, ensure_ascii=(os.getenv('LANG', None) == 'C'))
+
+    sys.exit(0)
 
 
 def find_all_supported_devices(**opts):
