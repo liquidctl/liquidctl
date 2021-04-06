@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.6.0] – 2021-04-06
 _Summary for the 1.6.0 release: support for Corsair Lighting Node Core, Hydro
 H150i Pro XT, and all Hydro Pro coolers; estimate input power and efficiency
 for Corsair HXi and RMi PSUS; enable support for ASUS Strix GTX 1070 and new
@@ -33,6 +33,9 @@ removed._
  - Replace "ID" with "#" when listing all devices
  - Add `keyval.load_store` method, atomic at the filesystem level
  - Add "Hydro" to Platinum and Pro XT device descriptions
+### Removed
+ - Remove modules-load configuration file for Linux (use the supplied udev rules instead)
+ - [extra] remove `krakencurve-poc`, use `yoda` instead
 ### Deprecated
  - Deprecate `-d`/`--device`; prefer `--match` or other selection options
 

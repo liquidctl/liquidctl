@@ -83,10 +83,9 @@ The following devices are supported by this version of liquidctl.  See each guid
 | :-: | :-- | :-: | :-- |
 | AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_EZN_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_EZ_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
-| AIO liquid cooler | [Corsair Hydro H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_EN_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
@@ -97,14 +96,13 @@ The following devices are supported by this version of liquidctl.  See each guid
 | DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
 | DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Core](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
+| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
@@ -204,7 +202,7 @@ The port is also available in DragonFly Ports.
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.5.1-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.5.1/liquidctl-1.5.1-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.6.0-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.6.0/liquidctl-1.6.0-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
