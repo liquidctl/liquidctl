@@ -71,12 +71,8 @@ import os
 import sys
 from traceback import format_exception
 
+import colorlog
 from docopt import docopt
-try:
-    import colorlog
-    use_color_log=True
-except ImportError:
-    use_color_log=False
 
 from liquidctl.driver import *
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
@@ -269,26 +265,20 @@ def main():
 
     if args['--debug']:
         args['--verbose'] = True
-        format_color='%(log_color)s[%(levelname)s]%(name)s%(reset)s: %(message)s'
-        format_basic='[%(levelname)s] %(name)s: %(message)s'
-        level=logging.DEBUG
+        format_color = '%(log_color)s[%(levelname)s] %(name)s%(reset)s: %(message)s'
+        level = logging.DEBUG
     elif args['--verbose']:
-        format_color='%(log_color)s%(levelname)s%(reset)s: %(message)s'
-        format_basic='%(levelname)s: %(message)s'  
-        level=logging.INFO
+        format_color = '%(log_color)s%(levelname)s%(reset)s: %(message)s'
+        level = logging.INFO
     else:
-        format_color='%(log_color)s%(levelname)s%(reset)s: %(message)s'
-        format_basic='%(levelname)s: %(message)s'
-        level=logging.WARNING
+        format_color = '%(log_color)s%(levelname)s%(reset)s: %(message)s'
+        level = logging.WARNING
         sys.tracebacklimit = 0
-   
-    if use_color_log:
-        formatter = colorlog.ColoredFormatter(format_color)
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-        logging.basicConfig(level=level, handlers=[handler])
-    else:
-        logging.basicConfig(level=level, format=format_basic)  
+
+    formatter = colorlog.TTYColoredFormatter(fmt=format_color, stream=sys.stdout)
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logging.basicConfig(level=level, handlers=[handler])
 
     _LOGGER.debug('running %s', _gen_version())
 
