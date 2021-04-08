@@ -214,8 +214,7 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
 
 
 def _dev_status_obj(dev, status):
-    # unlike the humans, machines want to know everything; don't suppress
-    # devices without status data (typically from initialize)
+    # don't suppress devices without status data (typically from initialize)
     if not status:
         status = []
 
@@ -338,6 +337,12 @@ def main():
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
     _LOGGER.debug('running %s', _gen_version())
+
+    # unlike humans, machines want to know everything; imply verbose everywhere
+    # other than when setting default logging level and format (which are
+    # inherently for human consumption)
+    if args['--json']:
+        args['--verbose'] = True
 
     opts = _make_opts(args)
     filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
