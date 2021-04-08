@@ -468,7 +468,7 @@ Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
 Pircher.
 
 Depending on how it is packaged, it might also bundle copies of python, hidapi,
-libusb, cython-hidapi, pyusb and docopt.
+libusb, cython-hidapi, pyusb, docopt, colorlog and colorama.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
