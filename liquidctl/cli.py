@@ -71,6 +71,7 @@ import os
 import sys
 from traceback import format_exception
 
+import colorlog
 from docopt import docopt
 
 from liquidctl.driver import *
@@ -264,13 +265,22 @@ def main():
 
     if args['--debug']:
         args['--verbose'] = True
-        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        _LOGGER.debug('running %s', _gen_version())
+        format_color = '%(log_color)s[%(levelname)s] %(name)s%(reset)s: %(message)s'
+        level = logging.DEBUG
     elif args['--verbose']:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+        format_color = '%(log_color)s%(levelname)s%(reset)s: %(message)s'
+        level = logging.INFO
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+        format_color = '%(log_color)s%(levelname)s%(reset)s: %(message)s'
+        level = logging.WARNING
         sys.tracebacklimit = 0
+
+    formatter = colorlog.TTYColoredFormatter(fmt=format_color, stream=sys.stdout)
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logging.basicConfig(level=level, handlers=[handler])
+
+    _LOGGER.debug('running %s', _gen_version())
 
     opts = _make_opts(args)
     filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
