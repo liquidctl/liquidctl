@@ -131,10 +131,11 @@ The following dependencies are required at runtime (common package names are lis
 - Python 3.6+ _(python3, python)_
 - pkg_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - docopt _(python3-docopt, python-docopt)_
+- colorlog _(python3-colorlog, python-colorlog)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
-- LibUSB 1.0 _(libusb-1.0, libusb-1.0-0, libusbx)_
 - smbus Python package _(python3-i2c-tools, python3-smbus, i2c-tools)_
+- LibUSB 1.0 _(libusb-1.0, libusb-1.0-0, libusbx)_
 
 To locally test and manually install, a few more dependencies are needed:
 
