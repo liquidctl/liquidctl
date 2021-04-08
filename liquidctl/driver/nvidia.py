@@ -131,7 +131,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
             return []
 
         if not check_unsafe('smbus', **kwargs):
-            _LOGGER.warning("%s: nothing to return, requires unsafe features 'smbus'",
+            _LOGGER.warning("%s: nothing returned, requires unsafe feature 'smbus'",
                             self.description)
             return []
 
@@ -294,8 +294,8 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
             return []
 
         if not check_unsafe('smbus', **kwargs):
-            _LOGGER.warning("%s: nothing to return, requires unsafe features "
-                            "'smbus'", self.description)
+            _LOGGER.warning("%s: nothing returned, requires unsafe feature 'smbus'",
+                            self.description)
             return []
 
         assert self._address != self._SENTINEL_ADDRESS, \

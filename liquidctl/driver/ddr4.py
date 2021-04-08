@@ -210,7 +210,7 @@ class Ddr4Temperature(SmbusDriver):
         """
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("%s: nothing to return, requires unsafe features '%s'",
+            _LOGGER.warning("%s: nothing returned, requires unsafe features '%s'",
                             self.description, ','.join(self._UNSAFE))
             return []
 
