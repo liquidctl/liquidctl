@@ -20,17 +20,17 @@ Device #4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl status
 NZXT Smart Device (V1)
-├── Fan 1                        PWM  
-├── Fan 1 current               0.04  A
-├── Fan 1 speed                 1368  rpm
+├── Fan 1 speed                 1473  rpm
 ├── Fan 1 voltage              11.91  V
-├── Fan 2                          —  
-├── Fan 3                          —  
-├── Firmware version           1.0.7  
-├── LED accessories                2  
-├── LED accessory type    HUE+ Strip  
-├── LED count (total)             20  
-└── Noise level                   67  dB
+├── Fan 1 current               0.01  A
+├── Fan 1 control mode           PWM
+├── Fan 2 [...]
+├── Fan 2 [...]
+├── Firmware version           1.0.7
+├── LED accessories                2
+├── LED accessory type    HUE+ Strip
+├── LED count (total)             20
+└── Noise level                   65  dB
 
 NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     31.7  °C
