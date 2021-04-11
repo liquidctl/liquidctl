@@ -273,7 +273,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
             fans[num - 1] = [
                 (f'Fan {num} speed', msg[3] << 8 | msg[4], 'rpm'),
                 (f'Fan {num} voltage', msg[7] + msg[8]/100, 'V'),
-                (f'Fan {num} current', msg[10]/100, 'A'),
+                (f'Fan {num} current', msg[9] + msg[10]/100, 'A'),
                 (f'Fan {num} control mode', [None, 'DC', 'PWM'][state], ''),
             ]
             noise.append(msg[1])
