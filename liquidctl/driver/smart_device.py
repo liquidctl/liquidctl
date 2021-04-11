@@ -261,22 +261,29 @@ class SmartDevice(_CommonSmartDeviceDriver):
         """
 
         status = []
+        fans = [None] * len(self._speed_channels)
         noise = []
+
         self.device.clear_enqueued_reports()
         for i, _ in enumerate(self._speed_channels):
             msg = self.device.read(self._READ_LENGTH)
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
-            status.append((f'Fan {num}', ['—', 'DC', 'PWM'][state], ''))
+
+            fans[num - 1] = [
+                (f'Fan {num} speed', msg[3] << 8 | msg[4], 'rpm'),
+                (f'Fan {num} voltage', msg[7] + msg[8]/100, 'V'),
+                (f'Fan {num} current', msg[10]/100, 'A'),
+                (f'Fan {num} control mode', [None, 'DC', 'PWM'][state], ''),
+            ]
             noise.append(msg[1])
-            if state:
-                status.append((f'Fan {num} speed', msg[3] << 8 | msg[4], 'rpm'))
-                status.append((f'Fan {num} voltage', msg[7] + msg[8]/100, 'V'))
-                status.append((f'Fan {num} current', msg[10]/100, 'A'))
+
             if i != 0:
                 continue
+
             fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
             status.append(('Firmware version', fw, ''))
+
             if self._color_channels:
                 lcount = msg[0x11]
                 status.append(('LED accessories', lcount, ''))
@@ -284,8 +291,11 @@ class SmartDevice(_CommonSmartDeviceDriver):
                     ltype, lsize = [('HUE+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
                     status.append(('LED accessory type', ltype, ''))
                     status.append(('LED count (total)', lcount*lsize, ''))
+
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
-        return sorted(status)
+
+        # flatten non None fan data and concat with status
+        return [x for fan_data in fans if fan_data for x in fan_data] + status
 
     def _write_colors(self, cid, mode, colors, sval, direction='forward'):
         mval, mod3, mod4, _, _ = self._COLOR_MODES[mode]
