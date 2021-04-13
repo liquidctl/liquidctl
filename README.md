@@ -373,10 +373,11 @@ Description=AIO startup service
 
 [Service]
 Type=oneshot
-ExecStart=liquidctl set pump speed 90
-ExecStart=liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-ExecStart=liquidctl set ring color fading 350017 ff2608
-ExecStart=liquidctl set logo color spectrum-wave
+ExecStart=liquidctl initialize all
+ExecStart=liquidctl --match kraken set pump speed 90
+ExecStart=liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+ExecStart=liquidctl --match "smart device" set sync speed 55
+ExecStart=liquidctl --match kraken set sync color fading 350017 ff2608
 
 [Install]
 WantedBy=default.target
@@ -399,10 +400,11 @@ If necessary, it is also possible to have the service unit explicitly wait for t
 The configuration of devices can be automated by writing a batch file and setting up a new task for (every) login using Windows Task Scheduler.  The batch file can be really simple and only needs to contain the invocations of liquidctl that would otherwise be done manually.
 
 ```batchfile
-liquidctl set pump speed 90
-liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-liquidctl set ring color fading 350017 ff2608
-liquidctl set logo color spectrum-wave
+liquidctl initialize all
+liquidctl --match kraken set pump speed 90
+liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+liquidctl --match "smart device" set sync speed 55
+liquidctl --match kraken set sync color fading 350017 ff2608
 ```
 
 Make sure that liquidctl is available in the context where the batch file will run: in short, `liquidctl --version` should work within a _normal_ Command Prompt window.
