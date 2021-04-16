@@ -177,20 +177,20 @@ def test_initialize_commander_pro(commanderProDevice):
     res = commanderProDevice.initialize()
 
     assert len(res) == 12
-    assert res[0][1] == '0.9.212'
-    assert res[1][1] == '0.5'
+    assert res[0] == ('Firmware version', '0.9.212', '')
+    assert res[1] == ('Bootloader version', '0.5', '')
 
-    assert res[2][1] == True
-    assert res[3][1] == True
-    assert res[4][1] == False
-    assert res[5][1] == True
+    assert res[2] == ('Temperature probe 1', True, '')
+    assert res[3] == ('Temperature probe 2', True, '')
+    assert res[4] == ('Temperature probe 3', False, '')
+    assert res[5] == ('Temperature probe 4', True, '')
 
-    assert res[6][1] == 'DC'
-    assert res[7][1] == 'DC'
-    assert res[8][1] == 'PWM'
-    assert res[9][1] == None
-    assert res[10][1] == None
-    assert res[11][1] == None
+    assert res[6] == ('Fan 1 control mode', 'DC', '')
+    assert res[7] == ('Fan 2 control mode', 'DC', '')
+    assert res[8] == ('Fan 3 control mode', 'PWM', '')
+    assert res[9] == ('Fan 4 control mode', None, '')
+    assert res[10] == ('Fan 5 control mode', None, '')
+    assert res[11] == ('Fan 6 control mode', None, '')
 
     data = commanderProDevice._data.load('fan_modes', None)
     assert data is not None
@@ -257,19 +257,19 @@ def test_get_status_commander_pro(commanderProDevice):
     assert len(res) == 9
 
     # temp probes
-    assert res[0][1] == 26.91
-    assert res[1][1] == 29.22
-    assert res[2][1] == 25.74
+    assert res[0] == ('Temperature 1', 26.91, '°C')
+    assert res[1] == ('Temperature 2', 29.22, '°C')
+    assert res[2] == ('Temperature 4', 25.74, '°C')
 
     # fans rpm
-    assert res[3][1] == 940
-    assert res[4][1] == 939
-    assert res[5][1] == 987
+    assert res[3] == ('Fan 1 speed', 940, 'rpm')
+    assert res[4] == ('Fan 2 speed', 939, 'rpm')
+    assert res[5] == ('Fan 3 speed', 987, 'rpm')
 
     # voltages
-    assert res[6][1] == 12.066   # 12v
-    assert res[7][1] == 4.965    # 5v
-    assert res[8][1] == 3.359    # 3.3v
+    assert res[6] == ('+12V rail', 12.066, 'V')
+    assert res[7] == ('+5V rail', 4.965, 'V')
+    assert res[8] == ('+3.3V rail', 3.359, 'V')
 
     # check the commands sent
     sent = commanderProDevice.device.sent

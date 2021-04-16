@@ -188,7 +188,7 @@ class CommanderPro(UsbHidDriver):
             fanModes = res[1:self._fan_count+1]
             self._data.store('fan_modes', fanModes)
             status += [
-                ('Fan {i + 1} control mode', _fan_mode_desc(fanModes[i]), '')
+                (f'Fan {i + 1} control mode', _fan_mode_desc(fanModes[i]), '')
                 for i in range(6)
             ]
 
