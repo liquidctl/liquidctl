@@ -200,7 +200,10 @@ def _print_dev_status(dev, status):
     for k, v, u in status:
         if isinstance(v, datetime.timedelta):
             v = str(v)
-            u = ''
+        elif isinstance(v, bool):
+            v = 'Yes' if v else 'No'
+        elif v is None:
+            v = 'N/A'
         else:
             valfmt = _VALUE_FORMATS.get(u, '')
             v = f'{v:{valfmt}}'

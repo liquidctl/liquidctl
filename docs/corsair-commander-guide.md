@@ -13,25 +13,25 @@ sensors and fan types are currently connected.
 ```
 # liquidctl initialize
 Corsair Commander Pro (experimental)
-├── Firmware version                0.9.212  
-├── Bootloader version                  0.5  
-├── Temp sensor 1                 Connected  
-├── Temp sensor 2                 Connected  
-├── Temp sensor 3                 Connected  
-├── Temp sensor 4                 Connected  
-├── Fan 1 Mode                           DC  
-├── Fan 2 Mode                           DC  
-├── Fan 3 Mode                           DC  
-├── Fan 4 Mode            Auto/Disconnected  
-├── Fan 5 Mode            Auto/Disconnected  
-└── Fan 6 Mode            Auto/Disconnected  
+├── Firmware version       0.9.212  
+├── Bootloader version         0.5  
+├── Temperature probe 1        Yes  
+├── Temperature probe 2        Yes  
+├── Temperature probe 3         No  
+├── Temperature probe 4         No  
+├── Fan 1 control mode         PWM  
+├── Fan 2 control mode         PWM  
+├── Fan 3 control mode          DC  
+├── Fan 4 control mode         N/A  
+├── Fan 5 control mode         N/A  
+└── Fan 6 control mode         N/A  
 ```
 
 ```
 # liquidctl initialize
 Corsair Lighting Node Pro (experimental)
-├── Firmware version                 0.10.4  
-└── Bootloader version                  3.0  
+├── Firmware version       0.10.4  
+└── Bootloader version        3.0  
 ```
 
 
@@ -49,19 +49,14 @@ If a fan or temperature probe is not connected then a value of 0 is shown.
 ```
 # liquidctl status
 Corsair Commander Pro (experimental)
-├── 12 volt rail     12.06  V
-├── 5 volt rail       4.96  V
-├── 3.3 volt rail     3.36  V
-├── Temp sensor 1     26.4  °C
-├── Temp sensor 2     27.5  °C
-├── Temp sensor 3     21.7  °C
-├── Temp sensor 4     25.3  °C
+├── Temperature 1     26.4  °C
+├── Temperature 2     27.5  °C
 ├── Fan 1 speed        927  rpm
 ├── Fan 2 speed        927  rpm
 ├── Fan 3 speed       1195  rpm
-├── Fan 4 speed          0  rpm
-├── Fan 5 speed          0  rpm
-└── Fan 6 speed          0  rpm
+├── +12V rail        12.06  V
+├── +5V rail          4.96  V
+└── +3.3V rail        3.36  V
 ```
 
 
