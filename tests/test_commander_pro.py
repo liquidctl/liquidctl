@@ -1,7 +1,7 @@
 import pytest
 from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
-from liquidctl.driver.commander_pro import _quoted, _prepare_profile, _get_fan_mode_description, CommanderPro
+from liquidctl.driver.commander_pro import _quoted, _prepare_profile, _fan_mode_desc, CommanderPro
 from liquidctl.error import NotSupportedByDevice
 
 
@@ -117,22 +117,22 @@ def test_quoted_not_string():
 
 # fan modes
 def test_get_fan_mode_description_auto():
-    assert _get_fan_mode_description(0x00) == 'Auto/Disconnected'
+    assert _fan_mode_desc(0x00) == None
 
 
 def test_get_fan_mode_description_unknown():
-    assert _get_fan_mode_description(0x03) == 'UNKNOWN'
-    assert _get_fan_mode_description(0x04) == 'UNKNOWN'
-    assert _get_fan_mode_description(0x10) == 'UNKNOWN'
-    assert _get_fan_mode_description(0xff) == 'UNKNOWN'
+    assert _fan_mode_desc(0x03) == None
+    assert _fan_mode_desc(0x04) == None
+    assert _fan_mode_desc(0x10) == None
+    assert _fan_mode_desc(0xff) == None
 
 
 def test_get_fan_mode_description_dc():
-    assert _get_fan_mode_description(0x01) == 'DC'
+    assert _fan_mode_desc(0x01) == 'DC'
 
 
 def test_get_fan_mode_description_pwm():
-    assert _get_fan_mode_description(0x02) == 'PWM'
+    assert _fan_mode_desc(0x02) == 'PWM'
 
 
 # class methods
@@ -180,17 +180,17 @@ def test_initialize_commander_pro(commanderProDevice):
     assert res[0][1] == '0.9.212'
     assert res[1][1] == '0.5'
 
-    assert res[2][1] == 'Connected'
-    assert res[3][1] == 'Connected'
-    assert res[4][1] == 'Not Connected'
-    assert res[5][1] == 'Connected'
+    assert res[2][1] == True
+    assert res[3][1] == True
+    assert res[4][1] == False
+    assert res[5][1] == True
 
     assert res[6][1] == 'DC'
     assert res[7][1] == 'DC'
     assert res[8][1] == 'PWM'
-    assert res[9][1] == 'Auto/Disconnected'
-    assert res[10][1] == 'Auto/Disconnected'
-    assert res[11][1] == 'Auto/Disconnected'
+    assert res[9][1] == None
+    assert res[10][1] == None
+    assert res[11][1] == None
 
     data = commanderProDevice._data.load('fan_modes', None)
     assert data is not None
@@ -238,12 +238,12 @@ def test_get_status_commander_pro(commanderProDevice):
         '000a8300000000000000000000000000',  # temp sensor 1
         '000b6a00000000000000000000000000',  # temp sensor 2
         '000a0e00000000000000000000000000',  # temp sensor 4
+        '0003ac00000000000000000000000000',  # fan speed 1
+        '0003ab00000000000000000000000000',  # fan speed 2
+        '0003db00000000000000000000000000',  # fan speed 3
         '002f2200000000000000000000000000',  # get 12v
         '00136500000000000000000000000000',  # get 5v
         '000d1f00000000000000000000000000',  # get 3.3v
-        '0003ac00000000000000000000000000',  # fan speed 1
-        '0003ab00000000000000000000000000',  # fan speed 2
-        '0003db00000000000000000000000000'  # fan speed 3
     ]
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
@@ -252,27 +252,24 @@ def test_get_status_commander_pro(commanderProDevice):
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
 
     res = commanderProDevice.get_status()
+    print(res)
 
-    assert len(res) == 13
-
-    # voltages
-    assert res[0][1] == 12.066   # 12v
-    assert res[1][1] == 4.965    # 5v
-    assert res[2][1] == 3.359    # 3.3v
+    assert len(res) == 9
 
     # temp probes
-    assert res[3][1] == 26.91
-    assert res[4][1] == 29.22
-    assert res[5][1] == 0.0
-    assert res[6][1] == 25.74
+    assert res[0][1] == 26.91
+    assert res[1][1] == 29.22
+    assert res[2][1] == 25.74
 
     # fans rpm
-    assert res[7][1] == 940
-    assert res[8][1] == 939
-    assert res[9][1] == 987
-    assert res[10][1] == 0
-    assert res[11][1] == 0
-    assert res[12][1] == 0
+    assert res[3][1] == 940
+    assert res[4][1] == 939
+    assert res[5][1] == 987
+
+    # voltages
+    assert res[6][1] == 12.066   # 12v
+    assert res[7][1] == 4.965    # 5v
+    assert res[8][1] == 3.359    # 3.3v
 
     # check the commands sent
     sent = commanderProDevice.device.sent
@@ -282,13 +279,13 @@ def test_get_status_commander_pro(commanderProDevice):
     assert sent[1].data[0] == 0x11
     assert sent[2].data[0] == 0x11
 
-    assert sent[3].data[0] == 0x12
-    assert sent[4].data[0] == 0x12
-    assert sent[5].data[0] == 0x12
+    assert sent[3].data[0] == 0x21
+    assert sent[4].data[0] == 0x21
+    assert sent[5].data[0] == 0x21
 
-    assert sent[6].data[0] == 0x21
-    assert sent[7].data[0] == 0x21
-    assert sent[8].data[0] == 0x21
+    assert sent[6].data[0] == 0x12
+    assert sent[7].data[0] == 0x12
+    assert sent[8].data[0] == 0x12
 
 
 def test_get_status_lighting_pro(lightingNodeProDevice):
