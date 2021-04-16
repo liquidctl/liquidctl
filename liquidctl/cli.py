@@ -200,6 +200,8 @@ def _print_dev_status(dev, status):
     for k, v, u in status:
         if isinstance(v, datetime.timedelta):
             v = str(v)
+        elif isinstance(v, bool):
+            v = 'Yes' if v else 'No'
         elif v is None:
             v = 'N/A'
         else:
