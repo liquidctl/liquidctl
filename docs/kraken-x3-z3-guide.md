@@ -15,7 +15,7 @@ The X models incorporate customizable pump speed control, a liquid temperature p
 All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, are not part of the scope of the liquidctl CLI.
 
 
-## NZXT Kraken Z63, Z73
+## NZXT Kraken Z53, Z63, Z73
 
 The most notable difference between Kraken X and Kraken Z models is the replacement of the infinity mirror by a OLED screen.
 
