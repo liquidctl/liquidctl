@@ -6,31 +6,8 @@ from liquidctl.config.load import get_config_files, filter_config_files
 
 
 windows_only = pytest.mark.skipif(sys.platform != 'win32', reason="This test should only run on windows")
-mac_only = pytest.mark.skipif(sys.platform != 'darwin', reason="This test should only run on macos")
-linux_only = pytest.mark.skipif(sys.platform != 'linux', reason="This test should only run on linux")
-other_only = pytest.mark.skipif(sys.platform != 'cygwin' and sys.platform != 'aix', reason="This test should only run on any other system")
+not_windows = pytest.mark.skipif(sys.platform == 'win32', reason="This test should not run on windows")
 
-
-@mac_only
-def test_load_mac_no_file(monkeypatch):
-    monkeypatch.setenv('HOME', 'user')
-    res = get_config_files()
-
-    assert len(res) == 3
-    assert '/Library/Application Support/liquidctl/config.toml' in res
-    assert 'user/Library/Application Support/liquidctl/config.toml' in res
-    assert 'user/.liquidctl.toml' in res
-
-@mac_only
-def test_load_mac_file(monkeypatch):
-    monkeypatch.setenv('HOME', 'user')
-    res = get_config_files('abcd.toml')
-
-    assert len(res) == 4
-    assert 'abcd.toml' in res
-    assert '/Library/Application Support/liquidctl/config.toml' in res
-    assert 'user/Library/Application Support/liquidctl/config.toml' in res
-    assert 'user/.liquidctl.toml' in res
 
 @windows_only
 def test_load_windows_no_file(monkeypatch):
@@ -57,7 +34,7 @@ def test_load_windows_file(monkeypatch):
     assert 'AppData/Local/liquidctl/config.toml' in res
     assert 'ProgramData/liquidctl/config.toml' in res
 
-@linux_only
+@not_windows
 def test_load_linux_no_file_specified_no_xdg_config_home(monkeypatch):
 
     monkeypatch.delenv('XDG_CONFIG_HOME', raising=False)
@@ -71,7 +48,7 @@ def test_load_linux_no_file_specified_no_xdg_config_home(monkeypatch):
     assert 'user/.config/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
-@linux_only
+@not_windows
 def test_load_linux_no_file_specified_no_xdg_config_dir(monkeypatch):
 
     monkeypatch.delenv('XDG_CONFIG_DIRS', raising=False)
@@ -82,10 +59,10 @@ def test_load_linux_no_file_specified_no_xdg_config_dir(monkeypatch):
 
     assert len(res) == 3
     assert '/home/bobfrank/.secret/liquidctl/config.toml' in res
-    assert 'user/.config/liquidctl/config.toml' in res
+    assert '/etc/xdg/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
-@linux_only
+@not_windows
 def test_load_linux_no_file_specified_no_xdg_config_either(monkeypatch):
 
     monkeypatch.delenv('XDG_CONFIG_DIRS', raising=False)
@@ -99,7 +76,7 @@ def test_load_linux_no_file_specified_no_xdg_config_either(monkeypatch):
     assert '/etc/xdg/liquidctl/config.toml' in res
     assert 'name/.liquidctl.toml' in res
 
-@linux_only
+@not_windows
 def test_load_linux_no_file_specified_both_xdg_config(monkeypatch):
 
     monkeypatch.setenv('XDG_CONFIG_DIRS', 'var')
@@ -113,7 +90,7 @@ def test_load_linux_no_file_specified_both_xdg_config(monkeypatch):
     assert '/home/bobfrank/.secret/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
-@linux_only
+@not_windows
 def test_load_linux_file_specified_both_xdg_config(monkeypatch):
 
     monkeypatch.setenv('XDG_CONFIG_DIRS', 'var')
@@ -127,23 +104,6 @@ def test_load_linux_file_specified_both_xdg_config(monkeypatch):
     assert 'abcd.toml' in res
     assert 'var/liquidctl/config.toml' in res
     assert '/home/bobfrank/.secret/liquidctl/config.toml' in res
-    assert 'user/.liquidctl.toml' in res
-
-@other_only
-def test_load_other_no_file(monkeypatch):
-    monkeypatch.setenv('HOME', 'user')
-    res = get_config_files()
-
-    assert len(res) == 1
-    assert 'user/.liquidctl.toml' in res
-
-@other_only
-def test_load_other_file(monkeypatch):
-    monkeypatch.setenv('HOME', 'user')
-    res = get_config_files('abcd.toml')
-
-    assert len(res) == 2
-    assert 'abcd.toml' in res
     assert 'user/.liquidctl.toml' in res
 
 def test_config_filtering_none():
