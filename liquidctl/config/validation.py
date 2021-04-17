@@ -40,14 +40,6 @@ def _validate_pump(block):
     pass
 
 
-_device_validators =  {
-    "aio": _validate_aio,
-    "ram": _validate_ram,
-    "gpu": _validate_gpu,
-    "psu": _validate_psu,
-    "fan": _validate_fan,
-}
-
 
 def _validate_psu(device):
     """
@@ -155,3 +147,12 @@ def validate(config):
             isValid=False
 
     return isValid
+
+
+    _device_validators =  {
+    "aio": _validate_aio,
+    "ram": _validate_ram,
+    "gpu": _validate_gpu,
+    "psu": _validate_psu,
+    "fan": _validate_fan,
+}

@@ -16,7 +16,8 @@ def test_load_mac_no_file(monkeypatch):
     monkeypatch.setenv('HOME', 'user')
     res = get_config_files()
 
-    assert len(res) == 2
+    assert len(res) == 3
+    assert '/Library/Application Support/liquidctl/config.toml' in res
     assert 'user/Library/Application Support/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
@@ -25,27 +26,36 @@ def test_load_mac_file(monkeypatch):
     monkeypatch.setenv('HOME', 'user')
     res = get_config_files('abcd.toml')
 
-    assert len(res) == 3
+    assert len(res) == 4
     assert 'abcd.toml' in res
+    assert '/Library/Application Support/liquidctl/config.toml' in res
     assert 'user/Library/Application Support/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
 @windows_only
 def test_load_windows_no_file(monkeypatch):
-    monkeypatch.setenv('APPDATA', 'user')
+    monkeypatch.setenv('APPDATA', 'AppData')
+    monkeypatch.setenv('LOCALAPPDATA', 'AppData/Local')
+    monkeypatch.setenv('PROGRAMDATA', 'ProgramData')
     res = get_config_files()
 
-    assert len(res) == 1
-    assert 'user/liquidctl/config.toml' in res
+    assert len(res) == 3
+    assert 'AppData/liquidctl/config.toml' in res
+    assert 'AppData/Local/liquidctl/config.toml' in res
+    assert 'ProgramData/liquidctl/config.toml' in res
 
 @windows_only
 def test_load_windows_file(monkeypatch):
-    monkeypatch.setenv('APPDATA', 'user')
+    monkeypatch.setenv('APPDATA', 'AppData')
+    monkeypatch.setenv('LOCALAPPDATA', 'AppData/Local')
+    monkeypatch.setenv('PROGRAMDATA', 'ProgramData')
     res = get_config_files('abcd.toml')
 
-    assert len(res) == 2
+    assert len(res) == 4
     assert 'abcd.toml' in res
-    assert 'user/liquidctl/config.toml' in res
+    assert 'AppData/liquidctl/config.toml' in res
+    assert 'AppData/Local/liquidctl/config.toml' in res
+    assert 'ProgramData/liquidctl/config.toml' in res
 
 @linux_only
 def test_load_linux_no_file_specified_no_xdg_config_home(monkeypatch):
@@ -84,8 +94,9 @@ def test_load_linux_no_file_specified_no_xdg_config_either(monkeypatch):
 
     res = get_config_files()
 
-    assert len(res) == 2
+    assert len(res) == 3
     assert 'name/.config/liquidctl/config.toml' in res
+    assert '/etc/xdg/liquidctl/config.toml' in res
     assert 'name/.liquidctl.toml' in res
 
 @linux_only
@@ -97,10 +108,9 @@ def test_load_linux_no_file_specified_both_xdg_config(monkeypatch):
 
     res = get_config_files()
 
-    assert len(res) == 4
+    assert len(res) == 3
     assert 'var/liquidctl/config.toml' in res
     assert '/home/bobfrank/.secret/liquidctl/config.toml' in res
-    assert 'user/.config/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
 @linux_only
@@ -112,12 +122,11 @@ def test_load_linux_file_specified_both_xdg_config(monkeypatch):
 
     res = get_config_files('abcd.toml')
 
-    assert len(res) == 5
+    assert len(res) == 4
 
     assert 'abcd.toml' in res
     assert 'var/liquidctl/config.toml' in res
     assert '/home/bobfrank/.secret/liquidctl/config.toml' in res
-    assert 'user/.config/liquidctl/config.toml' in res
     assert 'user/.liquidctl.toml' in res
 
 @other_only
