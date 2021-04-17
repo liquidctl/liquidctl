@@ -12,27 +12,27 @@ not_windows = pytest.mark.skipif(sys.platform == 'win32', reason="This test shou
 @windows_only
 def test_load_windows_no_file(monkeypatch):
     monkeypatch.setenv('APPDATA', 'AppData')
-    monkeypatch.setenv('LOCALAPPDATA', 'AppData/Local')
+    monkeypatch.setenv('LOCALAPPDATA', 'AppData\\Local')
     monkeypatch.setenv('PROGRAMDATA', 'ProgramData')
     res = get_config_files()
 
     assert len(res) == 3
-    assert 'AppData/liquidctl/config.toml' in res
-    assert 'AppData/Local/liquidctl/config.toml' in res
-    assert 'ProgramData/liquidctl/config.toml' in res
+    assert 'AppData\\liquidctl\\config.toml' in res
+    assert 'AppData\\Local\\liquidctl\\config.toml' in res
+    assert 'ProgramData\\liquidctl\\config.toml' in res
 
 @windows_only
 def test_load_windows_file(monkeypatch):
     monkeypatch.setenv('APPDATA', 'AppData')
-    monkeypatch.setenv('LOCALAPPDATA', 'AppData/Local')
+    monkeypatch.setenv('LOCALAPPDATA', 'AppData\\Local')
     monkeypatch.setenv('PROGRAMDATA', 'ProgramData')
     res = get_config_files('abcd.toml')
 
     assert len(res) == 4
     assert 'abcd.toml' in res
-    assert 'AppData/liquidctl/config.toml' in res
-    assert 'AppData/Local/liquidctl/config.toml' in res
-    assert 'ProgramData/liquidctl/config.toml' in res
+    assert 'AppData\\liquidctl\\config.toml' in res
+    assert 'AppData\\Local\\liquidctl\\config.toml' in res
+    assert 'ProgramData\\liquidctl\\config.toml' in res
 
 @not_windows
 def test_load_linux_no_file_specified_no_xdg_config_home(monkeypatch):
