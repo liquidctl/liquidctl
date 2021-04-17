@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.6.0] – 2021-04-06
 _Summary for the 1.6.0 release: support for Corsair Lighting Node Core, Hydro
 H150i Pro XT, and all Hydro Pro coolers; estimate input power and efficiency
 for Corsair HXi and RMi PSUS; enable support for ASUS Strix GTX 1070 and new
@@ -11,6 +11,7 @@ loaded automatically because of `extra/linux/71-liquidctl.rules`; this
 substitutes the use of `extra/linux/modules-load.conf`, which has been
 removed._
 
+Changelog since 1.5.1:
 ### Added
  - Add experimental support for the Corsair Lighting Node Core
  - Add experimental support for the Corsair Hydro H150i Pro XT
@@ -33,8 +34,16 @@ removed._
  - Replace "ID" with "#" when listing all devices
  - Add `keyval.load_store` method, atomic at the filesystem level
  - Add "Hydro" to Platinum and Pro XT device descriptions
+### Removed
+ - Remove modules-load configuration file for Linux (use the supplied udev rules instead)
+ - [extra] remove `krakencurve-poc`, use `yoda` instead
 ### Deprecated
  - Deprecate `-d`/`--device`; prefer `--match` or other selection options
+### Checksums
+```
+486dc366f10810a4efb301f3ceda10657a09937e9bc936cecec792ac26c2f186  dist/liquidctl-1.6.0.tar.gz
+9b2e144c1fa63aaf41dc3d6a264b2e78e14a5f424b86e3a5f4b80396677000e6  dist/liquidctl-1.6.0-bin-windows-x86_64.zip
+```
 
 
 ## [1.5.1] – 2021-02-19

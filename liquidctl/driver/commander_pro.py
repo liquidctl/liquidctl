@@ -99,18 +99,18 @@ def _quoted(*names):
     return ', '.join(map(repr, names))
 
 
-def _get_fan_mode_description(mode):
+def _fan_mode_desc(mode):
     """This will convert the fan mode value to a descriptive name.
     """
 
-    if mode == _FAN_MODE_DISCONNECTED:
-        return 'Auto/Disconnected'
-    elif mode == _FAN_MODE_DC:
+    if mode == _FAN_MODE_DC:
         return 'DC'
     elif mode == _FAN_MODE_PWM:
         return 'PWM'
     else:
-        return 'UNKNOWN'
+        if mode != _FAN_MODE_DISCONNECTED:
+            _LOGGER.warning('unknown fan mode: {mode:#04x}')
+        return None
 
 
 class CommanderPro(UsbHidDriver):
@@ -178,10 +178,8 @@ class CommanderPro(UsbHidDriver):
             temp_connected = res[1:5]
             self._data.store('temp_sensors_connected', temp_connected)
             status += [
-                ('Temp sensor 1', 'Connected' if temp_connected[0] else 'Not Connected', ''),
-                ('Temp sensor 2', 'Connected' if temp_connected[1] else 'Not Connected', ''),
-                ('Temp sensor 3', 'Connected' if temp_connected[2] else 'Not Connected', ''),
-                ('Temp sensor 4', 'Connected' if temp_connected[3] else 'Not Connected', ''),
+                (f'Temperature probe {i + 1}', bool(temp_connected[i]), '')
+                for i in range(4)
             ]
 
         if self._fan_count > 0:
@@ -190,12 +188,8 @@ class CommanderPro(UsbHidDriver):
             fanModes = res[1:self._fan_count+1]
             self._data.store('fan_modes', fanModes)
             status += [
-                ('Fan 1 Mode', _get_fan_mode_description(fanModes[0]), ''),
-                ('Fan 2 Mode', _get_fan_mode_description(fanModes[1]), ''),
-                ('Fan 3 Mode', _get_fan_mode_description(fanModes[2]), ''),
-                ('Fan 4 Mode', _get_fan_mode_description(fanModes[3]), ''),
-                ('Fan 5 Mode', _get_fan_mode_description(fanModes[4]), ''),
-                ('Fan 6 Mode', _get_fan_mode_description(fanModes[5]), ''),
+                (f'Fan {i + 1} control mode', _fan_mode_desc(fanModes[i]), '')
+                for i in range(6)
             ]
 
         return status
@@ -210,42 +204,28 @@ class CommanderPro(UsbHidDriver):
             _LOGGER.debug('only the Commander Pro supports this')
             return []
 
-        connected_temp_sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
+        temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
+        status = []
+
         # get the temperature sensor values
-        temp = [0]*self._temp_probs
-        for num, enabled in enumerate(connected_temp_sensors):
-            if enabled:
-                temp[num] = self._get_temp(num)
-
-        # get the real power supply voltages
-        res = self._send_command(_CMD_GET_VOLTS, [0])
-        volt_12 = u16be_from(res, offset=1) / 1000
-
-        res = self._send_command(_CMD_GET_VOLTS, [1])
-        volt_5 = u16be_from(res, offset=1) / 1000
-
-        res = self._send_command(_CMD_GET_VOLTS, [2])
-        volt_3 = u16be_from(res, offset=1) / 1000
+        for i, probe_enabled in enumerate(temp_probes):
+            if probe_enabled:
+                temp = self._get_temp(i)
+                status.append((f'Temperature {i + 1}', temp, '°C'))
 
         # get fan RPMs of connected fans
-        fanspeeds = [0]*self._fan_count
-        for fan_num, mode in enumerate(fan_modes):
-            if mode == _FAN_MODE_DC or mode == _FAN_MODE_PWM:
-                fanspeeds[fan_num] = self._get_fan_rpm(fan_num)
+        for i, fan_mode in enumerate(fan_modes):
+            if fan_mode == _FAN_MODE_DC or fan_mode == _FAN_MODE_PWM:
+                speed = self._get_fan_rpm(i)
+                status.append((f'Fan {i + 1} speed', speed, 'rpm'))
 
-        status = [
-            ('12 volt rail', volt_12, 'V'),
-            ('5 volt rail', volt_5, 'V'),
-            ('3.3 volt rail', volt_3, 'V'),
-        ]
-
-        for temp_num in range(self._temp_probs):
-            status += [(f'Temp sensor {temp_num + 1}', temp[temp_num], '°C')]
-
-        for fan_num in range(self._fan_count):
-            status += [(f'Fan {fan_num + 1} speed', fanspeeds[fan_num], 'rpm')]
+        # get the real power supply voltages
+        for i, rail in enumerate(["+12V", "+5V", "+3.3V"]):
+            raw = self._send_command(_CMD_GET_VOLTS, [i])
+            voltage = u16be_from(raw, offset=1) / 1000
+            status.append((f'{rail} rail', voltage, 'V'))
 
         return status
 

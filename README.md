@@ -20,17 +20,17 @@ Device #4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl status
 NZXT Smart Device (V1)
-├── Fan 1                        PWM  
-├── Fan 1 current               0.04  A
-├── Fan 1 speed                 1368  rpm
+├── Fan 1 speed                 1473  rpm
 ├── Fan 1 voltage              11.91  V
-├── Fan 2                          —  
-├── Fan 3                          —  
-├── Firmware version           1.0.7  
-├── LED accessories                2  
-├── LED accessory type    HUE+ Strip  
-├── LED count (total)             20  
-└── Noise level                   67  dB
+├── Fan 1 current               0.01  A
+├── Fan 1 control mode           PWM
+├── Fan 2 [...]
+├── Fan 2 [...]
+├── Firmware version           1.0.7
+├── LED accessories                2
+├── LED accessory type    HUE+ Strip
+├── LED count (total)             20
+└── Noise level                   65  dB
 
 NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     31.7  °C
@@ -83,28 +83,26 @@ The following devices are supported by this version of liquidctl.  See each guid
 | :-: | :-- | :-: | :-- |
 | AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_EZN_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_EZ_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
-| AIO liquid cooler | [Corsair Hydro H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_EN_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
 | AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
 | AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
 | AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
 | DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
 | DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Core](docs/corsair-commander-guide.md) | USB HID | <sup>_EN_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_UXN_</sup> |
+| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
 | Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
@@ -133,10 +131,11 @@ The following dependencies are required at runtime (common package names are lis
 - Python 3.6+ _(python3, python)_
 - pkg_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - docopt _(python3-docopt, python-docopt)_
+- colorlog _(python3-colorlog, python-colorlog)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
-- LibUSB 1.0 _(libusb-1.0, libusb-1.0-0, libusbx)_
 - smbus Python package _(python3-i2c-tools, python3-smbus, i2c-tools)_
+- LibUSB 1.0 _(libusb-1.0, libusb-1.0-0, libusbx)_
 
 To locally test and manually install, a few more dependencies are needed:
 
@@ -204,7 +203,7 @@ The port is also available in DragonFly Ports.
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.5.1-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.5.1/liquidctl-1.5.1-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.6.0-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.6.0/liquidctl-1.6.0-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
@@ -374,10 +373,11 @@ Description=AIO startup service
 
 [Service]
 Type=oneshot
-ExecStart=liquidctl set pump speed 90
-ExecStart=liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-ExecStart=liquidctl set ring color fading 350017 ff2608
-ExecStart=liquidctl set logo color spectrum-wave
+ExecStart=liquidctl initialize all
+ExecStart=liquidctl --match kraken set pump speed 90
+ExecStart=liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+ExecStart=liquidctl --match "smart device" set sync speed 55
+ExecStart=liquidctl --match kraken set sync color fading 350017 ff2608
 
 [Install]
 WantedBy=default.target
@@ -400,10 +400,11 @@ If necessary, it is also possible to have the service unit explicitly wait for t
 The configuration of devices can be automated by writing a batch file and setting up a new task for (every) login using Windows Task Scheduler.  The batch file can be really simple and only needs to contain the invocations of liquidctl that would otherwise be done manually.
 
 ```batchfile
-liquidctl set pump speed 90
-liquidctl set fan speed  20 30  30 50  34 80  40 90  50 100
-liquidctl set ring color fading 350017 ff2608
-liquidctl set logo color spectrum-wave
+liquidctl initialize all
+liquidctl --match kraken set pump speed 90
+liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
+liquidctl --match "smart device" set sync speed 55
+liquidctl --match kraken set sync color fading 350017 ff2608
 ```
 
 Make sure that liquidctl is available in the context where the batch file will run: in short, `liquidctl --version` should work within a _normal_ Command Prompt window.
@@ -470,7 +471,7 @@ Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
 Pircher.
 
 Depending on how it is packaged, it might also bundle copies of python, hidapi,
-libusb, cython-hidapi, pyusb and docopt.
+libusb, cython-hidapi, pyusb, docopt, colorlog and colorama.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

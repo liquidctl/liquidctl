@@ -76,6 +76,7 @@ import os
 import sys
 from traceback import format_exception
 
+import colorlog
 from docopt import docopt
 
 from liquidctl.driver import *
@@ -206,7 +207,10 @@ def _print_dev_status(dev, status):
     for k, v, u in status:
         if isinstance(v, datetime.timedelta):
             v = str(v)
-            u = ''
+        elif isinstance(v, bool):
+            v = 'Yes' if v else 'No'
+        elif v is None:
+            v = 'N/A'
         else:
             valfmt = _VALUE_FORMATS.get(u, '')
             v = f'{v:{valfmt}}'
@@ -271,13 +275,30 @@ def main():
 
     if args['--debug']:
         args['--verbose'] = True
-        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-        _LOGGER.debug('running %s', _gen_version())
+        log_fmt = '%(log_color)s[%(levelname)s] %(module)s (%(funcName)s): %(message)s'
+        log_level = logging.DEBUG
     elif args['--verbose']:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+        log_fmt = '%(log_color)s%(levelname)s: %(message)s'
+        log_level = logging.INFO
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+        log_fmt = '%(log_color)s%(levelname)s: %(message)s'
+        log_level = logging.WARNING
         sys.tracebacklimit = 0
+
+    log_colors = {
+        'DEBUG':    'purple',
+        'INFO':     'blue',
+        'WARNING':  'yellow,bold',
+        'ERROR':    'red,bold',
+        'CRITICAL': 'red,bold,bg_white',
+    }
+
+    log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr, log_colors=log_colors)
+    log_handler = logging.StreamHandler()
+    log_handler.setFormatter(log_fmtter)
+    logging.basicConfig(level=log_level, handlers=[log_handler])
+
+    _LOGGER.debug('running %s', _gen_version())
 
     opts = _make_opts(args)
     filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)

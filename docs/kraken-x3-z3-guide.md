@@ -1,7 +1,7 @@
 # Fourth-generation NZXT liquid coolers
 _Driver API and source code available in [`liquidctl.driver.kraken3`](../liquidctl/driver/kraken3.py)._
 
-The fourth-generation of NZXT Kraken coolers is composed by X models—featuring the familiar infinity mirror—and Z models—replacing the infinity mirror with an OLED screen.
+The fourth-generation of NZXT Kraken coolers is composed by X models—featuring the familiar infinity mirror—and Z models—replacing the infinity mirror with an LCD screen.
 
 Both X and Z models house seventh-generation Asetek pump designs, plus secondary PCBs from NZXT for enhanced control and visual customization.  The coolers are powered directly from the power supply unit.
 
@@ -15,13 +15,13 @@ The X models incorporate customizable pump speed control, a liquid temperature p
 All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, are not part of the scope of the liquidctl CLI.
 
 
-## NZXT Kraken Z63, Z73
+## NZXT Kraken Z53, Z63, Z73
 
-The most notable difference between Kraken X and Kraken Z models is the replacement of the infinity mirror by a OLED screen.
+The most notable difference between Kraken X and Kraken Z models is the replacement of the infinity mirror by a LCD screen.
 
 In addition to this, Kraken Z coolers restore the embedded fan controller that is missing from the current Kraken X models.
 
-The OLED screen cannot yet be controlled with liquidctl, but all other hardware capabilities are supported.
+The LCD screen cannot yet be controlled with liquidctl, but all other hardware capabilities are supported.
 
 
 ## Initialization
@@ -157,6 +157,6 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-super-rainbow` | None | ✓ |
 | `backwards-rainbow-pulse` | None | ✓ |
 
-## The OLED screen (only Z models)
+## The LCD screen (only Z models)
 
 To be implemented.
