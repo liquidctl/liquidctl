@@ -1,12 +1,12 @@
 import pytest
 import os
-from liquidctl.config.validation import _validate_leds
+from liquidctl.config.validation import _validate_lighting_channel
 
 from tomlkit import parse
 
 def load_config(name):
     dir = os.path.dirname(os.path.realpath(__file__))
-    file = os.path.join(dir, 'config_files', name)
+    file = os.path.join(dir, '../config_files', name)
 
     with open(file, 'r') as f:
         read_data = f.read()
@@ -20,23 +20,22 @@ def config(request):
 def parse_test_file():
     return load_config
 
-
 def test_led_block_required_fields(parse_test_file):
     ledBlock = parse_test_file('led_required_fields.toml')
 
-    valid = _validate_leds(ledBlock)
+    valid = _validate_lighting_channel(ledBlock)
     assert valid
 
 def test_led_block_missing_mode(parse_test_file):
     ledBlock = parse_test_file('led_missing_mode.toml')
 
-    valid = _validate_leds(ledBlock)
+    valid = _validate_lighting_channel(ledBlock)
     assert not valid
 
 def test_led_block_missing_colors_fields(parse_test_file):
     ledBlock = parse_test_file('led_missing_colors_fields.toml')
 
-    valid = _validate_leds(ledBlock)
+    valid = _validate_lighting_channel(ledBlock)
     assert valid
 
 @pytest.mark.parametrize("config", [
@@ -46,7 +45,7 @@ def test_led_block_missing_colors_fields(parse_test_file):
 ], indirect=['config'])
 def test_led_block_invalid_colors(config):
 
-    valid = _validate_leds(config)
+    valid = _validate_lighting_channel(config)
     assert not valid
 
 @pytest.mark.parametrize("config", [
@@ -60,7 +59,7 @@ def test_led_block_invalid_colors(config):
 ], indirect=['config'])
 def test_led_block_valid_colors(config):
 
-    valid = _validate_leds(config)
+    valid = _validate_lighting_channel(config)
     assert valid
 
 
