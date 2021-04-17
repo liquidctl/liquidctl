@@ -20,9 +20,9 @@ def _validate_cooling_profile_item(block):
         _LOGGER.warning('temp is a required field and must be greater than 0')
         isValid = False
 
-    num = (rmp is not None) + (duty is not None)
+    num = (rpm is not None) + (duty is not None)
     if num != 1:
-        _LOGGER.warning('Must specify only one of `rmp` or `duty` for the profile point')
+        _LOGGER.warning('Must specify only one of `rpm` or `duty` for the profile point')
         isValid = False
 
     if rpm is not None and ( type(rpm) is not int or rpm < 0):
@@ -74,9 +74,9 @@ def _validate_cooling_channel(block):
     profile = block.get('profile')
 
     # count the number of the mutually exclusive sections that are present
-    num = (rmp is not None) + (duty is not None) + (profile is not None)
+    num = (rpm is not None) + (duty is not None) + (profile is not None)
     if num != 1:
-        _LOGGER.warning('Must specify only one of `rmp`, `duty` or `profile` for the cooling channel')
+        _LOGGER.warning('Must specify only one of `rpm`, `duty` or `profile` for the cooling channel')
         isValid = False
 
     if rpm is not None and ( type(rpm) is not int or rpm < 0):
