@@ -15,22 +15,20 @@ def get_config_files(file=None, appname='liquidctl', **kwargs):
 
     if sys.platform == 'win32':
         files.append(os.path.join(os.getenv('APPDATA'), appname, 'config.toml'))
+        files.append(os.path.join(os.getenv('LOCALAPPDATA'), appname, 'config.toml'))   # not on XP
+        files.append(os.path.join(os.getenv('PROGRAMDATA'), appname, 'config.toml'))    # not on XP
     elif sys.platform == 'darwin':
-        files.append(os.path.expanduser(os.path.join('~/Library/Application Support', appname, 'config.toml')))
         files.append(os.path.expanduser(os.path.join('~', f'.{appname}.toml')))
+        files.append(os.path.expanduser(os.path.join('~/Library/Application Support', appname, 'config.toml')))
+        files.append(os.path.expanduser(os.path.join('/Library/Application Support', appname, 'config.toml')))
     elif sys.platform == 'linux':
-        XDG_CONFIG_HOME = os.getenv('XDG_CONFIG_HOME')
-        XDG_CONFIG_DIRS = os.getenv('XDG_CONFIG_DIRS')
+        XDG_CONFIG_HOME = os.getenv('XDG_CONFIG_HOME', os.path.expanduser(os.path.join('~', '.config')))
+        XDG_CONFIG_DIRS = os.getenv('XDG_CONFIG_DIRS', '/etc/xdg')
 
         # treat all other platforms as *nix and conform to XDG basedir spec
-        if XDG_CONFIG_HOME:
-            files.append(os.path.join(XDG_CONFIG_HOME, appname, 'config.toml'))
-
-        files.append(os.path.expanduser(os.path.join('~', '.config', appname, 'config.toml')))
         files.append(os.path.expanduser(os.path.join('~', f'.{appname}.toml')))
-
-        if XDG_CONFIG_DIRS:
-            files.append(os.path.join(XDG_CONFIG_DIRS, appname, 'config.toml'))
+        files.append(os.path.join(XDG_CONFIG_HOME, appname, 'config.toml'))
+        files.append(os.path.join(XDG_CONFIG_DIRS, appname, 'config.toml'))
     else:
         files.append(os.path.expanduser(os.path.join('~', f'.{appname}.toml')))
 
