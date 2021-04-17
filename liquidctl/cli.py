@@ -268,31 +268,28 @@ def main():
 
     if args['--debug']:
         args['--verbose'] = True
-        format_color = '%(log_color)s[%(levelname)s] %(name)s%(reset)s: %(message_log_color)s%(message)s'
-        level = logging.DEBUG
+        log_fmt = '%(log_color)s[%(levelname)s] %(module)s (%(funcName)s): %(message)s'
+        log_level = logging.DEBUG
     elif args['--verbose']:
-        format_color = '%(log_color)s%(levelname)s%(reset)s: %(message_log_color)s%(message)s'
-        level = logging.INFO
+        log_fmt = '%(log_color)s%(levelname)s: %(message)s'
+        log_level = logging.INFO
     else:
-        format_color = '%(log_color)s%(levelname)s%(reset)s: %(message_log_color)s%(message)s'
-        level = logging.WARNING
+        log_fmt = '%(log_color)s%(levelname)s: %(message)s'
+        log_level = logging.WARNING
         sys.tracebacklimit = 0
-    
-    log_colors = colorlog.default_log_colors
-    log_colors['WARNING'] = 'bold_yellow'
-    log_colors['DEBUG'] = 'blue'
-    secondary_log_colors={
-		'message': {
-			'WARNING': 'yellow',
-            'ERROR': 'red',
-			'CRITICAL': 'bold_red'
-		}
-	}
 
-    formatter = colorlog.TTYColoredFormatter(fmt=format_color, stream=sys.stdout, log_colors=log_colors, secondary_log_colors=secondary_log_colors)
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-    logging.basicConfig(level=level, handlers=[handler])
+    log_colors = {
+        'DEBUG':    'purple',
+        'INFO':     'blue',
+        'WARNING':  'yellow,bold',
+        'ERROR':    'red,bold',
+        'CRITICAL': 'red,bold,bg_white',
+    }
+
+    log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr, log_colors=log_colors)
+    log_handler = logging.StreamHandler()
+    log_handler.setFormatter(log_fmtter)
+    logging.basicConfig(level=log_level, handlers=[log_handler])
 
     _LOGGER.debug('running %s', _gen_version())
 
