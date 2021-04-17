@@ -7,7 +7,7 @@ def get_config_files(file=None, appname='liquidctl', **kwargs):
     This will get all the potential file paths on the system for where the config file
     can be
 
-    This will also handle the -f overrides
+    This will also handle the --config overrides
     """
     files = []
     if file:

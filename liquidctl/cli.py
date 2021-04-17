@@ -9,7 +9,7 @@ Usage:
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl --help
   liquidctl --version
-  liquidctl [-f] --validate
+  liquidctl [--config <file>] --validate
 
 Device selection options (see: list -v):
   -m, --match <substring>        Filter devices by description substring
@@ -45,10 +45,10 @@ Other interface options:
   -g, --debug                    Show debug information on stderr
   --version                      Display the version number
   --help                         Show this message
+  --validate                     Validate that the config file format is correct
 
 Config file options:
-  -f, --file <file>              Select a specific config file to use
-  --ignore-config                Do not use any of the config files
+  --config <file>              Select a specific config file to use
 
 Deprecated:
   -d, --device <index>           Select device by listing index
