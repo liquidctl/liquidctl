@@ -218,21 +218,21 @@ def _dev_status_obj(dev, status):
     if not status:
         status = []
 
+    # convert to types that are more suitable to serialization, when that
+    # cannot be done later (e.g. because it requires adjusting the `unit`)
+    def convert(i):
+        key, val, unit = i
+        if isinstance(val, datetime.timedelta):
+            val = val.total_seconds()
+            unit = 's'
+        return (key, val, unit)
+
+    # suppress the experimental suffix, `list` reports it in `.experimental`
     return {
         'bus': dev.bus,
         'address': dev.address,
-        # suppress the experimental suffix (check .experimental from list)
         'description': dev.description.replace(' (experimental)', ''),
-        # JSON values can only be objects, arrays, numbers, strings, or
-        # false/null/true; convert all non-numeric status values to strings
-        'status': [
-            [
-                key,
-                val if isinstance(val, Number) else str(val),
-                unit
-            ]
-            for key, val, unit in status
-        ],
+        'status': [convert(x) for x in status]
     }
 
 
@@ -441,7 +441,10 @@ def main():
         sys.exit(errors)
 
     if args['--json']:
-        print(json.dumps(obj_buf, ensure_ascii=(os.getenv('LANG', None) == 'C')))
+        # use __str__ for values that cannot be directly serialized to JSON
+        # (e.g. enums)
+        print(json.dumps(obj_buf, ensure_ascii=(os.getenv('LANG', None) == 'C'),
+                         default=lambda x: str(x)))
 
     sys.exit(0)
 
