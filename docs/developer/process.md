@@ -19,7 +19,7 @@ rewritten at any time.
 Besides unscheduled patch releases, a new minor release is expected once every
 12 weeks.
 
-In the four weeks before a scheduled release major changes, like new buses or
+In the four weeks before a scheduled release, major changes, like new buses or
 large refactorings, stop being merged into the main branch.  This period is
 referred to as the _major change freeze._  New drivers on existing buses can
 still be merged during the major change freeze.
@@ -29,15 +29,16 @@ improvements are merged into the main branch.  This period is referred to as
 the _minor change freeze._
 
 Occasionally, scheduled releases may be anticipated (if the activity is low and
-the freeze periods can be respected retroactively), downgraded (if it only
+the freeze periods can be retroactively respected), downgraded (if it only
 contains bug fixes and documentation improvements) or skipped (if there are no
 changes).
 
 ## Stability and backward compatibility
 
-This project adheres to Semantic Versioning v2.0, and there are no plans for a
-major version 2 release.  Because of this, liquidctl releases (minor or patch)
-retain backward compatibility with previous versions.
+This project adheres to Semantic Versioning, version 2.0, and there are no
+plans for a new major version release of the project.  Because of this,
+liquidctl releases (minor or patch) retain backward compatibility with previous
+versions.
 
 The stability guarantee that we try to uphold can be better defined by:
 
@@ -60,7 +61,7 @@ Additionally:
 8. If a tree falls in the forest and no one is around to hear it, it does not
    make a sound: breaking changes that will not observed by any real users (at
    the time of the change ) may be ok, on the condition that they be reversed
-   should a user come forward;
+   should one of those users come forward;
 9. Some APIs are documented to be *unstable* and, thus, are exempt from the
    stability guarantee.
 
@@ -77,7 +78,7 @@ the same license, but their authors retain the copyright of their individual
 changes.
 
 Each module contains the copyright notice and a [short SPDX license identifier]
-to unambiguously yet concisely indelicate the applicable license.  The
+to unambiguously yet concisely indicate the applicable license.  The
 copyright notice should explicitly list the most important contributors to the
 module, and then end with "and contributors".  Contributors are encouraged to
 update these notices when submitting major changes to modules.
