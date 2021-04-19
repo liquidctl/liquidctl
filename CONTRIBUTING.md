@@ -6,28 +6,34 @@ to contribute and we appreciate all of them.
 ## Reporting bugs and other issues
 
 Reporting problems with the software is an easy and very valuable way to
-contribute to the project.  Please go to [issues](issues) and follow the
-appropriate template.
+contribute to the project.  Please check the existing [issues] and, if none
+matches your problem, use the appropriate template to create a [new issue].
+
+[issues]: https://github.com/liquidctl/liquidctl/issues
+[new issue]: https://github.com/liquidctl/liquidctl/issues/new/choose
 
 ## Contributing changes to code and/or documentation
 
 Awesome!
 
-We generally use [pull requests](pulls) to review and (assuming everything goes
+We generally use [pull requests] to review and (assuming everything goes
 well) merge contributions.
 
-It is not necessary to discuss a change beforehand on an issue, but that can
-sometimes be helpful.  You can also reach out to us and other fellow
-contributors on [Discord](https://discord.gg/GyCBjQhqCd).
+[pull requests]: https://github.com/liquidctl/liquidctl/pulls
 
-Additionally, the following documents will give you a general idea of our
-development process and coding styling:
+It is not necessary to discuss a change beforehand in an issue, but that can
+sometimes be helpful (e.g. to decide the best approach).  You can also reach
+out to us and other fellow contributors on [Discord].
+
+[Discord]: https://discord.gg/GyCBjQhqCd
+
+Please also read the following documents, they will give you a general idea of
+our development process and coding styling:
 
 - [Development process](docs/developer/process.md)
 - [Style guide](docs/developer/style-guide.md)
 
-Depending on what you are doing, some of these other documents may also be
-useful:
+And, depending on what you are doing, some of these may also be useful:
 
 - [Capturing USB Traffic](docs/developer/capturing-usb-traffic.md)
 - [Techniques for analyzing USB protocols](docs/developer/techniques-for-analyzing-usb-protocols.md)
@@ -38,3 +44,4 @@ useful:
 
 _The first sentences in this file were taken from rust-lang/rust's
 CONTRIBUTING.md document._
+
