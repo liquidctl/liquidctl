@@ -15,7 +15,7 @@ Jump to a specific section:
     - [EVGA GTX 1080 FTW](#evga-gtx-1080-ftw)
 * _Series 20/Turing:_
     - [ASUS Strix RTX 2080 Ti OC](#asus-strix-gtx-and-rtx)
-* _[Inherent unsafeness of I²C/SMBus]_
+* _[Inherent unsafeness of I²C]_
 
 
 ## EVGA GTX 1080 FTW
@@ -24,7 +24,7 @@ Only RGB lighting supported.
 
 Unsafe features:
 
-- `smbus`: see [Inherent unsafeness of I²C/SMBus]
+- `smbus`: see [Inherent unsafeness of I²C]
 
 ### Initialization
 
@@ -84,7 +84,7 @@ Only RGB lighting supported.
 
 Unsafe features:
 
-- `smbus`: see [Inherent unsafeness of I²C/SMBus]
+- `smbus`: see [Inherent unsafeness of I²C]
 
 ### Initialization
 
@@ -144,37 +144,29 @@ allows for them.
 Note: The `off` mode is simply an alias for `fixed 000000`.
 
 
-## Inherent unsafeness of I2C and SMBus
-[Inherent unsafeness of I²C/SMBus]: #inherent-unsafeness-of-i2c-and-smbus
+## Inherent unsafeness of I2C
+[Inherent unsafeness of I²C]: #inherent-unsafeness-of-i2c
 
-Reading and writing to System Management (SMBus) and I²C buses is inherently
-more risky than dealing with, for example, USB devices.  On typical desktop and
-workstation systems many important chips are connected to these buses, and they
-may not tolerate writes or reads they do not expect.
+Reading and writing to I²C buses is inherently more risky than dealing with,
+for example, USB devices.  On typical desktop and workstation systems many
+important chips are connected to these buses, and they may not tolerate writes
+or reads they do not expect.
 
-While SMBus 2.0 has some limited ability for automatic enumeration of devices
-connected to it, unlike simpler I²C buses and SMBus 1.0, this capability is,
-effectively, not safely available for us in user space.
-
-It is thus necessary to rely on certain devices being know to use a specific
+It is necessary to rely on certain devices being know to use a specific
 address, or being documented/specified to do so; but there is always some risk
 that another, unexpected, device is using that same address.
 
-The enumeration capability of SMBus 2.0 also brings dynamic address assignment,
-so even if a device is know to use a particular address in one machine, that
-could be different on other systems.
+On top of this, accessing I²C buses concurrently, from multiple threads or
+processes, may also result in undesirable or unpredictable behavior.
 
-On top of this, accessing I²C or SMBus buses concurrently, from multiple
-threads or processes, may also result in undesirable or unpredictable behavior.
+Unsurprisingly, users or programs dealing with I²C devices have occasionally
+crashed systems and even bricked boards or peripherals.  In some cases this is
+reversible, but not always.
 
-Unsurprisingly, users or programs dealing with I²C/SMBus devices have
-occasionally crashed systems and even bricked boards or peripherals.  In some
-cases this is reversible, but not always.
-
-For all of these reasons liquidctl requires users to *opt into* accessing
-I²C/SMBus devices, which can be done by enabling the `smbus` unsafe feature.
-Other unsafe features may also be required for the use of specific devices,
-based on other *know* risks specific to a particular device.
+For all of these reasons liquidctl requires users to *opt into* accessing I²C
+and SMBus devices, both of which can be done by enabling the `smbus` unsafe
+feature.  Other unsafe features may also be required for the use of specific
+devices, based on other *know* risks specific to a particular device.
 
 Note that a feature not being labeled unsafe, or a device not requiring the use
 of additional unsafe features, does in no way assure that it is safe.  This is
