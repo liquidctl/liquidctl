@@ -135,7 +135,7 @@ build].  You can also browse all recent builds for all branches and features
 been worked on in the [build history]; the executables are in the "artifacts"
 tab.
 
-[current build]: https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/master/artifacts
+[current build]: https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/main/artifacts
 [build history]: https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history
 
 ## Final words
