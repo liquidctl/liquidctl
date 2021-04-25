@@ -493,18 +493,25 @@ file.
 
 ## Related projects
 
-### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
-
-Open-source graphical interface to control many different types of RGB devices.
-
 ### [liquidctl/liquidtux](https://github.com/liquidctl/liquidtux)
 
-Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allows standard monitoring tools (for example lm-sensors, or tools built on top of it) to read sensor data from Kraken X42/X52/X62/X72 coolers and the Smart Device (V1).
+Sibling project of Linux kernel _hwmon_ drivers for devices supported by
+liquidctl.
+
+### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
+
+Graphical interface to control many different types of RGB devices.
+
+### [leinardi/GKraken](https://gitlab.com/leinardi/gkraken)
+
+Graphical interface for NZXT Kraken X and Z coolers, using the liquidctl APIs.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
-Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl, and joining them is a great way to get involved.
+Retired in 2020, but a great source of information on how Corsair devices work.
+There are ongoing efforts to port the last drivers to liquidctl, and joining
+them is a great way to get involved.
 
 ### [liquidctl/collected-device-data](https://github.com/liquidctl/collected-device-data)
 
-Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyzes.
+Device information collected for developing and maintaining liquidctl.
