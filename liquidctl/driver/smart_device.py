@@ -404,10 +404,13 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         """
 
         self.device.clear_enqueued_reports()
-        # initialize
-        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-        self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
-        self._write([0x60, 0x03])
+
+        # if fan controller, initialize fan reporting (#331)
+        if self._speed_channels:
+            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+            self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
+            self._write([0x60, 0x03])
+
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
