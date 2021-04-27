@@ -278,11 +278,19 @@ def main():
         log_level = logging.WARNING
         sys.tracebacklimit = 0
 
+    try:
+        # use light colors if they are available (requires colorlog ^6.0)
+        _ = colorlog.escape_codes['light_purple']
+        light = 'light_'
+    except KeyError:
+        # otherwise use bold on Windows to avoid invisible text on PowerShell
+        light = '' if sys.platform != 'win32' else 'bold_'
+
     log_colors = {
-        'DEBUG':    'purple',
-        'INFO':     'blue',
-        'WARNING':  'yellow,bold',
-        'ERROR':    'red,bold',
+        'DEBUG': f'{light}purple',
+        'INFO': f'{light}blue',
+        'WARNING': 'yellow,bold',
+        'ERROR': 'red,bold',
         'CRITICAL': 'red,bold,bg_white',
     }
 
