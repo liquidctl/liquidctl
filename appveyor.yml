@@ -41,9 +41,8 @@ install:
   - cmd: C:\Python39-x64\python -m pip freeze | find "pyinstaller" >> extra\windows\included.txt
   - cmd: echo libusb %LIBUSB_VERSION% >> extra\windows\included.txt
   - cmd: C:\Python39-x64\python --version >> extra\windows\included.txt
-  # run unit tests and module doctests
+  # install pytest
   - cmd: C:\Python39-x64\python -m pip install pytest
-  - cmd: C:\Python39-x64\python -m pytest
 
 build_script:
   - cmd: C:\Python39-x64\Scripts\pyinstaller --add-data VS2019\MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --onefile --distpath .
@@ -64,7 +63,11 @@ after_build:
   - cmd: CertUtil -hashfile %DIST_PACKAGE%.zip SHA256
 
 test_script:
+  # ensure the bundled binary can find/use libusb
   - cmd: liquidctl.exe list --verbose --debug
+  # copy the libusb DLLs and run the unit and doctests
+  - cmd: copy VS2019\MS64\dll\* C:\Windows\System32\
+  - cmd: C:\Python39-x64\python -m pytest
 
 artifacts:
   - path: "*.zip"
