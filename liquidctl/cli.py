@@ -143,6 +143,14 @@ _VALUE_FORMATS = {
 _LOGGER = logging.getLogger(__name__)
 
 
+def getattr_or(object, name, default=None):
+    """Call `getattr` and return `default` on exceptions."""
+    try:
+        return getattr(object, name, default)
+    except Exception:
+        return default
+
+
 def _list_devices_objs(devices):
     return [
         {
@@ -151,7 +159,7 @@ def _list_devices_objs(devices):
             'vendor_id': dev.vendor_id,
             'product_id': dev.product_id,
             'release_number': dev.release_number,
-            'serial_number': getattr(dev, 'serial_number', None),
+            'serial_number': getattr_or(dev, 'serial_number', None),
             'bus': dev.bus,
             'address': dev.address,
             'port': dev.port,
