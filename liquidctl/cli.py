@@ -225,7 +225,7 @@ def _dev_status_obj(dev, status):
         if isinstance(val, datetime.timedelta):
             val = val.total_seconds()
             unit = 's'
-        return (key, val, unit)
+        return { 'key': key, 'value': val, 'unit': unit }
 
     # suppress the experimental suffix, `list` reports it in `.experimental`
     return {
