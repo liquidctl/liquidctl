@@ -143,15 +143,15 @@ _VALUE_FORMATS = {
 _LOGGER = logging.getLogger(__name__)
 
 
-def getattr_or(object, name, default=None):
-    """Call `getattr` and return `default` on exceptions."""
-    try:
-        return getattr(object, name, default)
-    except Exception:
-        return default
-
-
 def _list_devices_objs(devices):
+
+    def getattr_or(object, name, default=None):
+        """Call `getattr` and return `default` on exceptions."""
+        try:
+            return getattr(object, name, default)
+        except Exception:
+            return default
+
     return [
         {
             # replace the experimental suffix with a proper field
