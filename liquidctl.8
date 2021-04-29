@@ -176,6 +176,10 @@ Output additional information.
 .B \-g\fR, \fP\-\-debug
 Show debug information on \fIstderr\fR.
 .TP
+.B \-\-json
+Output machine-readable JSON.  Only supported with
+.BR list ,\  initialize \ and\  status .
+.TP
 .B \-\-version
 Display the version number.
 .TP
@@ -184,6 +188,10 @@ Show the embedded help.
 .
 .SH EXIT STATUS
 1 if there was an error, 0 otherwise.
+.
+.SH ENVIRONMENT
+If \fBLANG\fR is set to \fIC\fR, non-ASCII characters are escaped from the
+output of \fB\-\-json\fR.
 .
 .SH FILES
 .TP

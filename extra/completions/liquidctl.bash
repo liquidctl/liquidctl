@@ -74,6 +74,7 @@ _liquidctl_main() {
     local boolean_options="
     --verbose -v
     --debug -g
+    --json
     --version
     --help
     --single-12v-ocp
