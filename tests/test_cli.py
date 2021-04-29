@@ -1,79 +1,10 @@
 import pytest
+from _testutils import VirtualBusDevice, VirtualControlMode
 
 import json
 import sys
-from datetime import timedelta
-from enum import Enum, unique
 
 import liquidctl.cli
-from liquidctl.driver.base import *
-
-
-@unique
-class ControlMode(Enum):
-    QUIET = 0x0
-    BALANCED = 0x1
-    EXTREME = 0x2
-
-
-class Virtual(BaseDriver):
-    def __init__(self, **kwargs):
-        pass
-
-    def connect(self, **kwargs):
-        return self
-
-    def disconnect(self, **kwargs):
-        pass
-
-    def initialize(self, **kwargs):
-        return self.get_status(**kwargs)
-
-    def get_status(self, **kwargs):
-        return [
-            ('Temperature', 30.4, '°C'),
-            ('Fan control mode', ControlMode.QUIET, ''),
-            ('Animation', None, ''),
-            ('Uptime', timedelta(hours=18, minutes=23, seconds=12), ''),
-            ('Hardware mode', True, ''),
-        ]
-
-    @property
-    def description(self):
-        return 'Virtual device (experimental)'
-
-    @property
-    def vendor_id(self):
-        return 0x1234
-
-    @property
-    def product_id(self):
-        return 0xabcd
-
-    @property
-    def release_number(self):
-        None
-
-    @property
-    def serial_number(self):
-        raise OSError()
-
-    @property
-    def bus(self):
-        return 'virtual'
-
-    @property
-    def address(self):
-        return 'virtual_address'
-
-    @property
-    def port(self):
-        return None
-
-
-class VirtualBus(BaseBus):
-    def find_devices(self, **kwargs):
-        yield from [Virtual()]
 
 
 @pytest.fixture
@@ -99,7 +30,7 @@ def test_json_list(main):
     got = json.loads(out)
     exp = [
         {
-            'description': 'Virtual device',
+            'description': 'Virtual Bus Device',
             'vendor_id': 0x1234,
             'product_id': 0xabcd,
             'release_number': None,
@@ -107,7 +38,7 @@ def test_json_list(main):
             'bus': 'virtual',
             'address': 'virtual_address',
             'port': None,
-            'driver': 'Virtual',
+            'driver': 'VirtualBusDevice',
             'experimental': True,
         }
     ]
@@ -120,10 +51,10 @@ def assert_json_status_like(out):
         {
             'bus': 'virtual',
             'address': 'virtual_address',
-            'description': 'Virtual device',
+            'description': 'Virtual Bus Device',
             'status': [
                 { 'key': 'Temperature', 'value': 30.4, 'unit': '°C' },
-                { 'key': 'Fan control mode', 'value': 'ControlMode.QUIET', 'unit': '' },
+                { 'key': 'Fan control mode', 'value': 'VirtualControlMode.QUIET', 'unit': '' },
                 { 'key': 'Animation', 'value': None, 'unit': '' },
                 { 'key': 'Uptime', 'value': 66192.0, 'unit': 's' },
                 { 'key': 'Hardware mode', 'value': True, 'unit': '' },
