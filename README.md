@@ -54,23 +54,24 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Table of contents
 
-1.  [Supported devices](#supported-devices)
-2.  [Installing on Linux](#installing-on-linux)
-3.  [Installing on FreeBSD](#installing-on-freebsd)
-4.  [Installing on Windows](#installing-on-windows)
-5.  [Installing on macOS](#installing-on-macos)
-6.  [The command-line interface](#introducing-the-command-line-interface)
+1. [Supported devices](#supported-devices)
+1. [Installing on Linux](#installing-on-linux)
+1. [Installing on FreeBSD](#installing-on-freebsd)
+1. [Installing on Windows](#installing-on-windows)
+1. [Installing on macOS](#installing-on-macos)
+1. [The command-line interface](#introducing-the-command-line-interface)
      1. [Listing and selecting devices](#listing-and-selecting-devices)
-     2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
-     3. [Supported color specification formats](#supported-color-specification-formats)
-7.  [Automation and running at boot](#automation-and-running-at-boot)
+     1. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
+     1. [Supported color specification formats](#supported-color-specification-formats)
+1. [Using liquidctl in other programs and scripts](#using-liquidctl-in-other-programs-and-scripts)
+1. [Automation and running at boot](#automation-and-running-at-boot)
      1. [Set up Linux using systemd](#set-up-linux-using-systemd)
-     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
-     3. [Set up macOS using launchd](#set-up-macos-using-launchd)
-8.  [Troubleshooting](#troubleshooting)
-9.  [Additional documentation](#additional-documentation)
-10.  [License](#license)
-11. [Related projects](#related-projects-2020-edition)
+     1. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
+     1. [Set up macOS using launchd](#set-up-macos-using-launchd)
+1. [Troubleshooting](#troubleshooting)
+1. [Additional documentation](#additional-documentation)
+1. [License](#license)
+1. [Related projects](#related-projects-2020-edition)
 
 
 ## Supported devices
@@ -355,6 +356,130 @@ Color arguments containing spaces, parenthesis or commas need to be quoted, as t
 ```
 
 On Linux it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
+
+
+## Using liquidctl in other programs and scripts
+
+The liquidctl driver APIs can be used to build Python programs that monitor or
+control the devices, and offer features beyond the ones provided by the CLI.
+
+The APIs are documented, and this documentation can be accessed through
+`pydoc`, or directly read from the source files.
+
+```python
+from liquidctl import find_liquidctl_devices
+
+first = True
+
+# find all connected and supported devices
+devices = find_liquidctl_devices()
+
+for dev in devices:
+
+    # connect to the device (here a context manager is used, but the
+    # connection can also be manually managed)
+    with dev.connect():
+        print(f'{dev.description} at {dev.bus}:{dev.address}:')
+
+        # devices should be initialized after every boot (here we assume
+        # this has not been done before)
+        init_status = dev.initialize()
+
+        # print all data returned by initialize()
+        if init_status:
+            for key, value, unit in init_status:
+                print(f'{key}: {value} {unit}')
+
+        # get regular status information from the device
+        status = dev.get_status()
+
+        # print all data returned by get_status()
+        for key, value, unit in status:
+            print(f'{key}: {value} {unit}')
+
+        # for a particular device, set the pump LEDs to red
+        if 'Kraken' in dev.description:
+            print('setting pump to radical red')
+            radical_red = [0xff, 0x35, 0x5e]
+            dev.set_color(channel='pump', mode='fixed', colors=[radical_red])
+
+    # the context manager took care of automatically calling disconnect();
+    # when manually managing the connection, disconnect() must be called at
+    # some point even if an exception is raised
+
+    if first:
+        first = False
+        print()  # add a blank line between each device
+```
+
+More examples can be found in the scripts in [`extra/`](extra/).
+
+In addition to the APIs, the `liquidctl` CLI is friendly to scripting: errors
+cause it to exit with non-zero codes and only functional output goes to
+`stdout`, everything else (error messages, warnings and other auxiliary
+information) going to `stderr`.
+
+The `list`, `initialize` and `status` commands also support a `--json` flag to
+switch the output to JSON, a more convenient format for machines and scripts.
+In `--json` mode, setting `LANG=C` on the environment causes non-ASCII
+characters to be escaped.
+
+```
+# liquidctl --match kraken list --json | jq
+[
+  {
+    "description": "NZXT Kraken X (X42, X52, X62 or X72)",
+    "vendor_id": 7793,
+    "product_id": 5902,
+    "release_number": 512,
+    "serial_number": "49874481333",
+    "bus": "hid",
+    "address": "/dev/hidraw3",
+    "port": null,
+    "driver": "Kraken2",
+    "experimental": false
+  },
+  ...
+]
+
+# liquidctl --match kraken status --json | jq
+[
+  {
+    "bus": "hid",
+    "address": "/dev/hidraw3",
+    "description": "NZXT Kraken X (X42, X52, X62 or X72)",
+    "status": [
+      {
+        "key": "Liquid temperature",
+        "value": 30.1,
+        "unit": "°C"
+      },
+      {
+        "key": "Fan speed",
+        "value": 1014,
+        "unit": "rpm"
+      },
+      ...
+    ]
+  },
+  ...
+]
+```
+
+Note that the examples above pipe the output to [jq], as the original output
+has no line breaks or indentation.  An alternative to jq is to use [`python -m
+json.tool`][json.tool], which is already included in standard Python
+distributions.
+
+Finally, the stability of both the APIs and the CLI commands is documented in
+our [stability guarantee].  In particular, the specific keys, values and units
+returned by the commands above, as well as their API equivalents, _are subject
+to changes._  Consumers should verify that the returned data matches their
+expectations, and react accordingly.
+
+[jq]: https://stedolan.github.io/jq/
+[json.tool]: https://docs.python.org/3/library/json.html#module-json.tool
+[stability guarantee]: docs/developer/process.md#stability-and-backward-compatibility
 
 
 ## Automation and running at boot
