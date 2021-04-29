@@ -213,7 +213,9 @@ class VirtualBusDevice(BaseDriver):
 
     def initialize(self, *args, **kwargs):
         self.call_args['initialize'] = CallArgs(args, kwargs)
-        return self.get_status(**kwargs)
+        return [
+            ('Firmware version', '3.14.16', ''),
+        ]
 
     def get_status(self, *args, **kwargs):
         self.call_args['status'] = CallArgs(args, kwargs)
@@ -224,6 +226,15 @@ class VirtualBusDevice(BaseDriver):
             ('Uptime', timedelta(hours=18, minutes=23, seconds=12), ''),
             ('Hardware mode', True, ''),
         ]
+
+    def set_fixed_speed(self, *args, **kwargs):
+        self.call_args['set_fixed_speed'] = CallArgs(args, kwargs)
+
+    def set_speed_profile(self, *args, **kwargs):
+        self.call_args['set_speed_profile'] = CallArgs(args, kwargs)
+
+    def set_color(self, *args, **kwargs):
+        self.call_args['set_color'] = CallArgs(args, kwargs)
 
     @property
     def description(self):

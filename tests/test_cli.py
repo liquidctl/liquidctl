@@ -45,7 +45,28 @@ def test_json_list(main):
     assert got == exp
 
 
-def assert_json_status_like(out):
+def test_json_initialize(main):
+    code, out, _ = main('test', '--bus', 'virtual', 'initialize', '--json')
+    assert code == 0
+
+    got = json.loads(out)
+    exp = [
+        {
+            'bus': 'virtual',
+            'address': 'virtual_address',
+            'description': 'Virtual Bus Device',
+            'status': [
+                { 'key': 'Firmware version', 'value': '3.14.16', 'unit': '' },
+            ]
+        }
+    ]
+    assert got == exp
+
+
+def test_json_status(main):
+    code, out, _ = main('test', '--bus', 'virtual', 'status', '--json')
+    assert code == 0
+
     got = json.loads(out)
     exp = [
         {
@@ -62,15 +83,3 @@ def assert_json_status_like(out):
         }
     ]
     assert got == exp
-
-
-def test_json_initialize(main):
-    code, out, _ = main('test', '--bus', 'virtual', 'initialize', '--json')
-    assert code == 0
-    assert_json_status_like(out)
-
-
-def test_json_status(main):
-    code, out, _ = main('test', '--bus', 'virtual', 'status', '--json')
-    assert code == 0
-    assert_json_status_like(out)
