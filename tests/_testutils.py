@@ -1,7 +1,10 @@
 import os
 from collections import deque, namedtuple
+from datetime import timedelta
+from enum import Enum, unique
 from tempfile import mkdtemp
 
+from liquidctl.driver.base import *
 from liquidctl.keyval import RuntimeStorage, _FilesystemBackend
 
 Report = namedtuple('Report', ['number', 'data'])
@@ -181,3 +184,91 @@ class VirtualSmbus:
 
     def load_eeprom(self, address):
         return self._data[address]  # hack
+
+
+@unique
+class VirtualControlMode(Enum):
+    QUIET = 0x0
+    BALANCED = 0x1
+    EXTREME = 0x2
+
+
+CallArgs = namedtuple('CallArgs', ['args', 'kwargs'])
+
+
+class VirtualBusDevice(BaseDriver):
+    def __init__(self, *args, **kwargs):
+        self.call_args = dict()
+        self.call_args['__init__'] = CallArgs(args, kwargs)
+        self.connected = False
+
+    def connect(self, *args, **kwargs):
+        self.call_args['connect'] = CallArgs(args, kwargs)
+        self.connected = True
+        return self
+
+    def disconnect(self, *args, **kwargs):
+        self.call_args['disconnect'] = CallArgs(args, kwargs)
+        self.connected = False
+
+    def initialize(self, *args, **kwargs):
+        self.call_args['initialize'] = CallArgs(args, kwargs)
+        return [
+            ('Firmware version', '3.14.16', ''),
+        ]
+
+    def get_status(self, *args, **kwargs):
+        self.call_args['status'] = CallArgs(args, kwargs)
+        return [
+            ('Temperature', 30.4, '°C'),
+            ('Fan control mode', VirtualControlMode.QUIET, ''),
+            ('Animation', None, ''),
+            ('Uptime', timedelta(hours=18, minutes=23, seconds=12), ''),
+            ('Hardware mode', True, ''),
+        ]
+
+    def set_fixed_speed(self, *args, **kwargs):
+        self.call_args['set_fixed_speed'] = CallArgs(args, kwargs)
+
+    def set_speed_profile(self, *args, **kwargs):
+        self.call_args['set_speed_profile'] = CallArgs(args, kwargs)
+
+    def set_color(self, *args, **kwargs):
+        self.call_args['set_color'] = CallArgs(args, kwargs)
+
+    @property
+    def description(self):
+        return 'Virtual Bus Device (experimental)'
+
+    @property
+    def vendor_id(self):
+        return 0x1234
+
+    @property
+    def product_id(self):
+        return 0xabcd
+
+    @property
+    def release_number(self):
+        None
+
+    @property
+    def serial_number(self):
+        raise OSError()
+
+    @property
+    def bus(self):
+        return 'virtual'
+
+    @property
+    def address(self):
+        return 'virtual_address'
+
+    @property
+    def port(self):
+        return None
+
+
+class VirtualBus(BaseBus):
+    def find_devices(self, **kwargs):
+        yield from [VirtualBusDevice()]

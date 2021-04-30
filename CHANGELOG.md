@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unrelased]
+
+### Added
+ - List experimental partial support for the NZXT Kraken Z53
+ - Add CONTRIBUTING.md and document our development process
+### Changed
+ - Change Grid+ V3/Smart Device (V1) status output (PR #326)
+ - Change Commander Pro status/initialize output (PR #326)
+ - Colorize the log output (new dependency: `colorlog`; PRs #318, #329)
+ - Change main branch name to "main"
+ - Improve the documentation
+
 ## [1.6.0] – 2021-04-06
 _Summary for the 1.6.0 release: support for Corsair Lighting Node Core, Hydro
 H150i Pro XT, and all Hydro Pro coolers; estimate input power and efficiency

@@ -2,11 +2,11 @@
 
 _Originally posted as a [comment in issue #129](https://github.com/liquidctl/liquidctl/issues/129#issuecomment-640258429)._
 
-In essence, writing a new liquidctl driver means implementing all (suitable) methods of a [`liquidctl.base.BaseDriver`](https://github.com/liquidctl/liquidctl/blob/master/liquidctl/driver/base.py#L9).
+In essence, writing a new liquidctl driver means implementing all (suitable) methods of a [`liquidctl.base.BaseDriver`](https://github.com/liquidctl/liquidctl/blob/main/liquidctl/driver/base.py#L9).
  
 Note that you shouldn't _directly_ subclass the BaseDriver; instead you'll inherit from a bus-specific base driver like `liquidctl.usb.UsbDriver` or `liquidctl.usb.UsbHidDevice`, which will already include default implementations for many methods and properties.
 
-And for the new driver to work out-of-the-box it's sufficient to import its module in [`liquidctl/driver/__init__.py`](https://github.com/liquidctl/liquidctl/blob/master/liquidctl/driver/__init__.py#L23).
+And for the new driver to work out-of-the-box it's sufficient to import its module in [`liquidctl/driver/__init__.py`](https://github.com/liquidctl/liquidctl/blob/main/liquidctl/driver/__init__.py#L23).
 
 Next, in order to port a driver from OCL, the first step is to check the `corsair_device_info` struct that matches the device, which defines the low-level and driver (protocol) functions used for it in OCL, besides a few other important parameters.
 
@@ -71,7 +71,7 @@ The ordering in `hydro_coolit_settings` also seems to be strictly due to natural
 Anyway, the main concern I have right now is the [`CommandId`](https://github.com/audiohacked/OpenCorsairLink/blob/61d336a61b85705a5e128762430dc136460b110e/include/protocol/coolit.h#L93) byte that's sent in every message. 
  It starts at 0x81 and is continually incremented.  On one hand it clearly doesn't need to be a perfect sequence number (as OCL doesn't guarantee that in multiple invocations), but on the other the shorter message chains in liquidctl (due to only a few parameters being read or changed at a time) could cause the cooler to complain.
 
-I'd start following OCL: initialize a similar variable to 0x81 every time the driver is instantiated, and increment it every time it's used.  But if that somehow doesn't work, you can use the internal [`keyval`](https://github.com/liquidctl/liquidctl/blob/master/liquidctl/keyval.py#L1) API ([example usage](https://github.com/liquidctl/liquidctl/blob/4e649bead665bf692d7df9b8bc1a9a79791d356d/liquidctl/driver/asetek.py#L281)) to temporarily persist it to disk, allowing you to implement a true (wrapping) sequence number _across_ liquidctl invocations.
+I'd start following OCL: initialize a similar variable to 0x81 every time the driver is instantiated, and increment it every time it's used.  But if that somehow doesn't work, you can use the internal [`keyval`](https://github.com/liquidctl/liquidctl/blob/main/liquidctl/keyval.py#L1) API ([example usage](https://github.com/liquidctl/liquidctl/blob/4e649bead665bf692d7df9b8bc1a9a79791d356d/liquidctl/driver/asetek.py#L281)) to temporarily persist it to disk, allowing you to implement a true (wrapping) sequence number _across_ liquidctl invocations.
 
 No matter what, just don't forget to explicitly wrap `CommandId` it at 255, you'll probably be using a normal Python integer instead of a `u8`.
 

@@ -26,7 +26,7 @@ When (re)initializing the device it is possible to select the pump mode:
 # liquidctl initialize --pump-mode=performance
 ```
 
-Allowed pump modes are: `quiet`, `balanced` and `peformance`.
+Allowed pump modes are: `quiet`, `balanced` and `performance`.
 
 ## Device monitoring
 

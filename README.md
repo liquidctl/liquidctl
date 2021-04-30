@@ -2,8 +2,8 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
-[![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/master)
-[![Status of the build for Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/master?svg=true)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/master)
+[![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/main)
+[![Status of the build for Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/main?svg=true)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/main)
 [![Developer's Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
 
 
@@ -54,23 +54,24 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Table of contents
 
-1.  [Supported devices](#supported-devices)
-2.  [Installing on Linux](#installing-on-linux)
-3.  [Installing on FreeBSD](#installing-on-freebsd)
-4.  [Installing on Windows](#installing-on-windows)
-5.  [Installing on macOS](#installing-on-macos)
-6.  [The command-line interface](#introducing-the-command-line-interface)
+1. [Supported devices](#supported-devices)
+1. [Installing on Linux](#installing-on-linux)
+1. [Installing on FreeBSD](#installing-on-freebsd)
+1. [Installing on Windows](#installing-on-windows)
+1. [Installing on macOS](#installing-on-macos)
+1. [The command-line interface](#introducing-the-command-line-interface)
      1. [Listing and selecting devices](#listing-and-selecting-devices)
-     2. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
-     3. [Supported color specification formats](#supported-color-specification-formats)
-7.  [Automation and running at boot](#automation-and-running-at-boot)
+     1. [Initializing and interacting with devices](#initializing-and-interacting-with-devices)
+     1. [Supported color specification formats](#supported-color-specification-formats)
+1. [Using liquidctl in other programs and scripts](#using-liquidctl-in-other-programs-and-scripts)
+1. [Automation and running at boot](#automation-and-running-at-boot)
      1. [Set up Linux using systemd](#set-up-linux-using-systemd)
-     2. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
-     3. [Set up macOS using launchd](#set-up-macos-using-launchd)
-8.  [Troubleshooting](#troubleshooting)
-9.  [Additional documentation](#additional-documentation)
-10.  [License](#license)
-11. [Related projects](#related-projects-2020-edition)
+     1. [Set up Windows using Task Scheduler](#set-up-windows-using-task-scheduler)
+     1. [Set up macOS using launchd](#set-up-macos-using-launchd)
+1. [Troubleshooting](#troubleshooting)
+1. [Additional documentation](#additional-documentation)
+1. [License](#license)
+1. [Related projects](#related-projects-2020-edition)
 
 
 ## Supported devices
@@ -78,44 +79,45 @@ NZXT Kraken X (X42, X52, X62 or X72)
 The following devices are supported by this version of liquidctl.  See each guide for specific usage instructions and other pertinent information.
 
 <!-- the table is manually sorted to keep certain devices (confusing Corsair coolers and NZXT Smart Devices) in chronological order -->
+<!-- the notes are sorted alphabetically, major (upper case) notes before minor (lower case) ones -->
 
 | Type | Device/guide | Bus | Notes |
 | :-: | :-- | :-: | :-- |
-| AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_ZE_</sup> |
+| AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
 | AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_EZ_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_Ze_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
+| AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
 | AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
-| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZE_</sup> |
+| AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
+| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
 | AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_E_</sup> |
-| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
-| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_EUX_</sup> |
-| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
-| Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_E_</sup> |
+| AIO liquid cooler | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_e_</sup> |
+| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uex_</sup> |
+| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uex_</sup> |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
+| Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
-| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
-| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_UX_</sup> |
+| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
 | Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_E_</sup> |
+| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_e_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
-<sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
-<sup>_E_</sup> _Experimental and/or partial support._  
 <sup>_U_</sup> _Requires `--unsafe` features._  
-<sup>_X_</sup> _Only supported on Linux._  
-<sup>_N_</sup> _New driver, only available on git._  
+<sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
+<sup>_e_</sup> _Experimental and/or partial support._  
+<sup>_n_</sup> _New driver, only available on git._  
+<sup>_x_</sup> _Only supported on Linux._  
 
 
 ## Installing on Linux
@@ -193,8 +195,6 @@ liquidctl is maintained in the FreeBSD Ports Collection, and it is available as 
 By default, root privileges (`doas` or `sudo`) are required to run liquidctl.
 
 To gain full access as a normal user without `doas` or `sudo`, see devd(8). Also, you might consider manually changing the permission of the file of the USB device for an individual session with `chown`, e.g. `sudo chown [user] /dev/ugen[#.#]`.
-
-Note: as of March 20, 2021, HIDAPI (`comms/hidapi`), which is required for `comms/py-hidapi` (and, thus, liquidctl), must be built from the latest port rather than installed as a package, as the latest package is out of date. Make sure that you have HIDAPI version 0.10.1 or later installed prior to installing `comms/py-hidapi` and liquidctl. Then, liquidctl will work as expected.
 
 ### DragonFly BSD
 
@@ -357,6 +357,130 @@ Color arguments containing spaces, parenthesis or commas need to be quoted, as t
 On Linux it is also possible to use single-quotes and `\(`, `\)`, `\ ` escape sequences.
 
 
+## Using liquidctl in other programs and scripts
+
+The liquidctl driver APIs can be used to build Python programs that monitor or
+control the devices, and offer features beyond the ones provided by the CLI.
+
+The APIs are documented, and this documentation can be accessed through
+`pydoc`, or directly read from the source files.
+
+```python
+from liquidctl import find_liquidctl_devices
+
+first = True
+
+# find all connected and supported devices
+devices = find_liquidctl_devices()
+
+for dev in devices:
+
+    # connect to the device (here a context manager is used, but the
+    # connection can also be manually managed)
+    with dev.connect():
+        print(f'{dev.description} at {dev.bus}:{dev.address}:')
+
+        # devices should be initialized after every boot (here we assume
+        # this has not been done before)
+        init_status = dev.initialize()
+
+        # print all data returned by initialize()
+        if init_status:
+            for key, value, unit in init_status:
+                print(f'{key}: {value} {unit}')
+
+        # get regular status information from the device
+        status = dev.get_status()
+
+        # print all data returned by get_status()
+        for key, value, unit in status:
+            print(f'{key}: {value} {unit}')
+
+        # for a particular device, set the pump LEDs to red
+        if 'Kraken' in dev.description:
+            print('setting pump to radical red')
+            radical_red = [0xff, 0x35, 0x5e]
+            dev.set_color(channel='pump', mode='fixed', colors=[radical_red])
+
+    # the context manager took care of automatically calling disconnect();
+    # when manually managing the connection, disconnect() must be called at
+    # some point even if an exception is raised
+
+    if first:
+        first = False
+        print()  # add a blank line between each device
+```
+
+More examples can be found in the scripts in [`extra/`](extra/).
+
+In addition to the APIs, the `liquidctl` CLI is friendly to scripting: errors
+cause it to exit with non-zero codes and only functional output goes to
+`stdout`, everything else (error messages, warnings and other auxiliary
+information) going to `stderr`.
+
+The `list`, `initialize` and `status` commands also support a `--json` flag to
+switch the output to JSON, a more convenient format for machines and scripts.
+In `--json` mode, setting `LANG=C` on the environment causes non-ASCII
+characters to be escaped.
+
+```
+# liquidctl --match kraken list --json | jq
+[
+  {
+    "description": "NZXT Kraken X (X42, X52, X62 or X72)",
+    "vendor_id": 7793,
+    "product_id": 5902,
+    "release_number": 512,
+    "serial_number": "49874481333",
+    "bus": "hid",
+    "address": "/dev/hidraw3",
+    "port": null,
+    "driver": "Kraken2",
+    "experimental": false
+  },
+  ...
+]
+
+# liquidctl --match kraken status --json | jq
+[
+  {
+    "bus": "hid",
+    "address": "/dev/hidraw3",
+    "description": "NZXT Kraken X (X42, X52, X62 or X72)",
+    "status": [
+      {
+        "key": "Liquid temperature",
+        "value": 30.1,
+        "unit": "°C"
+      },
+      {
+        "key": "Fan speed",
+        "value": 1014,
+        "unit": "rpm"
+      },
+      ...
+    ]
+  },
+  ...
+]
+```
+
+Note that the examples above pipe the output to [jq], as the original output
+has no line breaks or indentation.  An alternative to jq is to use [`python -m
+json.tool`][json.tool], which is already included in standard Python
+distributions.
+
+Finally, the stability of both the APIs and the CLI commands is documented in
+our [stability guarantee].  In particular, the specific keys, values and units
+returned by the commands above, as well as their API equivalents, _are subject
+to changes._  Consumers should verify that the returned data matches their
+expectations, and react accordingly.
+
+[jq]: https://stedolan.github.io/jq/
+[json.tool]: https://docs.python.org/3/library/json.html#module-json.tool
+[stability guarantee]: docs/developer/process.md#stability-and-backward-compatibility
+
+
 ## Automation and running at boot
 
 In most cases you will want to automatically apply your settings when the system boots.  Generally a simple script or a basic service is enough, and some specifics about this are given in the following sections.
@@ -494,18 +618,25 @@ file.
 
 ## Related projects
 
-### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
-
-Open-source graphical interface to control many different types of RGB devices.
-
 ### [liquidctl/liquidtux](https://github.com/liquidctl/liquidtux)
 
-Initial conversion of liquidctl to Linux kernel _hwmon_ drivers.  Currently allows standard monitoring tools (for example lm-sensors, or tools built on top of it) to read sensor data from Kraken X42/X52/X62/X72 coolers and the Smart Device (V1).
+Sibling project of Linux kernel _hwmon_ drivers for devices supported by
+liquidctl.
+
+### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
+
+Graphical interface to control many different types of RGB devices.
+
+### [leinardi/GKraken](https://gitlab.com/leinardi/gkraken)
+
+Graphical interface for NZXT Kraken X and Z coolers, using the liquidctl APIs.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
-Retired in 2020, but a great source of information on how Corsair devices work.  There are ongoing efforts to port the drivers to liquidctl, and joining them is a great way to get involved.
+Retired in 2020, but a great source of information on how Corsair devices work.
+There are ongoing efforts to port the last drivers to liquidctl, and joining
+them is a great way to get involved.
 
 ### [liquidctl/collected-device-data](https://github.com/liquidctl/collected-device-data)
 
-Device information collected for developing and maintaining liquidctl, including USB descriptors, traffic captures and protocol analyzes.
+Device information collected for developing and maintaining liquidctl.
