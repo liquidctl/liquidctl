@@ -1,5 +1,81 @@
 # Changelog
 
+## [Unrelased]
+
+### Added
+ - List experimental partial support for the NZXT Kraken Z53
+ - Add machine readable output with `--json` (PR #314)
+ - Add CONTRIBUTING.md and document our development process
+### Changed
+ - Change Grid+ V3/Smart Device (V1) status output (PR #326)
+ - Change Commander Pro status/initialize output (PR #326)
+ - Colorize the log output (new dependency: `colorlog`; PRs #318, #329)
+ - Change main branch name to "main"
+ - Improve the documentation
+
+
+## [1.6.1] – Unreleased
+_Summary for the 1.6.1 release: one bug fix for HUE 2 controllers._
+
+Changelog since 1.6.0:
+### Fixed
+- Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+
+
+## [1.5.2] – Unreleased
+_Summary for the 1.5.2 release: one bug fix for HUE 2 controllers._
+
+Changelog since 1.5.1:
+### Fixed
+- Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+
+
+## [1.6.0] – 2021-04-06
+_Summary for the 1.6.0 release: support for Corsair Lighting Node Core, Hydro
+H150i Pro XT, and all Hydro Pro coolers; estimate input power and efficiency
+for Corsair HXi and RMi PSUS; enable support for ASUS Strix GTX 1070 and new
+NZXT RGB & Fan Controller variant; formally deprecate `-d`/`--device`._
+
+_Note for Linux package maintainers: the i2c-dev kernel module may now be
+loaded automatically because of `extra/linux/71-liquidctl.rules`; this
+substitutes the use of `extra/linux/modules-load.conf`, which has been
+removed._
+
+Changelog since 1.5.1:
+### Added
+ - Add experimental support for the Corsair Lighting Node Core
+ - Add experimental support for the Corsair Hydro H150i Pro XT
+ - Add experimental support for the Corsair Hydro H100i Pro, H115i Pro and H150i Pro coolers
+ - Enable support for the ASUS Strix GTX 1070
+ - Enable support for new variant of the NZXT RGB & Fan Controller
+ - Add `sync` pseudo lighting channel to Commander/Lighting Node Pro devices
+ - Add duty cycles to Hydro Platinum and Pro XT status output
+ - Add input power and efficiency estimates to the status output of Corsair HXi and RMi PSUs
+ - Add the Contributor Covenant, version 1.4 as our code of conduct 
+### Changed
+ - Remove `pro_xt_lighting` unsafe feature guard
+ - Enforce correct casing of constants in driver APIs
+ - Use udev rules for automatic loading of kernel modules (replaces previous `modules-load.d` configuration)
+ - Remove warnings when reporting or setting the OCP mode of Corsair HXi and RMi PSUs
+ - Rename Corsair HXi and RMi "Total power" status item to "Total power output"
+ - Handle both US and UK spellings of `--direction` values
+ - Improve the documentation
+### Fixed
+ - Replace "ID" with "#" when listing all devices
+ - Add `keyval.load_store` method, atomic at the filesystem level
+ - Add "Hydro" to Platinum and Pro XT device descriptions
+### Removed
+ - Remove modules-load configuration file for Linux (use the supplied udev rules instead)
+ - [extra] remove `krakencurve-poc`, use `yoda` instead
+### Deprecated
+ - Deprecate `-d`/`--device`; prefer `--match` or other selection options
+### Checksums
+```
+486dc366f10810a4efb301f3ceda10657a09937e9bc936cecec792ac26c2f186  dist/liquidctl-1.6.0.tar.gz
+9b2e144c1fa63aaf41dc3d6a264b2e78e14a5f424b86e3a5f4b80396677000e6  dist/liquidctl-1.6.0-bin-windows-x86_64.zip
+```
+
+
 ## [1.5.1] – 2021-02-19
 _Summary for the 1.5.1 release: fixes to error reporting, handling of runtime
 data, and other bugs._
@@ -66,12 +142,12 @@ Changelog since 1.4.2:
 ### Fixed
  - Fix potential exception when a release number is not available
  - Enforce USB port filters on HID devices
- - Fix backwards `rainbow-pulse` mode on Kraken X3 devices
+ - Fix backward `rainbow-pulse` mode on Kraken X3 devices
  - Fix compatibility with hidapi 0.10 and multi-usage devices (RGB Fusion 2.0 controllers)
  - Fix lighting settings in Platinum SE and Pro XT coolers
  - Generate and verify the checksums of zip and exe built on AppVeyor
 ### Deprecated
- - Deprecate `backwards-` pseudo modes; use `--direction=backwards` instead
+ - Deprecate `backwards-` pseudo modes; use `--direction=backward` instead
 ### Checksums
 ```
 370eb9c662111b51465ac5e2649f7eaf423bd22799ef983c4957468e9d957c15  liquidctl-1.5.0-bin-windows-x86_64.zip
@@ -119,7 +195,7 @@ Changelog since 1.4.0:
 ### Fixed
  - Don't use report IDs when writing to NZXT E-series PSUs (#166)
  - Recognize and raise Hidapi write errors
- - Use a mocked device to test backwards compatibility with liquidctl 1.1.0
+ - Use a mocked device to test backward compatibility with liquidctl 1.1.0
 ### Checksums
 ```
 895e55fd70e1fdfe3b2941d9139b91ffc4e902a469b077e810c35979dbe1cfdf  liquidctl-1.4.1-bin-windows-x86_64.zip
@@ -156,7 +232,7 @@ Changelog since 1.3.3:
  - Store runtime data on non-Linux systems in `~/Library/Caches` (macOS), `%TEMP%` (Windows) or `/tmp` (Unix)
  - Mark Corsair HXi/RMi PSUs as no longer experimental
  - Mark Smart Device V2 and HUE 2 controllers as no longer experimental
- - Switch to a consistent module, driver and guide naming scheme (aliases are kept for backwards compatibility)
+ - Switch to a consistent module, driver and guide naming scheme (aliases are kept for backward compatibility)
  - Improve the documentation
  - [extra] Refresh `krakencurve-poc` syntax and sensor names, and get CPU temperature on macOS with iStats
 ### Fixed
