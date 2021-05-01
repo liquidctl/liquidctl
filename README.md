@@ -203,7 +203,7 @@ The port is also available in DragonFly Ports.
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.6.0-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.6.0/liquidctl-1.6.0-bin-windows-x86_64.zip).
+A pre-built executable for the last stable version is available in [liquidctl-1.6.1-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.6.1/liquidctl-1.6.1-bin-windows-x86_64.zip).
 
 Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
 
