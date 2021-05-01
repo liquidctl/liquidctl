@@ -4,6 +4,7 @@
 
 ### Added
  - List experimental partial support for the NZXT Kraken Z53
+ - Add machine readable output with `--json` (PR #314)
  - Add CONTRIBUTING.md and document our development process
 ### Changed
  - Change Grid+ V3/Smart Device (V1) status output (PR #326)
@@ -11,6 +12,23 @@
  - Colorize the log output (new dependency: `colorlog`; PRs #318, #329)
  - Change main branch name to "main"
  - Improve the documentation
+
+
+## [1.6.1] – Unreleased
+_Summary for the 1.6.1 release: one bug fix for HUE 2 controllers._
+
+Changelog since 1.6.0:
+### Fixed
+- Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+
+
+## [1.5.2] – Unreleased
+_Summary for the 1.5.2 release: one bug fix for HUE 2 controllers._
+
+Changelog since 1.5.1:
+### Fixed
+- Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+
 
 ## [1.6.0] – 2021-04-06
 _Summary for the 1.6.0 release: support for Corsair Lighting Node Core, Hydro
