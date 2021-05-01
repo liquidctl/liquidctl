@@ -14,20 +14,29 @@
  - Improve the documentation
 
 
-## [1.6.1] – Unreleased
+## [1.6.1] – 2021-05-01
 _Summary for the 1.6.1 release: one bug fix for HUE 2 controllers._
 
 Changelog since 1.6.0:
 ### Fixed
-- Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+ - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+### Checksums
+```
+e3b6aa5ae55204f8d9a8813105269df7dc8f80087670e3eac88b722949b3843f  dist/liquidctl-1.6.1.tar.gz
+d14a32b7c0de5a2d25bc8280c32255da25e9bc32f103d099b678810a9a1b6c9c  dist/liquidctl-1.6.1-bin-windows-x86_64.zip
+```
 
 
-## [1.5.2] – Unreleased
+## [1.5.2] – 2021-05-01
 _Summary for the 1.5.2 release: one bug fix for HUE 2 controllers._
 
 Changelog since 1.5.1:
 ### Fixed
-- Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+ - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+### Checksums
+```
+5738fda03f1d7bfb4416461a70351a5e040f1b57229674dd0f1f6f81d3750812  dist/liquidctl-1.5.2.tar.gz
+```
 
 
 ## [1.6.0] – 2021-04-06
