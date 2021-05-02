@@ -74,7 +74,7 @@ _UNKNOWN_OPEN_VALUE = 0xffff
 _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE
 
 
-class _CommonAsetekDriver(UsbDriver):
+class _Base690Lc(UsbDriver):
     """Common methods for Asetek 690LC devices."""
 
     _LEGACY_690LC = False
@@ -187,38 +187,7 @@ class _CommonAsetekDriver(UsbDriver):
         super().disconnect(**kwargs)
 
 
-class Modern690Lc(_CommonAsetekDriver):
-    """Modern fifth generation Asetek 690LC cooler."""
-
-    SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
-    ]
-
-    def downgrade_to_legacy(self):
-        """Take the device handle and return a new Legacy690Lc instance for it.
-
-        This method returns a new instance that takes the device handle from
-        `self`.  Because of this, the caller should immediately discard `self`,
-        as it is no longer valid to call any of its methods or access any of
-        its properties.
-
-        While it is sometimes possible to downgrade a device that has seen
-        modern traffic since it booted, this will generally not work.
-        Additionally, no attempt to disconnect from the device is made while
-        downgrading the instance.
-
-        Thus, callers are strongly advised to only call this function before
-        connecting to the device from this instance and, in fact, before
-        calling any other methods at all on the device, from any instance.
-
-        Finally, this method is not yet considered stable and its signature
-        and/or behavior may change.  Callers should follow the development of
-        liquidctl and the stabilization of this API.
-        """
-        legacy = Legacy690Lc(self.device, self._description)
-        self.device = None
-        self._description = None
-        return legacy
+class _ModernBase690Lc(_Base690Lc):
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -309,7 +278,41 @@ class Modern690Lc(_CommonAsetekDriver):
         self._end_transaction_and_read()
 
 
-class Legacy690Lc(_CommonAsetekDriver):
+class Modern690Lc(_ModernBase690Lc):
+    """Modern fifth generation Asetek 690LC cooler."""
+
+    SUPPORTED_DEVICES = [
+        (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
+    ]
+
+    def downgrade_to_legacy(self):
+        """Take the device handle and return a new Legacy690Lc instance for it.
+
+        This method returns a new instance that takes the device handle from
+        `self`.  Because of this, the caller should immediately discard `self`,
+        as it is no longer valid to call any of its methods or access any of
+        its properties.
+
+        While it is sometimes possible to downgrade a device that has seen
+        modern traffic since it booted, this will generally not work.
+        Additionally, no attempt to disconnect from the device is made while
+        downgrading the instance.
+
+        Thus, callers are strongly advised to only call this function before
+        connecting to the device from this instance and, in fact, before
+        calling any other methods at all on the device, from any instance.
+
+        Finally, this method is not yet considered stable and its signature
+        and/or behavior may change.  Callers should follow the development of
+        liquidctl and the stabilization of this API.
+        """
+        legacy = Legacy690Lc(self.device, self._description)
+        self.device = None
+        self._description = None
+        return legacy
+
+
+class Legacy690Lc(_Base690Lc):
     """Legacy fifth generation Asetek 690LC cooler."""
 
     SUPPORTED_DEVICES = [
@@ -408,7 +411,7 @@ class Legacy690Lc(_CommonAsetekDriver):
         raise NotSupportedByDevice
 
 
-class Hydro690Lc(Modern690Lc):
+class Hydro690Lc(_ModernBase690Lc):
     """Corsair-branded fifth generation Asetek 690LC cooler."""
 
     SUPPORTED_DEVICES = [

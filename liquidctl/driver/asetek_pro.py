@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 
-from liquidctl.driver.asetek import _CommonAsetekDriver
+from liquidctl.driver.asetek import _Base690Lc
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp
 
@@ -77,9 +77,9 @@ def _quoted(*names):
     return ', '.join(map(repr, names))
 
 
-# we inherit from _CommonAsetekDriver to reuse its implementation of connect
+# we inherit from _Base690Lc to reuse its implementation of connect
 # and disconnect, that emulates the stock SiUSBXp driver on Windows
-class CorsairAsetekProDriver(_CommonAsetekDriver):
+class CorsairAsetekProDriver(_Base690Lc):
     """liquidctl driver for Corsair-branded sixth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
