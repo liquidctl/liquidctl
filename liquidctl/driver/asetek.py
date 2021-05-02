@@ -82,7 +82,7 @@ class _Base690Lc(UsbDriver):
     @classmethod
     def probe(cls, handle, legacy_690lc=False, **kwargs):
         """Probe `handle` and yield corresponding driver instances."""
-        if legacy_690lc != _LEGACY_690LC:
+        if legacy_690lc != cls._LEGACY_690LC:
             return
         yield from super().probe(handle, **kwargs)
 
@@ -93,7 +93,7 @@ class _Base690Lc(UsbDriver):
         Automatically sets the appropriate value for `legacy_690lc`.
         """
 
-        return super().find_supported_devices(cls, legacy_690lc=_LEGACY_690LC, **kwargs)
+        return super().find_supported_devices(cls, legacy_690lc=cls._LEGACY_690LC, **kwargs)
 
     def _configure_flow_control(self, clear_to_send):
         """Set the software clear-to-send flow control policy for device."""
