@@ -77,6 +77,15 @@ _USBXPRESS = usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIP
 class _CommonAsetekDriver(UsbDriver):
     """Common methods for Asetek 690LC devices."""
 
+    _LEGACY_690LC = False
+
+    @classmethod
+    def probe(cls, handle, legacy_690lc=False, **kwargs):
+        """Probe `handle` and yield corresponding driver instances."""
+        if legacy_690lc != _LEGACY_690LC:
+            return
+        yield from super().probe(handle, **kwargs)
+
     def _configure_flow_control(self, clear_to_send):
         """Set the software clear-to-send flow control policy for device."""
         _LOGGER.debug('set clear to send = %s', clear_to_send)
@@ -175,12 +184,6 @@ class Modern690Lc(_CommonAsetekDriver):
     SUPPORTED_DEVICES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
     ]
-
-    @classmethod
-    def probe(cls, handle, legacy_690lc=False, **kwargs):
-        if legacy_690lc:
-            return
-        yield from super().probe(handle, **kwargs)
 
     def downgrade_to_legacy(self):
         """Take the device handle and return a new Legacy690Lc instance for it.
@@ -304,11 +307,7 @@ class Legacy690Lc(_CommonAsetekDriver):
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X) (experimental)', {}),
     ]
 
-    @classmethod
-    def probe(cls, handle, legacy_690lc=False, **kwargs):
-        if not legacy_690lc:
-            return
-        yield from super().probe(handle, **kwargs)
+    _LEGACY_690LC = True
 
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
@@ -411,12 +410,6 @@ class Hydro690Lc(Modern690Lc):
         (0x1b1c, 0x0c09, None, 'Corsair Hydro H100i v2', {}),
         (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i', {}),
     ]
-
-    @classmethod
-    def probe(cls, handle, legacy_690lc=False, **kwargs):
-        # the modern driver overrides probe and rigs it to switch on
-        # --legacy-690lc, so we override it again
-        return super().probe(handle, legacy_690lc=False, **kwargs)
 
     def set_color(self, channel, mode, colors, **kwargs):
         """Set the color mode for a specific channel."""
