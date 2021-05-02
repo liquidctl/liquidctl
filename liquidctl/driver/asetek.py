@@ -86,6 +86,15 @@ class _CommonAsetekDriver(UsbDriver):
             return
         yield from super().probe(handle, **kwargs)
 
+    @classmethod
+    def find_supported_devices(cls, **kwargs):
+        """Find devices specifically compatible with this driver.
+
+        Automatically sets the appropriate value for `legacy_690lc`.
+        """
+
+        return super().find_supported_devices(cls, legacy_690lc=_LEGACY_690LC, **kwargs)
+
     def _configure_flow_control(self, clear_to_send):
         """Set the software clear-to-send flow control policy for device."""
         _LOGGER.debug('set clear to send = %s', clear_to_send)
