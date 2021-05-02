@@ -12,6 +12,9 @@
  - Colorize the log output (new dependency: `colorlog`; PRs #318, #329)
  - Change main branch name to "main"
  - Improve the documentation
+### Fixed
+ - Make `find_supported_devices()` account for `legacy_690lc` on Asetek 690LC drivers
+ - Remove accidentally inherited `downgrade_to_legacy()` (unstable) from `Hydro690Lc`
 
 
 ## [1.6.1] – 2021-05-01
