@@ -77,6 +77,7 @@ _liquidctl_main() {
     --json
     --version
     --help
+    --validate
     --single-12v-ocp
     --legacy-690lc
     --non-volatile
@@ -104,6 +105,7 @@ _liquidctl_main() {
     --start-led
     --maximum-leds
     --temperature-sensor
+    --config
     "
 
     # generate options list and remove any flag that has already been given
@@ -166,6 +168,10 @@ _liquidctl_main() {
             ;;
         --pump-mode)
             COMPREPLY=($(compgen -W "balanced quiet extreme" -- "$cur"))
+            return
+            ;;
+        --config)
+            COMPREPLY=($(compgen -f -X '!*.yml' -- "$cur" ))
             return
             ;;
         --* | -[a-z]*1)
