@@ -188,3 +188,6 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1714", TAG+="uacc
 
 # NZXT Smart Device V2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2006", TAG+="uaccess"
+
+# NZXT Smart Device V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200d", TAG+="uaccess"
