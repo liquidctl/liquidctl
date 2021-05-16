@@ -1,8 +1,8 @@
 import pytest
-
-from _testutils import noop
 from collections import deque
+
 from liquidctl.driver.commander_core import CommanderCore
+from _testutils import noop
 
 
 def int_to_le(num, length=2, byteorder='little', signed=False):
