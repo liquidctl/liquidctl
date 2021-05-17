@@ -25,18 +25,18 @@ Corsair Commander Core (experimental)
 ## Retrieving the pump speed, fan speeds, and temperatures
 
 
-The Commander Core currently can retrieve the pump speed, fan speeds, temperature of the water, and
+The commander core currently can retrieve the pump speed, fan speeds, temperature of the water, and
 the temperature measured by the probe.
 
 ```
 # liquidctl status
 Corsair Commander Core (experimental)
-├── Pump Speed           2342  rpm
-├── Fan Speed 1           872  rpm
-├── Fan Speed 2           851  rpm
-├── Fan Speed 3             0  rpm
-├── Fan Speed 4             0  rpm
-├── Fan Speed 5             0  rpm
-├── Fan Speed 6             0  rpm
-└── Water Temperature    36.9  °C
+├── Pump speed           2356  rpm
+├── Fan speed 1           810  rpm
+├── Fan speed 2           791  rpm
+├── Fan speed 3             0  rpm
+├── Fan speed 4             0  rpm
+├── Fan speed 5             0  rpm
+├── Fan speed 6             0  rpm
+└── Water temperature    35.8  °C
 ```
