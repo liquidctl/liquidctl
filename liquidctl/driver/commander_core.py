@@ -12,6 +12,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDriver
 from liquidctl.util import u16le_from
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 _REPORT_LENGTH = 1024
 _RESPONSE_LENGTH = 1024
 
-_INTERFACE_NUMBER = 1
+_INTERFACE_NUMBER = 0
 
 _CMD_GET_FIRMWARE = (0x02, 0x13)
 _CMD_INIT = (0x01, 0x03, 0x00, 0x02)
@@ -39,23 +40,17 @@ class CommanderCore(UsbHidDriver):
         (0x1b1c, 0x0c1c, None, 'Corsair Commander Core (experimental)', {})
     ]
 
-    def __init__(self, device, description, **kwargs):
-        super().__init__(device, description, **kwargs)
-
-    def connect(self, runtime_storage=None, **kwargs):
-        """Connect to the device."""
-        return super().connect(**kwargs)
-
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
 
+        # INIT
+        self._send_command(_CMD_INIT)
+
+        # Get Firmware
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[3], res[4], res[5])
 
         status = [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
-
-        # INIT
-        self._send_command(_CMD_INIT)
 
         # Get LEDs per fan
         self._send_command(_CMD_RESET)
@@ -65,18 +60,12 @@ class CommanderCore(UsbHidDriver):
         for i in range(0, num_rgb):
             connected = u16le_from(res, offset=6+i*4) == 2
             num_leds = u16le_from(res, offset=8+i*4)
-            if i == 0:
-                status += [(f'AIO RGB', num_leds if connected else 'Disconnected', 'LEDs' if connected else '')]
-            else:
-                status += [(f'RGB port {i}', num_leds if connected else 'Disconnected', 'LEDs' if connected else '')]
+            status += [('AIO LED count' if i == 0 else f'RGB port {i} LED count', num_leds if connected else None, '')]
 
         # Get what temp sensors are connected
-        for i, temp in self._get_temps().items():
+        for i, temp in enumerate(self._get_temps()):
             connected = temp is not None
-            if i == 0:
-                status += [(f'Water Temperature Sensor', 'Connected' if connected else 'Disconnected', '')]
-            else:
-                status += [(f'Temperature Sensor {i}', 'Connected' if connected else 'Disconnected', '')]
+            status += [('Water temperature sensor' if i == 0 else f'Temperature sensor {i}', connected, '')]
 
         return status
 
@@ -87,42 +76,36 @@ class CommanderCore(UsbHidDriver):
         # INIT in case it hasn't been accesses in a while
         self._send_command(_CMD_INIT)
 
-        for i, speed in self._get_speeds().items():
-            if i == 0:
-                status += [(f'Pump Speed', speed, 'rpm')]
-            else:
-                status += [(f'Fan Speed {i}', speed, 'rpm')]
+        for i, speed in enumerate(self._get_speeds()):
+            status += [('Pump speed' if i == 0 else f'Fan speed {i}', speed, 'rpm')]
 
-        for i, temp in self._get_temps().items():
+        for i, temp in enumerate(self._get_temps()):
             if temp is None:
                 continue
-            if i == 0:
-                status += [(f'Water Temperature', temp, '°C')]
-            else:
-                status += [(f'Temperature {i}', temp, '°C')]
+            status += [('Water temperature' if i == 0 else f'Temperature {i}', temp, '°C')]
 
         return status
 
     def set_color(self, channel, mode, colors, **kwargs):
-        raise NotImplementedError
+        raise NotSupportedByDriver
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        raise NotImplementedError
+        raise NotSupportedByDriver
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        raise NotImplementedError
+        raise NotSupportedByDriver
 
     @classmethod
     def probe(cls, handle, **kwargs):
         """Ensure we get the right interface"""
 
-        if handle.hidinfo['interface_number'] == _INTERFACE_NUMBER:
+        if handle.hidinfo['interface_number'] != _INTERFACE_NUMBER:
             return
 
         yield from super().probe(handle, **kwargs)
 
     def _get_speeds(self):
-        speeds = {}
+        speeds = []
 
         self._send_command(_CMD_RESET)
         self._send_command(_CMD_SET_MODE, [_MODE_GET_SPEEDS])
@@ -131,12 +114,12 @@ class CommanderCore(UsbHidDriver):
         num_speeds = res[5]
         speeds_data = res[6:6 + num_speeds*2]
         for i in range(0, num_speeds):
-            speeds[i] = u16le_from(speeds_data, offset=i*2)
+            speeds.append(u16le_from(speeds_data, offset=i*2))
 
         return speeds
 
     def _get_temps(self):
-        temps = {}
+        temps = []
 
         self._send_command(_CMD_RESET)
         self._send_command(_CMD_SET_MODE, [_MODE_GET_TEMPS])
@@ -147,9 +130,9 @@ class CommanderCore(UsbHidDriver):
         for i in range(0, num_temps):
             connected = temp_data[i*3] == 0x00
             if connected:
-                temps[i] = u16le_from(temp_data, offset=i*3+1)/10
+                temps.append(u16le_from(temp_data, offset=i*3+1)/10)
             else:
-                temps[i] = None
+                temps.append(None)
 
         return temps
 
@@ -166,7 +149,7 @@ class CommanderCore(UsbHidDriver):
         data_end = data_start + len(data)
 
         # Fill in the buffer
-        buf[cmd_start: data_start] = command
+        buf[cmd_start:data_start] = command
         buf[data_start:data_end] = data
 
         self.device.clear_enqueued_reports()

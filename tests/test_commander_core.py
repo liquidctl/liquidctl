@@ -107,7 +107,7 @@ def test_initialize_commander_core(commander_core_device):
 
     # LED counts
     assert res[1][1] == 27
-    assert res[2][1] == 'Disconnected'
+    assert res[2][1] is None
     assert res[3][1] == 1
     assert res[4][1] == 2
     assert res[5][1] == 4
@@ -115,8 +115,8 @@ def test_initialize_commander_core(commander_core_device):
     assert res[7][1] == 16
 
     # Temperature sensors connected
-    assert res[8][1] == 'Disconnected'
-    assert res[9][1] == 'Connected'
+    assert res[8][1] is False
+    assert res[9][1] is True
 
 
 def test_status_commander_core(commander_core_device):

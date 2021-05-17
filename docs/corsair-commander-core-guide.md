@@ -10,16 +10,16 @@ The device should be initialized every time it is powered on.
 ```
 # liquidctl initialize
 Corsair Commander Core (experimental)
-├── Firmware version                 1.6.135  
-├── AIO RGB                               29  LEDs
-├── RGB port 1                             8  LEDs
-├── RGB port 2                             8  LEDs
-├── RGB port 3                  Disconnected  
-├── RGB port 4                  Disconnected  
-├── RGB port 5                  Disconnected  
-├── RGB port 6                  Disconnected  
-├── Water Temperature Sensor       Connected  
-└── Temperature Sensor 1        Disconnected  
+├── Firmware version            1.6.135  
+├── AIO LED count                    29  
+├── RGB port 1 LED count              8  
+├── RGB port 2 LED count              8  
+├── RGB port 3 LED count            N/A  
+├── RGB port 4 LED count            N/A  
+├── RGB port 5 LED count            N/A  
+├── RGB port 6 LED count            N/A  
+├── Water temperature sensor        Yes  
+└── Temperature sensor 1             No   
 ```
 
 ## Retrieving the pump speed, fan speeds, and temperatures

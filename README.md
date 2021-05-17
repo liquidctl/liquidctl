@@ -88,7 +88,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_Ze_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
 | AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
-| AIO liquid cooler | [Corsair iCUE H100i, H115i, H150i ELITE CAPELLIX](docs/corsair-commander-core-guide.md) | USB HID | <sup>_en_</sup> |
+| AIO liquid cooler | [Corsair iCUE H100i, H115i, H150i Elite Capellix](docs/corsair-commander-core-guide.md) | USB HID | <sup>_en_</sup> |
 | AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
