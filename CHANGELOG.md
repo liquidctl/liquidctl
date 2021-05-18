@@ -3,6 +3,8 @@
 ## [Unrelased]
 
 ### Added
+ - Add initial experimental support for the Corsair Commander Core/iCUE Elite Capellix AIOs (PR #340)
+ - Enable support for new variant of the NZXT Smart Device V2 (#338)
  - List experimental partial support for the NZXT Kraken Z53
  - Add machine readable output with `--json` (PR #314)
  - Add CONTRIBUTING.md and document our development process
