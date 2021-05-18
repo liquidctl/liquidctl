@@ -24,8 +24,7 @@ Corsair Commander Core (experimental)
 
 ## Retrieving the pump speed, fan speeds, and temperatures
 
-
-The commander core currently can retrieve the pump speed, fan speeds, temperature of the water, and
+The Commander Core currently can retrieve the pump speed, fan speeds, temperature of the water, and
 the temperature measured by the probe.
 
 ```
