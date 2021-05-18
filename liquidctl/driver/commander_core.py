@@ -60,12 +60,14 @@ class CommanderCore(UsbHidDriver):
         for i in range(0, num_rgb):
             connected = u16le_from(res, offset=6+i*4) == 2
             num_leds = u16le_from(res, offset=8+i*4)
-            status += [('AIO LED count' if i == 0 else f'RGB port {i} LED count', num_leds if connected else None, '')]
+            label = 'AIO LED count' if i == 0 else f'RGB port {i} LED count'
+            status += [(label, num_leds if connected else None, '')]
 
         # Get what temp sensors are connected
         for i, temp in enumerate(self._get_temps()):
             connected = temp is not None
-            status += [('Water temperature sensor' if i == 0 else f'Temperature sensor {i}', connected, '')]
+            label = 'Water temperature sensor' if i == 0 else f'Temperature sensor {i}'
+            status += [(label, connected, '')]
 
         return status
 
@@ -77,12 +79,14 @@ class CommanderCore(UsbHidDriver):
         self._send_command(_CMD_INIT)
 
         for i, speed in enumerate(self._get_speeds()):
-            status += [('Pump speed' if i == 0 else f'Fan speed {i}', speed, 'rpm')]
+            label = 'Pump speed' if i == 0 else f'Fan speed {i}'
+            status += [(label, speed, 'rpm')]
 
         for i, temp in enumerate(self._get_temps()):
             if temp is None:
                 continue
-            status += [('Water temperature' if i == 0 else f'Temperature {i}', temp, '°C')]
+            label = 'Water temperature' if i == 0 else f'Temperature {i}'
+            status += [(label, temp, '°C')]
 
         return status
 
