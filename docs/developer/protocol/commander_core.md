@@ -70,6 +70,8 @@ Response:
 | 0x03 | Minor |
 | 0x04 | Patch |
 
+Note: the `0x01` Init/Wakeup command is exceptionally not necessary before this command.
+
 ### `0x05` - Init/Wakeup
 
 Needs to be run before changing the mode on a channel if there is a chance the channel has already been used.
