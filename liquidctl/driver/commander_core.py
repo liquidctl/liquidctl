@@ -156,4 +156,5 @@ class CommanderCore(UsbHidDriver):
         self.device.write(buf)
 
         buf = bytes(self.device.read(_RESPONSE_LENGTH))
+        assert buf[1] == command[0], 'response does not match command'
         return buf
