@@ -347,6 +347,10 @@ class SmartDevice2(_CommonSmartDeviceDriver):
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
+        (0x1e71, 0x2010, None, 'NZXT RGB & Fan Controller', {
+            'speed_channel_count': 3,
+            'color_channel_count': 2
+        }),
     ]
 
     _MAX_READ_ATTEMPTS = 12
