@@ -1,17 +1,21 @@
 # Corsair Commander Core Protocol
 
-### Compatible devices
+## Compatible devices
 
 | Device Name | USB ID | LED channels | Fan channels | Temperature channels | 
 |:-----------:|:------:|:------------:|:------------:|:--------------------:|
-| Commander Pro | `1B1C:0C1C` | 7 | 6 | 2 |
-**NOTE: The first two LED and temperature channels go to the EXT port and potentially the AIO**
+| Commander Core | `1b1c:0c1c` | 7 | 6 | 2 |
 
-### Command formats
+The Commander Core is typically shipped with the Corsair iCUE Elite Capellix
+AIOs.  The first two LED and temperature channels go to the EXT port, typically
+in use by the the AIO.
 
-**NOTES:**
- - The commander core works in different modes so ensure the proper mode has been sent for each command
- - Unless stated otherwise all multi-byte numbers used little endian
+## Command formats
+
+The Commander Core works in different modes, so ensure the proper mode has been
+sent for each command.
+
+Unless stated otherwise all multi-byte numbers used little endian.
 
 Host -> Device: 1024 bytes
 
@@ -31,14 +35,14 @@ Device -> Host: 1024 bytes
 | 0x02 | 0x00 |
 | 0x03-... | data |
 
-___
-## Global Commands
+## Global commands
 
-Global commander should work in any mode.
+Global commands should work in any mode.
 
 ### `0x01` - Init/Wakeup
 
-Needs to be run every time the device has not been sent any data for a predefined number of seconds.
+Needs to be run every time the device has not been sent any data for a
+predefined number of seconds.
 
 Command:
 
@@ -70,11 +74,13 @@ Response:
 | 0x03 | Minor |
 | 0x04 | Patch |
 
-Note: the `0x01` Init/Wakeup command is exceptionally not necessary before this command.
+Note: the `0x01` Init/Wakeup command is exceptionally not necessary before this
+command.
 
 ### `0x05` - Init/Wakeup
 
-Needs to be run before changing the mode on a channel if there is a chance the channel has already been used.
+Needs to be run before changing the mode on a channel if there is a chance the
+channel has already been used.
 
 Command:
 
@@ -87,7 +93,8 @@ Command:
 
 ### `0x0d` - Set Channel Mode
 
-Sets the mode for the channel to use  
+Sets the mode for the channel to use.
+
 `0x05` - Init/Wakeup will likely need to be run first.
 
 Command:
@@ -98,8 +105,6 @@ Command:
 | 0x01 | 0x0d |
 | 0x02 | channel |
 | 0x03 | new mode |
-
-___
 
 ## Modes:
 
@@ -131,8 +136,6 @@ Response:
 | 0x0e, 0x0f | Speed of Fan 4 |
 | 0x10, 0x11 | Speed of Fan 5 |
 | 0x12, 0x13 | Speed of Fan 6 |
-
-___
 
 ### `0x20` - Detect LEDs
 
@@ -177,8 +180,6 @@ RGB Mode:
 | Connected    | 0x02  |
 | Disconnected | 0x03  |
 
-___
-
 ### `0x21` - Get Temperatures
 
 #### `0x08` - Get Temperatures
@@ -204,5 +205,3 @@ Response:
 | 0x07, 0x08 | Temperature in Celsius (needs to be divided by 10) |
 | 0x09 | 0x00 if connected or 0x01 if not connected |
 | 0x0a, 0x0b | Temperature in Celsius (needs to be divided by 10) |
-
-___
