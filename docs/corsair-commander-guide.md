@@ -1,4 +1,4 @@
-# Corsair Commander Pro and Lighting Node Pro/Core
+# Corsair Commander Pro, Obsidian 1000D and Lighting Node Pro/Core
 _Driver API and source code available in [`liquidctl.driver.commander_pro`](../liquidctl/driver/commander_pro.py)._
 
 
@@ -39,10 +39,9 @@ Corsair Lighting Node Pro (experimental)
 
 The Lighting Node Pro and Lighting Node Core do not have a status message.
 
-The Commander Pro is able to retrieve the current fan speeds as well as
-the current temperature of any connected temperature probes. Additionally
-the Commander Pro is able to retrieve the voltages from the 3.3, 5, and 12
-volt buses.
+The Commander Pro and Obsidian 1000D are able to retrieve the current fan
+speeds as well as the current temperature of any connected temperature probes.
+They are also able to retrieve the voltages from the 3.3, 5, and 12 volt buses.
 
 If a fan or temperature probe is not connected then a value of 0 is shown.
 

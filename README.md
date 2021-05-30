@@ -101,6 +101,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_en_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
+| Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | <sup>_en_</sup> |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
