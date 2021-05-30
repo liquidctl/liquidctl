@@ -123,6 +123,8 @@ class CommanderPro(UsbHidDriver):
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
         (0x1b1c, 0x0c1a, None, 'Corsair Lighting Node Core (experimental)',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 1}),
+        (0x1b1c, 0x1d00, None, 'Corsair Obsidian 1000D (experimental)',
+            {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
     ]
 
     def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
@@ -200,8 +202,8 @@ class CommanderPro(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        if self.device.product_id != 0x0c10:
-            _LOGGER.debug('only the Commander Pro supports this')
+        if self._fan_count == 0 or self._temp_probs == 0:
+            _LOGGER.debug('only Commander Pro and Obsidian 1000D report status')
             return []
 
         temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
