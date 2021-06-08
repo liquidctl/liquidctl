@@ -43,14 +43,6 @@ Within each group, `import` statements should come before `from <...> import`
 ones.  After that, they should be sorted ascending order.
 
 
-## Use of automatic formatters
-
-Pull requests are welcome.
-
-_(For a suggestion of a formatter and associated configuration to use, not just
-to fill this section)._
-
-
 ## Driver behavior
 
 ### Fixing or raising on user errors
@@ -181,3 +173,11 @@ from liquidctl.util import LazyHexRepr
 ...
 _LOGGER.debug('buffer: %r', LazyHexRepr(some_bytes))
 ```
+
+
+## Use of automatic formatters
+
+We are considering it for a near future (tracking issue is [#321]).  Until
+then, code is expected to be formated according to _this_ document.
+
+[#321]: https://github.com/liquidctl/liquidctl/issues/321
