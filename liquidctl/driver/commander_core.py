@@ -9,6 +9,7 @@ Copyright (C)2021  ParkerMc and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+from contextlib import contextmanager
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
@@ -48,9 +49,7 @@ class CommanderCore(UsbHidDriver):
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
 
-        try:
-            self._send_command(_CMD_WAKE)
-
+        with self._wake_device_context():
             # Get Firmware
             res = self._send_command(_CMD_GET_FIRMWARE)
             fw_version = (res[3], res[4], res[5])
@@ -74,18 +73,13 @@ class CommanderCore(UsbHidDriver):
                 label = 'Water temperature sensor' if i == 0 else f'Temperature sensor {i}'
                 status += [(label, connected, '')]
 
-        finally:
-            self._send_command(_CMD_SLEEP)
-
         return status
 
     def get_status(self, **kwargs):
         """Get all the fan speeds and temps"""
         status = []
 
-        try:
-            self._send_command(_CMD_WAKE)
-
+        with self._wake_device_context():
             for i, speed in enumerate(self._get_speeds()):
                 label = 'Pump speed' if i == 0 else f'Fan speed {i}'
                 status += [(label, speed, 'rpm')]
@@ -95,9 +89,6 @@ class CommanderCore(UsbHidDriver):
                     continue
                 label = 'Water temperature' if i == 0 else f'Temperature {i}'
                 status += [(label, temp, '°C')]
-
-        finally:
-            self._send_command(_CMD_SLEEP)
 
         return status
 
@@ -180,3 +171,11 @@ class CommanderCore(UsbHidDriver):
         buf = bytes(self.device.read(_RESPONSE_LENGTH))
         assert buf[1] == command[0], 'response does not match command'
         return buf
+
+    @contextmanager
+    def _wake_device_context(self):
+        try:
+            self._send_command(_CMD_WAKE)
+            yield
+        finally:
+            self._send_command(_CMD_SLEEP)
