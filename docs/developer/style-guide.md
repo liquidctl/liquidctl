@@ -23,13 +23,13 @@ modules.
 
 ### Nits
 
-- indent with 4 spaces
-- prefer to continue lines vertically, aligned with the opening delimiter
+- indent with 4 spaces;
+- prefer to continue lines vertically, aligned with the opening delimiter;
 - prefer single quotes for string literals, unless double quotes will avoid
-  some escaping
+  some escaping;
 - use f-strings whenever applicable, except for `logging` messages (more about
-  those bellow) which wont necessarily be shown
-- use lowercase hexadecimal literals
+  those bellow) which wont necessarily be shown;
+- use lowercase hexadecimal literals.
 
 ### Grouping and sorting of import statements
 
@@ -48,16 +48,16 @@ ones.  After that, they should be sorted ascending order.
 When adding new dependencies, their benefit must be carefully weighted.
 Additionally, the new dependency should:
 
-- Have a small number of transitive dependencies;
-- Support Linux:
+- have a small number of transitive dependencies;
+- support Linux:
     * be available on ArchLinux;
     * be available on Fedora;
     * be available on Debian;
     * be expected to be packaged in other distributions;
-- Support Windows:
+- support Windows:
     * be easily installed (by being pure Python or have binary wheels);
-- Support Mac OS;
-- Be compatible for use in a GPL v3 program (including being distributed under
+- support Mac OS;
+- be compatible for use in a GPL v3 program (including being distributed under
   the GPL in the case of the Windows executable).
 
 
@@ -125,15 +125,15 @@ By default the CLI outputs these to `stderr` for all users.  Since the messages
 are visible to non-developers, the should follow the simplified guidelines
 bellow:
 
-- start with a lowercase letter
+- start with a lowercase letter;
 - string values that the user is expected to type, or that absolutely need to
-  delimited: use single quotes
-- other values: no quotes or backticks
-- command line commands or options: no quotes or backticks
+  delimited: use single quotes;
+- other values: no quotes or backticks;
+- command line commands or options: no quotes or backticks.
 
 Deprecated guidelines for warnings:
 
-- outputting values as `key=value` pairs
+- outputting values as `key=value` pairs.
 
 ### Info
 
@@ -153,8 +153,9 @@ require the `--debug` flag.
 
 Since they are intended for internal use, they follow relaxed guidelines:
 
-- start with a lowercase letter
-- use `key=value`, `` `expression` ``, `'string'`, or `value`, whichever is clearer
+- start with a lowercase letter;
+- use `key=value`, `` `expression` ``, `'string'`, or `value`, whichever is
+  clearer;
 
 ### A quick refresher on `logging`
 
