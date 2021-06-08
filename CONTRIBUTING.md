@@ -3,6 +3,10 @@
 Thank you for your interest in contributing to liquidctl!  There are many ways
 to contribute and we appreciate all of them.
 
+We ask you, however, to adhere to our [code of conduct].
+
+[code of conduct]: CODE_OF_CONDUCT.md
+
 ## Reporting bugs and other issues
 
 Reporting problems with the software is an easy and very valuable way to
