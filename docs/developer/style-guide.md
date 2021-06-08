@@ -43,6 +43,24 @@ Within each group, `import` statements should come before `from <...> import`
 ones.  After that, they should be sorted ascending order.
 
 
+## Dependencies
+
+When adding new dependencies, their benefit must be carefully weighted.
+Additionally, the new dependency should:
+
+- [ ] have a small number of transitive dependencies;
+- [ ] support Linux:
+    * [ ] be available on ArchLinux;
+    * [ ] be available on Fedora;
+    * [ ] be available on Debian;
+    * [ ] be expected to be packaged in other distributions;
+- [ ] support Windows:
+    * be easily installed (by being pure Python or have binary wheels);
+- [ ] support Mac OS;
+- [ ] be compatible for use in a GPL v3 program (including be distributed under
+      the GPL in the case of the Windows executable).
+
+
 ## Driver behavior
 
 ### Fixing or raising on user errors
