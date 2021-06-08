@@ -17,7 +17,7 @@ rewritten at any time.
 ## Release cycle and pre-release freeze periods
 
 Besides unscheduled patch releases, a new minor release is expected once every
-12 weeks.
+13 weeks.
 
 In the four weeks before a scheduled release, major changes, like new buses or
 large refactorings, stop being merged into the main branch.  This period is
