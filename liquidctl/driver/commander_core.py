@@ -12,7 +12,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.error import NotSupportedByDriver
+from liquidctl.error import ExpectationNotMet, NotSupportedByDriver
 from liquidctl.util import u16le_from
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,15 +22,20 @@ _RESPONSE_LENGTH = 1024
 
 _INTERFACE_NUMBER = 0
 
+_CMD_WAKE = (0x01, 0x03, 0x00, 0x02)
+_CMD_SLEEP = (0x01, 0x03, 0x00, 0x01)
 _CMD_GET_FIRMWARE = (0x02, 0x13)
-_CMD_INIT = (0x01, 0x03, 0x00, 0x02)
 _CMD_RESET = (0x05, 0x01, 0x00)
 _CMD_SET_MODE = (0x0d, 0x00)
 _CMD_GET = (0x08, 0x00)
 
-_MODE_DETECT_RGB = 0x20
-_MODE_GET_SPEEDS = 0x17
-_MODE_GET_TEMPS = 0x21
+_MODE_LED_COUNT = (0x20,)
+_MODE_GET_SPEEDS = (0x17,)
+_MODE_GET_TEMPS = (0x21,)
+
+_DATA_TYPE_SPEEDS = (0x06, 0x00)
+_DATA_TYPE_LED_COUNT = (0x0f, 0x00)
+_DATA_TYPE_TEMPS = (0x10, 0x00)
 
 
 class CommanderCore(UsbHidDriver):
@@ -43,31 +48,34 @@ class CommanderCore(UsbHidDriver):
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
 
-        # INIT
-        self._send_command(_CMD_INIT)
+        try:
+            self._send_command(_CMD_WAKE)
 
-        # Get Firmware
-        res = self._send_command(_CMD_GET_FIRMWARE)
-        fw_version = (res[3], res[4], res[5])
+            # Get Firmware
+            res = self._send_command(_CMD_GET_FIRMWARE)
+            fw_version = (res[3], res[4], res[5])
 
-        status = [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
+            status = [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
 
-        # Get LEDs per fan
-        self._send_command(_CMD_RESET)
-        self._send_command(_CMD_SET_MODE, [_MODE_DETECT_RGB])
-        res = self._send_command(_CMD_GET)
-        num_rgb = res[5]
-        for i in range(0, num_rgb):
-            connected = u16le_from(res, offset=6+i*4) == 2
-            num_leds = u16le_from(res, offset=8+i*4)
-            label = 'AIO LED count' if i == 0 else f'RGB port {i} LED count'
-            status += [(label, num_leds if connected else None, '')]
+            # Get LEDs per fan
+            raw_data = self._read_data(_MODE_LED_COUNT, _DATA_TYPE_LED_COUNT)
 
-        # Get what temp sensors are connected
-        for i, temp in enumerate(self._get_temps()):
-            connected = temp is not None
-            label = 'Water temperature sensor' if i == 0 else f'Temperature sensor {i}'
-            status += [(label, connected, '')]
+            num_devices = raw_data[0]
+            led_data = raw_data[1:1 + num_devices * 4]
+            for i in range(0, num_devices):
+                connected = u16le_from(led_data, offset=i*4) == 2
+                num_leds = u16le_from(led_data, offset=i*4+2)
+                label = 'AIO LED count' if i == 0 else f'RGB port {i} LED count'
+                status += [(label, num_leds if connected else None, '')]
+
+            # Get what temp sensors are connected
+            for i, temp in enumerate(self._get_temps()):
+                connected = temp is not None
+                label = 'Water temperature sensor' if i == 0 else f'Temperature sensor {i}'
+                status += [(label, connected, '')]
+
+        finally:
+            self._send_command(_CMD_SLEEP)
 
         return status
 
@@ -75,18 +83,21 @@ class CommanderCore(UsbHidDriver):
         """Get all the fan speeds and temps"""
         status = []
 
-        # INIT in case it hasn't been accesses in a while
-        self._send_command(_CMD_INIT)
+        try:
+            self._send_command(_CMD_WAKE)
 
-        for i, speed in enumerate(self._get_speeds()):
-            label = 'Pump speed' if i == 0 else f'Fan speed {i}'
-            status += [(label, speed, 'rpm')]
+            for i, speed in enumerate(self._get_speeds()):
+                label = 'Pump speed' if i == 0 else f'Fan speed {i}'
+                status += [(label, speed, 'rpm')]
 
-        for i, temp in enumerate(self._get_temps()):
-            if temp is None:
-                continue
-            label = 'Water temperature' if i == 0 else f'Temperature {i}'
-            status += [(label, temp, '°C')]
+            for i, temp in enumerate(self._get_temps()):
+                if temp is None:
+                    continue
+                label = 'Water temperature' if i == 0 else f'Temperature {i}'
+                status += [(label, temp, '°C')]
+
+        finally:
+            self._send_command(_CMD_SLEEP)
 
         return status
 
@@ -111,12 +122,10 @@ class CommanderCore(UsbHidDriver):
     def _get_speeds(self):
         speeds = []
 
-        self._send_command(_CMD_RESET)
-        self._send_command(_CMD_SET_MODE, [_MODE_GET_SPEEDS])
-        res = self._send_command(_CMD_GET)
+        raw_data = self._read_data(_MODE_GET_SPEEDS, _DATA_TYPE_SPEEDS)
 
-        num_speeds = res[5]
-        speeds_data = res[6:6 + num_speeds*2]
+        num_speeds = raw_data[0]
+        speeds_data = raw_data[1:1 + num_speeds*2]
         for i in range(0, num_speeds):
             speeds.append(u16le_from(speeds_data, offset=i*2))
 
@@ -125,12 +134,10 @@ class CommanderCore(UsbHidDriver):
     def _get_temps(self):
         temps = []
 
-        self._send_command(_CMD_RESET)
-        self._send_command(_CMD_SET_MODE, [_MODE_GET_TEMPS])
-        res = self._send_command(_CMD_GET)
+        raw_data = self._read_data(_MODE_GET_TEMPS, _DATA_TYPE_TEMPS)
 
-        num_temps = res[5]
-        temp_data = res[6:6 + num_temps*3]
+        num_temps = raw_data[0]
+        temp_data = raw_data[1:1 + num_temps*3]
         for i in range(0, num_temps):
             connected = temp_data[i*3] == 0x00
             if connected:
@@ -139,6 +146,17 @@ class CommanderCore(UsbHidDriver):
                 temps.append(None)
 
         return temps
+
+    def _read_data(self, mode, data_type):
+        self._send_command(_CMD_RESET)
+        self._send_command(_CMD_SET_MODE, mode)
+        res = self._send_command(_CMD_GET)
+
+        input_type = tuple(x for x in res[3:5])
+        if input_type != data_type:
+            raise ExpectationNotMet('Device returned incorrect data type')
+
+        return res[5:]
 
     def _send_command(self, command, data=()):
         # self.device.write expects buf[0] to be the report number or 0 if not used
