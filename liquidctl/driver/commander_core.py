@@ -9,8 +9,8 @@ Copyright (C)2021  ParkerMc and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from contextlib import contextmanager
 import logging
+from contextlib import contextmanager
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDriver
@@ -56,11 +56,13 @@ class CommanderCore(UsbHidDriver):
 
             status = [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
 
-            # Get LEDs per fan
-            raw_data = self._read_data(_MODE_LED_COUNT, _DATA_TYPE_LED_COUNT)
+            print(self._read_data((0x18,), (0x07, 0x00)).hex(':'))
 
-            num_devices = raw_data[0]
-            led_data = raw_data[1:1 + num_devices * 4]
+            # Get LEDs per fan
+            res = self._read_data(_MODE_LED_COUNT, _DATA_TYPE_LED_COUNT)
+
+            num_devices = res[0]
+            led_data = res[1:1 + num_devices * 4]
             for i in range(0, num_devices):
                 connected = u16le_from(led_data, offset=i*4) == 2
                 num_leds = u16le_from(led_data, offset=i*4+2)
@@ -113,10 +115,10 @@ class CommanderCore(UsbHidDriver):
     def _get_speeds(self):
         speeds = []
 
-        raw_data = self._read_data(_MODE_GET_SPEEDS, _DATA_TYPE_SPEEDS)
+        res = self._read_data(_MODE_GET_SPEEDS, _DATA_TYPE_SPEEDS)
 
-        num_speeds = raw_data[0]
-        speeds_data = raw_data[1:1 + num_speeds*2]
+        num_speeds = res[0]
+        speeds_data = res[1:1 + num_speeds*2]
         for i in range(0, num_speeds):
             speeds.append(u16le_from(speeds_data, offset=i*2))
 
@@ -125,10 +127,10 @@ class CommanderCore(UsbHidDriver):
     def _get_temps(self):
         temps = []
 
-        raw_data = self._read_data(_MODE_GET_TEMPS, _DATA_TYPE_TEMPS)
+        res = self._read_data(_MODE_GET_TEMPS, _DATA_TYPE_TEMPS)
 
-        num_temps = raw_data[0]
-        temp_data = raw_data[1:1 + num_temps*3]
+        num_temps = res[0]
+        temp_data = res[1:1 + num_temps*3]
         for i in range(0, num_temps):
             connected = temp_data[i*3] == 0x00
             if connected:
@@ -141,13 +143,12 @@ class CommanderCore(UsbHidDriver):
     def _read_data(self, mode, data_type):
         self._send_command(_CMD_RESET)
         self._send_command(_CMD_SET_MODE, mode)
-        res = self._send_command(_CMD_GET)
+        raw_data = self._send_command(_CMD_GET)
 
-        input_type = tuple(x for x in res[3:5])
-        if input_type != data_type:
-            raise ExpectationNotMet('Device returned incorrect data type')
+        if tuple(raw_data[3:5]) != data_type:
+            raise ExpectationNotMet('device returned incorrect data type')
 
-        return res[5:]
+        return raw_data[5:]
 
     def _send_command(self, command, data=()):
         # self.device.write expects buf[0] to be the report number or 0 if not used
