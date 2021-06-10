@@ -56,8 +56,6 @@ class CommanderCore(UsbHidDriver):
 
             status = [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
 
-            print(self._read_data((0x18,), (0x07, 0x00)).hex(':'))
-
             # Get LEDs per fan
             res = self._read_data(_MODE_LED_COUNT, _DATA_TYPE_LED_COUNT)
 
