@@ -331,23 +331,25 @@ def main():
         log_level = logging.WARNING
         sys.tracebacklimit = 0
 
-    try:
-        # use light colors if they are available (requires colorlog ^6.0)
-        _ = colorlog.escape_codes['light_purple']
-        light = 'light_'
-    except KeyError:
-        # otherwise use bold on Windows to avoid invisible text on PowerShell
-        light = '' if sys.platform != 'win32' else 'bold_'
-
+    # use light colors if they are available (requires colorlog ^6.0)
     log_colors = {
-        'DEBUG': f'{light}purple',
-        'INFO': f'{light}blue',
+        'DEBUG': f'light_purple',
+        'INFO': f'light_blue',
         'WARNING': 'yellow,bold',
         'ERROR': 'red,bold',
         'CRITICAL': 'red,bold,bg_white',
     }
 
-    log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr, log_colors=log_colors)
+    try:
+        log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr,
+                                                  log_colors=log_colors)
+    except KeyError:
+        # otherwise use bold on Windows to avoid invisible text on PowerShell
+        for key, val in log_colors.items():
+            log_colors[key] = val.replace('light_', '' if sys.platform != 'win32' else 'bold_')
+        log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr,
+                                                  log_colors=log_colors)
+
     log_handler = logging.StreamHandler()
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
