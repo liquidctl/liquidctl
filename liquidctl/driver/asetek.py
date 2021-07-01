@@ -93,7 +93,7 @@ class _Base690Lc(UsbDriver):
         Automatically sets the appropriate value for `legacy_690lc`.
         """
 
-        return super().find_supported_devices(cls, legacy_690lc=cls._LEGACY_690LC, **kwargs)
+        return super().find_supported_devices(legacy_690lc=cls._LEGACY_690LC, **kwargs)
 
     def _configure_flow_control(self, clear_to_send):
         """Set the software clear-to-send flow control policy for device."""
