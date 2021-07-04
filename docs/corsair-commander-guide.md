@@ -12,7 +12,7 @@ sensors and fan types are currently connected.
 
 ```
 # liquidctl initialize
-Corsair Commander Pro (experimental)
+Corsair Commander Pro
 ├── Firmware version       0.9.212  
 ├── Bootloader version         0.5  
 ├── Temperature probe 1        Yes  
@@ -47,7 +47,7 @@ If a fan or temperature probe is not connected then a value of 0 is shown.
 
 ```
 # liquidctl status
-Corsair Commander Pro (experimental)
+Corsair Commander Pro
 ├── Temperature 1     26.4  °C
 ├── Temperature 2     27.5  °C
 ├── Fan 1 speed        927  rpm
