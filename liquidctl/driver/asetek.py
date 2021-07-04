@@ -316,7 +316,7 @@ class Legacy690Lc(_Base690Lc):
     """Legacy fifth generation Asetek 690LC cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X) (experimental)', {}),
+        (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X)', {}),
     ]
 
     _LEGACY_690LC = True
