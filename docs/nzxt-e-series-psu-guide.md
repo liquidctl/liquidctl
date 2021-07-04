@@ -18,7 +18,7 @@ The PSU is able to report monitoring data about its own hardware and the output 
 
 ```
 # liquidctl status
-NZXT E500 (experimental)
+NZXT E500
 ├── Temperature                                    45.0  °C
 ├── Fan speed                                       505  rpm
 ├── Firmware version                         A017/40983

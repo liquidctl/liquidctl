@@ -113,7 +113,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
 | Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_e_</sup> |
+| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_U_</sup> _Requires `--unsafe` features._  
@@ -121,6 +121,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 <sup>_a_</sup> _Architecture-specific limitations._  
 <sup>_e_</sup> _Experimental support._  
 <sup>_n_</sup> _New driver, only available on git._  
+<sup>_p_</sup> _Only partially supported._  
 <sup>_x_</sup> _Only supported on Linux._  
 
 
