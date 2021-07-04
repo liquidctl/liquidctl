@@ -131,7 +131,7 @@ def test_tse2004_finds_ts_devices(smbus):
     devs = list(Ddr4Temperature.probe(smbus))
 
     assert list(map(type, devs)) == [Ddr4Temperature] * 4
-    assert devs[1].description == 'Corsair DIMM4 (experimental)'
+    assert devs[1].description.startswith('Corsair DIMM4')
 
 
 def test_tse2004_get_status_is_unsafe(smbus):
@@ -197,7 +197,7 @@ def test_vengeance_rgb_finds_devices(smbus):
     devs = list(VengeanceRgb.probe(smbus))
 
     assert list(map(type, devs)) == [VengeanceRgb] * 4
-    assert devs[1].description == 'Corsair Vengeance RGB DIMM4 (experimental)'
+    assert devs[1].description.startswith('Corsair Vengeance RGB DIMM4')
 
 
 def test_vengeance_get_status_reads_temperature(vengeance_rgb):
