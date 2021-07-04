@@ -7,18 +7,23 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 [![Developer's Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
 
 
-
 ```
 # liquidctl list
 Device #0: ASUS Strix RTX 2080 Ti OC
-Device #1: Corsair Vengeance RGB DIMM2 (experimental)
-Device #2: Corsair Vengeance RGB DIMM4 (experimental)
+Device #1: Corsair Vengeance RGB DIMM2
+Device #2: Corsair Vengeance RGB DIMM4
 Device #3: NZXT Smart Device (V1)
 Device #4: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
 
-# liquidctl status
+# liquidctl status --unsafe=smbus,vengeance_rgb
+Corsair Vengeance RGB DIMM2
+└── Temperature    33.8  °C
+
+Corsair Vengeance RGB DIMM4
+└── Temperature    33.8  °C
+
 NZXT Smart Device (V1)
 ├── Fan 1 speed                 1473  rpm
 ├── Fan 1 voltage              11.91  V
