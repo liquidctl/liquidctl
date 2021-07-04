@@ -96,8 +96,8 @@ The following devices are supported by this version of liquidctl.  See each guid
 | AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_e_</sup> |
-| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uex_</sup> |
-| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uex_</sup> |
+| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
+| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_en_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
@@ -118,7 +118,8 @@ The following devices are supported by this version of liquidctl.  See each guid
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_U_</sup> _Requires `--unsafe` features._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
-<sup>_e_</sup> _Experimental and/or partial support._  
+<sup>_a_</sup> _Architecture-specific limitations._  
+<sup>_e_</sup> _Experimental support._  
 <sup>_n_</sup> _New driver, only available on git._  
 <sup>_x_</sup> _Only supported on Linux._  
 

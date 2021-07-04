@@ -167,7 +167,7 @@ class Ddr4Temperature(SmbusDriver):
             if not desc:
                 continue
 
-            desc += f' DIMM{dimm + 1} (experimental)'
+            desc += f' DIMM{dimm + 1}'
 
             if (address and int(address, base=16) != spd_addr) \
                     or (match and match.lower() not in desc.lower()):

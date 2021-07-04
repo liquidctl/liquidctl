@@ -20,7 +20,6 @@ Jump to a specific section:
 [ddr4_temperature]: #dimms-with-a-standard-temperature-sensor
 
 Supports modules using TSE2004-compatible SPDD EEPROMs with temperature sensor.
-Experimental.
 
 Unsafe features:
 
@@ -35,15 +34,13 @@ Not required for this device.
 
 ```
 # liquidctl status --unsafe=smbus,ddr4_temperature
-DDR4 DIMM2 (experimental)
+DDR4 DIMM2
 └── Temperature    30.5  °C
 ```
 
 
 ## Corsair Vengeance RGB
 [vengeance_rgb]: #corsair-vengeance-rgb
-
-Experimental.
 
 Unsafe features:
 
@@ -59,7 +56,7 @@ Not required for this device.
 
 ```
 # liquidctl status --verbose --unsafe=smbus,vengeance_rgb
-Corsair Vengeance RGB DIMM2 (experimental)
+Corsair Vengeance RGB DIMM2
 └── Temperature    30.5  °C
 ```
 
