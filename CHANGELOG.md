@@ -13,6 +13,10 @@
  - Change Grid+ V3/Smart Device (V1) status output (PR #326)
  - Change Commander Pro status/initialize output (PR #326)
  - Colorize the log output (new dependency: `colorlog`; PRs #318, #329)
+ - Mark Kraken X31, X41, X61 as no longer experimental
+ - Mark Vengeance RGB and DDR4 temperature sensors as no longer experimental
+ - Mark Commander pro as no longer experimental
+ - Mark NZXT E500, E650, E850 as no longer experimental
  - Change main branch name to "main"
  - Improve the documentation
 ### Fixed
