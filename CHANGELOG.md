@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unrelased]
+## [1.7.0] – 2021-07-06
 
 ### Added
  - Add initial experimental support for the Corsair Commander Core/iCUE Elite Capellix AIOs (PR #340)
