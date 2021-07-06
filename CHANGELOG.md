@@ -22,6 +22,11 @@
 ### Fixed
  - Make `find_supported_devices()` account for `legacy_690lc` on Asetek 690LC drivers
  - Remove accidentally inherited `downgrade_to_legacy()` (unstable) from `Hydro690Lc`
+### Checksums
+```
+053675aca9ba9a3c14d8ef24d1a2e75c592c55a1b8ba494447bc13d3ae523d6f  dist/liquidctl-1.7.0.tar.gz
+d0f8f24961a22c7664c330d286e1c63d4df753d5fbe21ac77eb6488b27508751  dist/liquidctl-1.7.0-bin-windows-x86_64.zip
+```
 
 
 ## [1.6.1] – 2021-05-01
