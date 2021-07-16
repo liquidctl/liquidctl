@@ -1,7 +1,20 @@
 # Changelog
 
-## [1.7.0] – 2021-07-06
+## [1.7.1] – 2021-07-16
+_Summary for the 1.7.1 release: fix a bug when colorizing the log output._
 
+Changelog since 1.7.0:
+### Fixed
+ - Fix `KeyError` when logging due to colorlog<6
+ - Swap DEBUG and INFO level colors
+
+
+## [1.7.0] – 2021-07-06
+_Summary for the 1.7.0 release: support for Commander Core/Capellix, Obsidian
+1000D, new Smart Device V2 variant; `--json` output; improvements in
+initialize/status output; colorize the log output._
+
+Changelog since 1.6.2:
 ### Added
  - Add initial experimental support for the Corsair Commander Core/iCUE Elite Capellix AIOs (PR #340)
  - Enable experimental support for Corsair Obsidian 1000D (#346)
