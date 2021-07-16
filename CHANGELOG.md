@@ -7,6 +7,11 @@ Changelog since 1.7.0:
 ### Fixed
  - Fix `KeyError` when logging due to colorlog<6
  - Swap DEBUG and INFO level colors
+### Checksums
+```
+10f650b9486ddac184330940550433685ae0abc70b66fe92d994042491aab356  dist/liquidctl-1.7.1.tar.gz
+5f35d4ac8ad6da374877d17c7a36bbb202b0a74bd773ebe45444f0089daba27b  dist/liquidctl-1.7.1-bin-windows-x86_64.zip
+```
 
 
 ## [1.7.0] – 2021-07-06
