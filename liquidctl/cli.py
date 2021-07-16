@@ -331,24 +331,25 @@ def main():
         log_level = logging.WARNING
         sys.tracebacklimit = 0
 
-    # use light colors if they are available (requires colorlog ^6.0)
-    log_colors = {
-        'DEBUG': f'light_purple',
-        'INFO': f'light_blue',
-        'WARNING': 'yellow,bold',
-        'ERROR': 'red,bold',
-        'CRITICAL': 'red,bold,bg_white',
-    }
+    if sys.platform == 'win32':
+        log_colors = {
+            'DEBUG': f'bold_purple',
+            'INFO': f'bold_blue',
+            'WARNING': 'yellow,bold',
+            'ERROR': 'red,bold',
+            'CRITICAL': 'red,bold,bg_white',
+        }
+    else:
+        log_colors = {
+            'DEBUG': f'purple',
+            'INFO': f'blue',
+            'WARNING': 'yellow,bold',
+            'ERROR': 'red,bold',
+            'CRITICAL': 'red,bold,bg_white',
+        }
 
-    try:
-        log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr,
-                                                  log_colors=log_colors)
-    except KeyError:
-        # otherwise use bold on Windows to avoid invisible text on PowerShell
-        for key, val in log_colors.items():
-            log_colors[key] = val.replace('light_', '' if sys.platform != 'win32' else 'bold_')
-        log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr,
-                                                  log_colors=log_colors)
+    log_fmtter = colorlog.TTYColoredFormatter(fmt=log_fmt, stream=sys.stderr,
+                                              log_colors=log_colors)
 
     log_handler = logging.StreamHandler()
     log_handler.setFormatter(log_fmtter)
