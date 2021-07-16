@@ -333,16 +333,16 @@ def main():
 
     if sys.platform == 'win32':
         log_colors = {
-            'DEBUG': f'bold_purple',
-            'INFO': f'bold_blue',
+            'DEBUG': f'bold_blue',
+            'INFO': f'bold_purple',
             'WARNING': 'yellow,bold',
             'ERROR': 'red,bold',
             'CRITICAL': 'red,bold,bg_white',
         }
     else:
         log_colors = {
-            'DEBUG': f'purple',
-            'INFO': f'blue',
+            'DEBUG': f'blue',
+            'INFO': f'purple',
             'WARNING': 'yellow,bold',
             'ERROR': 'red,bold',
             'CRITICAL': 'red,bold,bg_white',
