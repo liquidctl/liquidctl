@@ -93,3 +93,15 @@ It is possible to configure the visual alert for high liquid temperatures:
 `--alert-color <color>`: set the color used by the visual high temperature alert
 
 Note that, regardless of the use of these options, alerts are always enabled (unless suppressed by the 'blackout' mode): the default threshold and color are, respectively, 45°C and red.
+
+## Save settings to device
+
+Use the `--non-volatile` option on a `set` command to save the current values of _all_ settings (pump speed, fan cruve, and light mode) to the device's on-board flash memory:
+
+```
+# liquidctl set logo color blackout
+# liquidctl set pump speed 75
+# liquidctl --non-volatile set fan speed 50
+```
+
+Flash write-cycles are limited so avoid using `--non-volatile` on every command.

@@ -206,9 +206,9 @@ class _ModernBase690Lc(_Base690Lc):
             ('Firmware version', firmware, '')
         ]
 
-    def set_color(self, channel, mode, colors, time_per_color=1, time_off=None,
-                  alert_threshold=_HIGH_TEMPERATURE, alert_color=[255, 0, 0],
-                  speed=3, **kwargs):
+    def set_color(self, channel, mode, colors, time_per_color=1,
+                  time_off=None, alert_threshold=_HIGH_TEMPERATURE, alert_color=[255, 0, 0],
+                  speed=3, non_volatile=False, **kwargs):
         """Set the color mode for a specific channel."""
         # keyword arguments may have been forwarded from cli args and need parsing
         colors = list(colors)
@@ -242,8 +242,12 @@ class _ModernBase690Lc(_Base690Lc):
         else:
             raise KeyError(f'unknown lighting mode {mode}')
         self._end_transaction_and_read()
+        if non_volatile:
+            self._begin_transaction()
+            self._write([_CMD_STORE_SETTINGS])
+            self._end_transaction_and_read()
 
-    def set_speed_profile(self, channel, profile, **kwargs):
+    def set_speed_profile(self, channel, profile, non_volatile=False, **kwargs):
         """Set channel to follow a speed duty profile."""
         mtype, dmin, dmax = _VARIABLE_SPEED_CHANNELS[channel]
         adjusted = self._prepare_profile(profile, dmin, dmax, _MAX_PROFILE_POINTS)
@@ -254,8 +258,12 @@ class _ModernBase690Lc(_Base690Lc):
         self._begin_transaction()
         self._write([mtype, 0] + temps + duties)
         self._end_transaction_and_read()
+        if non_volatile:
+            self._begin_transaction()
+            self._write([_CMD_STORE_SETTINGS])
+            self._end_transaction_and_read()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+    def set_fixed_speed(self, channel, duty, non_volatile=False, **kwargs):
         """Set channel to a fixed speed duty."""
         if channel == 'fan':
             # While devices seem to recognize a specific channel for fixed fan
@@ -265,7 +273,7 @@ class _ModernBase690Lc(_Base690Lc):
             # *another* call to initialize(), i.e.  with another
             # configuration command.
             _LOGGER.info('using a flat profile to set %s to a fixed duty', channel)
-            self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
+            self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], non_volatile, **kwargs)
             return
         mtype, dmin, dmax = _FIXED_SPEED_CHANNELS[channel]
         duty = clamp(duty, dmin, dmax)
@@ -276,7 +284,10 @@ class _ModernBase690Lc(_Base690Lc):
         self._begin_transaction()
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
         self._end_transaction_and_read()
-
+        if non_volatile:
+            self._begin_transaction()
+            self._write([_CMD_STORE_SETTINGS])
+            self._end_transaction_and_read()
 
 class Modern690Lc(_ModernBase690Lc):
     """Modern fifth generation Asetek 690LC cooler."""
