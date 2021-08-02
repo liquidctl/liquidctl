@@ -863,8 +863,8 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
     assert len(sent) == 5
 
     assert sent[3].data[0] == 0x35
-    assert sent[3].data[2] == 0x00  # start led
-    assert sent[3].data[3] == 203  # num leds
+    assert sent[3].data[2] == 0  # start led
+    assert sent[3].data[3] == 204  # num leds
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
@@ -897,8 +897,7 @@ def test_set_color_hardware_start_set(commanderProDevice, startLED, expected):
 
 
 @pytest.mark.parametrize('numLED,expected', [
-    (1, 0x01), (30, 0x1e), (96, 0x60)
-    ])
+    (1, 1), (30, 30), (96, 96), (203, 203), (204, 204), (205, 204)    ])
 def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     ignore = Report(0, bytes(16))
     for _ in range(6):
@@ -919,7 +918,6 @@ def test_set_color_hardware_num_leds(commanderProDevice, numLED, expected):
     assert effects is not None
     assert len(effects) == 1
 
-
 def test_set_color_hardware_too_many_leds(commanderProDevice):
     ignore = Report(0, bytes(16))
     for _ in range(6):
@@ -934,7 +932,7 @@ def test_set_color_hardware_too_many_leds(commanderProDevice):
 
     assert sent[3].data[0] == 0x35
     assert sent[3].data[2] == 0xc7  # start led
-    assert sent[3].data[3] == 0x04  # num led
+    assert sent[3].data[3] == 5  # num led
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
