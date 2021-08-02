@@ -4,6 +4,8 @@
 _Summary for the 1.7.1 release: fix a bug when colorizing the log output._
 
 Changelog since 1.7.0:
+### Changed
+ - Changed the default behavior for the default value for `maximum-leds` to be all the LED's instead of one for the Corsair Commander family of devices 
 ### Fixed
  - Fix `KeyError` when logging due to colorlog<6
  - Swap DEBUG and INFO level colors

@@ -136,6 +136,7 @@ _² This is not a real mode but it is fixed with RGB values of 0_
 
 To specify which LED's on the channel the effect should apply to the
 `--start-led` and `--maximum-leds` flags must be given.
+By default the effect will apply to all LED's on the channel.
 
 If you have 3 Corsair LL fans connected to channel one and you want to set
 the first and third to green and the middle to blue you can use the following

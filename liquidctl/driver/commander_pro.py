@@ -368,7 +368,7 @@ class CommanderPro(UsbHidDriver):
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
     def set_color(self, channel, mode, colors, direction='forward',
-                  speed='medium', start_led=1, maximum_leds=1, **kwargs):
+                  speed='medium', start_led=1, maximum_leds=204, **kwargs):
         """Set the color of each LED.
 
         The table bellow summarizes the available channels, modes, and their
