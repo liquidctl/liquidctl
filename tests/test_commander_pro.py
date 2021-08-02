@@ -864,7 +864,7 @@ def test_set_color_hardware_default_start_end(commanderProDevice):
 
     assert sent[3].data[0] == 0x35
     assert sent[3].data[2] == 0x00  # start led
-    assert sent[3].data[3] == 0x01  # num leds
+    assert sent[3].data[3] == 203  # num leds
 
     effects = commanderProDevice._data.load('saved_effects', default=None)
 
