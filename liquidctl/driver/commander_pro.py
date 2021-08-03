@@ -67,6 +67,7 @@ _PROFILE_LENGTH = 6
 _CRITICAL_TEMPERATURE = 60
 _CRITICAL_TEMPERATURE_HIGH = 100
 _MAX_FAN_RPM = 5000             # I have no idea if this is a good value or not
+_MAX_LEDS = 204
 
 _MODES = {
     'off': 0x04,            # this is a special case of fixed
@@ -368,7 +369,7 @@ class CommanderPro(UsbHidDriver):
                 self._send_command(_CMD_SET_FAN_PROFILE, buf)
 
     def set_color(self, channel, mode, colors, direction='forward',
-                  speed='medium', start_led=1, maximum_leds=1, **kwargs):
+                  speed='medium', start_led=1, maximum_leds=_MAX_LEDS, **kwargs):
         """Set the color of each LED.
 
         The table bellow summarizes the available channels, modes, and their
@@ -402,8 +403,8 @@ class CommanderPro(UsbHidDriver):
 
         direction = map_direction(direction, _LED_DIRECTION_FORWARD, _LED_DIRECTION_BACKWARD)
         speed = _LED_SPEED_SLOW if speed == 'slow' else _LED_SPEED_FAST if speed == 'fast' else _LED_SPEED_MEDIUM
-        start_led = clamp(start_led, 1, 204) - 1
-        num_leds = clamp(maximum_leds, 1, 204 - start_led - 1)
+        start_led = clamp(start_led, 1, _MAX_LEDS) - 1
+        num_leds = clamp(maximum_leds, 1, _MAX_LEDS - start_led)
         random_colors = 0x00 if mode == 'off' or len(colors) != 0 else 0x01
         mode_val = _MODES.get(mode, -1)
 
