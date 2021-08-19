@@ -5,3 +5,4 @@ build
 dist
 liquidctl/extraversion.py
 .coverage
+.vscode/

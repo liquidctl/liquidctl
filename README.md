@@ -41,14 +41,14 @@ NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     31.7  °C
 ├── Fan speed               801  rpm
 ├── Pump speed             2239  rpm
-└── Firmware version      6.0.2  
+└── Firmware version      6.0.2
 
 # liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
 # liquidctl --match kraken set pump speed 70
 # liquidctl --match "smart device" set sync speed 50
 
 # liquidctl --match kraken set sync color fixed 0080ff
-# liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower 
+# liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower
 # liquidctl --match "rtx 2080" set led color fixed 2aff00 --unsafe=smbus
 # liquidctl --match dimm2 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
 # liquidctl --match dimm4 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
@@ -95,6 +95,7 @@ The following devices are supported by this version of liquidctl.  See each guid
 | AIO liquid cooler | [Corsair Hydro H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
 | AIO liquid cooler | [Corsair iCUE H100i, H115i, H150i Elite Capellix](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler | [MSI MPG Coreliquid K360](docs/msi-mpg-coreliquid-guide.md) | USB HID | <sup>_penx_</sup> |
 | AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
 | AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
@@ -178,7 +179,7 @@ $ python -m liquidctl.cli <args>...
 # pip install .
 ```
 
-_Note: in systems that default to Python 2, use `pip3`, `python3` and `pytest-3`._  
+_Note: in systems that default to Python 2, use `pip3`, `python3` and `pytest-3`._
 
 Optional steps:
 
