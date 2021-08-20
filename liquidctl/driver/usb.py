@@ -474,9 +474,27 @@ class HidapiDevice:
             _LOGGER.debug('sent %d total bytes, expected %d', res, len(data))
         return res
 
+    @staticmethod
+    def dedupe_path(infos):
+        """This is due to a change to hidapi since version 0.10.1 that reports
+        multiple instances of a device with differing usage and usage page
+        keys.
+
+        See https://github.com/libusb/hidapi/pull/139
+        """
+        if sys.platform != 'linux':
+            return infos
+        seen_paths = {}
+        new_infos = []
+        for info in infos:
+            if seen_paths.get(info['path']) is None:
+                seen_paths[info['path']] = True
+                new_infos.append(info)
+        return new_infos
+
     @classmethod
     def enumerate(cls, api, vid=None, pid=None):
-        infos = api.enumerate(vid or 0, pid or 0)
+        infos = HidapiDevice.dedupe_path(api.enumerate(vid or 0, pid or 0))
         if sys.platform == 'darwin':
             infos = sorted(infos, key=lambda info: info['path'])
         for info in infos:
