@@ -38,6 +38,11 @@ if __name__ == '__main__':
     # group is not used by default to avoid generating warnings on systems that
     # have already removed it.
     #
+    # These rules also assume that only physical sessions (or "seats") need
+    # unprivileged access to the devices.  In case headless sessions are also
+    # expected to interactively run liquidctl, using GROUP and MODE might be
+    # preferable to TAG+="uaccess".
+    #
     # Finally, this file was automatically generated.  To update it, from a Linux
     # shell and the current directory, execute:
     #
