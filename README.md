@@ -499,7 +499,7 @@ For even more flexibility, you can also write a Python program that calls the dr
 
 ### Set up Linux using systemd
 
-On systems running Linux and systemd a service unit can be used to configure liquidctl devices.  A simple example is provided bellow, which you can edit to match your preferences.  Save it to `/etc/systemd/system/liquidcfg.service`.
+On systems running Linux and systemd a service unit can be used to configure liquidctl devices.  A simple example is provided below, which you can edit to match your preferences.  Save it to `/etc/systemd/system/liquidcfg.service`.
 
 ```
 [Unit]
@@ -507,6 +507,8 @@ Description=AIO startup service
 
 [Service]
 Type=oneshot
+WorkingDirectory=/home/user/
+User=user
 ExecStart=liquidctl initialize all
 ExecStart=liquidctl --match kraken set pump speed 90
 ExecStart=liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
