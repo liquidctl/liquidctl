@@ -493,7 +493,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
-        mval, mod3, movingFlag, mincolors, maxcolors = self._COLOR_MODES[mode]
+        mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
 
         color_count = len(colors)
         if maxcolors == 40:
@@ -520,7 +520,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                     self._write(msg + color_lists[i % 4])
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
-            byte7 = movingFlag  # sets 'moving' flag for moving alternating modes
+            byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
             byte8 = map_direction(direction, 0, 1)  # sets 'backward' flag
             byte9 = mod3 if mval == 0x03 else color_count  # specifies 'marquee' LED size
             byte10 = mod3 if mval == 0x05 else 0x00  # specifies LED size for 'alternating' modes
