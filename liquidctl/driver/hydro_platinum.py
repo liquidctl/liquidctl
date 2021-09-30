@@ -8,6 +8,7 @@ Supported devices:
 - Corsair Hydro H100i Pro XT
 - Corsair Hydro H115i Pro XT
 - Corsair Hydro H150i Pro XT
+- Corsair Hydro H60i Pro XT
 
 Copyright (C) 2020–2021  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -123,6 +124,8 @@ class HydroPlatinum(UsbHidDriver):
             {'fan_count': 2, 'fan_leds': 0}),
         (0x1b1c, 0x0c22, None, 'Corsair Hydro H150i Pro XT (experimental)',
             {'fan_count': 3, 'fan_leds': 0}),
+        (0x1b1c, 0x0c29, None, 'Corsair Hydro H60i Pro XT (experimental)',
+            {'fan_count': 2, 'fan_leds': 0}),
     ]
 
     @classmethod
