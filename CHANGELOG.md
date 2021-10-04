@@ -1,12 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [1.7.2] – 2021-10-05
 
 Changelog since 1.7.1:
 ### Added
  - Enable support for new variant of the NZXT Smart Device V2 (PR #364)
 ### Changed
  - Default `--maximum-leds` to the maximum possible number of LEDs (#367, PR #368)
+### Fixed
+ - Fix moving flag in SD2/HUE2 `alternating` modes (#385)
 
 
 ## [1.7.1] – 2021-07-16
