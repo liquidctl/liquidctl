@@ -12,7 +12,6 @@ Changelog since 1.7.1:
 ### Checksums
 ```
 b2337e0ca3bd36de1cbf581510aacfe23183d7bb176ad0dd43904be213583de3  dist/liquidctl-1.7.2.tar.gz
-2be21fc641482a39112cf4c9d3d9645a9064afbb7837e2089a71b2c922906963  dist/liquidctl-1.7.2-bin-windows-x86_64.zip
 ```
 
 
