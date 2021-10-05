@@ -213,21 +213,13 @@ The port is also available in DragonFly Ports.
 
 ## Installing on Windows
 
-A pre-built executable for the last stable version is available in [liquidctl-1.7.1-bin-windows-x86_64.zip](https://github.com/liquidctl/liquidctl/releases/download/v1.7.1/liquidctl-1.7.1-bin-windows-x86_64.zip).
+_The liquidctl team has stopped providing executable files for Windows.  Issue [#370](https://github.com/liquidctl/liquidctl/issues/370) contains more information._
 
-Executables for previous releases can be found in the assets of the [Releases](https://github.com/liquidctl/liquidctl/releases) tab, and development builds can be found in the artifacts on the [AppVeyor runs](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/history).
+Recent versions of Python and libusb are required.  The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64) `.dll` and `.lib` files should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
 
-Products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/):¹ open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disapear from liquidctl.
+Additionally, products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/):¹ open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disappear from liquidctl.
 
-The pre-built executables can be directly used from a Windows Command Prompt, Power Shell or other available terminal emulator.  Even so, most users will want to place the executable in a directory listed in [the `PATH` environment variable](https://en.wikipedia.org/wiki/PATH_(variable)), or change the variable so that is true; this allows omitting the full path and `.exe` extension when calling `liquidctl`.
-
-_Alternatively to the pre-built executable,_ it is possible to install liquidctl from PyPI or directly from the source code repository.  This is useful to contribute fixes or improvements to liquidctl, or to use advanced features like the liquidctl API.
-
-Since HWiNFO 6.10 it is possible for other programs to send additional sensor data in through a Windows Registry API, and [`LQiNFO.py`](extra/windows/LQiNFO.py) is an experimental program that uses the liquidctl API to take advantage of this feature.
-
-Pre-build liquidctl executables for Windows already include Python and libusb, but when installing from PyPI or the sources both of these will need to be manually set up.  The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64) `.dll` and `.lib` files should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
-
-To install any release from PyPI, *pip* should be used:
+To install a liquidctl release from PyPI, *pip* should be used:
 
 ```
 > pip install liquidctl
@@ -242,6 +234,8 @@ For the latest changes and to contribute back to the project, it is best to clon
 > python -m liquidctl.cli <args>...
 > pip install .
 ```
+
+Since HWiNFO 6.10 it is possible for other programs to send additional sensor data in through a Windows Registry API.  [`LQiNFO.py`](extra/windows/LQiNFO.py) is an experimental program that uses the liquidctl API to take advantage of this feature.
 
 _¹ See [How to use libusb under Windows](https://github.com/libusb/libusb/wiki/FAQ#how-to-use-libusb-under-windows) for more information._
 
