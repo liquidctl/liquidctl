@@ -92,7 +92,7 @@ class BaseUsbDriver(BaseDriver):
     def probe(cls, handle, vendor=None, product=None, release=None,
               serial=None, match=None, **kwargs):
         """Probe `handle` and yield corresponding driver instances."""
-        for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, desc, devargs in cls.SUPPORTED_DEVICES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
             if (product and product != pid) or handle.product_id != pid:
@@ -101,12 +101,12 @@ class BaseUsbDriver(BaseDriver):
                 continue
             if serial and handle.serial_number != serial:
                 continue
-            if match and match.lower() not in description.lower():
+            if match and match.lower() not in desc.lower():
                 continue
             consargs = devargs.copy()
             consargs.update(kwargs)
-            dev = cls(handle, description, **consargs)
-            _LOGGER.debug('instanced driver for %s', description)
+            dev = cls(handle, desc, **consargs)
+            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
             yield dev
 
     def __init__(self, device, description, **kwargs):

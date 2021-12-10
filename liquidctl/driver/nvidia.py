@@ -115,7 +115,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
         for dev_id, sub_dev_id, desc in pre_probed:
             dev = cls(smbus, desc, vendor_id=EVGA, product_id=EVGA_GTX_1080_FTW,
                       address=cls._ADDRESSES[0])
-            _LOGGER.debug('instanced driver for %s', desc)
+            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
             yield dev
 
     def get_status(self, verbose=False, **kwargs):
@@ -277,8 +277,8 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
             if selected_address is not None:
                 dev = cls(smbus, desc, vendor_id=ASUS, product_id=dev_id,
                           address=selected_address)
-                _LOGGER.debug('instanced driver for %s at address %02x',
-                              desc, selected_address)
+                _LOGGER.debug('instantiated driver %s for %s at address %02x',
+                              cls.__name__, desc, selected_address)
                 yield dev
 
     def get_status(self, verbose=False, **kwargs):

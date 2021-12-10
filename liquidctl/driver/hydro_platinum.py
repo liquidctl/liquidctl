@@ -134,7 +134,7 @@ class HydroPlatinum(UsbHidDriver):
         # presence of "Hydro", for backward compatibility with 1.5.0 and
         # previous versions
 
-        for vid, pid, _, description, devargs in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, desc, devargs in cls.SUPPORTED_DEVICES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
             if (product and product != pid) or handle.product_id != pid:
@@ -145,13 +145,13 @@ class HydroPlatinum(UsbHidDriver):
                 continue
             if match:
                 match = match.lower()
-                descr = description.lower()
+                descr = desc.lower()
                 if not (match in descr or match in descr.replace('hydro ', '')):
                     continue
             consargs = devargs.copy()
             consargs.update(kwargs)
-            dev = cls(handle, description, **consargs)
-            _LOGGER.debug('instanced driver for %s', description)
+            dev = cls(handle, desc, **consargs)
+            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
             yield dev
 
     def __init__(self, device, description, fan_count, fan_leds, **kwargs):
