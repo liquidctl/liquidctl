@@ -70,6 +70,7 @@ import inspect
 import json
 import logging
 import os
+import platform
 import sys
 from numbers import Number
 from traceback import format_exception
@@ -355,7 +356,8 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('running %s', _gen_version())
+    _LOGGER.debug('version: %s', _gen_version())
+    _LOGGER.debug('platform: %s', platform.platform())
 
     # unlike humans, machines want to know everything; imply verbose everywhere
     # other than when setting default logging level and format (which are
