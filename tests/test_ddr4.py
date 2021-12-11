@@ -146,7 +146,7 @@ def test_tse2004_get_status_reads_temperature(smbus):
     dimm = next(Ddr4Temperature.probe(smbus))
 
     with dimm.connect(unsafe=enable):
-        smbus.write_block_data(0x19, 0x05, 0xe19c)
+        smbus.write_word_data(0x19, 0x05, 0x9ce1)
 
         status = dimm.get_status(unsafe=enable)
         expected = [
@@ -162,7 +162,7 @@ def test_tse2004_get_status_reads_negative_temperature(smbus):
     dimm = next(Ddr4Temperature.probe(smbus))
 
     with dimm.connect(unsafe=enable):
-        smbus.write_block_data(0x19, 0x05, 0x1e74)
+        smbus.write_word_data(0x19, 0x05, 0x741e)
 
         status = dimm.get_status(unsafe=enable)
         expected = [

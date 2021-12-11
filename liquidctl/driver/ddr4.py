@@ -231,7 +231,14 @@ class Ddr4Temperature(SmbusDriver):
         ]
 
     def _read_temperature_register(self):
-        return self._smbus.read_block_data(self._ts_address, self._REG_TEMPERATURE)
+        # while JEDEC 21-C 4.1.6 uses the term "block read", it has little to
+        # do with the SMBus Block Read protocol; instead, it is closer to the
+        # SMBus Read Word protocol, except in big endianess
+        treg = self._smbus.read_word_data(self._ts_address, self._REG_TEMPERATURE)
+
+        # swap LSB and MSB before returning: read_word_data reads in little
+        # endianess, but the register must be read in big endianess
+        return ((treg & 0xff) << 8) | (treg >> 8)
 
     def initialize(self, **kwargs):
         """Initialize the device."""
@@ -302,14 +309,6 @@ class VengeanceRgb(Ddr4Temperature):
 
         return 'Corsair Vengeance RGB'
 
-    def _read_temperature_register(self):
-        # instead of using block reads, Vengeance RGB temperature sensor
-        # devices must be read in words
-        treg = self._smbus.read_word_data(self._ts_address, self._REG_TEMPERATURE)
-
-        # swap LSB and MSB before returning: read_word_data reads in little
-        # endianess, but the register should be read in big endianess
-        return ((treg & 0xff) << 8) | (treg >> 8)
 
     def set_color(self, channel, mode, colors, speed='normal',
                   transition_ticks=None, stable_ticks=None, **kwargs):
