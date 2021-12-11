@@ -231,6 +231,11 @@ class Ddr4Temperature(SmbusDriver):
         ]
 
     def _read_temperature_register(self):
+        # in theory we should first write 0x05 to the pointer register, but
+        # avoid writing to the device, even if that means occasionally reading
+        # garbage; ideally we would check the currently set pointer, but we
+        # have not found any way to do that
+
         # while JEDEC 21-C 4.1.6 uses the term "block read", it has little to
         # do with the SMBus Block Read protocol; instead, it is closer to the
         # SMBus Read Word protocol, except in big endianess
