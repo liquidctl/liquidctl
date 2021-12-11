@@ -11,7 +11,6 @@
  - [ ] Update last update date in the man page
  - [ ] Make sure the CHANGELOG is up to date
  - [ ] Remove "N/New driver, ..." notes from the table of supported devices (and merge lines if appropriate)
- - [ ] Update the link in the README to the stable executable for Windows
  - [ ] Regenerate the udev rules:
        `(cd extra/linux && python generate-uaccess-udev-rules.py > 71-liquidctl.rules)`
  - [ ] Commit:
@@ -48,19 +47,13 @@ Then install locally and:
  - [ ] Sign the source distribution:
        `gpg --detach-sign -a "dist/liquidctl-$VERSION.tar.gz"`
 
-## Binary distribution for Windows
-
- - [ ] Download and check the artifact built by AppVeyor (zip checksum, exe checksum, contents, and functionality)
- - [ ] Sign the artifact:
-       `gpg --detach-sign -a "dist/liquidctl-$VERSION-bin-windows-x86_64.zip"`
-
 ## Release
 
  - [ ] Upload:
        `twine upload dist/liquidctl-$VERSION.tar.gz{,.asc}`
- - [ ] Upgrade the vVERSION tag on GitHub to a release (with sdist, Windows artifact, and corresponding GPG signatures)
+ - [ ] Upgrade the vVERSION tag on GitHub to a release (with sdist and corresponding GPG signatures)
  - [ ] Update the HEAD changelog with the release file SHA256 sums:
-       `sha256sum dist/liquidctl-$VERSION{.tar.gz,-bin-windows-x86_64.zip} | tee "dist/liquidctl-$VERSION.sha256sums"`
+       `sha256sum dist/liquidctl-$VERSION.tar.gz | tee "dist/liquidctl-$VERSION.sha256sums"`
 
 ## Post release
 
