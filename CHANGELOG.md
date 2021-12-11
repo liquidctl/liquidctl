@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+Changelog since 1.7.2:
+### Fixed
+ - Read DDR4 temperature sensor by word instead of with SMBus Block Read (#400)
+
+
 ## [1.7.2] – 2021-10-05
 
 Changelog since 1.7.1:
