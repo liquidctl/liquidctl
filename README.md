@@ -173,7 +173,7 @@ For the latest changes and to contribute back to the project, it is best to clon
 ```
 $ git clone https://github.com/liquidctl/liquidctl
 $ cd liquidctl
-$ pytest  # optional step
+$ python -m pytest  # optional step
 $ python -m liquidctl.cli <args>...
 # pip install .
 ```
