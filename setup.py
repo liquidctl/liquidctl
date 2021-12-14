@@ -93,9 +93,10 @@ setuptools.setup(
         'Topic :: System :: Hardware :: Hardware Drivers',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     keywords='cross-platform cli driver corsair evga nzxt liquid-cooler fan-controller '
              'power-supply led-controller kraken smart-device hue2 gigabyte',
@@ -105,7 +106,7 @@ setuptools.setup(
         'Changelog': CHANGES_URL,
     },
     install_requires=install_requires,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'liquidctl=liquidctl.cli:main',

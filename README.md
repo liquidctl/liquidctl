@@ -140,7 +140,7 @@ Packages are available for some Linux distributions.  On others, or when more co
 
 The following dependencies are required at runtime (common package names are listed in parenthesis):
 
-- Python 3.6+ _(python3, python)_
+- Python 3.7+ _(python3, python)_
 - pkg_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - docopt _(python3-docopt, python-docopt)_
 - colorlog _(python3-colorlog, python-colorlog)_
