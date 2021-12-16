@@ -118,7 +118,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_ep_</sup> |
 | DDR4 DRAM          | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
-| DDR4 DRAM          | [Generic temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
+| DDR4 DRAM          | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
