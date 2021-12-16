@@ -43,9 +43,9 @@ def test_matches_platinum_and_pro_xt_coolers_regardless_of_hydro(monkeypatch):
     def find(match):
         return HydroPlatinum.find_supported_devices(match=match)
 
-    assert len(find('corsair hydro')) == 6
-    assert len(find('hydro')) == 6
-    assert len(find('corsair')) == 6
+    assert len(find('corsair hydro')) == 7
+    assert len(find('hydro')) == 7
+    assert len(find('corsair')) == 7
 
     assert len(find('corsair hydro h100i')) == 3
     assert len(find('hydro h100i')) == 3
