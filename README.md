@@ -81,8 +81,7 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Supported devices
 
-The following devices are supported by this version of liquidctl.  See each
-guide for specific usage instructions and other pertinent information.
+See each guide for specific usage instructions and other pertinent information.
 
 <!--
 
@@ -102,7 +101,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 
 -->
 
-| Type               | Device family and appropriate guide | Bus | Notes |
+| Type               | Device family and specific documentation | Bus | Notes |
 | :-:                | :-- | :-: | :-- |
 | AIO liquid cooler  | [Corsair Hydro GT/GTX H80i, H100i, H110i](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
 | AIO liquid cooler  | [Corsair Hydro v2 H80i, H100i, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
