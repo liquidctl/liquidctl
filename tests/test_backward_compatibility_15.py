@@ -14,6 +14,7 @@ def test_matches_platinum_and_pro_xt_coolers_regardless_of_hydro(monkeypatch):
         {'vendor_id': 0x1b1c, 'product_id': 0x0c20},  # H100i Pro XT
         {'vendor_id': 0x1b1c, 'product_id': 0x0c21},  # H115i Pro XT
         {'vendor_id': 0x1b1c, 'product_id': 0x0c22},  # H150i Pro XT
+        {'vendor_id': 0x1b1c, 'product_id': 0x0c29},  # H60i Pro XT
     ]
 
     mock_skip = [
