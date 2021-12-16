@@ -81,28 +81,45 @@ NZXT Kraken X (X42, X52, X62 or X72)
 
 ## Supported devices
 
-The following devices are supported by this version of liquidctl.  See each guide for specific usage instructions and other pertinent information.
+The following devices are supported by this version of liquidctl.  See each
+guide for specific usage instructions and other pertinent information.
 
-<!-- the table is manually sorted to keep certain device families (confusing Corsair coolers and NZXT Smart Devices) in chronological order -->
-<!-- the notes are sorted alphabetically, major (upper case) notes before minor (lower case) ones -->
+<!--
 
-| Type | Device/guide | Bus | Notes |
-| :-: | :-- | :-: | :-- |
-| AIO liquid cooler | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
-| AIO liquid cooler | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Pro, H115i Pro, H150i Pro](docs/asetek-pro-guide.md) | USB | <sup>_Ze_</sup> |
-| AIO liquid cooler | [Corsair Hydro H100i Platinum [SE], H115i Platinum](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
-| AIO liquid cooler | [Corsair Hydro H60i Pro XT, H100i Pro XT, H115i Pro XT, H150i Pro XT](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
-| AIO liquid cooler | [Corsair iCUE H100i, H115i, H150i Elite Capellix](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
-| AIO liquid cooler | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
-| AIO liquid cooler | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
-| AIO liquid cooler | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
-| AIO liquid cooler | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
-| AIO liquid cooler | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_ep_</sup> |
-| DDR4 DRAM | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
-| DDR4 DRAM | [DIMMs with a standard temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
+The table is manually sorted to keep certain device families, like confusing
+generations of Corsair coolers and NZXT Smart Devices, in chronological order.
+
+Common prefixes or suffixes are deduplicated and brought before device
+differentiators: for example, "Platinum H100i, H100i SE, H115i" instead of
+"H100i Platinum, H100i Platinum SE, H115i Platinum".
+
+Newly supported devices are added with the `n` note.  If they are members of an
+already supported family, the family is temporarily split between old and new
+devices until the next release.
+
+The notes are sorted alphabetically, major (upper case) notes before minor
+(lower case) ones.
+
+-->
+
+| Type               | Device family and appropriate guide | Bus | Notes |
+| :-:                | :-- | :-: | :-- |
+| AIO liquid cooler  | [Corsair Hydro GT/GTX H80i, H100i, H110i](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
+| AIO liquid cooler  | [Corsair Hydro v2 H80i, H100i, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | USB | <sup>_Ze_</sup> |
+| AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
+| AIO liquid cooler  | [Corsair Hydro Pro XT H60i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_en_</sup> |
+| AIO liquid cooler  | [Corsair Hydro Pro XT H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | <sup>_e_</sup> |
+| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
+| AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
+| AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
+| AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
+| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
+| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_ep_</sup> |
+| DDR4 DRAM          | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
+| DDR4 DRAM          | [Generic temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_e_</sup> |
@@ -112,20 +129,20 @@ The following devices are supported by this version of liquidctl.  See each guid
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Motherboard | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
-| Power supply | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
+| Graphics card      | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card      | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card      | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
+| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
 <sup>_U_</sup> _Requires `--unsafe` features._  
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows](#installing-on-windows)._  
 <sup>_a_</sup> _Architecture-specific limitations._  
 <sup>_e_</sup> _Experimental support._  
-<sup>_n_</sup> _New driver, only available on git._  
+<sup>_n_</sup> _Newly supported and requires git._  
 <sup>_p_</sup> _Only partially supported._  
 <sup>_x_</sup> _Only supported on Linux._  
 
