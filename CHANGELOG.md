@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 Changelog since 1.7.2:
+### Added
+ - Add experimental support for the Corsair Hydro H60i Pro XT
 ### Fixed
  - Read DDR4 temperature sensor by word instead of with SMBus Block Read (#400)
 
