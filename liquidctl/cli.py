@@ -322,7 +322,7 @@ def main():
 
     if args['--debug']:
         args['--verbose'] = True
-        log_fmt = '%(log_color)s[%(levelname)s] %(module)s (%(funcName)s): %(message)s'
+        log_fmt = '%(log_color)s[%(levelname)s] (%(module)s) (%(funcName)s): %(message)s'
         log_level = logging.DEBUG
     elif args['--verbose']:
         log_fmt = '%(log_color)s%(levelname)s: %(message)s'
