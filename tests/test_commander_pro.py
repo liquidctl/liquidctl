@@ -44,6 +44,7 @@ def lightingNodeProDevice():
     node.connect(runtime_storage=runtime_storage)
     return node
 
+
 @pytest.fixture
 def lightingNodeCoreDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c1a, address='addr')
@@ -51,7 +52,6 @@ def lightingNodeCoreDevice():
     runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     node.connect(runtime_storage=runtime_storage)
     return node
-
 
 
 # prepare profile
@@ -438,7 +438,7 @@ def test_get_hw_led_channel_valid(commanderProDevice, channel, expected):
     assert res == expected
 
 
-@pytest.mark.parametrize('channel,expected', [('led', [0])])
+@pytest.mark.parametrize('channel,expected', [('led', [0]), ('any', [0])])
 def test_get_hw_led_channel_valid_node_core(lightingNodeCoreDevice, channel,
                                             expected):
     res = lightingNodeCoreDevice._get_hw_led_channels(channel)

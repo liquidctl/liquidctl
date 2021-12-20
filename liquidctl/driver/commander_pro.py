@@ -270,23 +270,21 @@ class CommanderPro(UsbHidDriver):
         """This will get a list of all the fan channels that the command should be sent to
         It will look up the name of the fan channel given and return a list of the real fan number
         """
-        if channel == 'sync':
+        if channel == 'sync' or len(self._fan_names) == 1:
             return list(range(len(self._fan_names)))
-        elif channel in self._fan_names:
+        if channel in self._fan_names:
             return [self._fan_names.index(channel)]
-        elif len(self._fan_names) > 1:
-            raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
+        raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._fan_names)}')
 
     def _get_hw_led_channels(self, channel):
         """This will get a list of all the led channels that the command should be sent to
         It will look up the name of the led channel given and return a list of the real led device number
         """
-        if channel == 'sync':
+        if channel == 'sync' or len(self._led_names) == 1:
             return list(range(len(self._led_names)))
-        elif channel in self._led_names:
+        if channel in self._led_names:
             return [self._led_names.index(channel)]
-        elif len(self._led_names) > 1:
-            raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._led_names)}')
+        raise ValueError(f'unknown channel, should be one of: {_quoted("sync", *self._led_names)}')
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
