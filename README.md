@@ -318,7 +318,7 @@ Result #0: NZXT Kraken X (X42, X52, X62 or X72)
 More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of those can also be used to select a particular product.
 
 ```
-# liquidcl --bus hid --address /dev/hidraw4 list
+# liquidctl --bus hid --address /dev/hidraw4 list
 Result #0: NZXT Smart Device (V1)
 
 # liquidctl --serial 1234567890 list
