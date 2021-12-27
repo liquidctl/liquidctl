@@ -122,8 +122,9 @@ Command:
 | 0x01 | 0x06 |
 | 0x02 | Channel |
 | 0x03, 0x04 | Data length  |
-| 0x05, 0x06 | 00:00 Unknown |
-| 0x07-... | Data |
+| 0x05, 0x06 | 00:00 Unknown (Before data length starts) |
+| 0x07, 0x08 | Data Type (Included in data length) |
+| 0x09-... | Data |
 
 ### `0x08` - Read
 
@@ -159,8 +160,26 @@ Data Type: `0x06 0x00`
 | 0x05, 0x06 | Speed of Fan 2 |
 | 0x07, 0x08 | Speed of Fan 3 |
 | 0x09, 0x0a | Speed of Fan 4 |
-| 0x0b, 0x1c | Speed of Fan 5 |
-| 0x0d, 0x1e | Speed of Fan 6 |
+| 0x0b, 0x0c | Speed of Fan 5 |
+| 0x0d, 0x0e | Speed of Fan 6 |
+
+### `0x1a` - Connected Speed Devices
+
+Data Type: `0x09 0x00`
+
+Connection State: 0x07 if connected or 0x01 if not connected
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00 | Number of Ports |
+| 0x01 | AIO/EXT Connection State|
+| 0x02 | Fan 1 Connection State |
+| 0x03 | Fan 2 Connection State |
+| 0x04 | Fan 3 Connection State |
+| 0x05 | Fan 4 Connection State |
+| 0x06 | Fan 5 Connection State |
+| 0x07 | Fan 6 Connection State |
+
 
 ### `0x20` - Connected LEDs
 
@@ -202,3 +221,42 @@ Data Type: `0x10 0x00`
 | 0x02, 0x03 | Temperature in Celsius (needs to be divided by 10) |
 | 0x04 | 0x00 if connected or 0x01 if not connected |
 | 0x05, 0x06 | Temperature in Celsius (needs to be divided by 10) |
+
+### `0x60 0x6d` - Hardware Speed Device Mode
+
+Data Type: `0x03 0x00`
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00 | Number of Ports |
+| 0x01 | AIO/EXT Speed Mode |
+| 0x02 | Fan 1 Speed Mode |
+| 0x03 | Fan 2 Speed Mode |
+| 0x04 | Fan 3 Speed Mode |
+| 0x05 | Fan 4 Speed Mode |
+| 0x06 | Fan 5 Speed Mode |
+| 0x07 | Fan 6 Speed Mode |
+
+Speed Modes:
+
+| Mode | Description |
+| ---- | ----------- |
+| 0x00 | Fixed percentage |
+| 0x02 | Fan percentage fan curve |
+
+Note: This list is not complete and currently only contains what has been confirmed so far
+
+### `0x61 0x6d` - Hardware Fixed Speed (Percentage)
+
+Data Type: `0x04 0x00`
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00 | Number of Ports |
+| 0x01, 0x02 | Speed as percentage for AIO/EXT port |
+| 0x03, 0x04 | Speed as percentage for Fan 1 |
+| 0x05, 0x06 | Speed as percentage for Fan 2 |
+| 0x07, 0x08 | Speed as percentage for Fan 3 |
+| 0x09, 0x0a | Speed as percentage for Fan 4 |
+| 0x0b, 0x0c | Speed as percentage for Fan 5 |
+| 0x0d, 0x0e | Speed as percentage for Fan 6 |

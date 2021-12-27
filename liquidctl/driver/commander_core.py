@@ -14,7 +14,7 @@ from contextlib import contextmanager
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import ExpectationNotMet, NotSupportedByDriver
-from liquidctl.util import u16le_from
+from liquidctl.util import clamp, u16le_from
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,20 +23,29 @@ _RESPONSE_LENGTH = 1024
 
 _INTERFACE_NUMBER = 0
 
+_FAN_COUNT = 6
+
 _CMD_WAKE = (0x01, 0x03, 0x00, 0x02)
 _CMD_SLEEP = (0x01, 0x03, 0x00, 0x01)
 _CMD_GET_FIRMWARE = (0x02, 0x13)
 _CMD_RESET = (0x05, 0x01, 0x00)
 _CMD_SET_MODE = (0x0d, 0x00)
-_CMD_GET = (0x08, 0x00)
+_CMD_READ = (0x08, 0x00)
+_CMD_WRITE = (0x06, 0x00)
 
 _MODE_LED_COUNT = (0x20,)
 _MODE_GET_SPEEDS = (0x17,)
 _MODE_GET_TEMPS = (0x21,)
+_MODE_CONNECTED_SPEEDS = (0x1a,)
+_MODE_HW_SPEED_MODE = (0x60, 0x6d)
+_MODE_HW_FIXED_PERCENT = (0x61, 0x6d)
 
 _DATA_TYPE_SPEEDS = (0x06, 0x00)
 _DATA_TYPE_LED_COUNT = (0x0f, 0x00)
 _DATA_TYPE_TEMPS = (0x10, 0x00)
+_DATA_TYPE_CONNECTED_SPEEDS = (0x09, 0x00)
+_DATA_TYPE_HW_SPEED_MODE = (0x03, 0x00)
+_DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
 
 
 class CommanderCore(UsbHidDriver):
@@ -58,14 +67,20 @@ class CommanderCore(UsbHidDriver):
 
             # Get LEDs per fan
             res = self._read_data(_MODE_LED_COUNT, _DATA_TYPE_LED_COUNT)
-
             num_devices = res[0]
             led_data = res[1:1 + num_devices * 4]
             for i in range(0, num_devices):
-                connected = u16le_from(led_data, offset=i*4) == 2
-                num_leds = u16le_from(led_data, offset=i*4+2)
+                connected = u16le_from(led_data, offset=i * 4) == 2
+                num_leds = u16le_from(led_data, offset=i * 4 + 2)
                 label = 'AIO LED count' if i == 0 else f'RGB port {i} LED count'
                 status += [(label, num_leds if connected else None, '')]
+
+            # Get what fans are connected
+            res = self._read_data(_MODE_CONNECTED_SPEEDS, _DATA_TYPE_CONNECTED_SPEEDS)
+            num_devices = res[0]
+            for i in range(0, num_devices):
+                label = 'AIO Pump' if i == 0 else f'Fan port {i}'
+                status += [(label, res[i + 1] == 0x07, '')]
 
             # Get what temp sensors are connected
             for i, temp in enumerate(self._get_temps()):
@@ -99,7 +114,36 @@ class CommanderCore(UsbHidDriver):
         raise NotSupportedByDriver
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        raise NotSupportedByDriver
+        if channel == 'pump':
+            channels = [0]
+        elif channel == "fans":
+            channels = range(1, _FAN_COUNT + 1)
+        elif channel.startswith("fan") and channel.isnumeric() and 0 < int(channel[3:]) <= _FAN_COUNT:
+            channels = [int(channel[3:])]
+        else:
+            fan_names = ['fan' + str(i) for i in range(1, _FAN_COUNT + 1)]
+            fan_names_part = '", "'.join(fan_names)
+            raise ValueError(f'unknown channel, should be one of: "pump", "{fan_names_part}" or "fans"')
+
+        with self._wake_device_context():
+            # Set hardware speed mode
+            res = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
+            device_count = res[0]
+
+            data = bytearray(res[0:device_count + 1])
+            for chan in channels:
+                data[chan + 1] = 0x00  # Set the device's hardware mode to fixed percent
+            self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
+
+            # Set speed
+            res = self._read_data(_MODE_HW_FIXED_PERCENT, _DATA_TYPE_HW_FIXED_PERCENT)
+            device_count = res[0]
+            data = bytearray(res[0:device_count * 2 + 1])
+            duty_le = int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False)
+            for chan in channels:
+                i = chan * 2 + 1
+                data[i: i + 2] = duty_le  # Update the device speed
+            self._write_data(_MODE_HW_FIXED_PERCENT, _DATA_TYPE_HW_FIXED_PERCENT, data)
 
     @classmethod
     def probe(cls, handle, **kwargs):
@@ -116,9 +160,9 @@ class CommanderCore(UsbHidDriver):
         res = self._read_data(_MODE_GET_SPEEDS, _DATA_TYPE_SPEEDS)
 
         num_speeds = res[0]
-        speeds_data = res[1:1 + num_speeds*2]
+        speeds_data = res[1:1 + num_speeds * 2]
         for i in range(0, num_speeds):
-            speeds.append(u16le_from(speeds_data, offset=i*2))
+            speeds.append(u16le_from(speeds_data, offset=i * 2))
 
         return speeds
 
@@ -128,11 +172,11 @@ class CommanderCore(UsbHidDriver):
         res = self._read_data(_MODE_GET_TEMPS, _DATA_TYPE_TEMPS)
 
         num_temps = res[0]
-        temp_data = res[1:1 + num_temps*3]
+        temp_data = res[1:1 + num_temps * 3]
         for i in range(0, num_temps):
-            connected = temp_data[i*3] == 0x00
+            connected = temp_data[i * 3] == 0x00
             if connected:
-                temps.append(u16le_from(temp_data, offset=i*3+1)/10)
+                temps.append(u16le_from(temp_data, offset=i * 3 + 1) / 10)
             else:
                 temps.append(None)
 
@@ -141,7 +185,7 @@ class CommanderCore(UsbHidDriver):
     def _read_data(self, mode, data_type):
         self._send_command(_CMD_RESET)
         self._send_command(_CMD_SET_MODE, mode)
-        raw_data = self._send_command(_CMD_GET)
+        raw_data = self._send_command(_CMD_READ)
 
         if tuple(raw_data[3:5]) != data_type:
             raise ExpectationNotMet('device returned incorrect data type')
@@ -178,3 +222,16 @@ class CommanderCore(UsbHidDriver):
             yield
         finally:
             self._send_command(_CMD_SLEEP)
+
+    def _write_data(self, mode, data_type, data):
+        self._read_data(mode, data_type)  # Will ensure we are writing the correct data type to avoid breakage
+
+        self._send_command(_CMD_RESET)
+        self._send_command(_CMD_SET_MODE, mode)
+
+        buf = bytearray(len(data) + len(data_type) + 4)
+        buf[0: 2] = int.to_bytes(len(data) + 2, length=2, byteorder="little", signed=False)
+        buf[4: 4 + len(data_type)] = data_type
+        buf[4 + len(data_type):] = data
+
+        self._send_command(_CMD_WRITE, buf).hex(":")
