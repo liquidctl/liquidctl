@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.8.0] – 2022-01-06
 
 ### Changes since 1.7.2
 
