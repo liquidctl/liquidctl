@@ -349,7 +349,7 @@ class KrakenZ3(KrakenX3):
     """Fourth-generation Kraken Z liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z53, Z63 or Z73) (experimental)', {
+        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z53, Z63 or Z73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENZ,
             'color_channels': _COLOR_CHANNELS_KRAKENZ,
         })

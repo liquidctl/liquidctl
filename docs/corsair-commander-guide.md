@@ -29,7 +29,7 @@ Corsair Commander Pro
 
 ```
 # liquidctl initialize
-Corsair Lighting Node Pro (experimental)
+Corsair Lighting Node Pro
 ├── Firmware version       0.10.4  
 └── Bootloader version        3.0  
 ```

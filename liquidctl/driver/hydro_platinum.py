@@ -112,19 +112,19 @@ class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
     SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c18, None, 'Corsair Hydro H100i Platinum (experimental)',
+        (0x1b1c, 0x0c18, None, 'Corsair Hydro H100i Platinum',
             {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c19, None, 'Corsair Hydro H100i Platinum SE (experimental)',
+        (0x1b1c, 0x0c19, None, 'Corsair Hydro H100i Platinum SE',
             {'fan_count': 2, 'fan_leds': 16}),
-        (0x1b1c, 0x0c17, None, 'Corsair Hydro H115i Platinum (experimental)',
+        (0x1b1c, 0x0c17, None, 'Corsair Hydro H115i Platinum',
             {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c29, None, 'Corsair Hydro H60i Pro XT (experimental)',
+        (0x1b1c, 0x0c29, None, 'Corsair Hydro H60i Pro XT',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c20, None, 'Corsair Hydro H100i Pro XT (experimental)',
+        (0x1b1c, 0x0c20, None, 'Corsair Hydro H100i Pro XT',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c21, None, 'Corsair Hydro H115i Pro XT (experimental)',
+        (0x1b1c, 0x0c21, None, 'Corsair Hydro H115i Pro XT',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c22, None, 'Corsair Hydro H150i Pro XT (experimental)',
+        (0x1b1c, 0x0c22, None, 'Corsair Hydro H150i Pro XT',
             {'fan_count': 3, 'fan_leds': 0}),
     ]
 

@@ -120,11 +120,11 @@ class CommanderPro(UsbHidDriver):
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c10, None, 'Corsair Commander Pro',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
-        (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro (experimental)',
+        (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 2}),
-        (0x1b1c, 0x0c1a, None, 'Corsair Lighting Node Core (experimental)',
+        (0x1b1c, 0x0c1a, None, 'Corsair Lighting Node Core',
             {'fan_count': 0, 'temp_probs': 0, 'led_channels': 1}),
-        (0x1b1c, 0x1d00, None, 'Corsair Obsidian 1000D (experimental)',
+        (0x1b1c, 0x1d00, None, 'Corsair Obsidian 1000D',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
     ]
 

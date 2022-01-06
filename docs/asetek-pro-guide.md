@@ -35,7 +35,7 @@ the liquid temperature.
 
 ```
 # liquidctl status
-Corsair Hydro H100i Pro (experimental)
+Corsair Hydro H100i Pro
 ├── Liquid temperature        28.7  °C
 ├── Fan 1 speed                480  rpm
 ├── Fan 2 speed                476  rpm

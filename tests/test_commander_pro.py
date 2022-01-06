@@ -16,19 +16,19 @@ from liquidctl.error import NotSupportedByDevice
 @pytest.fixture
 def commanderProDeviceUnconnected():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
-    return CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
+    return CommanderPro(device, 'Corsair Commander Pro', 6, 4, 2)
 
 
 @pytest.fixture
 def lightingNodeProDeviceUnconnected():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c0b, address='addr')
-    return CommanderPro(device, 'Corsair Lighting Node Pro (experimental)', 0, 0, 2)
+    return CommanderPro(device, 'Corsair Lighting Node Pro', 0, 0, 2)
 
 
 @pytest.fixture
 def commanderProDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c10, address='addr')
-    pro = CommanderPro(device, 'Corsair Commander Pro (experimental)', 6, 4, 2)
+    pro = CommanderPro(device, 'Corsair Commander Pro', 6, 4, 2)
 
 
     runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
@@ -39,7 +39,7 @@ def commanderProDevice():
 @pytest.fixture
 def lightingNodeProDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c0b, address='addr')
-    node = CommanderPro(device, 'Corsair Lighting Node Pro (experimental)', 0, 0, 2)
+    node = CommanderPro(device, 'Corsair Lighting Node Pro', 0, 0, 2)
     runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     node.connect(runtime_storage=runtime_storage)
     return node
@@ -48,7 +48,7 @@ def lightingNodeProDevice():
 @pytest.fixture
 def lightingNodeCoreDevice():
     device = MockHidapiDevice(vendor_id=0x1b1c, product_id=0x0c1a, address='addr')
-    node = CommanderPro(device, 'Corsair Lighting Node Core (experimental)', 0, 0, 1)
+    node = CommanderPro(device, 'Corsair Lighting Node Core', 0, 0, 1)
     runtime_storage = MockRuntimeStorage(key_prefixes=['testing'])
     node.connect(runtime_storage=runtime_storage)
     return node

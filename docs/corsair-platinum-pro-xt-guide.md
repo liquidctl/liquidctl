@@ -8,7 +8,7 @@ the system resumes from suspending to memory.
 
 ```
 # liquidctl initialize
-Corsair Hydro H100i Platinum (experimental)
+Corsair Hydro H100i Platinum
 └── Firmware version    1.1.15
 ```
 
@@ -18,7 +18,7 @@ specified with `--pump-mode`.  The valid values for this option are `quiet`,
 
 ```
 # liquidctl initialize --pump-mode extreme
-Corsair Hydro H100i Platinum (experimental)
+Corsair Hydro H100i Platinum
 └── Firmware version    1.1.15
 ```
 
@@ -33,7 +33,7 @@ The cooler reports the liquid temperature and the speeds of all fans and pump.
 
 ```
 # liquidctl status
-Corsair Hydro H100i Platinum (experimental)
+Corsair Hydro H100i Platinum
 ├── Liquid temperature    27.0  °C
 ├── Fan 1 speed           1386  rpm
 ├── Fan 1 duty              50  %

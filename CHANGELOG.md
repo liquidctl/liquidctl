@@ -2,12 +2,31 @@
 
 ## [Unreleased]
 
-Changelog since 1.7.2:
-### Added
- - Add experimental support for the Corsair Hydro H60i Pro XT
-### Fixed
- - Read DDR4 temperature sensor by word instead of with SMBus Block Read (#400)
- - Fix tolerant handling of single channel name in Corsair Lighting Node Core
+### Changes since 1.7.2
+
+Added:
+- Add support for the Corsair Hydro H60i Pro XT
+
+Changed:
+- Support for Corsair Hydro Pro coolers is no longer considered experimental
+- Support for Corsair Hydro Platinum and Pro XT coolers is no longer considered
+  experimental
+- Support for Corsair Hydro Pro XT coolers is no longer considered experimental
+- Support for NZXT Kraken Z coolers remains incomplete (no support for the LCD
+  screen), but is no longer considered experimental
+- Support for Corsair Lighting Node Core and Lighting Node Pro controllers is
+  no longer considered experimental
+- Support for the Corsair Obsidian 1000D case is no longer considered
+  experimental
+
+Fixed:
+- Read DDR4 temperature sensor by word instead of with SMBus Block Read (#400)
+- Fix tolerant handling of single channel name in Corsair Lighting Node Core
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
 
 
 ## [1.7.2] – 2021-10-05
