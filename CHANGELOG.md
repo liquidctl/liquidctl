@@ -28,6 +28,12 @@ Fixed:
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
   from more than one program and driver instance (#274)
 
+### Checksums
+
+```
+99b8ec4da617a01830951a8f1a37d616f50eed6d260220fe5c26d1bf90e1e91e  dist/liquidctl-1.8.0.tar.gz
+```
+
 
 ## [1.7.2] – 2021-10-05
 
