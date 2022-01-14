@@ -293,6 +293,11 @@ support a visual high-temperature alert configured with
 .B \-\-alert\-threshold
 and
 .BR \-\-alert\-color .
+.PP
+All current settings can be saved on non\-volatile on\-board memory by passing
+.B \-\-non\-volatile
+to any write command.  However, since write\-cycles are limited, this option
+should be used sparingly.
 .
 .SS Corsair H100i Pro, H115i Pro, H150i Pro
 Fan channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro:) \fIfan3\fR.
