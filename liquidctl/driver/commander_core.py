@@ -225,7 +225,7 @@ class CommanderCore(UsbHidDriver):
         buf[4: 4 + len(data_type)] = data_type
         buf[4 + len(data_type):] = data
 
-        self._send_command(_CMD_WRITE, buf).hex(":")
+        self._send_command(_CMD_WRITE, buf)
 
     @staticmethod
     def _parse_channels(channel):

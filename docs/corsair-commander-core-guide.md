@@ -60,3 +60,5 @@ Currently, the pump and each fan can be set to a fixed duty cycle.
 Valid channel values are `pump`, `fanN`, where 1 <= N <= 6 is the fan number, and
 `fans`, to simultaneously configure all fans.
 
+Note: There is a hardware minimum speed when setting a fixed duty cycle. Anything below that point just runs at the minimum.
+This means that 0 is not stopped and a lot of the lower speeds mean the same speed. 
