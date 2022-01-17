@@ -15,7 +15,7 @@
 #
 # [1] https://github.com/scop/bash-completion
 #
-# Copyright (C) 2020-2020 Marshall Asch
+# Copyright (C) 2020-2022 Marshall Asch
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # logging method

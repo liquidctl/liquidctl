@@ -52,7 +52,7 @@ Changelog:
   0.0.2  Add low-pass filter and basic error handling.
   0.0.1  Generalization of krakencurve-poc 0.0.2 to multiple devices.
 
-Copyright (C) 2020–2021  Jonas Malaco
+Copyright (C) 2020–2022  Jonas Malaco
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

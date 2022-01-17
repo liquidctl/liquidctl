@@ -10,7 +10,7 @@ Supported devices:
 - Corsair Hydro H115i Pro XT
 - Corsair Hydro H150i Pro XT
 
-Copyright (C) 2020–2021  Jonas Malaco and contributors
+Copyright (C) 2020–2022  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -1,6 +1,6 @@
 """Standardized liquidctl errors.
 
-Copyright (C) 2020–2021  Jonas Malaco and contributors
+Copyright (C) 2020–2022  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -33,7 +33,7 @@ Examples:
   liquiddump > file.jsonl
   liquiddump | jq -c .
 
-Copyright (C) 2019–2021  Jonas Malaco
+Copyright (C) 2019–2022  Jonas Malaco
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

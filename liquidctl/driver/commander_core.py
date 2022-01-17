@@ -4,8 +4,7 @@ Supported devices:
 
 - Corsair Commander Core
 
-
-Copyright (C)2021  ParkerMc and contributors
+Copyright (C) 2021–2022  ParkerMc and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

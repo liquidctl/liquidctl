@@ -50,8 +50,8 @@ Deprecated:
   -d, --device <index>           Select device by listing index
   --hid <ignored>                Ignored
 
-Copyright (C) 2018–2021  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
-Robertson  and contributors
+Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
+Robertson, ParkerMc and contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
