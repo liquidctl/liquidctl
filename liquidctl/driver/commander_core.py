@@ -114,16 +114,7 @@ class CommanderCore(UsbHidDriver):
         raise NotSupportedByDriver
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        if channel == 'pump':
-            channels = [0]
-        elif channel == "fans":
-            channels = range(1, _FAN_COUNT + 1)
-        elif channel.startswith("fan") and channel.isnumeric() and 0 < int(channel[3:]) <= _FAN_COUNT:
-            channels = [int(channel[3:])]
-        else:
-            fan_names = ['fan' + str(i) for i in range(1, _FAN_COUNT + 1)]
-            fan_names_part = '", "'.join(fan_names)
-            raise ValueError(f'unknown channel, should be one of: "pump", "{fan_names_part}" or "fans"')
+        channels = CommanderCore._parse_channels(channel)
 
         with self._wake_device_context():
             # Set hardware speed mode
@@ -235,3 +226,16 @@ class CommanderCore(UsbHidDriver):
         buf[4 + len(data_type):] = data
 
         self._send_command(_CMD_WRITE, buf).hex(":")
+
+    @staticmethod
+    def _parse_channels(channel):
+        if channel == 'pump':
+            return [0]
+        elif channel == "fans":
+            return range(1, _FAN_COUNT + 1)
+        elif channel.startswith("fan") and channel[3:].isnumeric() and 0 < int(channel[3:]) <= _FAN_COUNT:
+            return [int(channel[3:])]
+        else:
+            fan_names = ['fan' + str(i) for i in range(1, _FAN_COUNT + 1)]
+            fan_names_part = '", "'.join(fan_names)
+            raise ValueError(f'unknown channel, should be one of: "pump", "{fan_names_part}" or "fans"')
