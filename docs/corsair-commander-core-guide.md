@@ -18,13 +18,13 @@ Corsair Commander Core (experimental)
 ├── RGB port 4 LED count            N/A  
 ├── RGB port 5 LED count            N/A  
 ├── RGB port 6 LED count            N/A  
-├── AIO Pump                        Yes  
-├── Fan port 1                      Yes  
-├── Fan port 2                      Yes  
-├── Fan port 3                       No  
-├── Fan port 4                       No  
-├── Fan port 5                       No  
-├── Fan port 6                       No
+├── AIO port connected              Yes  
+├── Fan port 1 connected            Yes  
+├── Fan port 2 connected            Yes  
+├── Fan port 3 connected             No  
+├── Fan port 4 connected             No  
+├── Fan port 5 connected             No  
+├── Fan port 6 connected             No  
 ├── Water temperature sensor        Yes  
 └── Temperature sensor 1             No   
 ```
@@ -60,5 +60,8 @@ Currently, the pump and each fan can be set to a fixed duty cycle.
 Valid channel values are `pump`, `fanN`, where 1 <= N <= 6 is the fan number, and
 `fans`, to simultaneously configure all fans.
 
-Note: There is a hardware minimum speed when setting a fixed duty cycle. Anything below that point just runs at the minimum.
-This means that 0 is not stopped and a lot of the lower speeds mean the same speed. 
+In iCUE the pump can be set to different modes that correspond to a fixed percent that can be used in liquidctl.
+Quiet is 75%, Balanced is 85% and Extreme is 100%. 
+
+Note: The pump and some fans have a limit to how slow they can go and will not stop when set to zero.
+This is a hardware limitation that cannot be changed.

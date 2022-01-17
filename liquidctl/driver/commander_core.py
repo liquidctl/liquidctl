@@ -79,7 +79,7 @@ class CommanderCore(UsbHidDriver):
             res = self._read_data(_MODE_CONNECTED_SPEEDS, _DATA_TYPE_CONNECTED_SPEEDS)
             num_devices = res[0]
             for i in range(0, num_devices):
-                label = 'AIO Pump' if i == 0 else f'Fan port {i}'
+                label = 'AIO port connected' if i == 0 else f'Fan port {i} connected'
                 status += [(label, res[i + 1] == 0x07, '')]
 
             # Get what temp sensors are connected
