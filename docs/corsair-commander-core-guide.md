@@ -10,7 +10,7 @@ The device should be initialized every time it is powered on.
 ```
 # liquidctl initialize
 Corsair Commander Core (experimental)
-├── Firmware version            1.6.135  
+├── Firmware version            2.6.201  
 ├── AIO LED count                    29  
 ├── RGB port 1 LED count              8  
 ├── RGB port 2 LED count              8  
@@ -18,6 +18,13 @@ Corsair Commander Core (experimental)
 ├── RGB port 4 LED count            N/A  
 ├── RGB port 5 LED count            N/A  
 ├── RGB port 6 LED count            N/A  
+├── AIO port connected              Yes  
+├── Fan port 1 connected            Yes  
+├── Fan port 2 connected            Yes  
+├── Fan port 3 connected             No  
+├── Fan port 4 connected             No  
+├── Fan port 5 connected             No  
+├── Fan port 6 connected             No  
 ├── Water temperature sensor        Yes  
 └── Temperature sensor 1             No   
 ```
@@ -39,3 +46,22 @@ Corsair Commander Core (experimental)
 ├── Fan speed 6             0  rpm
 └── Water temperature    35.8  °C
 ```
+
+## Programming the pump and fan speeds
+
+Currently, the pump and each fan can be set to a fixed duty cycle. 
+
+```
+# liquidctl set fan1 speed 70
+                ^^^^       ^^
+               channel    duty
+```
+
+Valid channel values are `pump`, `fanN`, where 1 <= N <= 6 is the fan number, and
+`fans`, to simultaneously configure all fans.
+
+In iCUE the pump can be set to different modes that correspond to a fixed percent that can be used in liquidctl.
+Quiet is 75%, Balanced is 85% and Extreme is 100%. 
+
+Note: The pump and some fans have a limit to how slow they can go and will not stop when set to zero.
+This is a hardware limitation that cannot be changed.
