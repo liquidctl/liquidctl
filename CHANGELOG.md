@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Changes since 1.8.0
+
+Added:
+- Add support for persisting settings on modern Asetek 690LC coolers (EVGA CLC
+  and Corsair Hydro GT/GTX)
+- Add support for setting fixed fan/pump speeds on the Corsair Commander Core
+  (shipped with the Corsair Hydro Elite Capellix and LCD coolers)
+
+
 ## [1.8.0] – 2022-01-06
 
 ### Changes since 1.7.2
