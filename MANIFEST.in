@@ -5,3 +5,5 @@ include pytest.ini
 recursive-include docs *
 recursive-include extra *
 recursive-include tests *
+
+global-exclude *.pyc
