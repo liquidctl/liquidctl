@@ -6,7 +6,7 @@
 
 Added:
 - Add support for persisting settings on modern Asetek 690LC coolers (EVGA CLC
-  and Corsair Hydro GT/GTX)
+  and Corsair Hydro GT/GTX/v2)
 - Add support for setting fixed fan/pump speeds on the Corsair Commander Core
   (shipped with the Corsair Hydro Elite Capellix and LCD coolers)
 
