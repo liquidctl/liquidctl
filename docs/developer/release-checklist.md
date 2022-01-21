@@ -19,7 +19,7 @@
 ## Test
 
  - [ ] Run unit and doc tests:
-       `pytest`
+       `python -m pytest`
 
 Then install locally and:
 

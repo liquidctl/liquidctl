@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.1] – 2022-01-21
+
+### Changes since 1.8.0
+
+Fixed:
+- Strip non-determinism from sdist/egg SOURCES.txt metadata
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
+
+
 ## [1.8.0] – 2022-01-06
 
 ### Changes since 1.7.2
