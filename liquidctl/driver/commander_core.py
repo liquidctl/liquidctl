@@ -51,7 +51,7 @@ class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
 
     SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c1c, None, 'Corsair Commander Core (experimental)', {})
+        (0x1b1c, 0x0c2a, None, 'Corsair Commander Core (experimental)', {})
     ]
 
     def initialize(self, **kwargs):
