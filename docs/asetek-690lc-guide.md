@@ -105,3 +105,5 @@ Use the `--non-volatile` option on a `set` command to save the current values of
 ```
 
 Flash write-cycles are limited so avoid using `--non-volatile` on every command.
+
+*Note: non-volatile settings are only supported on non-legacy models.*
