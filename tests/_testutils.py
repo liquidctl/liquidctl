@@ -109,7 +109,7 @@ class MockPyusbDevice():
                                  wValue, wIndex, data_or_wLength))
 
     def _reset_sent(self):
-        self._sent_xfers = deque()
+        self._sent_xfers = list()
         self._responses = deque()
 
 
