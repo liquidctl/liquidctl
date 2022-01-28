@@ -367,6 +367,7 @@ class Legacy690Lc(_Base690Lc):
         self._data.store('pump_duty', None)
         self._data.store('fan_duty', None)
         self._set_all_fixed_speeds()
+        _warn_on_unsupported_option(**kwargs)
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -414,6 +415,7 @@ class Legacy690Lc(_Base690Lc):
         else:
             raise KeyError(f'unsupported lighting mode {mode}')
         self._end_transaction_and_read()
+        _warn_on_unsupported_option(**kwargs)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
@@ -421,6 +423,7 @@ class Legacy690Lc(_Base690Lc):
         duty = clamp(duty, dmin, dmax)
         self._data.store(f'{channel}_duty', duty)
         self._set_all_fixed_speeds()
+        _warn_on_unsupported_option(**kwargs)
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
@@ -444,6 +447,11 @@ class Hydro690Lc(_ModernBase690Lc):
         if mode == 'rainbow':
             raise KeyError(f'unsupported lighting mode {mode}')
         super().set_color(channel, mode, colors, **kwargs)
+
+
+def _warn_on_unsupported_option(**kwargs):
+    if kwargs.get('non_volatile'):
+        _LOGGER.warning('device does not support non-volatile settings, skipping')
 
 
 # deprecated aliases

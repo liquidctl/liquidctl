@@ -150,3 +150,22 @@ def test_legacy690Lc_device_matches_leviathan_updates(mockLegacy690LcDevice):
     _begin, pump_message, fan_message = dev.device._sent_xfers
     assert pump_message == ('write', 2, [0x13, 50])
     assert fan_message == ('write', 2, [0x12, 50])
+
+
+def test_legacy690Lc_device_initialize_warns_on_non_volatile(mockLegacy690LcDevice, caplog):
+    mockLegacy690LcDevice.initialize(non_volatile=True)
+
+    assert 'device does not support non-volatile' in caplog.text
+
+
+def test_legacy690Lc_device_set_color_warns_on_non_volatile(mockLegacy690LcDevice, caplog):
+    mockLegacy690LcDevice.set_color(channel='led', mode='blinking',
+                                    colors=iter([[3, 2, 1]]), non_volatile=True)
+
+    assert 'device does not support non-volatile' in caplog.text
+
+
+def test_legacy690Lc_device_set_fixed_speed_warns_on_non_volatile(mockLegacy690LcDevice, caplog):
+    mockLegacy690LcDevice.set_fixed_speed(channel='fan', duty=80, non_volatile=True)
+
+    assert 'device does not support non-volatile' in caplog.text
