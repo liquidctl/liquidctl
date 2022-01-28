@@ -69,6 +69,55 @@ def test_modern690Lc_device_begin_transaction(mockModern690LcDevice):
     assert datalen is None
 
 
+def test_modern690Lc_initialize_can_persist_settings(mockModern690LcDevice):
+    dev = mockModern690LcDevice
+    dev.device._reset_sent()
+
+    dev.initialize(non_volatile=True)
+
+    _begin, (cmd_msgtype, cmd_ep, cmd_data) = dev.device._sent_xfers[-2:]
+    assert cmd_msgtype == 'write'
+    assert cmd_ep == 2
+    assert cmd_data == [0x21]
+
+
+def test_modern690Lc_set_color_can_persist_settings(mockModern690LcDevice):
+    dev = mockModern690LcDevice
+    dev.device._reset_sent()
+
+    dev.set_color(channel='led', mode='rainbow', colors=[], non_volatile=True)
+
+    _begin, (cmd_msgtype, cmd_ep, cmd_data) = dev.device._sent_xfers[-2:]
+    assert cmd_msgtype == 'write'
+    assert cmd_ep == 2
+    assert cmd_data == [0x21]
+
+
+def test_modern690Lc_set_speed_profile_can_persist_settings(mockModern690LcDevice):
+    dev = mockModern690LcDevice
+    dev.device._reset_sent()
+
+    dev.set_speed_profile(channel='fan', profile=[(20, 20), (30, 50), (40, 100)],
+                          non_volatile=True)
+
+    _begin, (cmd_msgtype, cmd_ep, cmd_data) = dev.device._sent_xfers[-2:]
+    assert cmd_msgtype == 'write'
+    assert cmd_ep == 2
+    assert cmd_data == [0x21]
+
+
+def test_modern690Lc_set_fixed_speed_can_persist_settings(mockModern690LcDevice):
+    dev = mockModern690LcDevice
+    dev.device._reset_sent()
+
+    dev.set_fixed_speed(channel='pump', duty=50, non_volatile=True)
+
+    _begin, (cmd_msgtype, cmd_ep, cmd_data) = dev.device._sent_xfers[-2:]
+    assert cmd_msgtype == 'write'
+    assert cmd_ep == 2
+    assert cmd_data == [0x21]
+
+
 def test_legacy690Lc_device_not_totally_broken(mockLegacy690LcDevice):
     """A few reasonable example calls do not raise exceptions."""
     dev = mockLegacy690LcDevice

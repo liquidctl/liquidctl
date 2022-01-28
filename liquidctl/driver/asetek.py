@@ -189,6 +189,17 @@ class _Base690Lc(UsbDriver):
 
 class _ModernBase690Lc(_Base690Lc):
 
+    def _persist(self):
+        _LOGGER.debug('instructing device to persist current settings')
+        self._begin_transaction()
+        self._write([_CMD_STORE_SETTINGS])
+        self._end_transaction_and_read()
+
+    def initialize(self, non_volatile=False, **kwargs):
+        super().initialize(**kwargs)
+        if non_volatile:
+            self._persist()
+
     def get_status(self, **kwargs):
         """Get a status report.
 
@@ -243,9 +254,7 @@ class _ModernBase690Lc(_Base690Lc):
             raise KeyError(f'unknown lighting mode {mode}')
         self._end_transaction_and_read()
         if non_volatile:
-            self._begin_transaction()
-            self._write([_CMD_STORE_SETTINGS])
-            self._end_transaction_and_read()
+            self._persist()
 
     def set_speed_profile(self, channel, profile, non_volatile=False, **kwargs):
         """Set channel to follow a speed duty profile."""
@@ -259,9 +268,7 @@ class _ModernBase690Lc(_Base690Lc):
         self._write([mtype, 0] + temps + duties)
         self._end_transaction_and_read()
         if non_volatile:
-            self._begin_transaction()
-            self._write([_CMD_STORE_SETTINGS])
-            self._end_transaction_and_read()
+            self._persist()
 
     def set_fixed_speed(self, channel, duty, non_volatile=False, **kwargs):
         """Set channel to a fixed speed duty."""
@@ -285,9 +292,7 @@ class _ModernBase690Lc(_Base690Lc):
         self._write([mtype, _MIN_PUMP_SPEED_CODE + level])
         self._end_transaction_and_read()
         if non_volatile:
-            self._begin_transaction()
-            self._write([_CMD_STORE_SETTINGS])
-            self._end_transaction_and_read()
+            self._persist()
 
 class Modern690Lc(_ModernBase690Lc):
     """Modern fifth generation Asetek 690LC cooler."""
