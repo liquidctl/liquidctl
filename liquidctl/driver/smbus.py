@@ -54,11 +54,11 @@ if sys.platform == 'linux':
                           ', '.join(map(lambda x: x.__name__, drivers)))
 
             for i2c_dev in devices.iterdir():
-                if not i2c_dev.name.startswith('i2c-'):
-                    _LOGGER.debug('skipping %s, not a bus', i2c_dev.name)
+                try:
+                    i2c_bus = LinuxI2cBus(i2c_dev)
+                except ValueError as err:
+                    _LOGGER.debug('skipping %s, %s', i2c_dev.name, err)
                     continue
-
-                i2c_bus = LinuxI2cBus(i2c_dev)
 
                 if bus and bus != i2c_bus.name:
                     continue
@@ -80,7 +80,8 @@ if sys.platform == 'linux':
         # find_liquidctl_devices to try to directly instantiate it
 
         def __init__(self, i2c_dev):
-            assert i2c_dev.name.startswith('i2c-')
+            if not i2c_dev.name.startswith('i2c-'):
+                raise ValueError('not a bus or unsupported adapter')
 
             self._i2c_dev = i2c_dev
             self._smbus = None
