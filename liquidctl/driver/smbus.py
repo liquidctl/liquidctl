@@ -54,11 +54,11 @@ if sys.platform == 'linux':
                           ', '.join(map(lambda x: x.__name__, drivers)))
 
             for i2c_dev in devices.iterdir():
-                try:
-                    i2c_bus = LinuxI2cBus(i2c_dev)
-                except ValueError as err:
-                    _LOGGER.debug('ignoring %s, %s', i2c_dev.name, err)
+                if not i2c_dev.name.startswith('i2c-'):
+                    _LOGGER.debug('skipping %s, not a bus', i2c_dev.name)
                     continue
+
+                i2c_bus = LinuxI2cBus(i2c_dev)
 
                 if bus and bus != i2c_bus.name:
                     continue
@@ -80,14 +80,11 @@ if sys.platform == 'linux':
         # find_liquidctl_devices to try to directly instantiate it
 
         def __init__(self, i2c_dev):
+            assert i2c_dev.name.startswith('i2c-')
+
             self._i2c_dev = i2c_dev
             self._smbus = None
-
-            try:
-                assert i2c_dev.name.startswith('i2c-')
-                self._number = int(i2c_dev.name[4:])
-            except:
-                raise ValueError('cannot infer bus number')
+            self._number = int(i2c_dev.name[4:])
 
         def find_devices(self, drivers, **kwargs):
             """Probe drivers and find compatible devices in this bus."""
@@ -171,7 +168,10 @@ if sys.platform == 'linux':
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
                 eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
                 return LinuxEeprom(name, eeprom)
-            except Exception:
+            except FileNotFoundError:
+                return None
+            except Exception as err:  # FIXME remove once #416 is fixed upstream
+                _LOGGER.debug('found but could not read eeprom: %s', err)
                 return None
 
         @property
