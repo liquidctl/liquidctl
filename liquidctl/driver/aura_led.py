@@ -137,7 +137,7 @@ class AuraLed(UsbHidDriver):
         status = []
         data = self.device.read(_READ_LENGTH)
         if (data[1] == 0x02):
-            status.append(('Firmware version', "".join(map(chr, data[2:17])), ''))
+            status.append(('Firmware version', ''.join(map(chr, data[2:17])), ''))
         else:
             status.append('Unexpected reply for firmware', '', '')
             return status
@@ -215,7 +215,7 @@ class AuraLed(UsbHidDriver):
         """
         if not channel in _COLOR_CHANNELS:
             _LOGGER.error('channel %s not valid', channel)
-            message = "valid channels are "
+            message = 'valid channels are ''
             for chan in _COLOR_CHANNELS:
                 message += chan + ' '
             _LOGGER.error(message)
