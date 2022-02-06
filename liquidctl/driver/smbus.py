@@ -167,7 +167,22 @@ if sys.platform == 'linux':
             dev = f'{self._number}-{address:04x}'
             try:
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
-                eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
+
+                # work around a bug in the kernel by reading the ee1004 eeprom
+                # in small enough chunks
+                # related: #416 ("DDR4 support broken on Linux 5.16.3")
+                # related: https://lore.kernel.org/lkml/20220203165024.47767-1-jonas@protocubo.io/
+                eeprom_path = self._i2c_dev.joinpath(dev, 'eeprom')
+                eeprom_size = eeprom_path.stat().st_size
+                _LOGGER.debug('path=%s, size=%s', eeprom_path, eeprom_size)
+                with eeprom_path.open(mode='rb', buffering=0) as f:
+                    eeprom = bytearray()
+                    while len(eeprom) < eeprom_size:
+                        b = f.read(128)
+                        if not b:
+                            break
+                        eeprom.extend(b)
+
                 return LinuxEeprom(name, eeprom)
             except FileNotFoundError:
                 return None
