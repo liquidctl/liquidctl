@@ -242,7 +242,7 @@ class AuraLed(UsbHidDriver):
         if channel == 'sync':
             selected_channels = _COLOR_CHANNELS.values()
         else:
-            selected_channels = (_COLOR_CHANNELS[channel])
+            selected_channels = (_COLOR_CHANNELS[channel],)
 
         full_cmd_seq = [] # entire series of commands are added to this list
 
