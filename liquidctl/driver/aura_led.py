@@ -209,11 +209,21 @@ class AuraLed(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
         """Set the color mode for a specific channel.
 
-        `colors` should be an iterable of zero or one `[red, blue, green]`
-        triples, where each red/blue/green component is a value in the range
+        `colors` should be an iterable of zero or one `[red, green, blue]`
+        triples, where each red/green/blue component is a value in the range
         0–255.
         """
-        if not channel in _COLOR_CHANNELS:
+        colors = iter(colors)
+        if _COLOR_MODES[mode].takes_color:
+            try:
+                r, g, b = next(colors)
+                single_color = (b, g, r)
+            except StopIteration:
+                raise ValueError(f'one color required for mode={mode.name}') from None
+        else:
+            single_color = (0, 0, 0)
+        
+        if channel != 'sync' and channel not in _COLOR_CHANNELS:
             _LOGGER.error('channel %s not valid', channel)
             message = 'valid channels are '
             for chan in _COLOR_CHANNELS:
@@ -228,9 +238,18 @@ class AuraLed(UsbHidDriver):
             self.reset_all_channels()
             return
         """
-        
+
+        if channel == 'sync':
+            selected_channels = _COLOR_CHANNELS.values()
+        else:
+            selected_channels = (_COLOR_CHANNELS[channel])
+
+        full_cmd_seq = [] # entire series of commands are added to this list
+
+        """
+        Experimental code for treating RGB channel differently from others
         if channel == 'rgb':
-            data_tuple=self.construct_color_commands(channel, mode, colors)
+            data_tuple=self.construct_color_commands(channel, mode, single_color)
             self._write(data_tuple[0])
             self._write(data_tuple[1])
             self._write(_FUNCTION_CODE['end_seq2'])
@@ -239,25 +258,22 @@ class AuraLed(UsbHidDriver):
             self._write(data_tuple[1])
             self._write(_FUNCTION_CODE['end_seq2'])
         else:
-            data_tuple=self.construct_color_commands(channel, mode, colors)
-            self._write(data_tuple[0])
-            self._write(data_tuple[1])
-            self._write(_FUNCTION_CODE['end_seq2'])
-            self._write(data_tuple[0])
-            self._write(data_tuple[1])
+        """
+        for chan in selected_channels:
+            data_tuple=self.construct_color_commands(chan.name, mode, single_color)
+            full_cmd_seq.append(data_tuple[0])
+            full_cmd_seq.append(data_tuple[1])
+            full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
+            #self._write(data_tuple[0])
+            #self._write(data_tuple[1])
+            #self._write(_FUNCTION_CODE['end_seq2'])
+            #self._write(data_tuple[0])
+            #self._write(data_tuple[1])
+        
+        for cmd_seq in full_cmd_seq:
+            self._write(cmd_seq)
         
         self.end_color_sequence()
-
-        """
-        if channel == 'sync':
-            selected_channels = _COLOR_CHANNELS.values()
-        else:
-            selected_channels = (_COLOR_CHANNELS[channel],)
-        for addr1, addr2 in selected_channels:
-            data[1:3] = addr1, addr2
-            self._send_feature_report(data)
-        self._execute_report()
-        """
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
@@ -289,24 +305,11 @@ class AuraLed(UsbHidDriver):
         self.end_color_sequence()
         self._write(_FUNCTION_CODE['end_direct'])
 
-    def construct_color_commands(self, channel, mode, colors):
+    def construct_color_commands(self, channel, mode, single_color):
         """
         Create command strings for specified color channel
         """
         mode = _COLOR_MODES[mode]
-        colors = iter(colors)
-
-        if mode.takes_color:
-            try:
-                r, g, b = next(colors)
-                single_color = (r, g, b)
-            except StopIteration:
-                raise ValueError(f'one color required for mode={mode.name}') from None
-        else:
-            single_color = (0, 0, 0)
-        remaining = sum(1 for _ in colors)
-        if remaining:
-            _LOGGER.warning('too many colors for mode=%s, dropping %d', mode.name, remaining)
 
         key = _COLOR_CHANNELS[channel].key
         channel_id = _COLOR_CHANNELS[channel].value
