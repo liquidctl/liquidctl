@@ -230,7 +230,7 @@ The port is also available in DragonFly Ports.
 
 _The liquidctl team has stopped providing executable files for Windows.  Issue [#370](https://github.com/liquidctl/liquidctl/issues/370) contains more information._
 
-Recent versions of Python and libusb are required.  The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate (e.g. MS64) `.dll` and `.lib` files should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python36`).
+Recent versions of Python and libusb are required.  The libusb DLLs can be found in [libusb/releases](https://github.com/libusb/libusb/releases) (part of the `libusb-<version>.7z` files) and the appropriate files (i.e. `VS2019\MS64\Release\dll\*`) should be extracted to the system or python installation directory (e.g. `C:\Windows\System32` or `C:\Python310`).
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do not use the Microsoft HID Driver, require a libusb-compatible driver, see notes in [Supported devices](#supported-devices)).  In most cases Microsoft WinUSB is recommended, which can easily be set up for a device with [Zadig](https://zadig.akeo.ie/):¹ open the application, click `Options`, `List All Devices`, then select your device from the dropdown list, and click "Replace Driver".  Note that replacing the driver for devices that do not require it will likely cause them to disappear from liquidctl.
 

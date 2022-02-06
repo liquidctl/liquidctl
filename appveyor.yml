@@ -10,7 +10,7 @@ platform: x64
 
 environment:
   DIST_NAME: AppVeyor
-  LIBUSB_VERSION: 1.0.24
+  LIBUSB_VERSION: 1.0.25
 
 for:
 -
@@ -31,43 +31,15 @@ install:
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v%LIBUSB_VERSION%/libusb-%LIBUSB_VERSION%.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
   # python build and package tools
-  - cmd: C:\Python39-x64\python -m pip install --upgrade pip setuptools --ignore-installed
+  - cmd: C:\Python310-x64\python -m pip install --upgrade pip setuptools --ignore-installed
   # remaining dependencies
-  - cmd: C:\Python39-x64\python setup.py install
-  # generate list of packages that will be included
-  - cmd: C:\Python39-x64\python -m pip freeze | find /V "virtualenv" > extra\windows\included.txt
-  # install pyinstaller last to not pollute included.txt with its dependencies
-  - cmd: C:\Python39-x64\python -m pip install pyinstaller
-  - cmd: C:\Python39-x64\python -m pip freeze | find "pyinstaller" >> extra\windows\included.txt
-  - cmd: echo libusb %LIBUSB_VERSION% >> extra\windows\included.txt
-  - cmd: C:\Python39-x64\python --version >> extra\windows\included.txt
+  - cmd: C:\Python310-x64\python setup.py install
   # install pytest
-  - cmd: C:\Python39-x64\python -m pip install pytest
+  - cmd: C:\Python310-x64\python -m pip install pytest
 
-build_script:
-  - cmd: C:\Python39-x64\Scripts\pyinstaller --add-data VS2019\MS64\dll\*;. --clean -F liquidctl\cli.py --name liquidctl --onefile --distpath .
-
-after_build:
-  - cmd: mkdir %DIST_PACKAGE%\docs
-  - cmd: mkdir %DIST_PACKAGE%\docs\windows
-  - cmd: copy liquidctl.exe %DIST_PACKAGE%\
-  - cmd: copy README.md %DIST_PACKAGE%\
-  - cmd: copy docs\*.md %DIST_PACKAGE%\docs\
-  - cmd: copy docs\windows\*.md %DIST_PACKAGE%\docs\windows\
-  - cmd: copy LICENSE.txt %DIST_PACKAGE%\
-  - cmd: copy extra\windows\redist-notices.txt %DIST_PACKAGE%\COPYRIGHT.txt
-  - cmd: copy extra\windows\included.txt %DIST_PACKAGE%\included.txt
-  - cmd: copy CHANGELOG.md %DIST_PACKAGE%\
-  - cmd: 7z a %DIST_PACKAGE%.zip %DIST_PACKAGE%\
-  - cmd: CertUtil -hashfile liquidctl.exe SHA256
-  - cmd: CertUtil -hashfile %DIST_PACKAGE%.zip SHA256
+build: off
 
 test_script:
-  # ensure the bundled binary can find/use libusb
-  - cmd: liquidctl.exe list --verbose --debug
   # copy the libusb DLLs and run the unit and doctests
-  - cmd: copy VS2019\MS64\dll\* C:\Windows\System32\
-  - cmd: C:\Python39-x64\python -m pytest
-
-artifacts:
-  - path: "*.zip"
+  - cmd: copy VS2019\MS64\Release\dll\* C:\Windows\System32\
+  - cmd: C:\Python310-x64\python -m pytest

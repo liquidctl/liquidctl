@@ -313,6 +313,19 @@ def _gen_version():
     return f'liquidctl v{__version__} ({"; ".join(extra)})'
 
 
+def _log_requirements():
+    _LOGGER.debug('python: %s', sys.version)
+    if sys.hexversion >= 0x03080000:
+        from importlib.metadata import distribution, version
+        for req in distribution('liquidctl').requires:
+            try:
+                _LOGGER.debug('%s: %s', req, version(req))
+            except Exception as err:
+                _LOGGER.debug('%s: version n/a (%s)', req, err)
+    else:
+        _LOGGER.debug('importlib.metadata not available')
+
+
 def main():
     args = docopt(__doc__)
 
@@ -356,8 +369,9 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('version: %s', _gen_version())
+    _LOGGER.debug('%s', _gen_version())
     _LOGGER.debug('platform: %s', platform.platform())
+    _log_requirements()
 
     # unlike humans, machines want to know everything; imply verbose everywhere
     # other than when setting default logging level and format (which are

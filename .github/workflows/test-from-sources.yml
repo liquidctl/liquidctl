@@ -12,6 +12,9 @@ jobs:
         python-version: ['3.10', '3.9', '3.8', '3.7']
         os: [ubuntu-latest, macos-latest]
         exclude:
+          # mac os: exclude all but the last two python releases
+          - os: macos-latest
+            python-version: 3.8
           - os: macos-latest
             python-version: 3.7
 

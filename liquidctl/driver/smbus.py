@@ -57,7 +57,7 @@ if sys.platform == 'linux':
                 try:
                     i2c_bus = LinuxI2cBus(i2c_dev)
                 except ValueError as err:
-                    _LOGGER.debug('ignoring %s, %s', i2c_dev.name, err)
+                    _LOGGER.debug('skipping %s, %s', i2c_dev.name, err)
                     continue
 
                 if bus and bus != i2c_bus.name:
@@ -80,14 +80,12 @@ if sys.platform == 'linux':
         # find_liquidctl_devices to try to directly instantiate it
 
         def __init__(self, i2c_dev):
+            if not i2c_dev.name.startswith('i2c-'):
+                raise ValueError('not a bus or unsupported adapter')
+
             self._i2c_dev = i2c_dev
             self._smbus = None
-
-            try:
-                assert i2c_dev.name.startswith('i2c-')
-                self._number = int(i2c_dev.name[4:])
-            except:
-                raise ValueError('cannot infer bus number')
+            self._number = int(i2c_dev.name[4:])
 
         def find_devices(self, drivers, **kwargs):
             """Probe drivers and find compatible devices in this bus."""
@@ -169,9 +167,24 @@ if sys.platform == 'linux':
             dev = f'{self._number}-{address:04x}'
             try:
                 name = self._i2c_dev.joinpath(dev, 'name').read_text().strip()
-                eeprom = self._i2c_dev.joinpath(dev, 'eeprom').read_bytes()
+
+                # work around a bug in the kernel by reading the ee1004 eeprom
+                # in small enough chunks
+                # related: #416 ("DDR4 support broken on Linux 5.16.3")
+                # related: https://lore.kernel.org/lkml/20220203165024.47767-1-jonas@protocubo.io/
+                eeprom_path = self._i2c_dev.joinpath(dev, 'eeprom')
+                eeprom_size = eeprom_path.stat().st_size
+                _LOGGER.debug('path=%s, size=%s', eeprom_path, eeprom_size)
+                with eeprom_path.open(mode='rb', buffering=0) as f:
+                    eeprom = bytearray()
+                    while len(eeprom) < eeprom_size:
+                        b = f.read(128)
+                        if not b:
+                            break
+                        eeprom.extend(b)
+
                 return LinuxEeprom(name, eeprom)
-            except Exception:
+            except FileNotFoundError:
                 return None
 
         @property
