@@ -186,9 +186,6 @@ if sys.platform == 'linux':
                 return LinuxEeprom(name, eeprom)
             except FileNotFoundError:
                 return None
-            except Exception as err:  # FIXME remove once #416 is fixed upstream
-                _LOGGER.debug('found but could not read eeprom: %s', err)
-                return None
 
         @property
         def name(self):
