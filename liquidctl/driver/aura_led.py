@@ -215,7 +215,7 @@ class AuraLed(UsbHidDriver):
         """
         if not channel in _COLOR_CHANNELS:
             _LOGGER.error('channel %s not valid', channel)
-            message = 'valid channels are ''
+            message = 'valid channels are '
             for chan in _COLOR_CHANNELS:
                 message += chan + ' '
             _LOGGER.error(message)
