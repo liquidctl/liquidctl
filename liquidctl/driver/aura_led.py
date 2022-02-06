@@ -217,7 +217,7 @@ class AuraLed(UsbHidDriver):
         if _COLOR_MODES[mode].takes_color:
             try:
                 r, g, b = next(colors)
-                single_color = (b, g, r)
+                single_color = (r, g, b)
             except StopIteration:
                 raise ValueError(f'one color required for mode={mode.name}') from None
         else:
@@ -249,26 +249,26 @@ class AuraLed(UsbHidDriver):
         """
         Experimental code for treating RGB channel differently from others
         if channel == 'rgb':
-            data_tuple=self.construct_color_commands(channel, mode, single_color)
-            self._write(data_tuple[0])
-            self._write(data_tuple[1])
+            cmd_tuple=self.construct_color_commands(channel, mode, single_color)
+            self._write(cmd_tuple[0])
+            self._write(cmd_tuple[1])
             self._write(_FUNCTION_CODE['end_seq2'])
             self.end_color_sequence()
-            self._write(data_tuple[0])
-            self._write(data_tuple[1])
+            self._write(cmd_tuple[0])
+            self._write(cmd_tuple[1])
             self._write(_FUNCTION_CODE['end_seq2'])
         else:
         """
         for chan in selected_channels:
-            data_tuple=self.construct_color_commands(chan.name, mode, single_color)
-            full_cmd_seq.append(data_tuple[0])
-            full_cmd_seq.append(data_tuple[1])
+            cmd_tuple=self.construct_color_commands(chan.name, mode, single_color)
+            full_cmd_seq.append(cmd_tuple[0])
+            full_cmd_seq.append(cmd_tuple[1])
             full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
-            #self._write(data_tuple[0])
-            #self._write(data_tuple[1])
+            #self._write(cmd_tuple[0])
+            #self._write(cmd_tuple[1])
             #self._write(_FUNCTION_CODE['end_seq2'])
-            #self._write(data_tuple[0])
-            #self._write(data_tuple[1])
+            #self._write(cmd_tuple[0])
+            #self._write(cmd_tuple[1])
         
         for cmd_seq in full_cmd_seq:
             self._write(cmd_seq)
