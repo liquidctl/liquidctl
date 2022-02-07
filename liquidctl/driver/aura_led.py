@@ -81,7 +81,9 @@ _FUNCTION_CODE = {
     'config': [_CMD_CODE, 0xb0],
 }
 
-_ColorChannel = namedtuple('_ColorChannel', ['name', 'value', 'key', 'rgb_offset'])
+# channel_type 0 designates RGB bus
+# channel_type 1 designates ARGB bus
+_ColorChannel = namedtuple('_ColorChannel', ['name', 'channel_id', 'channel_type', 'rgb_offset'])
 
 _COLOR_CHANNELS = {
     channel.name: channel
@@ -112,6 +114,10 @@ _COLOR_MODES = {
         _ColorMode('spectrum_cycle_wave', 0x0b, takes_color=False),
         _ColorMode('chase_rainbow_pulse', 0x0c, takes_color=False),
         _ColorMode('rainbow_flicker', 0x0d, takes_color=False),
+        _ColorMode('gentle_transition', 0x10, takes_color=False),
+        _ColorMode('wave_propagation', 0x11, takes_color=False),
+        _ColorMode('wave_propagation_pause', 0x12, takes_color=False),
+        _ColorMode('red_pulse', 0x13, takes_color=False),
     ]
 }
 
@@ -311,11 +317,11 @@ class AuraLed(UsbHidDriver):
         """
         mode = _COLOR_MODES[mode]
 
-        key = _COLOR_CHANNELS[channel].key
-        channel_id = _COLOR_CHANNELS[channel].value
+        channel_type = _COLOR_CHANNELS[channel].channel_type # 0=RGB, 1=ARGB
+        channel_id = _COLOR_CHANNELS[channel].channel_id
         rgb_offset = _COLOR_CHANNELS[channel].rgb_offset
 
-        data1 = _FUNCTION_CODE['start_seq1'] + [key, 0x00, 0x00, mode.value]
+        data1 = _FUNCTION_CODE['start_seq1'] + [channel_type, 0x00, 0x00, mode.value]
         data2 = _FUNCTION_CODE['start_seq2'] + [channel_id, 0x00] + [0, 0, 0]*rgb_offset
         data2 += single_color
         return (data1, data2)
