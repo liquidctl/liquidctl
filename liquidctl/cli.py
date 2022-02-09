@@ -271,10 +271,7 @@ def _print_dev_status(dev, status):
     print('')
 
 
-hook_dev = hook_args = hook_opts = None
 def _device_set_color(dev, args, **opts):
-    global hook_dev, hook_args, hook_opts
-    hook_dev, hook_args, hook_opts = dev, args, opts
     color = map(color_from_str, args['<color>'])
     dev.set_color(args['<channel>'].lower(), args['<mode>'].lower(), color, **opts)
 
@@ -483,8 +480,8 @@ def main():
         # (e.g. enums)
         print(json.dumps(obj_buf, ensure_ascii=(os.getenv('LANG', None) == 'C'),
                          default=lambda x: str(x)))
-    if "liquidctl" in sys.argv[0]:
-        sys.exit(0)
+
+    sys.exit(0)
 
 
 def find_all_supported_devices(**opts):
