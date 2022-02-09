@@ -15,11 +15,13 @@ purple = c.Color("#c000c0")
 red = c.Color("#d00000")
 
 # set up argparse
-parser = argparse.ArgumentParser(description="Cycle through a list of colors")
+parser = argparse.ArgumentParser(description="Cycle through colors on an Gigabyte RGB Fusion 2.0 device.")
 parser.add_argument("--space", type=str, default="srgb", help="Color space to use; see https://facelessuser.github.io/coloraide/colors/")
 # you can provide 0 or more colors to cycle through
 parser.add_argument("colors", nargs="*", help="Colors to cycle through")
 parser.add_argument("--debug", action="store_true", help="Print debug messages")
+parser.add_argument("--channel", type=str, default="led6", help="Channel to use; see https://github.com/liquidctl/liquidctl/blob/main/docs/gigabyte-rgb-fusion2-guide.md")
+
 args = parser.parse_args()
 
 colors = [c.Color("#" + x) for x in args.colors]
