@@ -9,7 +9,6 @@ import time
 import sys
 
 teal = c.Color("#2de544")
-# bluer = c.Color("#2dca7d")
 bluer = c.Color("#2d8a8d")
 deep_blue = c.Color("#001030")
 purple = c.Color("#c000c0")
@@ -34,6 +33,7 @@ parser.add_argument(
     default="led6",
     help="Channel to use; see https://github.com/liquidctl/liquidctl/blob/main/docs/gigabyte-rgb-fusion2-guide.md",
 )
+parser.add_argument("--speed", type=float, default=1.0, help="Speed (seconds per color transition)")
 
 args = parser.parse_args()
 
@@ -77,4 +77,4 @@ while True:
         c = lookup[x]
         with dev.connect():
             dev.set_color(channel=args.channel, mode="fixed", colors=[c])
-        time.sleep(2.0 / STEPS)
+        time.sleep(args.speed * 2.0 / STEPS)
