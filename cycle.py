@@ -48,6 +48,8 @@ print(lookup)
 while True:
     for x in range(2 * STEPS):
         c = lookup[x]
+        # keeping these hook variables in the liquidctl.cli module lets us
+        # call back into _device_set_color() with minimal overhead
         lc.hook_args["<color>"] = [c[1:]]
         with lc.hook_dev.connect(**lc.hook_opts):
             lc._device_set_color(lc.hook_dev, lc.hook_args, **lc.hook_opts)
