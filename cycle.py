@@ -16,7 +16,7 @@ red = c.Color("#d00000")
 
 # set up argparse
 parser = argparse.ArgumentParser(description="Cycle through a list of colors")
-parser.add_argument("--space", type=str, default="srgb", help="Color space to use")
+parser.add_argument("--space", type=str, default="srgb", help="Color space to use; see https://facelessuser.github.io/coloraide/colors/")
 # you can provide 0 or more colors to cycle through
 parser.add_argument("colors", nargs="*", help="Colors to cycle through")
 parser.add_argument("--debug", action="store_true", help="Print debug messages")
@@ -27,7 +27,6 @@ if len(colors) < 2:
     colors.append(teal)
 if len(colors) < 2:
     colors.append(bluer)
-
 
 sys.argv[1:] = ["set", "led6", "color", "color-cycle", "--speed", "slower"]
 
