@@ -1,55 +1,67 @@
 ---
 name: Support for a new device
-about: Request support for a device not currently supported
+about: Request inclusion of a yet supported device
 title: <Brand name> <model name>
 labels: new device
 ---
 
-Briefly describe the device (e.g. AIO liquid cooler).
+<!--
+This is a comment that will not be visible on the final issue.  This and other comments like this will help you provide as much information as possible for us to address the issue.  You can use the "Preview" tab to review how your issue will actually look before posting it.  GitHub issues and comments support a flavor of Markdown; you can find more information on: https://docs.github.com/en/get-started/writing-on-github
+-->
 
-Please also mention the first-party software that is used with it (e.g. Corsair iCue), as well as any other commonly used tools.
+<!--
+Please start by describing the device and providing basic information.
+-->
 
-<!-- Bellow you find some check lists.  To check an item, fill the brackets with the letter x.  The result should look like `[x]`. -->
+Device type<!--(e.g. AIO liquid cooler)-->: 
+Product page<!--(e.g. https://www.corsair.com/[...])-->: 
+First-party software<!--(e.g. Corsair iCue)-->: 
+Other commonly used tools<!--(e.g. OpenRGB)-->: 
+
+<!--
+Bellow you find some check lists.  Answer items with yes, no, unknown, or leave them blank.  Please try to answer as much items as you can, but do not feel obligated to fill the all.
+-->
 
 The device appears to support the following features:
 
- - [ ] monitoring of temperatures or other environment sensors
- - [ ] monitoring of fan or pump speeds or duty cycles
- - [ ] monitoring of voltages, currents or power
- - [ ] configurable fan or pump speeds
- - [ ] configurable voltages or current/power limits
- - [ ] configurable lighting of embedded LEDs
- - [ ] configurable lighting of accessories like RGB fans or LED strips
+ - monitoring of temperatures or other environment sensors: 
+ - monitoring of fan or pump speeds or duty cycles: 
+ - monitoring of voltages, currents or power: 
+ - configurable fan or pump speeds: 
+ - configurable voltages or current/power limits: 
+ - configurable lighting of embedded LEDs: 
+ - configurable lighting of accessories like RGB fans or LED strips: 
 
-The device is connected to the host system using:
+The device is physically connected to the host system using:
 
-- [ ] USB
-- [ ] PCI-E
-- [ ] onboard (the motherboard)
-- [ ] other (please elaborate)
-- [ ] unknown
+- USB: 
+- PCI-E: 
+- onboard the motherboard: 
+- other<!--(please elaborate)-->: 
 
-The device communicates with the host system using:
+The device uses which protocols to communicate with the host system:
 
-- [ ] HID
-- [ ] USB
-- [ ] I²C or SMBus
-- [ ] other (please elaborate)
-- [ ] unknown
+- HID: 
+- USB: 
+- I²C: 
+- SMBus: 
+- other<!--(please elaborate)-->: 
 
-Please also include any useful additional information, such as USB vendor and product IDs, the output of `lsusb -v` (Linux) or `system_profiler SPUSBDataType` (Mac OS), links to external resources or already collected traffic data.
+Additional information about the device:
 
----
+<!--
+Please also include any useful additional information, such as USB vendor and product IDs, the output of `lsusb -v` (Linux) or `system_profiler SPUSBDataType` (Mac OS), links to external resources or already collected traffic data.  Use code blocks, delimited by lines with three backticks (```), to show program output.
+-->
 
-Finally, I can help with:¹
+Finally, I can help with:
 
-- [ ] testing changes on Linux
-- [ ] testing changes on Windows
-- [ ] testing changes on Mac OS
-- [ ] attempting to capture USB traffic
-- [ ] attempting to capture I²C/SMBus traffic
-- [ ] analyzing traffic data
-- [ ] documenting the protocol
-- [ ] implementing the driver
+- testing changes on Linux: 
+- testing changes on Windows: 
+- testing changes on Mac OS: 
+- attempting to capture USB traffic: 
+- attempting to capture I²C/SMBus traffic: 
+- analyzing traffic data: 
+- documenting the protocol: 
+- implementing the driver: 
 
-¹ Assuming documentation and/or assistance will be provided.
+assuming documentation and/or assistance will be provided.
