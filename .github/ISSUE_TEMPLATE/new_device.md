@@ -6,7 +6,7 @@ labels: new device
 ---
 
 <!--
-This is a comment that will not be visible on the final issue.  This and other comments like this will help you provide as much information as possible for us to address the issue.  You can use the "Preview" tab to review how your issue will actually look before posting it.  GitHub issues and comments support a flavor of Markdown; you can find more information on: https://docs.github.com/en/get-started/writing-on-github
+This is a comment that will not be visible on the final issue.  This and other comments like this will help you provide as much information as possible for us to address the issue.  You can use the "Preview" tab to review how your issue will actually look before posting it.  GitHub issues and comments support a flavor of Markdown; you can find more information at: https://docs.github.com/en/get-started/writing-on-github
 -->
 
 <!--
