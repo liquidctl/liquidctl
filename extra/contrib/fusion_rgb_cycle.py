@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# Copyright (C) 2022–2022  Peter Eckersley <pde@pde.is>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 
 import liquidctl.cli as lc
 import liquidctl
@@ -26,6 +29,9 @@ parser.add_argument(
 )
 # you can provide 0 or more colors to cycle through
 parser.add_argument("colors", nargs="*", help="Colors to cycle through")
+parser.add_argument(
+    "--steps", default=30, type=int, help="Number of steps per color fade"
+)
 parser.add_argument("--debug", action="store_true", help="Print debug messages")
 parser.add_argument(
     "--channel",
@@ -33,7 +39,9 @@ parser.add_argument(
     default="led6",
     help="Channel to use; see https://github.com/liquidctl/liquidctl/blob/main/docs/gigabyte-rgb-fusion2-guide.md",
 )
-parser.add_argument("--speed", type=float, default=1.0, help="Speed (seconds per color transition)")
+parser.add_argument(
+    "--speed", type=float, default=1.0, help="Speed (seconds per color transition)"
+)
 
 args = parser.parse_args()
 
@@ -43,15 +51,14 @@ if len(colors) < 2:
 if len(colors) < 2:
     colors.append(bluer)
 
-devs = liquidctl.find_liquidctl_devices()
-for dev in devs:
-    if "Gigabyte RGB Fusion 2.0" in dev.description:
-        break
-else:
+devs = liquidctl.driver.rgb_fusion2.RgbFusion2.find_supported_devices()
+if not devs:
     print("No Gigabyte RGB Fusion 2.0 device found.")
     sys.exit(1)
+elif len(devs) > 1:
+    print("Multiple Gigabyte RGB Fusion 2.0 devices found, using first one.")
 
-STEPS = 30
+dev = devs[0]
 
 lookup = []
 
@@ -65,16 +72,19 @@ def to_int(color):
 
 for i in range(len(colors) - 1):
     gradient = colors[i].interpolate(colors[i + 1], space=args.space)
-    cols = [to_int(gradient(x / STEPS)) for x in range(STEPS)]
+    cols = [to_int(gradient(x / args.steps)) for x in range(args.steps)]
     lookup += cols
 
 
 lookup += reversed(lookup)
 if args.debug:
     print("Cycling through", lookup)
+
+
 while True:
-    for x in range(2 * STEPS):
-        c = lookup[x]
-        with dev.connect():
+    # reconnect occasionally, just in case these connections die and we can bring them back
+    with dev.connect():
+        for x in range(2 * args.steps):
+            c = lookup[x]
             dev.set_color(channel=args.channel, mode="fixed", colors=[c])
-        time.sleep(args.speed * 2.0 / STEPS)
+            time.sleep(args.speed * 2.0 / args.steps)
