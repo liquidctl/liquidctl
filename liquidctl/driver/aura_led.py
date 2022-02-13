@@ -38,10 +38,11 @@ Aura LED light mode names were obtained from these sources:
 - OpenRGB Project
   https://github.com/CalcProgrammer1/OpenRGB
 
-Aura LED control codes, however, were independently obtained from USB traffic 
-capture with Wireshark on Windows. This Aura LED controller uses completely 
-different control codes from previous Aura LED controllers.
+- @dehjomz for discovering color modes 0x10, 0x11, 0x12, 0x13
 
+Aura LED control codes, however, were independently obtained from USB traffic 
+captured with Wireshark on Windows. This Aura LED controller uses very different 
+control codes from previous Aura LED controllers.
 
 Copyright (C) 2022  CaseySJ
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -83,15 +84,16 @@ _FUNCTION_CODE = {
 
 # channel_type 0 designates RGB bus
 # channel_type 1 designates ARGB bus
-_ColorChannel = namedtuple('_ColorChannel', ['name', 'channel_id', 'channel_type', 'rgb_offset'])
+# 'effect' mode channel IDs are different from 'direct' mode channel IDs
+_ColorChannel = namedtuple('_ColorChannel', ['name', 'channel_id', 'direct_channel_id' 'channel_type', 'rgb_offset'])
 
 _COLOR_CHANNELS = {
     channel.name: channel
     for channel in [
-        _ColorChannel('rgb', 0x01, 0x00, 0x0),
-        _ColorChannel('argb1', 0x02, 0x01, 0x01),
-        _ColorChannel('argb2', 0x04, 0x01, 0x02),
-        _ColorChannel('argb3', 0x08, 0x01, 0x03),
+        _ColorChannel('rgb', 0x01, 0x00, 0x00, 0x0),
+        _ColorChannel('argb1', 0x02, 0x00, 0x01, 0x01),
+        _ColorChannel('argb2', 0x04, 0x01, 0x01, 0x02),
+        _ColorChannel('argb3', 0x08, 0x02, 0x01, 0x03),
     ]
 }
 
@@ -128,6 +130,7 @@ class AuraLed(UsbHidDriver):
     """This driver only supports 'effect' mode, hence no speed/color channels"""
     SUPPORTED_DEVICES = [
         (0x0b05, 0x19af, None, 'AsusTek Aura LED Controller', {}),
+        (0x0b05, 0x18f3, None, 'AsusTek Aura LED Controller', {}),
     ]
 
     def initialize(self, **kwargs):
@@ -164,8 +167,7 @@ class AuraLed(UsbHidDriver):
             status.append('Unexpected reply for config', '', '')
 
         # This stops Direct mode if it was previous applied
-        data = _FUNCTION_CODE['end_direct']
-        self._write(data)
+        self._write(_FUNCTION_CODE['end_direct'])
         
         """
         Extra operations during initialization
@@ -270,11 +272,9 @@ class AuraLed(UsbHidDriver):
             full_cmd_seq.append(cmd_tuple[0])
             full_cmd_seq.append(cmd_tuple[1])
             full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
-            #self._write(cmd_tuple[0])
-            #self._write(cmd_tuple[1])
-            #self._write(_FUNCTION_CODE['end_seq2'])
-            #self._write(cmd_tuple[0])
-            #self._write(cmd_tuple[1])
+            #full_cmd_seq.append(cmd_tuple[0])
+            #full_cmd_seq.append(cmd_tuple[1])
+            #full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
         
         for cmd_seq in full_cmd_seq:
             self._write(cmd_seq)
@@ -307,7 +307,8 @@ class AuraLed(UsbHidDriver):
         self._write(_FUNCTION_CODE['channel_off_prefix'])
         # set all LEDs to off, 20 at a time
         for i in (0, 20, 40, 60, 80, 100):
-            self._write(_FUNCTION_CODE['direct'] + [_COLOR_CHANNELS[channel].value | (0x80 * (i==100)), i, 20])
+            self._write(_FUNCTION_CODE['direct'] + 
+            [_COLOR_CHANNELS[channel].direct_channel_id | (0x80 * (i==100)), i, 20])
         self.end_color_sequence()
         self._write(_FUNCTION_CODE['end_direct'])
 
