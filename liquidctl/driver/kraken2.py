@@ -32,9 +32,13 @@ from liquidctl.util import clamp, normalize_profile, interpolate_profile, \
 _LOGGER = logging.getLogger(__name__)
 
 _SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
-    'fan':   (0x80, 25, 100),
-    'pump':  (0xc0, 50, 100),
+    'fan':   (0x80, 0, 100),
+    'pump':  (0xc0, 0, 100),
 }
+
+# more aggressive than observed 4.0.3 and 6.0.2 firmware defaults
+_RESET_FAN_PROFILE = [(20, 25), (30, 50), (50, 90), (60, 100)]
+_RESET_PUMP_PROFILE = [(20, 50), (30, 60), (40, 90), (50, 100)]
 
 _CRITICAL_TEMPERATURE = 60
 
@@ -114,10 +118,24 @@ class Kraken2(UsbHidDriver):
         self._connected = False
 
     def initialize(self, **kwargs):
+        """Initialize the device.
+
+        This method should be called once after the systems boot or resumes
+        from a suspended state, and before any other methods except `connect()`
+        or `disconnect()`.
+        """
+
         # before v1.1 `initialize` was used to connect to the device; that has
         # since been deprecated, but we have to support that usage until v2
         if not self._connected:
             self.connect(**kwargs)
+
+        if self.supports_cooling_profiles:
+            # due to a firmware limitation the same set of temperatures must be
+            # used on both channels; ensure that is always true, even if the
+            # user later only changes one of them, by resetting the profiles
+            self.set_speed_profile('fan', _RESET_FAN_PROFILE)
+            self.set_speed_profile('pump', _RESET_PUMP_PROFILE)
 
     def finalize(self):
         """Deprecated."""

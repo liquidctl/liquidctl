@@ -7,6 +7,8 @@ community.
 
 import pytest
 from _testutils import MockHidapiDevice
+from test_kraken2 import _MockKrakenDevice
+from test_kraken2 import mockKrakenXDevice as mockConnectedDevice
 
 from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.version import __version__
@@ -23,37 +25,36 @@ SPECTRUM = [
 ]
 
 
-@pytest.fixture
-def mockDevice():
-    device = MockHidapiDevice()
-    dev = KrakenTwoDriver(device, 'Mock X62',
-                                  device_type=KrakenTwoDriver.DEVICE_KRAKENX)
-
-    dev.connect()
-    return dev
-
-
 def test_pre11_apis_find_does_not_raise():
     import liquidctl.cli
     liquidctl.cli.find_all_supported_devices()
 
 
-def test_pre11_apis_connect_as_initialize(mockDevice):
-    # deprecated behavior in favor of connect()
-    mockDevice.initialize()
-
-
-def test_pre11_apis_deprecated_super_mode(mockDevice):
+def test_pre11_apis_deprecated_super_mode(mockConnectedDevice):
     # deprecated in favor of super-fixed, super-breathing and super-wave
-    mockDevice.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')
+    mockConnectedDevice.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')
 
 
-def test_pre11_apis_status_order(mockDevice):
+def test_pre11_apis_status_order(mockConnectedDevice):
     # GKraken unreasonably expects a particular ordering
     pass
 
 
-def test_pre11_apis_finalize_as_connect_or_noop(mockDevice):
+@pytest.fixture(params=[False, True], ids=['not connected', 'connected'])
+def mockDevice(request):
+    device = _MockKrakenDevice(fw_version=(6, 0, 2))
+    dev = KrakenTwoDriver(device, 'Mock X62', device_type=KrakenTwoDriver.DEVICE_KRAKENX)
+
+    if request.param:
+        dev.connect()
+    return dev
+
+
+def test_pre11_apis_connect_with_initialize(mockDevice):
+    # deprecated behavior in favor of connect()
+    mockDevice.initialize()
+
+
+def test_pre11_apis_disconnect_with_finalize(mockDevice):
     # deprecated in favor of disconnect()
-    mockDevice.finalize()  # should disconnect
-    mockDevice.finalize()  # should be a no-op
+    mockDevice.finalize()
