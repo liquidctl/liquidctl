@@ -130,12 +130,21 @@ class Kraken2(UsbHidDriver):
         if not self._connected:
             self.connect(**kwargs)
 
+        # read early but only once, since self.supports_cooling_profiles can
+        # indirectly reuse this one; no need to clear old reports since the
+        # firmware version can be assumed to be constant for the lifetime of
+        # the connection
+        msg = self._read(clear_first=False)
+
         if self.supports_cooling_profiles:
             # due to a firmware limitation the same set of temperatures must be
             # used on both channels; ensure that is always true, even if the
             # user later only changes one of them, by resetting the profiles
             self.set_speed_profile('fan', _RESET_FAN_PROFILE)
             self.set_speed_profile('pump', _RESET_PUMP_PROFILE)
+
+        firmware = '{}.{}.{}'.format(*self._firmware_version)
+        return [('Firmware version', firmware, '')]
 
     def finalize(self):
         """Deprecated."""
@@ -149,17 +158,16 @@ class Kraken2(UsbHidDriver):
         Returns a list of (key, value, unit) tuples.
         """
 
-        msg = self._read()
-        firmware = '{}.{}.{}'.format(*self._firmware_version)
         if self.device_type == self.DEVICE_KRAKENM:
-            return [('Firmware version', firmware, '')]
-        else:
-            return [
-                ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
-                ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
-                ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
-                ('Firmware version', firmware, '')
-            ]
+            return []
+
+        msg = self._read()
+
+        return [
+            ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
+            ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
+            ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
+        ]
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""

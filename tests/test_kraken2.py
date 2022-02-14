@@ -68,10 +68,15 @@ def test_kraken_connect(mockKrakenXDevice):
         assert opened
 
 
-def test_kraken_get_status(mockKrakenXDevice):
-    fan, fw_ver, temp, pump = sorted(mockKrakenXDevice.get_status())
+def test_kraken_initialize(mockKrakenXDevice):
+    (fw_ver,) = mockKrakenXDevice.initialize()
 
     assert fw_ver[1] == '6.0.2'
+
+
+def test_kraken_get_status(mockKrakenXDevice):
+    fan, temp, pump = sorted(mockKrakenXDevice.get_status())
+
     assert temp[1] == pytest.approx(mockKrakenXDevice.device.temperature)
     assert fan[1] == mockKrakenXDevice.device.fan_speed
     assert pump[1] == mockKrakenXDevice.device.pump_speed
@@ -111,9 +116,13 @@ def test_kraken_speed_profiles_not_supported(mockOldKrakenXDevice):
         mockOldKrakenXDevice.set_speed_profile('pump', [(20, 84)])
 
 
-def test_krakenM_get_status(mockKrakenMDevice):
-    (fw_ver,) = mockKrakenMDevice.get_status()
+def test_krakenM_initialize(mockKrakenMDevice):
+    (fw_ver,) = mockKrakenMDevice.initialize()
     assert fw_ver[1] == '6.0.2'
+
+
+def test_krakenM_get_status(mockKrakenMDevice):
+    assert mockKrakenMDevice.get_status() == []
 
 
 def test_krakenM_speed_control_not_supported(mockKrakenMDevice):
