@@ -70,19 +70,34 @@ def to_int(color):
     return [int(float(x)) for x in string]
 
 
+<<<<<<< HEAD
 colors.append(colors[0])  # add first color at the end, so we can loop
+=======
+>>>>>>> origin/main
 for i in range(len(colors) - 1):
     gradient = colors[i].interpolate(colors[i + 1], space=args.space)
     cols = [to_int(gradient(x / args.steps)) for x in range(args.steps)]
     lookup += cols
 
+<<<<<<< HEAD
 if args.debug:
     print("Cycling through", len(lookup), "colors:\n", lookup)
+=======
+
+lookup += reversed(lookup)
+if args.debug:
+    print("Cycling through", lookup)
+
+>>>>>>> origin/main
 
 while True:
     # reconnect occasionally, just in case these connections die and we can bring them back
     with dev.connect():
+<<<<<<< HEAD
         for x in range(len(lookup)):
+=======
+        for x in range(2 * args.steps):
+>>>>>>> origin/main
             c = lookup[x]
             dev.set_color(channel=args.channel, mode="fixed", colors=[c])
             time.sleep(args.speed * 2.0 / args.steps)
