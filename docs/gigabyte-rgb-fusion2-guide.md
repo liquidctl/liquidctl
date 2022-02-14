@@ -95,4 +95,4 @@ The `extra/contrib/fusion_rgb_cycle.py` script can be used to have one of these 
 # extra/contrib/fusion_rgb_cycle.py 350017 ff2608
 ```
 
-If more two colors are specified, they will be cycled in turn. The color space for cycling can be specified, eg `--space hsv`, channels can be specified with eg, `--channel led6` and the time in seconds for each color transition can be set with, eg `--speed 1.2`.
+If more two colors are specified, they will be cycled in turn. The [color space](https://facelessuser.github.io/coloraide/colors/) for cycling can be specified, eg `--space hsv`, channels can be specified with eg, `--channel led6` and the time in seconds for each color transition can be set with, eg `--speed 1.2`.

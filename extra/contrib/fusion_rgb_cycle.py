@@ -30,7 +30,7 @@ parser.add_argument(
 # you can provide 0 or more colors to cycle through
 parser.add_argument("colors", nargs="*", help="Colors to cycle through")
 parser.add_argument(
-    "--steps", default=30, type=int, help="Number of steps per color fade"
+    "--steps", default=30, type=int, help="Number of steps per color fade (default: 30)"
 )
 parser.add_argument("--debug", action="store_true", help="Print debug messages")
 parser.add_argument(
@@ -62,7 +62,6 @@ dev = devs[0]
 
 lookup = []
 
-
 def to_int(color):
     string = color.to_string()  # "rgb(255 75 0)"
     string = string.partition("(")[2][:-1]  # "255 75 0"
@@ -70,34 +69,21 @@ def to_int(color):
     return [int(float(x)) for x in string]
 
 
-<<<<<<< HEAD
 colors.append(colors[0])  # add first color at the end, so we can loop
-=======
->>>>>>> origin/main
+
 for i in range(len(colors) - 1):
     gradient = colors[i].interpolate(colors[i + 1], space=args.space)
     cols = [to_int(gradient(x / args.steps)) for x in range(args.steps)]
     lookup += cols
 
-<<<<<<< HEAD
 if args.debug:
     print("Cycling through", len(lookup), "colors:\n", lookup)
-=======
 
-lookup += reversed(lookup)
-if args.debug:
-    print("Cycling through", lookup)
-
->>>>>>> origin/main
 
 while True:
     # reconnect occasionally, just in case these connections die and we can bring them back
     with dev.connect():
-<<<<<<< HEAD
         for x in range(len(lookup)):
-=======
-        for x in range(2 * args.steps):
->>>>>>> origin/main
             c = lookup[x]
             dev.set_color(channel=args.channel, mode="fixed", colors=[c])
             time.sleep(args.speed * 2.0 / args.steps)
