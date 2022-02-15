@@ -2,8 +2,9 @@
 # Copyright (C) 2022–2022  Peter Eckersley <pde@pde.is>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import time
+import argparse
 import sys
+import time
 
 import liquidctl.cli as lc
 import liquidctl
@@ -15,7 +16,6 @@ except ImportError:
     print("The python coloraide package is not installed...")
     print("Try installing it with: pip install coloraide")
     sys.exit(1)
-import argparse
 
 
 teal = c.Color("#2de544")
