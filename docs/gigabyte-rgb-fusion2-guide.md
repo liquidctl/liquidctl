@@ -30,7 +30,8 @@ Gigabyte RGB Fusion 2.0 5702 Controller
 ## Lighting
 
 The controllers have built-in support for six color modes: `off`, `fixed`, `pulse`, `flash`, `double-flash` and `color-cycle`. The `color-cycle` mode fades between all
-color hues, but the extra `fusion_rgb_cycle` script can be used to fade between specific colors.
+color hues, but the extra [fusion_rgb_cycle.py](extra/contrib/fusion_rgb_cycle.py)
+script can be used to fade between specific colors.
 
 As much as we prefer to use descriptive channel names, currently it is not
 practical to do so, since the correspondence between the hardware channels and
@@ -44,7 +45,7 @@ apply a setting to all lighting channels.
 ```
 # liquidctl set sync color off
 # liquidctl set led1 color fixed 350017
-# liquidctl set led2 color pulse  
+# liquidctl set led2 color pulse ff2608
 # liquidctl set led3 color flash 350017
 # liquidctl set led4 color double-flash 350017
 # liquidctl set led5 color color-cycle --speed slower
@@ -55,7 +56,7 @@ animation speed is governed by the optional `--speed` parameter, with one of
 six possible values: `slowest`, `slower`, `normal` (the default), `faster`,
 `fastest` or `ludicrous`.
 
-The more elaborate color/animation schemes supported by the motherboard on the
+Some more elaborate color/animation schemes supported by the motherboard on the
 addressable headers are not currently supported.
 
 ## Correspondence between lighting channels and physical locations
@@ -89,10 +90,15 @@ liquidctl commands and restores desired lighting effects.
 
 ## Fading between colors
 
-The `extra/contrib/fusion_rgb_cycle.py` script can be used to have one of these controllers cycle through a list of colors of the user's choice. It uses the `fixed` mode but updates the controller continuously. It can be invoked with:
+The [fusion_rgb_cycle.py](extra/contrib/fusion_rgb_cycle.py) script can be used to have
+one of these controllers cycle through a list of colors of the user's choice. It uses
+the `fixed` mode but updates the controller continuously. It can be invoked with:
 
 ```
 # extra/contrib/fusion_rgb_cycle.py 350017 ff2608
 ```
 
-If more two colors are specified, they will be cycled in turn. The [color space](https://facelessuser.github.io/coloraide/colors/) for cycling can be specified, eg `--space hsv`, channels can be specified with eg, `--channel led6` and the time in seconds for each color transition can be set with, eg `--speed 1.2`.
+If more two colors are specified, they will be cycled in turn. The
+[color space](https://facelessuser.github.io/coloraide/colors/) for cycling can be
+specified, eg `--space hsv`, channels can be specified with eg, `--channel led6` and
+the time in seconds for each color transition can be set with, eg `--speed 1.2`.
