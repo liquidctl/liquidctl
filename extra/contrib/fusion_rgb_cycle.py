@@ -83,7 +83,6 @@ if args.debug:
 while True:
     # reconnect occasionally, just in case these connections die and we can bring them back
     with dev.connect():
-        for x in range(len(lookup)):
-            c = lookup[x]
+        for c in lookup:
             dev.set_color(channel=args.channel, mode="fixed", colors=[c])
             time.sleep(args.speed * 2.0 / args.steps)
