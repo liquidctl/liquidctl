@@ -100,5 +100,6 @@ the `fixed` mode but updates the controller continuously. It can be invoked with
 
 If more two colors are specified, they will be cycled in turn. The
 [color space](https://facelessuser.github.io/coloraide/colors/) for cycling can be
-specified, eg `--space hsv`, channels can be specified with eg, `--channel led6` and
-the time in seconds for each color transition can be set with, eg `--speed 1.2`.
+specified with `--space <space>`, channels can be specified with `--channel <channel>`
+and the time in seconds for each color transition can be set with, eg
+`--speed  <seconds>`.
