@@ -92,7 +92,7 @@ liquidctl commands and restores desired lighting effects.
 
 The [fusion_rgb_cycle.py](extra/contrib/fusion_rgb_cycle.py) script can be used to have
 one of these controllers cycle through a list of colors of the user's choice. It uses
-the `fixed` mode but updates the controller continuously. It can be invoked with:
+the `fixed` mode but updates the controller continuously. It can be started with:
 
 ```
 # extra/contrib/fusion_rgb_cycle.py 350017 ff2608
