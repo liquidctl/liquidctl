@@ -62,6 +62,7 @@ dev = devs[0]
 
 lookup = []
 
+
 def to_int(color):
     string = color.to_string()  # "rgb(255 75 0)"
     string = string.partition("(")[2][:-1]  # "255 75 0"

@@ -29,7 +29,8 @@ Gigabyte RGB Fusion 2.0 5702 Controller
 
 ## Lighting
 
-The controllers have built-in support for six color modes: `off`, `fixed`, `pulse`, `flash`, `double-flash` and `color-cycle`. The `color-cycle` mode fades between all
+The controllers have built-in support for six color modes: `off`, `fixed`, `pulse`,
+`flash`, `double-flash` and `color-cycle`. The `color-cycle` mode fades between all
 color hues, but the extra [fusion_rgb_cycle.py](extra/contrib/fusion_rgb_cycle.py)
 script can be used to fade between specific colors.
 
