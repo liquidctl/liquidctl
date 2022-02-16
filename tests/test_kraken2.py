@@ -1,6 +1,7 @@
 import pytest
 from _testutils import MockHidapiDevice
 
+from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.driver.kraken2 import Kraken2
 from liquidctl.error import NotSupportedByDevice
 
@@ -74,12 +75,29 @@ def test_kraken_initialize(mockKrakenXDevice):
     assert fw_ver[1] == '6.0.2'
 
 
-def test_kraken_get_status(mockKrakenXDevice):
-    fan, temp, pump = sorted(mockKrakenXDevice.get_status())
+@pytest.mark.parametrize('has_hwmon,force', [(False, False), (True, True)])
+def test_kraken_get_status_directly(mockKrakenXDevice, has_hwmon, force):
+    if has_hwmon:
+        mockKrakenXDevice._hwmon = HwmonDevice(None, None)
+
+    fan, temp, pump = sorted(mockKrakenXDevice.get_status(force=force))
 
     assert temp[1] == pytest.approx(mockKrakenXDevice.device.temperature)
     assert fan[1] == mockKrakenXDevice.device.fan_speed
     assert pump[1] == mockKrakenXDevice.device.pump_speed
+
+
+def test_kraken_get_status_from_hwmon(mockKrakenXDevice, tmp_path):
+    mockKrakenXDevice._hwmon = HwmonDevice('mock_module', tmp_path)
+    (tmp_path / 'temp1_input').write_text('20900\n')
+    (tmp_path / 'fan1_input').write_text('2499\n')
+    (tmp_path / 'fan2_input').write_text('1702\n')
+
+    fan, temp, pump = sorted(mockKrakenXDevice.get_status())
+
+    assert temp[1] == pytest.approx(20.9)
+    assert fan[1] == 2499
+    assert pump[1] == 1702
 
 
 def test_kraken_not_totally_broken(mockKrakenXDevice):

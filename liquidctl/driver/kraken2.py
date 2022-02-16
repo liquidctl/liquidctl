@@ -36,6 +36,10 @@ _SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'pump':  (0xc0, 0, 100),
 }
 
+_STATUS_TEMPERATURE = 'Liquid temperature'
+_STATUS_FAN_SPEED = 'Fan speed'
+_STATUS_PUMP_SPEED = 'Pump speed'
+
 # more aggressive than observed 4.0.3 and 6.0.2 firmware defaults
 _RESET_FAN_PROFILE = [(20, 25), (30, 50), (50, 90), (60, 100)]
 _RESET_PUMP_PROFILE = [(20, 50), (30, 60), (40, 90), (50, 100)]
@@ -141,7 +145,23 @@ class Kraken2(UsbHidDriver):
         firmware = '{}.{}.{}'.format(*self._firmware_version)
         return [('Firmware version', firmware, '')]
 
-    def get_status(self, **kwargs):
+    def _get_status_directly(self):
+        msg = self._read()
+
+        return [
+            (_STATUS_TEMPERATURE, msg[1] + msg[2]/10, '°C'),
+            (_STATUS_FAN_SPEED, msg[3] << 8 | msg[4], 'rpm'),
+            (_STATUS_PUMP_SPEED, msg[5] << 8 | msg[6], 'rpm'),
+        ]
+
+    def _get_status_from_hwmon(self):
+        return [
+            (_STATUS_TEMPERATURE, self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            (_STATUS_FAN_SPEED, self._hwmon.get_int('fan1_input'), 'rpm'),
+            (_STATUS_PUMP_SPEED, self._hwmon.get_int('fan2_input'), 'rpm'),
+        ]
+
+    def get_status(self, force=False, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -150,13 +170,16 @@ class Kraken2(UsbHidDriver):
         if self.device_type == self.DEVICE_KRAKENM:
             return []
 
-        msg = self._read()
+        if self._hwmon and not force:
+            _LOGGER.info('%s is bound to %s kernel driver, reading status from hwmon',
+                         self.description, self._hwmon.module)
+            return self._get_status_from_hwmon()
 
-        return [
-            ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
-            ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
-            ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
-        ]
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status from %s despite %s kernel driver',
+                            self.description, self._hwmon.module)
+
+        return self._get_status_directly()
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
