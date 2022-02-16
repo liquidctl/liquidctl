@@ -80,6 +80,7 @@ _liquidctl_main() {
     --single-12v-ocp
     --legacy-690lc
     --non-volatile
+    --force
     "
 
     local options_with_args="
