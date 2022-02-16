@@ -244,12 +244,21 @@ class SmartDevice(_CommonSmartDeviceDriver):
                           for i in range(color_channel_count)}
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-    def initialize(self, **kwargs):
+    def initialize(self, force=False, **kwargs):
         """Initialize the device.
 
         Detects all connected fans and LED accessories, and allows subsequent
         calls to get_status.
         """
+
+        if self._hwmon and not force:
+            _LOGGER.info('%s is bound to %s kernel driver, assuming it is already initialized',
+                         self.description, self._hwmon.module)
+            return None
+
+        if self._hwmon:
+            _LOGGER.warning('forcing re-initialization of %s despite %s kernel driver',
+                            self.description, self._hwmon.module)
 
         self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
         self._write([0x1, 0x5d])  # start reporting
