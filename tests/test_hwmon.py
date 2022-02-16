@@ -25,3 +25,7 @@ def test_has_path(mock_hwmon):
 
 def test_has_name(mock_hwmon):
     assert mock_hwmon.name == "hwmon7"
+
+
+def test_gets_int(mock_hwmon):
+    assert mock_hwmon.get_int("fan1_input") == 1499

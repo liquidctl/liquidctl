@@ -24,6 +24,11 @@ class HwmonDevice:
     def name(self):
         return self.path.name
 
+    def get_int(self, name):
+        value = (self.path / name).read_text().rstrip()
+        _LOGGER.debug("read %s: %s", name, value)
+        return int(value)
+
     @classmethod
     def from_hidraw(cls, path):
         """Find the `HwmonDevice` for `path`."""
