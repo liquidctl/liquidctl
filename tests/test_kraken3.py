@@ -3,6 +3,7 @@
 import pytest
 from _testutils import MockHidapiDevice, Report
 
+from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3
 from liquidctl.driver.kraken3 import (
     _COLOR_CHANNELS_KRAKENX,
@@ -71,6 +72,21 @@ class MockKraken(MockHidapiDevice):
                 reply[15 + 2 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_LOGO.value
         self.preload_read(Report(0, reply))
         return super().write(data)
+
+
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True), (True, False)])
+def test_krakenx3_initializes(mock_krakenx3, has_hwmon, direct_access, tmp_path):
+    if has_hwmon:
+        mock_krakenx3._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    # TODO check the result
+    _ = mock_krakenx3.initialize(direct_access=direct_access)
+
+    writes = len(mock_krakenx3.device.sent)
+    if not has_hwmon or direct_access:
+        assert writes == 4
+    else:
+        assert writes == 2
 
 
 def test_krakenx3_parses_status_fields(mock_krakenx3):

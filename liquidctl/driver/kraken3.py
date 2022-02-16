@@ -158,21 +158,35 @@ class KrakenX3(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
-    def initialize(self, **kwargs):
-        """Initialize the device.
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
 
-        Reports the current firmware of the device.  Returns a list of (key,
-        value, unit) tuples.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
         self.device.clear_enqueued_reports()
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
+
         # initialize
-        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-        self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
-        self._write([0x70, 0x01])
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+            self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
+            self._write([0x70, 0x01])
+
         status = []
 
         def parse_firm_info(msg):
