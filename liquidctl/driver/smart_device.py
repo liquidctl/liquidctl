@@ -453,7 +453,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-    def initialize(self, **kwargs):
+    def initialize(self, force=False, **kwargs):
         """Initialize the device.
 
         Detects and reports all connected fans and LED accessories, and allows
@@ -466,9 +466,16 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
         # if fan controller, initialize fan reporting (#331)
         if self._speed_channels:
-            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-            self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
-            self._write([0x60, 0x03])
+            if self._hwmon and not force:
+                _LOGGER.info('%s is bound to %s kernel driver, assuming it is already initialized',
+                             self.description, self._hwmon.module)
+            else:
+                if self._hwmon:
+                    _LOGGER.warning('forcing re-initialization of %s despite %s kernel driver',
+                                    self.description, self._hwmon.module)
+                update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+                self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
+                self._write([0x60, 0x03])
 
         # request static infos
         self._write([0x10, 0x01])  # firmware info
