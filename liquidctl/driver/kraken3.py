@@ -158,7 +158,7 @@ class KrakenX3(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
-    def initialize(self, **kwargs):
+    def initialize(self, force=False, **kwargs):
         """Initialize the device.
 
         Reports the current firmware of the device.  Returns a list of (key,
@@ -169,10 +169,19 @@ class KrakenX3(UsbHidDriver):
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
+
         # initialize
-        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-        self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
-        self._write([0x70, 0x01])
+        if self._hwmon and not force:
+            _LOGGER.info('%s is bound to %s kernel driver, assuming it is already initialized',
+                         self.description, self._hwmon.module)
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization of %s despite %s kernel driver',
+                                self.description, self._hwmon.module)
+            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+            self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
+            self._write([0x70, 0x01])
+
         status = []
 
         def parse_firm_info(msg):
