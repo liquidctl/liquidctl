@@ -22,11 +22,6 @@ SPECTRUM = [
 ]
 
 
-def test_pre11_apis_find_does_not_raise():
-    import liquidctl.cli
-    liquidctl.cli.find_all_supported_devices()
-
-
 def test_pre11_apis_deprecated_super_mode(mockKrakenXDevice):
     # deprecated in favor of super-fixed, super-breathing and super-wave
     mockKrakenXDevice.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')

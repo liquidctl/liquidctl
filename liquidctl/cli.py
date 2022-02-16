@@ -484,11 +484,5 @@ def main():
     sys.exit(0)
 
 
-def find_all_supported_devices(**opts):
-    """Deprecated."""
-    _LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
-    return find_liquidctl_devices(**opts)
-
-
 if __name__ == '__main__':
     main()
