@@ -278,12 +278,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
         return ret
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of (key, value, unit) tuples.
-        """
-
+    def _get_status_directly(self):
         status = []
         fans = [None] * len(self._speed_channels)
         noise = []
@@ -306,6 +301,38 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
         # flatten non None fan data and concat with status
         return [x for fan_data in fans if fan_data for x in fan_data] + status
+
+    def _get_status_from_hwmon(self):
+        ret = []
+        mode = ['DC', 'PWM']  # slightly simplified, but the device treats undetected == PWM
+
+        for i in range(len(self._speed_channels)):
+            n = i + 1
+            ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
+            ret.append((f'Fan {n} voltage', self._hwmon.get_int(f'in{i}_input') * 1e-3, 'V')),
+            ret.append((f'Fan {n} current', self._hwmon.get_int(f'curr{n}_input') * 1e-3, 'A')),
+            ret.append((f'Fan {n} control mode', mode[self._hwmon.get_int(f'pwm{n}_mode')], '')),
+
+        # noise level is not available through hwmon, but also not very accurate or useful
+
+        return ret
+
+    def get_status(self, force=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of (key, value, unit) tuples.
+        """
+
+        if self._hwmon and not force:
+            _LOGGER.info('%s is bound to %s kernel driver, reading status from hwmon',
+                         self.description, self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status from %s despite %s kernel driver',
+                            self.description, self._hwmon.module)
+
+        return self._get_status_directly()
 
     def _write_colors(self, cid, mode, colors, sval, direction='forward'):
         mval, mod3, mod4, _, _ = self._COLOR_MODES[mode]

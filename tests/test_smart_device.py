@@ -71,8 +71,12 @@ def test_smart_device_initializes(mockSmartDevice, has_hwmon, force, tmp_path):
     else:
         assert writes == 0
 
-def test_smart_device_reads_status(mockSmartDevice):
+
+@pytest.mark.parametrize('has_hwmon,force', [(False, False), (True, True)])
+def test_smart_device_reads_status_directly(mockSmartDevice, has_hwmon, force):
     dev = mockSmartDevice
+    if has_hwmon:
+        dev._hwmon = HwmonDevice(None, None)
 
     for _, capdata in enumerate(SAMPLE_RESPONSES):
         capdata = bytes.fromhex(capdata)
@@ -95,6 +99,46 @@ def test_smart_device_reads_status(mockSmartDevice):
         ('Fan 3 current', 0.03, 'A'),
         ('Fan 3 control mode', None, ''),
         ('Noise level', 63, 'dB')
+    ]
+
+    got = dev.get_status(force=force)
+
+    assert expected == got
+
+
+def test_smart_device_reads_status_from_hwmon(mockSmartDevice, tmp_path):
+    dev = mockSmartDevice
+
+    dev._hwmon = HwmonDevice('mock_module', tmp_path)
+    (tmp_path / 'fan1_input').write_text('1461\n')
+    (tmp_path / 'in0_input').write_text('11910\n')
+    (tmp_path / 'curr1_input').write_text('20\n')
+    (tmp_path / 'pwm1_mode').write_text('1\n')
+    (tmp_path / 'fan2_input').write_text('1336\n')
+    (tmp_path / 'in1_input').write_text('11910\n')
+    (tmp_path / 'curr2_input').write_text('20\n')
+    (tmp_path / 'pwm2_mode').write_text('0\n')
+    (tmp_path / 'fan3_input').write_text('1390\n')
+    (tmp_path / 'in2_input').write_text('11910\n')
+    (tmp_path / 'curr3_input').write_text('30\n')
+    (tmp_path / 'pwm3_mode').write_text('1\n')
+
+    # skip initialize for now, we're not emulating the behavior precisely
+    # enough to require it here
+
+    expected = [
+        ('Fan 1 speed', 1461, 'rpm'),
+        ('Fan 1 voltage', 11.91, 'V'),
+        ('Fan 1 current', 0.02, 'A'),
+        ('Fan 1 control mode', 'PWM', ''),
+        ('Fan 2 speed', 1336, 'rpm'),
+        ('Fan 2 voltage', 11.91, 'V'),
+        ('Fan 2 current', 0.02, 'A'),
+        ('Fan 2 control mode', 'DC', ''),
+        ('Fan 3 speed', 1390, 'rpm'),
+        ('Fan 3 voltage', 11.91, 'V'),
+        ('Fan 3 current', 0.03, 'A'),
+        ('Fan 3 control mode', 'PWM', ''),
     ]
 
     got = dev.get_status()
