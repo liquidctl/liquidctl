@@ -456,21 +456,21 @@ def main():
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES, errno.EPERM]:
-                log_error(err, f'Error: insufficient permissions to access {dev.description}')
+                log_error(err, f'insufficient permissions to access {dev.description}')
             elif err.args == ('open failed', ):
-                log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
+                log_error(err, f'could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, f'Unexpected OS error with {dev.description}', append_err=True)
+                log_error(err, f'unexpected OS error with {dev.description}', append_err=True)
         except NotSupportedByDevice as err:
-            log_error(err, f'Error: operation not supported by {dev.description}')
+            log_error(err, f'operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
-            log_error(err, f'Error: operation not supported by driver for {dev.description}')
+            log_error(err, f'operation not supported by driver for {dev.description}')
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
-            log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
+            log_error(err, f'missing --unsafe features for {dev.description}: {features!r}')
             _LOGGER.error('More information is provided in the corresponding device guide')
         except Exception as err:
-            log_error(err, f'Unexpected error with {dev.description}', append_err=True)
+            log_error(err, f'unexpected error with {dev.description}', append_err=True)
 
     if errors:
         sys.exit(errors)
