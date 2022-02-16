@@ -125,11 +125,6 @@ class Kraken2(UsbHidDriver):
         or `disconnect()`.
         """
 
-        # before v1.1 `initialize` was used to connect to the device; that has
-        # since been deprecated, but we have to support that usage until v2
-        if not self._connected:
-            self.connect(**kwargs)
-
         # read early but only once, since self.supports_cooling_profiles can
         # indirectly reuse this one; no need to clear old reports since the
         # firmware version can be assumed to be constant for the lifetime of
@@ -145,12 +140,6 @@ class Kraken2(UsbHidDriver):
 
         firmware = '{}.{}.{}'.format(*self._firmware_version)
         return [('Firmware version', firmware, '')]
-
-    def finalize(self):
-        """Deprecated."""
-        _LOGGER.warning('deprecated: use disconnect() instead')
-        if self._connected:
-            self.disconnect()
 
     def get_status(self, **kwargs):
         """Get a status report.
