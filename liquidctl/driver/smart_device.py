@@ -101,6 +101,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import itertools
 import logging
+import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -244,24 +245,38 @@ class SmartDevice(_CommonSmartDeviceDriver):
                           for i in range(color_channel_count)}
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-    def initialize(self, force=False, **kwargs):
+    def initialize(self, direct_access=False, **kwargs):
         """Initialize the device.
 
         Detects all connected fans and LED accessories, and allows subsequent
         calls to get_status.
         """
 
-        if self._hwmon and not force:
-            _LOGGER.info('%s is bound to %s kernel driver, assuming it is already initialized',
-                         self.description, self._hwmon.module)
-            return None
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
+            self._write([0x1, 0x5d])  # start reporting
+            self.device.clear_enqueued_reports()
 
-        if self._hwmon:
-            _LOGGER.warning('forcing re-initialization of %s despite %s kernel driver',
-                            self.description, self._hwmon.module)
+        msg = self.device.read(self._READ_LENGTH)
 
-        self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
-        self._write([0x1, 0x5d])  # start reporting
+        fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
+        ret = [('Firmware version', fw, '')]
+
+        if self._color_channels:
+            lcount = msg[0x11]
+            ret.append(('LED accessories', lcount, ''))
+            if lcount > 0:
+                ltype, lsize = [('HUE+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
+                ret.append(('LED accessory type', ltype, ''))
+                ret.append(('LED count (total)', lcount*lsize, ''))
+
+        return ret
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -286,20 +301,6 @@ class SmartDevice(_CommonSmartDeviceDriver):
                 (f'Fan {num} control mode', [None, 'DC', 'PWM'][state], ''),
             ]
             noise.append(msg[1])
-
-            if i != 0:
-                continue
-
-            fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
-            status.append(('Firmware version', fw, ''))
-
-            if self._color_channels:
-                lcount = msg[0x11]
-                status.append(('LED accessories', lcount, ''))
-                if lcount > 0:
-                    ltype, lsize = [('HUE+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
-                    status.append(('LED accessory type', ltype, ''))
-                    status.append(('LED count (total)', lcount*lsize, ''))
 
         status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
 
