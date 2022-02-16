@@ -5,6 +5,7 @@ from pytest import approx
 from datetime import timedelta
 
 from liquidctl.driver.corsair_hid_psu import CorsairHidPsu, OCPMode, FanControlMode
+from liquidctl.driver.hwmon import HwmonDevice
 
 
 # https://github.com/liquidctl/liquidctl/issues/300#issuecomment-788302513
@@ -53,7 +54,7 @@ SAMPLE_RESPONSES = [
 ]
 
 
-class _MockPsuDevice(MockHidapiDevice):
+class MockPsu(MockHidapiDevice):
     def __init__(self, *args, **kwargs):
         self._page = 0;
         super().__init__(*args, **kwargs)
@@ -80,31 +81,46 @@ class _MockPsuDevice(MockHidapiDevice):
 
 
 @pytest.fixture
-def mockPsuDevice():
+def mock_psu():
     pid, vid, _, desc, kwargs = CorsairHidPsu.SUPPORTED_DEVICES[0]
-    device = _MockPsuDevice(vendor_id=vid, product_id=pid, address='addr')
+    device = MockPsu(vendor_id=vid, product_id=pid, address='addr')
     return CorsairHidPsu(device, f'Mock {desc}', **kwargs)
 
 
-def test_corsair_psu_not_totally_broken(mockPsuDevice):
+def test_not_totally_broken(mock_psu):
 
-    mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
-    report_id, report_data = mockPsuDevice.device.sent[0]
+    mock_psu.set_fixed_speed(channel='fan', duty=50)
+    report_id, report_data = mock_psu.device.sent[0]
     assert report_id == 0
     assert len(report_data) == 64
 
 
-def test_corsair_psu_dont_inject_report_ids(mockPsuDevice):
+def test_dont_inject_report_ids(mock_psu):
 
-    mockPsuDevice.set_fixed_speed(channel='fan', duty=50)
-    report_id, report_data = mockPsuDevice.device.sent[0]
+    mock_psu.set_fixed_speed(channel='fan', duty=50)
+    report_id, report_data = mock_psu.device.sent[0]
     assert report_id == 0
     assert len(report_data) == 64
 
 
-def test_corsair_psu_get_status(mockPsuDevice):
+@pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True), (True, False)])
+def test_initializes(mock_psu, has_hwmon, direct_access, tmp_path):
+    if has_hwmon:
+        mock_psu._hwmon = HwmonDevice('mock_module', tmp_path)
 
-    status = { k: (v, u) for k, v, u in mockPsuDevice.get_status() }
+    # TODO check the result
+    _ = mock_psu.initialize(direct_access=direct_access)
+
+    writes = len(mock_psu.device.sent)
+    if not has_hwmon or direct_access:
+        assert writes > 0
+    else:
+        assert writes == 0
+
+
+def test_corsair_psu_get_status(mock_psu):
+
+    status = { k: (v, u) for k, v, u in mock_psu.get_status() }
 
     assert status['Current uptime'] == (timedelta(seconds=5522), '')
     assert status['Total uptime'] == (timedelta(days=13, seconds=9122), '')

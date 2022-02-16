@@ -107,25 +107,44 @@ class CorsairHidPsu(UsbHidDriver):
         self.fpowin115 = fpowin115
         self.fpowin230 = fpowin230
 
-    def initialize(self, single_12v_ocp=False, **kwargs):
-        """Initialize the device.
+    def initialize(self, single_12v_ocp=False, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
 
-        Necessary to receive non-zero value responses from the device.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
 
-        Note: replies before calling this function appear to follow the
-        pattern <address> <cte 0xfe> <zero> <zero> <padding...>.
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
-        self.device.clear_enqueued_reports()
-        self._write([0xfe, 0x03])  # not well understood
-        self._read()
+        # necessary to receive non-zero status responses from the device:
+        # replies before calling this function appear to follow the pattern
+        # <address> <cte 0xfe> <zero> <zero> <padding...>
+
+        if self._hwmon:
+            if not direct_access:
+                _LOGGER.warning('bound to %s kernel driver, OCP and fan modes not changed',
+                                self._hwmon.module)
+                return
+            else:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+
+        self._write([0xfe, 0x03])
+        _ = self._read()
+
+        # don't check current OCP and fan control modes in case we're racing
+        # with a hwmon driver and the returned values, which aren't available
+        # through hwmon, are corrupted by the race
+
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
-        if mode != self._get_12v_ocp_mode():
-            _LOGGER.info('changing +12V OCP mode to %s', mode)
-            self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
-        if self._get_fan_control_mode() != FanControlMode.HARDWARE:
-            _LOGGER.info('resetting fan control to hardware mode')
-            self._set_fan_control_mode(FanControlMode.HARDWARE)
+        _LOGGER.info('setting +12V OCP mode to %s', mode)
+        self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
+
+        _LOGGER.info('resetting fan control to hardware mode')
+        self._set_fan_control_mode(FanControlMode.HARDWARE)
 
     def get_status(self, **kwargs):
         """Get a status report.
