@@ -24,13 +24,14 @@ class MockRuntimeStorage(RuntimeStorage):
 
 class MockHidapiDevice:
     def __init__(self, vendor_id=None, product_id=None, release_number=None,
-                 serial_number=None, bus=None, address=None):
+                 serial_number=None, bus=None, address=None, path=None):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.release_number = release_number
         self.serial_number = serial_number
         self.bus = bus
         self.address = address
+        self.path = path or b'<placeholder path>'
         self.port = None
 
         self.open = noop

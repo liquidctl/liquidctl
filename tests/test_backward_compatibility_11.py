@@ -23,14 +23,14 @@ class _MockPyUsbHandle(usb.core.Device):
 
 def _mock_enumerate(vendor_id=0, product_id=0):
     return [
-        {'vendor_id': vendor_id, 'product_id': product_id, 'serial_number': '987654321'},
-        {'vendor_id': vendor_id, 'product_id': product_id, 'serial_number': '123456789'}
+        {'vendor_id': vendor_id, 'product_id': product_id, 'serial_number': '_21', 'path': b'/_21'},
+        {'vendor_id': vendor_id, 'product_id': product_id, 'serial_number': '_89', 'path': b'/_89'}
     ]
 
 
 def test_construct_with_raw_pyusb_handle(monkeypatch):
     monkeypatch.setattr(hid, 'enumerate', _mock_enumerate)
-    pyusb_handle = _MockPyUsbHandle(serial_number='123456789')
+    pyusb_handle = _MockPyUsbHandle(serial_number='_89')
     liquidctl_device = Kraken2(pyusb_handle, 'Some device')
     assert liquidctl_device.device.vendor_id == pyusb_handle.idVendor, \
         '<driver instance>.device points to incorrect physical device'

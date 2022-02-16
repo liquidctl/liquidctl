@@ -68,6 +68,7 @@ except ModuleNotFoundError:
     import hid
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
+from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.util import LazyHexRepr
 
 _LOGGER = logging.getLogger(__name__)
@@ -196,6 +197,10 @@ class UsbHidDriver(BaseUsbDriver):
             assert hidinfo, 'Could not find device in HID bus'
             device = HidapiDevice(hid, hidinfo)
         super().__init__(device, description, **kwargs)
+        self._hwmon = HwmonDevice.from_hidraw(device.path)
+        if self._hwmon:
+            _LOGGER.debug('HID is bound to %s kernel driver: %s', self._hwmon.module,
+                          self._hwmon.path)
 
 
 class UsbDriver(BaseUsbDriver):
@@ -481,6 +486,10 @@ class HidapiDevice:
             infos = sorted(infos, key=lambda info: info['path'])
         for info in infos:
             yield cls(api, info)
+
+    @property
+    def path(self):
+        return self.hidinfo['path']
 
     @property
     def vendor_id(self):

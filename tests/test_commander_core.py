@@ -16,6 +16,7 @@ class MockCommanderCoreDevice:
         self.vendor_id = 0x1b1c
         self.product_id = 0x0c1c
         self.address = 'addr'
+        self.path = b'path'
         self.release_number = None
         self.serial_number = None
         self.bus = None
