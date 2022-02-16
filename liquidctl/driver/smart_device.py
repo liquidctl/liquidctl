@@ -458,7 +458,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-    def initialize(self, **kwargs):
+    def initialize(self, direct_access=False, **kwargs):
         """Initialize the device.
 
         Detects and reports all connected fans and LED accessories, and allows
@@ -471,18 +471,25 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
         # if fan controller, initialize fan reporting (#331)
         if self._speed_channels:
-            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-            self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
-            self._write([0x60, 0x03])
+            if self._hwmon and not direct_access:
+                _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                             self._hwmon.module)
+            else:
+                if self._hwmon:
+                    _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                    self._hwmon.module)
+                update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+                self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
+                self._write([0x60, 0x03])
 
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
-        status = []
+        ret = []
 
         def parse_firm_info(msg):
             fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
-            status.append(('Firmware version', fw, ''))
+            ret.append(('Firmware version', fw, ''))
 
         def parse_led_info(msg):
             channel_count = msg[14]
@@ -492,11 +499,11 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                     accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
                     if accessory_id == 0:
                         break
-                    status.append((f'LED {c + 1} accessory {a + 1}',
+                    ret.append((f'LED {c + 1} accessory {a + 1}',
                                    Hue2Accessory(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
-        return sorted(status)
+        return sorted(ret)
 
     def get_status(self, **kwargs):
         """Get a status report.
