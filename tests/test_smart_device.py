@@ -1,6 +1,7 @@
 import pytest
 from _testutils import MockHidapiDevice, Report
 
+from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.driver.smart_device import SmartDevice
 
 SAMPLE_RESPONSES = [
@@ -31,7 +32,7 @@ def test_smart_device_constructor(mockSmartDevice):
 def test_smart_device_not_totally_broken(mockSmartDevice):
     dev = mockSmartDevice
 
-    for i in range(3):
+    for i in range(4):
         dev.device.preload_read(Report(0, bytes(63)))
 
     dev.initialize()
@@ -42,6 +43,33 @@ def test_smart_device_not_totally_broken(mockSmartDevice):
 
     dev.set_fixed_speed(channel='fan3', duty=50)
 
+
+@pytest.mark.parametrize('has_hwmon,force', [(False, False), (True, True), (True, False)])
+def test_smart_device_initializes(mockSmartDevice, has_hwmon, force, tmp_path):
+    dev = mockSmartDevice
+    if has_hwmon:
+        dev._hwmon = HwmonDevice('mock_module', tmp_path)
+
+    for _, capdata in enumerate(SAMPLE_RESPONSES):
+        capdata = bytes.fromhex(capdata)
+        dev.device.preload_read(Report(capdata[0], capdata[1:]))
+
+    expected = [
+        ('Firmware version', '1.0.7', ''),
+        ('LED accessories', 2, ''),
+        ('LED accessory type', 'HUE+ Strip', ''),
+        ('LED count (total)', 20, ''),
+    ]
+
+    got = dev.initialize(force=force)
+
+    assert expected == got
+
+    writes = len(dev.device.sent)
+    if not has_hwmon or force:
+        assert writes == 2
+    else:
+        assert writes == 0
 
 def test_smart_device_reads_status(mockSmartDevice):
     dev = mockSmartDevice
@@ -66,10 +94,6 @@ def test_smart_device_reads_status(mockSmartDevice):
         ('Fan 3 voltage', 11.91, 'V'),
         ('Fan 3 current', 0.03, 'A'),
         ('Fan 3 control mode', None, ''),
-        ('Firmware version', '1.0.7', ''),
-        ('LED accessories', 2, ''),
-        ('LED accessory type', 'HUE+ Strip', ''),
-        ('LED count (total)', 20, ''),
         ('Noise level', 63, 'dB')
     ]
 
