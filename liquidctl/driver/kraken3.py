@@ -23,6 +23,12 @@ _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
 
+_STATUS_TEMPERATURE = 'Liquid temperature'
+_STATUS_PUMP_SPEED = 'Pump speed'
+_STATUS_PUMP_DUTY = 'Pump duty'
+_STATUS_FAN_SPEED = 'Fan speed'
+_STATUS_FAN_DUTY = 'Fan duty'
+
 # Available speed channels for model X coolers
 # name -> (channel_id, min_duty, max_duty)
 # TODO adjust min duty value to what the firmware enforces
@@ -219,12 +225,7 @@ class KrakenX3(UsbHidDriver):
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         return sorted(status)
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _get_status_directly(self):
         self.device.clear_enqueued_reports()
         msg = self._read()
         if msg[15:17] == [0xff, 0xff]:
@@ -232,10 +233,38 @@ class KrakenX3(UsbHidDriver):
             _LOGGER.warning('try resetting the device or updating the firmware')
             _LOGGER.warning('(see https://github.com/liquidctl/liquidctl/issues/172)')
         return [
-            ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
-            ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
-            ('Pump duty', msg[19], '%'),
+            (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, '°C'),
+            (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], 'rpm'),
+            (_STATUS_PUMP_DUTY, msg[19], '%'),
         ]
+
+    def _get_status_from_hwmon(self):
+        return [
+            (_STATUS_TEMPERATURE, self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            (_STATUS_PUMP_SPEED, self._hwmon.get_int('fan1_input'), 'rpm'),
+            (_STATUS_PUMP_DUTY, self._hwmon.get_int('pwm1_input') * 100. / 255, '%'),
+        ]
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        # no driver currently supports pwm1_input, so silently fallback to
+        # direct mode if it isn't available; for the same reason, also don't
+        # yet issue a warning when directly accessing the device
+
+        if self._hwmon and not direct_access and self._hwmon.has_attribute('pwm1_input'):
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            level = logging.WARNING if direct_access else logging.INFO
+            _LOGGER.log(level, 'directly reading the status despite %s kernel driver',
+                        self._hwmon.module)
+
+        return self._get_status_directly()
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
@@ -381,9 +410,9 @@ class KrakenZ3(KrakenX3):
         self._write([0x74, 0x01])
         msg = self._read()
         return [
-            ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
-            ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
-            ('Pump duty', msg[19], '%'),
-            ('Fan speed', msg[24] << 8 | msg[23], 'rpm'),
-            ('Fan duty', msg[25], '%'),
+            (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, '°C'),
+            (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], 'rpm'),
+            (_STATUS_PUMP_DUTY, msg[19], '%'),
+            (_STATUS_FAN_SPEED, msg[24] << 8 | msg[23], 'rpm'),
+            (_STATUS_FAN_DUTY, msg[25], '%'),
         ]
