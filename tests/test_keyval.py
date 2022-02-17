@@ -131,9 +131,9 @@ def test_fs_backend_load_store_is_atomic(tmpdir):
     store.store('key', 42)
 
     ps = [
-        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
-        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
-        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .2)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .2)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .2)),
     ]
 
     start_time = time.monotonic()
@@ -147,7 +147,7 @@ def test_fs_backend_load_store_is_atomic(tmpdir):
     elapsed = (time.monotonic() - start_time)
 
     assert store.load('key') == 45
-    assert elapsed >= .5 * len(ps)
+    assert elapsed >= .2 * len(ps)
 
 
 def test_fs_backend_loads_honor_load_store_locking(tmpdir):
@@ -157,7 +157,7 @@ def test_fs_backend_loads_honor_load_store_locking(tmpdir):
     store.store('key', 42)
 
     ps = [
-        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .2)),
         Process(target=_fs_mp_check_key, args=(run_dir, 'prefix', 'key', 43)),
     ]
 
@@ -176,7 +176,7 @@ def test_fs_backend_stores_honor_load_store_locking(tmpdir):
     store.store('key', 42)
 
     ps = [
-        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .5)),
+        Process(target=_fs_mp_increment_key, args=(run_dir, 'prefix', 'key', .2)),
         Process(target=_fs_mp_store_key, args=(run_dir, 'prefix', 'key', -1)),
     ]
 
@@ -190,7 +190,7 @@ def test_fs_backend_stores_honor_load_store_locking(tmpdir):
     ps[1].join()
 
     elapsed = (time.monotonic() - start_time)
-    assert elapsed >= .5
+    assert elapsed >= .2
 
     ps[0].join()
     assert store.load('key') == -1
