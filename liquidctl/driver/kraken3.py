@@ -214,12 +214,7 @@ class KrakenX3(UsbHidDriver):
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         return sorted(status)
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _get_status_directly(self):
         self.device.clear_enqueued_reports()
         msg = self._read()
         if msg[15:17] == [0xff, 0xff]:
@@ -231,6 +226,34 @@ class KrakenX3(UsbHidDriver):
             ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
             ('Pump duty', msg[19], '%'),
         ]
+
+    def _get_status_from_hwmon(self):
+        return [
+            ('Liquid temperature', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            ('Pump speed', self._hwmon.get_int('fan1_input'), 'rpm'),
+            ('Pump duty', self._hwmon.get_int('pwm1_input') * 100. / 255, '%'),
+        ]
+
+    def get_status(self, force=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        # no driver currently supports pwm1_input, so silently fallback to
+        # direct mode if it isn't available; for the same reason, also don't
+        # yet issue a warning when directly accessing the device
+
+        if self._hwmon and not force and self._hwmon.has_attribute('pwm1_input'):
+            _LOGGER.info('%s is bound to %s kernel driver, reading status from hwmon',
+                         self.description, self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.info('directly reading the status from %s despite %s kernel driver',
+                         self.description, self._hwmon.module)
+
+        return self._get_status_directly()
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""

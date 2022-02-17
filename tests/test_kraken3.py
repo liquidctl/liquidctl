@@ -89,20 +89,41 @@ def test_krakenx3_initializes(mock_krakenx3, has_hwmon, force, tmp_path):
         assert writes == 2
 
 
-def test_krakenx3_parses_status_fields(mock_krakenx3):
+@pytest.mark.parametrize("has_hwmon,force", [(False, False), (True, True)])
+def test_krakenx3_reads_status_directly(mock_krakenx3, has_hwmon, force):
+    if has_hwmon:
+        mock_krakenx3._hwmon = HwmonDevice(None, None)
+
     mock_krakenx3.device.preload_read(Report(0, SAMPLE_STATUS))
 
-    temperature, pump_speed, pump_duty = mock_krakenx3.get_status()
+    temperature, pump_speed, pump_duty = mock_krakenx3.get_status(force=force)
 
     assert temperature == ("Liquid temperature", 33.1, "°C")
     assert pump_speed == ("Pump speed", 1704, "rpm")
     assert pump_duty == ("Pump duty", 53, "%")
 
 
-def test_krakenx3_warns_if_faulty_temperature(mock_krakenx3, caplog):
+def test_krakenx3_reads_status_from_hwmon(mock_krakenx3, tmp_path):
+    mock_krakenx3._hwmon = HwmonDevice("mock_module", tmp_path)
+    (tmp_path / "temp1_input").write_text("33100\n")
+    (tmp_path / "fan1_input").write_text("1704\n")
+    (tmp_path / "pwm1_input").write_text("135\n")
+
+    temperature, pump_speed, pump_duty = mock_krakenx3.get_status()
+
+    assert temperature == ("Liquid temperature", 33.1, "°C")
+    assert pump_speed == ("Pump speed", 1704, "rpm")
+    assert pump_duty == ("Pump duty", pytest.approx(53, rel=1.0 / 255), "%")
+
+
+@pytest.mark.parametrize("has_hwmon,force", [(False, False), (True, True)])
+def test_krakenx3_warns_on_faulty_temperature(mock_krakenx3, has_hwmon, force, caplog):
+    if has_hwmon:
+        mock_krakenx3._hwmon = HwmonDevice(None, None)
+
     mock_krakenx3.device.preload_read(Report(0, FAULTY_STATUS))
 
-    _ = mock_krakenx3.get_status()
+    _ = mock_krakenx3.get_status(force=force)
     assert "unexpected temperature reading" in caplog.text
 
 
