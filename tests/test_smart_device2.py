@@ -1,10 +1,12 @@
+# uses the psf/black style
+
 import pytest
 from _testutils import MockHidapiDevice, Report
 
 from liquidctl.driver.smart_device import SmartDevice2
 
 
-class _MockSmartDevice2(MockHidapiDevice):
+class MockSmart2(MockHidapiDevice):
     def __init__(self, raw_speed_channels, raw_led_channels):
         super().__init__()
         self.raw_speed_channels = raw_speed_channels
@@ -24,37 +26,31 @@ class _MockSmartDevice2(MockHidapiDevice):
 
 
 @pytest.fixture
-def mockSmartDevice2():
-    device = _MockSmartDevice2(raw_speed_channels=3, raw_led_channels=2)
-    dev = SmartDevice2(device, 'mock NZXT Smart Device V2', speed_channel_count=3, color_channel_count=2)
+def mock_smart2():
+    raw = MockSmart2(raw_speed_channels=3, raw_led_channels=2)
+    dev = SmartDevice2(raw, "Mock Smart Device V2", speed_channel_count=3, color_channel_count=2)
     dev.connect()
     return dev
 
 
-# class methods
-def test_smart_device2_constructor(mockSmartDevice2):
-
-    assert mockSmartDevice2._speed_channels == {
-            'fan1': (0, 0, 100),
-            'fan2': (1, 0, 100),
-            'fan3': (2, 0, 100),
-        }
-
-    assert mockSmartDevice2._color_channels == {
-            'led1': (0b001),
-            'led2': (0b010),
-            'sync': (0b011),
-        }
+def test_constructor_sets_up_all_channels(mock_smart2):
+    assert mock_smart2._speed_channels == {
+        "fan1": (0, 0, 100),
+        "fan2": (1, 0, 100),
+        "fan3": (2, 0, 100),
+    }
+    assert mock_smart2._color_channels == {
+        "led1": (0b001),
+        "led2": (0b010),
+        "sync": (0b011),
+    }
 
 
-def test_smart_device2_not_totally_broken(mockSmartDevice2):
-    dev = mockSmartDevice2
-
-    dev.initialize()
-    dev.device.preload_read(Report(0, [0x67, 0x02] + [0] * 62))
-    dev.get_status()
-
-    dev.set_color(channel='led1', mode='breathing', colors=iter([[142, 24, 68]]),
-                  speed='fastest')
-
-    dev.set_fixed_speed(channel='fan3', duty=50)
+def test_not_totally_broken(mock_smart2):
+    _ = mock_smart2.initialize()
+    mock_smart2.device.preload_read(Report(0, [0x67, 0x02] + [0] * 62))
+    _ = mock_smart2.get_status()
+    mock_smart2.set_color(
+        channel="led1", mode="breathing", colors=iter([[142, 24, 68]]), speed="fastest"
+    )
+    mock_smart2.set_fixed_speed(channel="fan3", duty=50)
