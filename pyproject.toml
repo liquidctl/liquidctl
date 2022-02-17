@@ -61,7 +61,6 @@ extend-exclude = '''
   | (^/tests/test_hydro_platinum\.py$)
   | (^/tests/test_keyval\.py$)
   | (^/tests/test_kraken2\.py$)
-  | (^/tests/test_kraken3\.py$)
   | (^/tests/test_nvidia\.py$)
   | (^/tests/test_nzxt_epsu\.py$)
   | (^/tests/test_rgb_fusion2\.py$)
