@@ -24,6 +24,9 @@ class HwmonDevice:
     def name(self):
         return self.path.name
 
+    def has_attribute(self, name):
+        return (self.path / name).is_file()
+
     def get_int(self, name):
         value = (self.path / name).read_text().rstrip()
         _LOGGER.debug("read %s: %s", name, value)
