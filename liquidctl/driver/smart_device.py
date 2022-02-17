@@ -505,7 +505,42 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         return sorted(ret)
 
-    def get_status(self, **kwargs):
+    def _get_status_directly(self):
+        ret = []
+
+        def parse_fan_info(msg):
+            mode_offset = 16
+            rpm_offset = 24
+            duty_offset = 40
+            noise_offset = 56
+            raw_modes = [None, 'DC', 'PWM']
+
+            for i, _ in enumerate(self._speed_channels):
+                mode = raw_modes[msg[mode_offset + i]]
+                ret.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                ret.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
+                ret.append((f'Fan {i + 1} control mode', mode, ''))
+                rpm_offset += 2
+            ret.append(('Noise level', msg[noise_offset], 'dB'))
+
+        self.device.clear_enqueued_reports()
+        self._read_until({b'\x67\x02': parse_fan_info})
+        return sorted(ret)
+
+    def _get_status_from_hwmon(self):
+        ret = []
+        modes = ['DC', 'PWM']
+
+        for n in range(1, len(self._speed_channels) + 1):
+            ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
+            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}_input') * 100. / 255, '%')),
+            ret.append((f'Fan {n} control mode', modes[self._hwmon.get_int(f'pwm{n}_mode')], '')),
+
+        # noise level is not available through hwmon, but also not very accurate or useful
+
+        return sorted(ret)
+
+    def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
 
         Returns a list of (key, value, unit) tuples.
@@ -513,22 +548,16 @@ class SmartDevice2(_CommonSmartDeviceDriver):
 
         if not self._speed_channels:
             return []
-        status = []
 
-        def parse_fan_info(msg):
-            rpm_offset = 24
-            duty_offset = 40
-            noise_offset = 56
-            for i, _ in enumerate(self._speed_channels):
-                if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
-                    status.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                    status.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
-                rpm_offset += 2
-            status.append(('Noise level', msg[noise_offset], 'dB'))
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
 
-        self.device.clear_enqueued_reports()
-        self._read_until({b'\x67\x02': parse_fan_info})
-        return sorted(status)
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly()
 
     def _read_until(self, parsers):
         for _ in range(self._MAX_READ_ATTEMPTS):
