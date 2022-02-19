@@ -325,6 +325,39 @@ def _log_requirements():
     else:
         _LOGGER.debug('importlib.metadata not available')
 
+_error_count = 0
+
+def _report_error(err, msg, *args, immediately=False, show_err=False):
+    global _error_count
+
+    _error_count += 1
+
+    # log the err with traceback before reporting it properly, this time
+    # without traceback; this puts error messages are at the bottom of the
+    # output, where most users first look for them
+    _LOGGER.info('detailed error: %s: %r', msg, err, *args, exc_info=True)
+
+    if show_err:
+        _LOGGER.error('%s: %r', msg, err, *args)
+    else:
+        _LOGGER.error(msg, *args)
+
+    if immediately:
+        _exit_if_errors()
+
+
+def _abort(msg, *args):
+    _LOGGER.error(msg, *args)
+    _exit_if_errors()
+
+
+def _exit_if_errors():
+    # don't report the total error count to potentially keep an error message
+    # at the very last line of the output, where most users first look for them
+
+    if _error_count > 0:
+        sys.exit(1)
+
 
 def main():
     args = docopt(__doc__)
@@ -391,12 +424,12 @@ def main():
         no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
         compat = list(find_liquidctl_devices(**no_filters))
         if device_id < 0 or device_id >= len(compat):
-            raise SystemExit('Error: device index out of bounds')
+            _abort('device index out of bounds')
         if filter_count:
             # check that --device matches other filter criteria
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
-                raise SystemExit('Error: device index does not match remaining selection criteria')
+                _abort('device index does not match remaining selection criteria')
             _LOGGER.warning('mixing --device <id> with other filters is not recommended; '
                             'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
@@ -411,21 +444,9 @@ def main():
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
-        raise SystemExit('Error: too many devices, filter or select one (see: liquidctl --help)')
+        _abort('too many devices, filter or select one (see: liquidctl --help)')
     elif len(selected) == 0:
-        raise SystemExit('Error: no devices matches available drivers and selection criteria')
-
-    errors = 0
-
-    def log_error(err, msg, append_err=False, *args):
-        nonlocal errors
-        errors += 1
-        _LOGGER.info('%s', err, exc_info=True)
-        if append_err:
-            exception = list(format_exception(Exception, err, None))[-1].rstrip()
-            _LOGGER.error(f'{msg}: {exception}', *args)
-        else:
-            _LOGGER.error(msg, *args)
+        _abort('no device matches available drivers and selection criteria')
 
     # for json
     obj_buf = []
@@ -456,24 +477,22 @@ def main():
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES, errno.EPERM]:
-                log_error(err, f'Error: insufficient permissions to access {dev.description}')
+                _report_error(err, f'insufficient permissions to access {dev.description}')
             elif err.args == ('open failed', ):
-                log_error(err, f'Error: could not open {dev.description}, possibly due to insufficient permissions')
+                _report_error(err, f'could not open {dev.description}, possibly due to insufficient permissions')
             else:
-                log_error(err, f'Unexpected OS error with {dev.description}', append_err=True)
+                _report_error(err, f'unexpected OS error with {dev.description}', show_err=True)
         except NotSupportedByDevice as err:
-            log_error(err, f'Error: operation not supported by {dev.description}')
+            _report_error(err, f'operation not supported by {dev.description}')
         except NotSupportedByDriver as err:
-            log_error(err, f'Error: operation not supported by driver for {dev.description}')
+            _report_error(err, f'operation not supported by driver for {dev.description}')
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
-            log_error(err, f'Error: missing --unsafe features for {dev.description}: {features!r}')
-            _LOGGER.error('More information is provided in the corresponding device guide')
+            _report_error(err, f'missing --unsafe features for {dev.description}: {features!r}')
         except Exception as err:
-            log_error(err, f'Unexpected error with {dev.description}', append_err=True)
+            _report_error(err, f'unexpected error with {dev.description}', show_err=True)
 
-    if errors:
-        sys.exit(errors)
+    _exit_if_errors()
 
     if args['--json']:
         # use __str__ for values that cannot be directly serialized to JSON
@@ -482,12 +501,6 @@ def main():
                          default=lambda x: str(x)))
 
     sys.exit(0)
-
-
-def find_all_supported_devices(**opts):
-    """Deprecated."""
-    _LOGGER.warning('deprecated: use liquidctl.driver.find_liquidctl_devices instead')
-    return find_liquidctl_devices(**opts)
 
 
 if __name__ == '__main__':

@@ -32,9 +32,13 @@ from liquidctl.util import clamp, normalize_profile, interpolate_profile, \
 _LOGGER = logging.getLogger(__name__)
 
 _SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
-    'fan':   (0x80, 25, 100),
-    'pump':  (0xc0, 50, 100),
+    'fan':   (0x80, 0, 100),
+    'pump':  (0xc0, 0, 100),
 }
+
+# more aggressive than observed 4.0.3 and 6.0.2 firmware defaults
+_RESET_FAN_PROFILE = [(20, 25), (30, 50), (50, 90), (60, 100)]
+_RESET_PUMP_PROFILE = [(20, 50), (30, 60), (40, 90), (50, 100)]
 
 _CRITICAL_TEMPERATURE = 60
 
@@ -114,16 +118,28 @@ class Kraken2(UsbHidDriver):
         self._connected = False
 
     def initialize(self, **kwargs):
-        # before v1.1 `initialize` was used to connect to the device; that has
-        # since been deprecated, but we have to support that usage until v2
-        if not self._connected:
-            self.connect(**kwargs)
+        """Initialize the device.
 
-    def finalize(self):
-        """Deprecated."""
-        _LOGGER.warning('deprecated: use disconnect() instead')
-        if self._connected:
-            self.disconnect()
+        This method should be called once after the systems boot or resumes
+        from a suspended state, and before any other methods except `connect()`
+        or `disconnect()`.
+        """
+
+        # read early but only once, since self.supports_cooling_profiles can
+        # indirectly reuse this one; no need to clear old reports since the
+        # firmware version can be assumed to be constant for the lifetime of
+        # the connection
+        msg = self._read(clear_first=False)
+
+        if self.supports_cooling_profiles:
+            # due to a firmware limitation the same set of temperatures must be
+            # used on both channels; ensure that is always true, even if the
+            # user later only changes one of them, by resetting the profiles
+            self.set_speed_profile('fan', _RESET_FAN_PROFILE)
+            self.set_speed_profile('pump', _RESET_PUMP_PROFILE)
+
+        firmware = '{}.{}.{}'.format(*self._firmware_version)
+        return [('Firmware version', firmware, '')]
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -131,17 +147,16 @@ class Kraken2(UsbHidDriver):
         Returns a list of (key, value, unit) tuples.
         """
 
-        msg = self._read()
-        firmware = '{}.{}.{}'.format(*self._firmware_version)
         if self.device_type == self.DEVICE_KRAKENM:
-            return [('Firmware version', firmware, '')]
-        else:
-            return [
-                ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
-                ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
-                ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
-                ('Firmware version', firmware, '')
-            ]
+            return []
+
+        msg = self._read()
+
+        return [
+            ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
+            ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
+            ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
+        ]
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""

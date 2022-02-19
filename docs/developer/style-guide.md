@@ -2,6 +2,7 @@
 
 This is not the code; this is just a tribute.
 
+
 ## General guidelines
 
 This section has yet to be written, but for a start...
@@ -12,16 +13,32 @@ Write code somewhere between those lines.
 In this repository, newer drivers are usually better examples than older
 ones.  Experience with the domain helps to write better code.
 
-Try to keep lines around 80-ish columns wide; in some modules 100-ish columns
-may be more suited, but definitively try to avoid going beyond that.
+Try to keep lines around 100-ish columns wide.
 
 Be consistent within a given module; *try* to be consistent between similar
 modules.
 
+We are starting to adopt [psf/black], and new files should be formatted with
+it.  They should also have the following top-level comment after the module
+docstring:
+
+```py
+# uses the psf/black style
+```
+
+Old files should be maintained in their current style until a comprehensive
+conversion is performed; black has already been configured to ignore them.
+
 [PEP 8]: https://pep8.org/
 [Beyond PEP 8]: https://www.youtube.com/watch?v=wf-BqAjZb8M
+[psf/black]: https://github.com/psf/black
+[#321]: https://github.com/liquidctl/liquidctl/issues/321
 
-### Nits
+### Nits for old files
+
+**For new files, use the [black code style], with 100-column lines.**
+
+For *old* files:
 
 - indent with 4 spaces;
 - prefer to continue lines vertically, aligned with the opening delimiter;
@@ -30,6 +47,8 @@ modules.
 - use f-strings whenever applicable, except for `logging` messages (more about
   those bellow) which wont necessarily be shown;
 - use lowercase hexadecimal literals.
+
+[black code style]: https://black.readthedocs.io/en/stable/the_black_code_style/index.html
 
 ### Grouping and sorting of import statements
 
@@ -192,11 +211,3 @@ from liquidctl.util import LazyHexRepr
 ...
 _LOGGER.debug('buffer: %r', LazyHexRepr(some_bytes))
 ```
-
-
-## Use of automatic formatters
-
-We are considering it for a near future (tracking issue is [#321]).  Until
-then, code is expected to be formated according to _this_ document.
-
-[#321]: https://github.com/liquidctl/liquidctl/issues/321

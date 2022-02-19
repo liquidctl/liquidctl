@@ -6,9 +6,8 @@ community.
 """
 
 import pytest
-from _testutils import MockHidapiDevice
+from test_kraken2 import mockKrakenXDevice
 
-from liquidctl.driver.kraken_two import KrakenTwoDriver
 from liquidctl.version import __version__
 
 SPECTRUM = [
@@ -23,37 +22,6 @@ SPECTRUM = [
 ]
 
 
-@pytest.fixture
-def mockDevice():
-    device = MockHidapiDevice()
-    dev = KrakenTwoDriver(device, 'Mock X62',
-                                  device_type=KrakenTwoDriver.DEVICE_KRAKENX)
-
-    dev.connect()
-    return dev
-
-
-def test_pre11_apis_find_does_not_raise():
-    import liquidctl.cli
-    liquidctl.cli.find_all_supported_devices()
-
-
-def test_pre11_apis_connect_as_initialize(mockDevice):
-    # deprecated behavior in favor of connect()
-    mockDevice.initialize()
-
-
-def test_pre11_apis_deprecated_super_mode(mockDevice):
+def test_pre11_apis_deprecated_super_mode(mockKrakenXDevice):
     # deprecated in favor of super-fixed, super-breathing and super-wave
-    mockDevice.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')
-
-
-def test_pre11_apis_status_order(mockDevice):
-    # GKraken unreasonably expects a particular ordering
-    pass
-
-
-def test_pre11_apis_finalize_as_connect_or_noop(mockDevice):
-    # deprecated in favor of disconnect()
-    mockDevice.finalize()  # should disconnect
-    mockDevice.finalize()  # should be a no-op
+    mockKrakenXDevice.set_color('sync', 'super', [(128, 0, 255)] + SPECTRUM, 'normal')

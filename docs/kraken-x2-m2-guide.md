@@ -17,6 +17,25 @@ All capabilities available at the hardware level are supported, but other featur
 This driver also supports the NZXT Kraken M22.  However, this device has no pump or fan control, nor reports liquid temperatures.
 
 
+## Initialization
+
+All device should be (re)initialized after the system boots or resumes from a
+suspended state, or if there have been hardware changes.
+
+```
+# liquidctl initialize
+NZXT Kraken X (X42, X52, X62 or X72)
+└── Firmware version    6.0.2  
+```
+
+With this generation of Kraken X coolers, it is especially important that
+(re)initialization happens before fan or pump speeds are adjusted.
+
+The device should also be reconfigured, as previous settings may have been
+totally or partially cleared while device was off or by the `initialize`
+command itself.
+
+
 ## Monitoring
 
 The cooler can report the fan and pump speed, as well as the liquid temperature.
@@ -26,8 +45,7 @@ The cooler can report the fan and pump speed, as well as the liquid temperature.
 NZXT Kraken X (X42, X52, X62 or X72)
 ├── Liquid temperature     29.9  °C
 ├── Fan speed               853  rpm
-├── Pump speed             1948  rpm
-└── Firmware version      6.0.2  
+└── Pump speed             1948  rpm
 ```
 
 
