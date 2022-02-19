@@ -118,30 +118,77 @@ def test_initializes(mock_psu, has_hwmon, direct_access, tmp_path):
         assert writes == 0
 
 
-def test_corsair_psu_get_status(mock_psu):
+@pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True)])
+def test_reads_status_directly(mock_psu, has_hwmon, direct_access):
+    if has_hwmon:
+        mock_psu._hwmon = HwmonDevice(None, None)
 
-    status = { k: (v, u) for k, v, u in mock_psu.get_status() }
+    got = mock_psu.get_status(direct_access=direct_access)
 
-    assert status['Current uptime'] == (timedelta(seconds=5522), '')
-    assert status['Total uptime'] == (timedelta(days=13, seconds=9122), '')
-    assert status['Temperature 1'] == (approx(33.5, rel=1e-3), '°C')
-    assert status['Temperature 2'] == (approx(26.5, rel=1e-3), '°C')
-    assert status['Fan control mode'] == (FanControlMode.SOFTWARE, '')
-    assert status['Fan speed'] == (approx(968, rel=1e-3), 'rpm')
-    assert status['Input voltage'] == (approx(230, rel=1e-3), 'V')
-    assert status['Total power output'] == (approx(140, rel=1e-3), 'W')
-    assert status['+12V OCP mode'] == (OCPMode.MULTI_RAIL, '')
-    assert status['+12V output voltage'] == (approx(11.98, rel=1e-3), 'V')
-    assert status['+12V output current'] == (approx(10.75, rel=1e-3), 'A')
-    assert status['+12V output power'] == (approx(124, rel=1e-3), 'W')
-    assert status['+5V output voltage'] == (approx(5.016, rel=1e-3), 'V')
-    assert status['+5V output current'] == (approx(1.688, rel=1e-3), 'A')
-    assert status['+5V output power'] == (approx(8, rel=1e-3), 'W')
-    assert status['+3.3V output voltage'] == (approx(3.297, rel=1e-3), 'V')
-    assert status['+3.3V output current'] == (approx(0.562, rel=1e-3), 'A')
-    assert status['+3.3V output power'] == (approx(1.5, rel=1e-3), 'W')
+    expected = [
+        ('Current uptime', timedelta(seconds=5522), ''),
+        ('Total uptime', timedelta(days=13, seconds=9122), ''),
+        ('Temperature 1', approx(33.5, rel=1e-3), '°C'),
+        ('Temperature 2', approx(26.5, rel=1e-3), '°C'),
+        ('Fan control mode', FanControlMode.SOFTWARE, ''),
+        ('Fan speed', approx(968, rel=1e-3), 'rpm'),
+        ('Input voltage', approx(230, rel=1e-3), 'V'),
+        ('Total power output', approx(140, rel=1e-3), 'W'),
+        ('+12V OCP mode', OCPMode.MULTI_RAIL, ''),
+        ('+12V output voltage', approx(11.98, rel=1e-3), 'V'),
+        ('+12V output current', approx(10.75, rel=1e-3), 'A'),
+        ('+12V output power', approx(124, rel=1e-3), 'W'),
+        ('+5V output voltage', approx(5.016, rel=1e-3), 'V'),
+        ('+5V output current', approx(1.688, rel=1e-3), 'A'),
+        ('+5V output power', approx(8, rel=1e-3), 'W'),
+        ('+3.3V output voltage', approx(3.297, rel=1e-3), 'V'),
+        ('+3.3V output current', approx(0.562, rel=1e-3), 'A'),
+        ('+3.3V output power', approx(1.5, rel=1e-3), 'W'),
+        ('Estimated input power', approx(153, abs=1), 'W'),
+        ('Estimated efficiency', approx(92, abs=1), '%'),
+    ]
 
-    assert status['Estimated input power'] == (approx(153, abs=1), 'W')
-    assert status['Estimated efficiency'] == (approx(92, abs=1), '%')
+    assert sorted(got) == sorted(expected)
 
-    assert len(status) == 20
+
+def test_reads_status_from_hwmon(mock_psu, tmp_path):
+    mock_psu.device.write = None  # make sure we aren't writing to the mock device
+
+    mock_psu._hwmon = HwmonDevice('mock_module', tmp_path)
+    (tmp_path / 'temp1_input').write_text('33500\n')
+    (tmp_path / 'temp2_input').write_text('26500\n')
+    (tmp_path / 'fan1_input').write_text('968\n')
+    (tmp_path / 'in0_input').write_text('230000\n')
+    (tmp_path / 'power1_input').write_text('140000000\n')
+    (tmp_path / 'in1_input').write_text('11980\n')
+    (tmp_path / 'curr2_input').write_text('10750\n')
+    (tmp_path / 'power2_input').write_text('124000000\n')
+    (tmp_path / 'in2_input').write_text('5016\n')
+    (tmp_path / 'curr3_input').write_text('1688\n')
+    (tmp_path / 'power3_input').write_text('8000000\n')
+    (tmp_path / 'in3_input').write_text('3297\n')
+    (tmp_path / 'curr4_input').write_text('562\n')
+    (tmp_path / 'power4_input').write_text('1500000\n')
+
+    got = mock_psu.get_status()
+
+    expected = [
+        ('Temperature 1', approx(33.5, rel=1e-3), '°C'),
+        ('Temperature 2', approx(26.5, rel=1e-3), '°C'),
+        ('Fan speed', approx(968, rel=1e-3), 'rpm'),
+        ('Input voltage', approx(230, rel=1e-3), 'V'),
+        ('Total power output', approx(140, rel=1e-3), 'W'),
+        ('+12V output voltage', approx(11.98, rel=1e-3), 'V'),
+        ('+12V output current', approx(10.75, rel=1e-3), 'A'),
+        ('+12V output power', approx(124, rel=1e-3), 'W'),
+        ('+5V output voltage', approx(5.016, rel=1e-3), 'V'),
+        ('+5V output current', approx(1.688, rel=1e-3), 'A'),
+        ('+5V output power', approx(8, rel=1e-3), 'W'),
+        ('+3.3V output voltage', approx(3.297, rel=1e-3), 'V'),
+        ('+3.3V output current', approx(0.562, rel=1e-3), 'A'),
+        ('+3.3V output power', approx(1.5, rel=1e-3), 'W'),
+        ('Estimated input power', approx(153, abs=1), 'W'),
+        ('Estimated efficiency', approx(92, abs=1), '%'),
+    ]
+
+    assert sorted(got) == sorted(expected)
