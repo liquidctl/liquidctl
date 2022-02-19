@@ -105,7 +105,7 @@ class Kraken2(UsbHidDriver):
         self.device_type = device_type
         self.supports_lighting = True
         self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
-        self._supports_cooling_profiles = None  # physical storage/later inferred from fw version
+        self._firmware_version = None  # read once necessary
         self._connected = False
 
     def connect(self, **kwargs):
@@ -129,12 +129,6 @@ class Kraken2(UsbHidDriver):
         to `get_status()`.
         """
 
-        # read early but only once, since self.supports_cooling_profiles can
-        # indirectly reuse this one; no need to clear old reports since the
-        # firmware version can be assumed to be constant for the lifetime of
-        # the connection
-        msg = self._read(clear_first=False)
-
         if self.supports_cooling_profiles:
             # due to a firmware limitation the same set of temperatures must be
             # used on both channels; ensure that is always true, even if the
@@ -142,7 +136,7 @@ class Kraken2(UsbHidDriver):
             self.set_speed_profile('fan', _RESET_FAN_PROFILE)
             self.set_speed_profile('pump', _RESET_PUMP_PROFILE)
 
-        firmware = '{}.{}.{}'.format(*self._firmware_version)
+        firmware = '{}.{}.{}'.format(*self.firmware_version)
         return [('Firmware version', firmware, '')]
 
     def get_status(self, **kwargs):
@@ -257,13 +251,13 @@ class Kraken2(UsbHidDriver):
 
     @property
     def supports_cooling_profiles(self):
-        if self._supports_cooling_profiles is None:
-            if self.supports_cooling:
-                self._read(clear_first=False)
-                self._supports_cooling_profiles = self._firmware_version >= (3, 0, 0)
-            else:
-                self._supports_cooling_profiles = False
-        return self._supports_cooling_profiles
+        return self.supports_cooling and self.firmware_version >= (3, 0, 0)
+
+    @property
+    def firmware_version(self):
+        if self._firmware_version is None:
+            _ = self._read(clear_first=False)
+        return self._firmware_version
 
     def _read(self, clear_first=True):
         if clear_first:
