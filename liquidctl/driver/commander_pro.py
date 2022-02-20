@@ -156,20 +156,12 @@ class CommanderPro(UsbHidDriver):
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
         return ret
 
-    def initialize(self, **kwargs):
-        """Initialize the device and get the fan modes.
-
-        The device should be initialized every time it is powered on, including when
-        the system resumes from suspending to memory.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _initialize_directly(self, **kwargs):
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[1], res[2], res[3])
 
         res = self._send_command(_CMD_GET_BOOTLOADER)
-        bootloader_version = (res[1], res[2])               # is it possible for there to be a third value?
+        bootloader_version = (res[1], res[2])  # is it possible for there to be a third value?
 
         status = [
             ('Firmware version', '{}.{}.{}'.format(*fw_version), ''),
@@ -186,7 +178,6 @@ class CommanderPro(UsbHidDriver):
             ]
 
         if self._fan_count > 0:
-            # get the information about how the fans are connected, probably want to save this for later
             res = self._send_command(_CMD_GET_FAN_MODES)
             fanModes = res[1:self._fan_count+1]
             self._data.store('fan_modes', fanModes)
@@ -196,6 +187,69 @@ class CommanderPro(UsbHidDriver):
             ]
 
         return status
+
+    def _get_static_info_from_hwmon(self):
+        # firmware and bootloader versions are not available through hwmon, but
+        # we don't want to race with the kernel driver
+        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.module)
+
+        status = []
+
+        if self._temp_probs > 0:
+            # use ints to mimic how we normally handle the raw data
+            sensors = [int(self._hwmon.has_attribute(f'temp{n}_input')) for n in range(1, 5)]
+            _LOGGER.debug('%r', sensors)
+            self._data.store('temp_sensors_connected', sensors)
+
+            for n, connected in zip(range(1, 5), sensors):
+                status.append((f'Temperature probe {n}', bool(connected), ''))
+
+        if self._fan_count > 0:
+            def hwmon_fan_mode(hwmon, n):
+                attr = f'fan{n}_label'
+                if not hwmon.has_attribute(attr):
+                    return _FAN_MODE_DISCONNECTED
+
+                label = hwmon.get_string(attr)
+                if label.endswith('4pin'):
+                    return _FAN_MODE_PWM
+                elif label.endswith('3pin'):
+                    return _FAN_MODE_DC
+                else:
+                    assert label.endswith('other')
+                    _LOGGER.warning('hwmon reported the fan mode as other')
+                    return None
+
+            fans = [hwmon_fan_mode(self._hwmon, n) for n in range(1, 7)]
+            _LOGGER.debug('%r', fans)
+            self._data.store('fan_modes', fans)
+
+            for n, mode in zip(range(1, 7), fans):
+                status.append((f'Fan {n} control mode', _fan_mode_desc(mode), ''))
+
+        return status
+
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
+        """
+
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+            return self._get_static_info_from_hwmon()
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            return self._initialize_directly()
 
     def get_status(self, **kwargs):
         """Get a status report.

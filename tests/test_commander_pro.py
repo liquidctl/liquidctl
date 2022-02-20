@@ -2,6 +2,7 @@ import pytest
 from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
 from liquidctl.driver.commander_pro import _quoted, _prepare_profile, _fan_mode_desc, CommanderPro
+from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.error import NotSupportedByDevice
 
 
@@ -163,34 +164,53 @@ def test_connect_lighting(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._data is not None
 
 
-def test_initialize_commander_pro(commanderProDevice):
+@pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True), (True, False)])
+def test_initialize_commander_pro(commanderProDevice, has_hwmon, direct_access, tmp_path):
+    if has_hwmon and not direct_access:
+        commanderProDevice._hwmon = HwmonDevice('mock_module', tmp_path)
+        (tmp_path / 'temp1_input').write_text('10000\n')
+        (tmp_path / 'temp2_input').write_text('20000\n')
+        (tmp_path / 'temp4_input').write_text('40000\n')
+        (tmp_path / 'fan1_input').write_text('1100\n')
+        (tmp_path / 'fan1_label').write_text('fan1 3pin\n')
+        (tmp_path / 'fan2_input').write_text('1200\n')
+        (tmp_path / 'fan2_label').write_text('fan1 3pin\n')
+        (tmp_path / 'fan3_input').write_text('1300\n')
+        (tmp_path / 'fan3_label').write_text('fan1 4pin\n')
+    else:
+        if has_hwmon:
+            commanderProDevice._hwmon = HwmonDevice('invalid_module', None)
+        responses = [
+            '000009d4000000000000000000000000',  # firmware
+            '00000500000000000000000000000000',  # bootloader
+            '00010100010000000000000000000000',  # temp probes
+            '00010102000000000000000000000000'   # fan probes
+        ]
+        for d in responses:
+            commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
 
-    responses = [
-        '000009d4000000000000000000000000',  # firmware
-        '00000500000000000000000000000000',  # bootloader
-        '00010100010000000000000000000000',  # temp probes
-        '00010102000000000000000000000000'   # fan probes
-    ]
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+    res = commanderProDevice.initialize(direct_access=direct_access)
 
-    res = commanderProDevice.initialize()
+    if has_hwmon and not direct_access:
+        assert len(res) == 10
+        i = 0
+    else:
+        assert len(res) == 12
+        assert res[0] == ('Firmware version', '0.9.212', '')
+        assert res[1] == ('Bootloader version', '0.5', '')
+        i = 2
 
-    assert len(res) == 12
-    assert res[0] == ('Firmware version', '0.9.212', '')
-    assert res[1] == ('Bootloader version', '0.5', '')
+    assert res[i + 0] == ('Temperature probe 1', True, '')
+    assert res[i + 1] == ('Temperature probe 2', True, '')
+    assert res[i + 2] == ('Temperature probe 3', False, '')
+    assert res[i + 3] == ('Temperature probe 4', True, '')
 
-    assert res[2] == ('Temperature probe 1', True, '')
-    assert res[3] == ('Temperature probe 2', True, '')
-    assert res[4] == ('Temperature probe 3', False, '')
-    assert res[5] == ('Temperature probe 4', True, '')
-
-    assert res[6] == ('Fan 1 control mode', 'DC', '')
-    assert res[7] == ('Fan 2 control mode', 'DC', '')
-    assert res[8] == ('Fan 3 control mode', 'PWM', '')
-    assert res[9] == ('Fan 4 control mode', None, '')
-    assert res[10] == ('Fan 5 control mode', None, '')
-    assert res[11] == ('Fan 6 control mode', None, '')
+    assert res[i + 4] == ('Fan 1 control mode', 'DC', '')
+    assert res[i + 5] == ('Fan 2 control mode', 'DC', '')
+    assert res[i + 6] == ('Fan 3 control mode', 'PWM', '')
+    assert res[i + 7] == ('Fan 4 control mode', None, '')
+    assert res[i + 8] == ('Fan 5 control mode', None, '')
+    assert res[i + 9] == ('Fan 6 control mode', None, '')
 
     data = commanderProDevice._data.load('fan_modes', None)
     assert data is not None
