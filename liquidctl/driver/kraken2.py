@@ -118,11 +118,15 @@ class Kraken2(UsbHidDriver):
         self._connected = False
 
     def initialize(self, **kwargs):
-        """Initialize the device.
+        """Initialize the device and the driver.
 
-        This method should be called once after the systems boot or resumes
-        from a suspended state, and before any other methods except `connect()`
-        or `disconnect()`.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
         # read early but only once, since self.supports_cooling_profiles can
@@ -144,7 +148,7 @@ class Kraken2(UsbHidDriver):
     def get_status(self, **kwargs):
         """Get a status report.
 
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples.
         """
 
         if self.device_type == self.DEVICE_KRAKENM:
@@ -160,6 +164,7 @@ class Kraken2(UsbHidDriver):
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
+
         if not self.supports_lighting:
             raise NotSupportedByDevice()
 
@@ -213,7 +218,8 @@ class Kraken2(UsbHidDriver):
         return steps
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to use a speed profile."""
+        """Set channel to follow a speed duty profile."""
+
         if not self.supports_cooling_profiles:
             raise NotSupportedByDevice()
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
@@ -230,7 +236,8 @@ class Kraken2(UsbHidDriver):
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
+        """Set channel to a fixed speed duty."""
+
         if not self.supports_cooling:
             raise NotSupportedByDevice()
         elif self.supports_cooling_profiles:
@@ -239,7 +246,8 @@ class Kraken2(UsbHidDriver):
             self.set_instantaneous_speed(channel, duty)
 
     def set_instantaneous_speed(self, channel, duty, **kwargs):
-        """Set channel to speed, but do not ensure persistence."""
+        """Set channel to speed duty, but do not guarantee persistence."""
+
         if not self.supports_cooling:
             raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
