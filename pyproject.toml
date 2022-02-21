@@ -21,7 +21,6 @@ extend-exclude = '''
   | (^/liquidctl/driver/__init__\.py$)
   | (^/liquidctl/driver/asetek\.py$)
   | (^/liquidctl/driver/asetek_pro\.py$)
-  | (^/liquidctl/driver/base\.py$)
   | (^/liquidctl/driver/commander_core\.py$)
   | (^/liquidctl/driver/commander_pro\.py$)
   | (^/liquidctl/driver/corsair_hid_psu\.py$)

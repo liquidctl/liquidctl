@@ -4,6 +4,9 @@ Copyright (C) 2018–2022  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+# uses the psf/black style
+
+
 class BaseDriver:
     """Base driver API.
 
@@ -29,36 +32,51 @@ class BaseDriver:
 
         Returns a list of bound driver instances.
         """
+
         raise NotImplementedError()
 
     def connect(self, **kwargs):
         """Connect to the device.
 
+        Returns `self`.
+
+        ## Notes for driver authors
+
         Procedure before any read or write operation can be performed.
         Typically a handshake between driver and device.
-
-        Returns `self`.
         """
+
         raise NotImplementedError()
 
     def initialize(self, **kwargs):
-        """Initialize the device.
+        """Initialize the device and the driver.
 
-        Apart from `connect()`, some devices might require a onetime
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
+
+        ## Notes for driver authors
+
+        Apart from `connect()`, some devices might require a one-time
         initialization procedure after powering on, or to detect hardware
         changes.  This should be called *after* connecting to the device.
-
-        This function can optionally return a list of `(property, value, unit)`
-        tuples, similarly to `get_status`.
         """
+
         raise NotImplementedError()
 
     def disconnect(self, **kwargs):
         """Disconnect from the device.
 
+        ## Notes for driver authors
+
         Procedure before the driver can safely unbind from the device.
         Typically just cleanup.
         """
+
         raise NotImplementedError()
 
     def get_status(self, **kwargs):
@@ -66,33 +84,40 @@ class BaseDriver:
 
         Returns a list of `(property, value, unit)` tuples.
         """
+
         raise NotImplementedError()
 
     def set_color(self, channel, mode, colors, **kwargs):
         """Set the color mode for a specific channel."""
+
         raise NotImplementedError()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to follow a speed duty profile."""
+
         raise NotImplementedError()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
+
         raise NotImplementedError()
 
     @property
     def description(self):
         """Human readable description of the corresponding device."""
+
         raise NotImplementedError()
 
     @property
     def vendor_id(self):
         """Numeric vendor identifier, or None if N/A."""
+
         raise NotImplementedError()
 
     @property
     def product_id(self):
         """Numeric product identifier, or None if N/A."""
+
         raise NotImplementedError()
 
     @property
@@ -101,16 +126,19 @@ class BaseDriver:
 
         In USB devices this is bcdDevice.
         """
+
         raise NotImplementedError()
 
     @property
     def serial_number(self):
         """Serial number reported by the device, or None if N/A."""
+
         raise NotImplementedError()
 
     @property
     def bus(self):
         """Bus the device is connected to, or None if N/A."""
+
         raise NotImplementedError()
 
     @property
@@ -119,6 +147,7 @@ class BaseDriver:
 
         This typically depends on the bus enumeration order.
         """
+
         raise NotImplementedError()
 
     @property
@@ -130,6 +159,7 @@ class BaseDriver:
         be chained.  Thus, for USB devices, this returns a tuple of port
         numbers, from the root hub to the parent of the connected device.
         """
+
         raise NotImplementedError()
 
     def __enter__(self):
