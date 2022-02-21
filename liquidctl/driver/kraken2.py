@@ -106,16 +106,6 @@ class Kraken2(UsbHidDriver):
         self.supports_lighting = True
         self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
         self._firmware_version = None  # read once necessary
-        self._connected = False
-
-    def connect(self, **kwargs):
-        ret = super().connect(**kwargs)
-        self._connected = True
-        return ret
-
-    def disconnect(self, **kwargs):
-        super().disconnect(**kwargs)
-        self._connected = False
 
     def initialize(self, **kwargs):
         """Initialize the device and the driver.
