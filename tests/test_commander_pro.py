@@ -252,34 +252,51 @@ def test_initialize_lighting_node(lightingNodeProDevice):
     assert data is None
 
 
-def test_get_status_commander_pro(commanderProDevice):
-
-    responses = [
-        '000a8300000000000000000000000000',  # temp sensor 1
-        '000b6a00000000000000000000000000',  # temp sensor 2
-        '000a0e00000000000000000000000000',  # temp sensor 4
-        '0003ac00000000000000000000000000',  # fan speed 1
-        '0003ab00000000000000000000000000',  # fan speed 2
-        '0003db00000000000000000000000000',  # fan speed 3
-        '002f2200000000000000000000000000',  # get 12v
-        '00136500000000000000000000000000',  # get 5v
-        '000d1f00000000000000000000000000',  # get 3.3v
-    ]
-    for d in responses:
-        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+@pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True), (True, False)])
+def test_get_status_commander_pro(commanderProDevice, has_hwmon, direct_access, tmp_path):
+    if has_hwmon and not direct_access:
+        commanderProDevice._hwmon = HwmonDevice('mock_module', tmp_path)
+        (tmp_path / 'temp1_input').write_text('26910\n')
+        (tmp_path / 'temp2_input').write_text('29220\n')
+        (tmp_path / 'temp4_input').write_text('25740\n')
+        (tmp_path / 'fan1_input').write_text('940\n')
+        (tmp_path / 'fan1_label').write_text('fan1 3pin\n')
+        (tmp_path / 'fan2_input').write_text('939\n')
+        (tmp_path / 'fan2_label').write_text('fan1 3pin\n')
+        (tmp_path / 'fan3_input').write_text('987\n')
+        (tmp_path / 'fan3_label').write_text('fan1 4pin\n')
+        (tmp_path / 'in0_input').write_text('12066\n')
+        (tmp_path / 'in1_input').write_text('4965\n')
+        (tmp_path / 'in2_input').write_text('3359\n')
+    else:
+        if has_hwmon:
+            commanderProDevice._hwmon = HwmonDevice('invalid_module', None)
+        responses = [
+            '000a8300000000000000000000000000',  # temp sensor 1
+            '000b6a00000000000000000000000000',  # temp sensor 2
+            '000a0e00000000000000000000000000',  # temp sensor 4
+            '0003ac00000000000000000000000000',  # fan speed 1
+            '0003ab00000000000000000000000000',  # fan speed 2
+            '0003db00000000000000000000000000',  # fan speed 3
+            '002f2200000000000000000000000000',  # get 12v
+            '00136500000000000000000000000000',  # get 5v
+            '000d1f00000000000000000000000000',  # get 3.3v
+        ]
+        for d in responses:
+            commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
 
     commanderProDevice._data.store('fan_modes', [0x01, 0x01, 0x02, 0x00, 0x00, 0x00])
     commanderProDevice._data.store('temp_sensors_connected', [0x01, 0x01, 0x00, 0x01])
 
-    res = commanderProDevice.get_status()
+    res = commanderProDevice.get_status(direct_access=direct_access)
     print(res)
 
     assert len(res) == 9
 
     # temp probes
-    assert res[0] == ('Temperature 1', 26.91, '°C')
-    assert res[1] == ('Temperature 2', 29.22, '°C')
-    assert res[2] == ('Temperature 4', 25.74, '°C')
+    assert res[0] == ('Temperature 1', pytest.approx(26.91, abs=1e-3), '°C')
+    assert res[1] == ('Temperature 2', pytest.approx(29.22, abs=1e-3), '°C')
+    assert res[2] == ('Temperature 4', pytest.approx(25.74, abs=1e-3), '°C')
 
     # fans rpm
     assert res[3] == ('Fan 1 speed', 940, 'rpm')
@@ -287,25 +304,26 @@ def test_get_status_commander_pro(commanderProDevice):
     assert res[5] == ('Fan 3 speed', 987, 'rpm')
 
     # voltages
-    assert res[6] == ('+12V rail', 12.066, 'V')
-    assert res[7] == ('+5V rail', 4.965, 'V')
-    assert res[8] == ('+3.3V rail', 3.359, 'V')
+    assert res[6] == ('+12V rail', pytest.approx(12.066, abs=1e-3), 'V')
+    assert res[7] == ('+5V rail', pytest.approx(4.965, abs=1e-3), 'V')
+    assert res[8] == ('+3.3V rail', pytest.approx(3.359, abs=1e-3), 'V')
 
-    # check the commands sent
-    sent = commanderProDevice.device.sent
-    assert len(sent) == 9
+    if not has_hwmon or direct_access:
+        # check the commands sent
+        sent = commanderProDevice.device.sent
+        assert len(sent) == 9
 
-    assert sent[0].data[0] == 0x11
-    assert sent[1].data[0] == 0x11
-    assert sent[2].data[0] == 0x11
+        assert sent[0].data[0] == 0x11
+        assert sent[1].data[0] == 0x11
+        assert sent[2].data[0] == 0x11
 
-    assert sent[3].data[0] == 0x21
-    assert sent[4].data[0] == 0x21
-    assert sent[5].data[0] == 0x21
+        assert sent[3].data[0] == 0x21
+        assert sent[4].data[0] == 0x21
+        assert sent[5].data[0] == 0x21
 
-    assert sent[6].data[0] == 0x12
-    assert sent[7].data[0] == 0x12
-    assert sent[8].data[0] == 0x12
+        assert sent[6].data[0] == 0x12
+        assert sent[7].data[0] == 0x12
+        assert sent[8].data[0] == 0x12
 
 
 def test_get_status_lighting_pro(lightingNodeProDevice):

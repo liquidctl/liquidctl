@@ -251,16 +251,7 @@ class CommanderPro(UsbHidDriver):
                                 self._hwmon.module)
             return self._initialize_directly()
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
-        if self._fan_count == 0 or self._temp_probs == 0:
-            _LOGGER.debug('only Commander Pro and Obsidian 1000D report status')
-            return []
-
+    def _get_status_directly(self):
         temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
@@ -285,6 +276,53 @@ class CommanderPro(UsbHidDriver):
             status.append((f'{rail} rail', voltage, 'V'))
 
         return status
+
+    def _get_status_from_hwmon(self):
+        temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
+        fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
+
+        status = []
+
+        # get the temperature sensor values
+        for i, probe_enabled in enumerate(temp_probes):
+            if probe_enabled:
+                n = i + 1
+                temp = self._hwmon.get_int(f'temp{n}_input') * 1e-3
+                status.append((f'Temperature {n}', temp, '°C'))
+
+        # get fan RPMs of connected fans
+        for i, fan_mode in enumerate(fan_modes):
+            if fan_mode == _FAN_MODE_DC or fan_mode == _FAN_MODE_PWM:
+                n = i + 1
+                speed = self._hwmon.get_int(f'fan{n}_input')
+                status.append((f'Fan {n} speed', speed, 'rpm'))
+
+        # get the real power supply voltages
+        for i, rail in enumerate(["+12V", "+5V", "+3.3V"]):
+            voltage = self._hwmon.get_int(f'in{i}_input') * 1e-3
+            status.append((f'{rail} rail', voltage, 'V'))
+
+        return status
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        if self._fan_count == 0 or self._temp_probs == 0:
+            _LOGGER.debug('only Commander Pro and Obsidian 1000D report status')
+            return []
+
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly()
 
     def _get_temp(self, sensor_num):
         """This will get the temperature in degrees celsius for the specified temp sensor.
