@@ -248,7 +248,8 @@ class KrakenX3(UsbHidDriver):
         self._write_colors(cid, mode, colors, sval, direction)
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to use a speed profile."""
+        """Set channel to use a speed duty profile."""
+
         cid, dmin, dmax = self._speed_channels[channel]
         header = [0x72, cid, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
@@ -261,6 +262,7 @@ class KrakenX3(UsbHidDriver):
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
+
         self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
 
     def _read(self):
