@@ -141,7 +141,6 @@ This can be specified by using the `--direction` flag.
 | `wings` | One | ✓ |
 
 
-
 #### Deprecated modes
 
 The following modes are now deprecated and the use of the `--direction backward` is preferred,
@@ -160,3 +159,20 @@ they will be removed in a future version and are kept for now for backward compa
 ## The LCD screen (only Z models)
 
 To be implemented.
+
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+Kraken X3 devices have incomplete support by the [liquidtux] [`nzxt-kraken3`]
+driver, and partial status data is provided through a standard hwmon sysfs
+interface.
+
+_As of February 2022, the driver is too limited for liquidctl to use; still..._
+
+Starting with version 1.9.0, liquidctl automatically detects when a kernel
+driver is bound to the device and, whenever possible, uses it instead of
+directly accessing the device.  Alternatively, direct access to the device can
+be forced with `--direct-access`.
+
+[liquidtux]: https://github.com/liquidctl/liquidtux
