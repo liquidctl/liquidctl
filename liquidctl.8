@@ -88,6 +88,14 @@ hue\-saturation\-value HSV triple, H ∊ [0, 360], S,V ∊ [0, 100]: \fIhsv(20,7
 .IP \(bu
 hue\-saturation\-lightness HSL triple, H ∊ [0, 360], S,L ∊ [0, 100]: \fIhsl(20,100,62)\fR.
 .
+.if !\n[is_macos]\{
+.PP
+\fBliquidctl\fR automatically detects when a kernel driver is bound to the device
+and, whenever possible, uses it instead of directly accessing the device.
+Alternatively, direct access to the device can be forced with
+\fI\-\-direct\-access\fP.
+.
+.\}
 .SH OPTIONS
 .
 .SS Device selection options
@@ -166,6 +174,9 @@ Use Asetek 690LC in legacy mode (old Krakens).
 .TP
 .B \-\-non\-volatile
 Store on non\-volatile controller memory.
+.TP
+.B \-\-direct\-access
+Directly access the device despite kernel drivers.
 .TP
 .BI \-\-unsafe= features
 Comman-separated bleeding-edge features to enable.
