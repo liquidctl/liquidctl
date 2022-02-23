@@ -31,8 +31,8 @@ Gigabyte RGB Fusion 2.0 5702 Controller
 
 The controllers have built-in support for six color modes: `off`, `fixed`, `pulse`,
 `flash`, `double-flash` and `color-cycle`. The `color-cycle` mode fades between all
-color hues, but the extra [fusion_rgb_cycle.py](extra/contrib/fusion_rgb_cycle.py)
-script can be used to fade between specific colors.
+color hues, but the extra [`extra/contrib/fusion_rgb_cycle.py`] script can be
+used to fade between specific colors.
 
 As much as we prefer to use descriptive channel names, currently it is not
 practical to do so, since the correspondence between the hardware channels and
@@ -91,16 +91,19 @@ liquidctl commands and restores desired lighting effects.
 
 ## Fading between colors
 
-The [fusion_rgb_cycle.py](extra/contrib/fusion_rgb_cycle.py) script can be used to have
-one of these controllers cycle through a list of colors of the user's choice. It uses
-the `fixed` mode but updates the controller continuously. It can be started with:
+The [`extra/contrib/fusion_rgb_cycle.py`] script can be used to have one of
+these controllers cycle through a list of colors of the user's choice. It uses
+the `fixed` mode but updates the controller continuously. It can be started
+with:
 
 ```
 # extra/contrib/fusion_rgb_cycle.py 350017 ff2608
 ```
 
-If more two colors are specified, they will be cycled in turn. The
-[color space](https://facelessuser.github.io/coloraide/colors/) for cycling can be
-specified with `--space <space>`, channels can be specified with `--channel <channel>`
-and the time in seconds for each color transition can be set with, eg
-`--speed  <seconds>`.
+If more than two colors are specified, they will be cycled in turn. The [color
+space] for cycling can be specified with `--space <space>`, channels can be
+specified with `--channel <channel>` and the time in seconds for each color
+transition can be set with, eg `--speed  <seconds>`.
+
+[`extra/contrib/fusion_rgb_cycle.py`]: ../extra/contrib/fusion_rgb_cycle.py
+[color space]: https://facelessuser.github.io/coloraide/colors/
