@@ -29,8 +29,10 @@ Gigabyte RGB Fusion 2.0 5702 Controller
 
 ## Lighting
 
-The controllers support six color modes: `off`, `fixed`, `pulse`, `flash`,
-`double-flash` and `color-cycle`.
+The controllers have built-in support for six color modes: `off`, `fixed`, `pulse`,
+`flash`, `double-flash` and `color-cycle`. The `color-cycle` mode fades between all
+color hues, but the extra [`extra/contrib/fusion_rgb_cycle.py`] script can be
+used to fade between specific colors.
 
 As much as we prefer to use descriptive channel names, currently it is not
 practical to do so, since the correspondence between the hardware channels and
@@ -55,7 +57,7 @@ animation speed is governed by the optional `--speed` parameter, with one of
 six possible values: `slowest`, `slower`, `normal` (the default), `faster`,
 `fastest` or `ludicrous`.
 
-The more elaborate color/animation schemes supported by the motherboard on the
+Some more elaborate color/animation schemes supported by the motherboard on the
 addressable headers are not currently supported.
 
 ## Correspondence between lighting channels and physical locations
@@ -86,3 +88,22 @@ Homebrew, along with a script to run on wake that issues the necessary
 liquidctl commands and restores desired lighting effects.
 
 [automate the configuration at boot time]: ../README.md#automation-and-running-at-boot
+
+## Fading between colors
+
+The [`extra/contrib/fusion_rgb_cycle.py`] script can be used to have one of
+these controllers cycle through a list of colors of the user's choice. It uses
+the `fixed` mode but updates the controller continuously. It can be started
+with:
+
+```
+# extra/contrib/fusion_rgb_cycle.py 350017 ff2608
+```
+
+If more than two colors are specified, they will be cycled in turn. The [color
+space] for cycling can be specified with `--space <space>`, channels can be
+specified with `--channel <channel>` and the time in seconds for each color
+transition can be set with, eg `--speed  <seconds>`.
+
+[`extra/contrib/fusion_rgb_cycle.py`]: ../extra/contrib/fusion_rgb_cycle.py
+[color space]: https://facelessuser.github.io/coloraide/colors/
