@@ -117,6 +117,8 @@ def _fan_mode_desc(mode):
 class CommanderPro(UsbHidDriver):
     """Corsair Commander Pro LED and fan hub"""
 
+    # support for hwmon: corsair-cpro, Linux 5.9
+
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c10, None, 'Corsair Commander Pro',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),

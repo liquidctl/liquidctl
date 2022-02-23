@@ -94,6 +94,8 @@ _WRITE_LENGTH = 65
 class Kraken2(UsbHidDriver):
     """Third generation NZXT Kraken X or M liquid cooler."""
 
+    # support for hwmon: nzxt-kraken2, Linux 5.13
+
     DEVICE_KRAKENX = 'Kraken X'
     DEVICE_KRAKENM = 'Kraken M'
     SUPPORTED_DEVICES = [
@@ -154,8 +156,6 @@ class Kraken2(UsbHidDriver):
         return ret
 
     def _get_status_from_hwmon(self, with_firmware):
-        # target: mainline nzxt-kraken2 driver
-
         # the firmware version is duplicated here as a temporary migration aid
         # for GKraken; it will be removed once GKraken no longer needs it, or
         # in liquidctl 1.10.x, whatever happens first

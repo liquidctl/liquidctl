@@ -190,6 +190,9 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 class SmartDevice(_CommonSmartDeviceDriver):
     """NZXT Smart Device (V1) or Grid+ V3."""
 
+    # support for hwmon: nzxt-grid3, liquidtux
+    # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-grid3.c
+
     SUPPORTED_DEVICES = [
         (0x1e71, 0x1714, None, 'NZXT Smart Device (V1)', {
             'speed_channel_count': 3,
@@ -369,6 +372,8 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
 class SmartDevice2(_CommonSmartDeviceDriver):
     """NZXT HUE 2 lighting and, optionally, fan controller."""
+
+    # support for hwmon: nzxt-smart2, Linux 5.17
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {

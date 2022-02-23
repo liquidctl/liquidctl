@@ -152,6 +152,9 @@ _ANIMATION_SPEEDS = {
 class KrakenX3(UsbHidDriver):
     """Fourth-generation Kraken X liquid cooler."""
 
+    # support for hwmon: nzxt-kraken3, liquidtux
+    # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-kraken3.c
+
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENX,
