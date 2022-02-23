@@ -279,12 +279,11 @@ class SmartDevice(_CommonSmartDeviceDriver):
         return ret
 
     def _get_status_directly(self):
-        ret = []
         fans = [None] * len(self._speed_channels)
         noise = []
 
         self.device.clear_enqueued_reports()
-        for i, _ in enumerate(self._speed_channels):
+        for i, _ in enumerate(fans):
             msg = self.device.read(self._READ_LENGTH)
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
@@ -297,10 +296,17 @@ class SmartDevice(_CommonSmartDeviceDriver):
             ]
             noise.append(msg[1])
 
+        # flatten fan data while checking for holes
+        ret = []
+        for i, fan in enumerate(fans):
+            if fan:
+                ret = ret + fan
+            else:
+                _LOGGER.warning('missing data fan for %d', i + 1)
+
         ret.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
 
-        # flatten non None fan data and concat with ret
-        return [x for fan_data in fans if fan_data for x in fan_data] + ret
+        return ret
 
     def _get_status_from_hwmon(self):
         ret = []
