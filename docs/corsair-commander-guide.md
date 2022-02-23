@@ -34,6 +34,9 @@ Corsair Lighting Node Pro
 └── Bootloader version        3.0  
 ```
 
+_The firmware and bootloader versions are not available when data is read from
+[Linux hwmon]._
+
 
 ## Retrieving the fan speeds, temperatures and voltages
 
@@ -173,3 +176,18 @@ Each color can be specified using any of the'
 Currently the device can only accept hardware effects, and the specified
 configuration will persist across power offs. The changes take a couple of
 seconds to take effect.
+
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+Commander Pro controllers and the Obsidian 1000D are supported by the mainline
+Linux kernel with its [`corsair-cpro`] driver, and status data is provided
+through a standard hwmon sysfs interface.
+
+Starting with version 1.9.0, liquidctl automatically detects when a kernel
+driver is bound to the device and, whenever possible, uses it instead of
+directly accessing the device.  Alternatively, direct access to the device can
+be forced with `--direct-access`.
+
+[`corsair-cpro`]: https://www.kernel.org/doc/html/latest/hwmon/corsair-cpro.html
