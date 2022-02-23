@@ -126,13 +126,12 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
-        """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
-        """Set the color mode.
+        """Set the color mode for a specific channel.
 
         Only supported by Smart Device V1/V2 and HUE 2 controllers.
         """
@@ -163,7 +162,8 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         self._write_colors(cid, mode, colors, sval, direction)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
+        """Set channel to a fixed speed duty."""
+
         if channel == 'sync':
             selected_channels = self._speed_channels
         else:
@@ -174,7 +174,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Not Supported by this device."""
         raise NotSupportedByDevice()
 
     def _write(self, data):
@@ -246,10 +245,17 @@ class SmartDevice(_CommonSmartDeviceDriver):
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, direct_access=False, **kwargs):
-        """Initialize the device.
+        """Initialize the device and the driver.
 
-        Detects all connected fans and LED accessories, and allows subsequent
-        calls to get_status.
+        Connected fans and LED accessories are detected.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
         if self._hwmon and not direct_access:
@@ -326,7 +332,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
     def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
 
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples.
         """
 
         if self._hwmon and not direct_access:
@@ -459,12 +465,17 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, direct_access=False, **kwargs):
-        """Initialize the device.
+        """Initialize the device and the driver.
 
-        Detects and reports all connected fans and LED accessories, and allows
-        subsequent calls to get_status.
+        Connected fans and LED accessories are detected.
 
-        Returns a list of (key, value, unit) tuples.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
         self.device.clear_enqueued_reports()
@@ -543,7 +554,7 @@ class SmartDevice2(_CommonSmartDeviceDriver):
     def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
 
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples.
         """
 
         if not self._speed_channels:
