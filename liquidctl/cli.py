@@ -84,6 +84,7 @@ from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFe
 from liquidctl.util import color_from_str
 from liquidctl.version import __version__
 
+
 # conversion from CLI arg to internal option; as options as forwarded to bused
 # and drivers, they must:
 #  - have no default value in the CLI level (not forwarded unless explicitly set);
@@ -297,23 +298,6 @@ def _make_opts(args):
     return opts
 
 
-def _gen_version():
-    extra = None
-    try:
-        from liquidctl.extraversion import __extraversion__
-        if __extraversion__['editable']:
-            extra = ['editable']
-        elif __extraversion__['dist_name'] and __extraversion__['dist_package']:
-            extra = [__extraversion__['dist_name'], __extraversion__['dist_package']]
-        else:
-            extra = [__extraversion__['commit'][:12]]
-            if __extraversion__['dirty']:
-                extra[0] += '-dirty'
-    except:
-        return f'liquidctl v{__version__}'
-    return f'liquidctl v{__version__} ({"; ".join(extra)})'
-
-
 def _log_requirements():
     _LOGGER.debug('python: %s', sys.version)
     if sys.hexversion >= 0x03080000:
@@ -372,7 +356,7 @@ def main():
     args = docopt(__doc__)
 
     if args['--version']:
-        print(_gen_version())
+        print(f'liquidctl v{__version__} ({platform.platform()})')
         sys.exit(0)
 
     if args['--debug']:
@@ -411,7 +395,7 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('%s', _gen_version())
+    _LOGGER.debug('liquidctl: %s', __version__)
     _LOGGER.debug('platform: %s', platform.platform())
     _log_requirements()
 

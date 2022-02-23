@@ -1,3 +1,15 @@
+[build-system]
+requires = [
+  "setuptools >= 45",
+  "setuptools_scm[toml] >= 6.2",
+  "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "liquidctl/_version.py"
+version_scheme = "post-release"
+
 [tool.pytest.ini_options]
 addopts = "--doctest-modules -ra"
 
@@ -40,7 +52,7 @@ extend-exclude = '''
   | (^/liquidctl/keyval\.py$)
   | (^/liquidctl/pmbus\.py$)
   | (^/liquidctl/util\.py$)
-  | (^/liquidctl/version\.py$)
+  | (^/liquidctl/_version\.py$)
   | (^/setup\.py$)
   | (^/tests/_testutils\.py$)
   | (^/tests/test_api\.py$)

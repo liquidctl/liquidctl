@@ -1,7 +1,6 @@
-*.egg-info
+*.egg-info/
 .krakenduty-poc
-__pycache__
-build
-dist
-liquidctl/extraversion.py
-.coverage
+__pycache__/
+build/
+dist/
+liquidctl/_version.py
