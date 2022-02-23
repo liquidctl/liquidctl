@@ -57,10 +57,13 @@ The device can report fan information for each channel and the noise level at th
 ```
 # liquidctl status
 NZXT Smart Device V2
+├── Fan 2 control mode                     PWM  
 ├── Fan 2 duty                              42  %
 ├── Fan 2 speed                            934  rpm
 └── Noise level                             62  dB
 ```
+
+_The noise level is not available when data is read from [Linux hwmon]._
 
 
 ## Fan speeds
@@ -135,3 +138,18 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-rainbow-flow` | None |
 | `backwards-super-rainbow` | None |
 | `backwards-rainbow-pulse` | None |
+
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+Smart Device V2 controllers are supported by the mainline Linux kernel with its
+[`nzxt-smart2`] driver, and status data is provided through a standard hwmon
+sysfs interface.
+
+Starting with version 1.9.0, liquidctl automatically detects when a kernel
+driver is bound to the device and, whenever possible, uses it instead of
+directly accessing the device.  Alternatively, direct access to the device can
+be forced with `--direct-access`.
+
+[`nzxt-smart2`]: https://www.kernel.org/doc/html/latest/hwmon/nzxt-smart2.html
