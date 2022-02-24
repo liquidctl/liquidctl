@@ -68,8 +68,8 @@ _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hw
 Allow forced direct access despite hwmon
 ----------------------------------------
 
-Operations should accept a `force` argument, equivalent to a `--force` option
-on the command line.
+Operations should accept a `direct-access` argument, equivalent to a
+`--direct-access` option on the command line.
 
 
 Warn when directly accessing through force
