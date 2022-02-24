@@ -31,7 +31,6 @@ extend-exclude = '''
   | (^/extra/contrib/fusion_rgb_cycle\.py$)
   | (^/extra/linux/generate-uaccess-udev-rules\.py$)
   | (^/extra/windows/LQiNFO\.py$)
-  | (^/liquidctl/__init__\.py$)
   | (^/liquidctl/cli\.py$)
   | (^/liquidctl/driver/__init__\.py$)
   | (^/liquidctl/driver/asetek\.py$)

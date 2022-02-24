@@ -79,10 +79,10 @@ from traceback import format_exception
 import colorlog
 from docopt import docopt
 
+from liquidctl import __version__
 from liquidctl.driver import *
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
 from liquidctl.util import color_from_str
-from liquidctl.version import __version__
 
 
 # conversion from CLI arg to internal option; as options as forwarded to bused
