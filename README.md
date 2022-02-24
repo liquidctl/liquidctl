@@ -8,7 +8,7 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 
 
 ```
-# liquidctl list
+$ liquidctl list
 Device #0: ASUS Strix RTX 2080 Ti OC
 Device #1: Corsair Vengeance RGB DIMM2
 Device #2: Corsair Vengeance RGB DIMM4
@@ -302,7 +302,7 @@ _Note: when debugging issues with PyUSB or libusb it can be useful to set the `P
 A good place to start is to ask liquidctl to list all recognized devices.
 
 ```
-# liquidctl list
+$ liquidctl list
 Device #0: NZXT Smart Device (V1)
 Device #1: NZXT Kraken X (X42, X52, X62 or X72)
 ```
@@ -310,17 +310,17 @@ Device #1: NZXT Kraken X (X42, X52, X62 or X72)
 In case more than one supported device is found, one them can be selected with `--match <substring>`, where `<substring>` matches part of the desired device's description using a case insensitive comparison.
 
 ```
-# liquidctl --match kraken list
+$ liquidctl --match kraken list
 Result #0: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
 More device properties can be show by passing `--verbose` to `liquidctl list`.  Any of those can also be used to select a particular product.
 
 ```
-# liquidctl --bus hid --address /dev/hidraw4 list
+$ liquidctl --bus hid --address /dev/hidraw4 list
 Result #0: NZXT Smart Device (V1)
 
-# liquidctl --serial 1234567890 list
+$ liquidctl --serial 1234567890 list
 Result #0: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 
