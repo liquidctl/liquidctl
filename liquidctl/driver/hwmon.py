@@ -51,14 +51,18 @@ class HwmonDevice:
         class_path = Path("/sys/class/hidraw", name)
 
         sys_device = class_path / "device"
-        hwmon_devices = (sys_device / "hwmon").iterdir()
+        hwmon_devices = (sys_device / "hwmon")
 
-        hwmon_path = next(hwmon_devices)
+        if not hwmon_devices.exists():
+            return None
 
-        if next(hwmon_devices, None) is not None:
+        hwmon_paths = hwmon_devices.iterdir()
+        path = next(hwmon_paths)
+
+        if next(hwmon_paths, None):
             _LOGGER.debug("cannot pick hwmon device for %s: more than one alternative", path)
             return None
 
         module = (sys_device / "driver" / "module").readlink().name
 
-        return HwmonDevice(module, hwmon_path)
+        return HwmonDevice(module, path)
