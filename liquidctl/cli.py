@@ -71,6 +71,7 @@ import json
 import logging
 import os
 import platform
+import re
 import sys
 from numbers import Number
 from traceback import format_exception
@@ -318,10 +319,11 @@ def _log_requirements():
     if sys.hexversion >= 0x03080000:
         from importlib.metadata import distribution, version
         for req in distribution('liquidctl').requires:
+            name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
             try:
-                _LOGGER.debug('%s: %s', req, version(req))
+                _LOGGER.debug('%s: %s', name, version(name))
             except Exception as err:
-                _LOGGER.debug('%s: version n/a (%s)', req, err)
+                _LOGGER.debug('%s: version n/a (%s)', name, err)
     else:
         _LOGGER.debug('importlib.metadata not available')
 
