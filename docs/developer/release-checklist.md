@@ -36,9 +36,10 @@ Then install locally and:
 
 ## Source distribution
 
- - [ ] Generate the source distribution:
-       `python setup.py sdist`
- - [ ] Check that all necessary files are in `dist/liquidctl-$VERSION.tar.gz` and that the generated `extraversion.py` makes sense
+ - [ ] Build the source distribution and wheel:
+       `python -m build`
+ - [ ] Check that all necessary files are in the `dist/liquidctl-$VERSION.tar.gz` sdist
+ - [ ] Check the `dist/liquidctl-$VERSION.whl` wheel
  - [ ] Tag HEAD with changelog and PGP signature:
        `git tag -as "v$VERSION"`
  - [ ] Push HEAD and vVERSION tag:
