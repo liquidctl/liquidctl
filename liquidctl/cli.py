@@ -72,6 +72,7 @@ import json
 import logging
 import os
 import platform
+import re
 import sys
 from numbers import Number
 from traceback import format_exception
@@ -79,10 +80,11 @@ from traceback import format_exception
 import colorlog
 from docopt import docopt
 
+from liquidctl import __version__
 from liquidctl.driver import *
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
 from liquidctl.util import color_from_str
-from liquidctl.version import __version__
+
 
 # conversion from CLI arg to internal option; as options as forwarded to bused
 # and drivers, they must:
@@ -298,32 +300,23 @@ def _make_opts(args):
     return opts
 
 
-def _gen_version():
-    extra = None
-    try:
-        from liquidctl.extraversion import __extraversion__
-        if __extraversion__['editable']:
-            extra = ['editable']
-        elif __extraversion__['dist_name'] and __extraversion__['dist_package']:
-            extra = [__extraversion__['dist_name'], __extraversion__['dist_package']]
-        else:
-            extra = [__extraversion__['commit'][:12]]
-            if __extraversion__['dirty']:
-                extra[0] += '-dirty'
-    except:
-        return f'liquidctl v{__version__}'
-    return f'liquidctl v{__version__} ({"; ".join(extra)})'
-
-
 def _log_requirements():
     _LOGGER.debug('python: %s', sys.version)
     if sys.hexversion >= 0x03080000:
-        from importlib.metadata import distribution, version
-        for req in distribution('liquidctl').requires:
+        from importlib.metadata import distribution, version, PackageNotFoundError
+
+        try:
+            dist = distribution('liquidctl')
+        except PackageNotFoundError:
+            _LOGGER.debug('not installed, package metadata not available')
+            return
+
+        for req in dist.requires:
+            name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
             try:
-                _LOGGER.debug('%s: %s', req, version(req))
+                _LOGGER.debug('%s: %s', name, version(name))
             except Exception as err:
-                _LOGGER.debug('%s: version n/a (%s)', req, err)
+                _LOGGER.debug('%s: version n/a (%s)', name, err)
     else:
         _LOGGER.debug('importlib.metadata not available')
 
@@ -365,7 +358,7 @@ def main():
     args = docopt(__doc__)
 
     if args['--version']:
-        print(_gen_version())
+        print(f'liquidctl v{__version__} ({platform.platform()})')
         sys.exit(0)
 
     if args['--debug']:
@@ -404,7 +397,7 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('%s', _gen_version())
+    _LOGGER.debug('liquidctl: %s', __version__)
     _LOGGER.debug('platform: %s', platform.platform())
     _log_requirements()
 

@@ -30,16 +30,14 @@ install:
   # libusb
   - cmd: appveyor DownloadFile https://github.com/libusb/libusb/releases/download/v%LIBUSB_VERSION%/libusb-%LIBUSB_VERSION%.7z -FileName libusb.7z
   - cmd: 7z x libusb.7z
-  # python build and package tools
-  - cmd: C:\Python310-x64\python -m pip install --upgrade pip setuptools --ignore-installed
-  # remaining dependencies
-  - cmd: C:\Python310-x64\python setup.py install
-  # install pytest
-  - cmd: C:\Python310-x64\python -m pip install pytest
+  # build and test tools
+  - cmd: C:\Python310-x64\python -m pip install --upgrade pip pytest
+  # copy the libusb DLLs
+  - cmd: copy VS2019\MS64\Release\dll\* C:\Windows\System32\
+  # project and dependencies
+  - cmd: C:\Python310-x64\python -m pip install .
 
 build: off
 
 test_script:
-  # copy the libusb DLLs and run the unit and doctests
-  - cmd: copy VS2019\MS64\Release\dll\* C:\Windows\System32\
   - cmd: C:\Python310-x64\python -m pytest
