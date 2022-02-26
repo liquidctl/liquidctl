@@ -317,8 +317,15 @@ def _gen_version():
 def _log_requirements():
     _LOGGER.debug('python: %s', sys.version)
     if sys.hexversion >= 0x03080000:
-        from importlib.metadata import distribution, version
-        for req in distribution('liquidctl').requires:
+        from importlib.metadata import distribution, version, PackageNotFoundError
+
+        try:
+            dist = distribution('liquidctl')
+        except PackageNotFoundError:
+            _LOGGER.debug('not installed, package metadata not available')
+            return
+
+        for req in dist.requires:
             name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
             try:
                 _LOGGER.debug('%s: %s', name, version(name))
