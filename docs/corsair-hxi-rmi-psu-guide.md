@@ -89,6 +89,8 @@ _<sup>2</sup> Available at [80 PLUS® Certified Power Supplies and Manufacturers
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
+_New in 1.9.0: liquidctl can use the `corsair-psu` hwmon driver._
+
 These devices are supported by the mainline Linux kernel with its
 [`corsair-psu`] driver, and status data is provided through a standard hwmon
 sysfs interface.

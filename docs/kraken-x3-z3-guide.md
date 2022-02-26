@@ -164,6 +164,8 @@ To be implemented.
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
+_New in 1.9.0: liquidctl may be able to use an available hwmon driver._
+
 Kraken X3 devices have incomplete support by the [liquidtux] [`nzxt-kraken3`]
 driver, and partial status data is provided through a standard hwmon sysfs
 interface.

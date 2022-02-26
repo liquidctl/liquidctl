@@ -181,6 +181,8 @@ seconds to take effect.
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
+_New in 1.9.0: liquidctl can use the `corsair-cpro` hwmon driver._
+
 Commander Pro controllers and the Obsidian 1000D are supported by the mainline
 Linux kernel with its [`corsair-cpro`] driver, and status data is provided
 through a standard hwmon sysfs interface.

@@ -54,8 +54,6 @@ NZXT Smart Device (V1)
 
 _The noise level is not available when data is read from [Linux hwmon]._
 
-[Linux hwmon]: #interaction-with-linux-hwmon-drivers
-
 
 ## Fan speeds
 
@@ -129,6 +127,9 @@ they will be removed in a future version and are kept for now for backward compa
 
 
 ## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+_New in 1.9.0: liquidctl can use the `nzxt-grid3` hwmon driver._
 
 These devices are supported by the [liquidtux] `nzxt-grid3` driver, and status
 data is provided through a standard hwmon sysfs interface.

@@ -143,6 +143,8 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
+_New in 1.9.0: liquidctl can use the `nzxt-smart2` hwmon driver._
+
 Smart Device V2 controllers are supported by the mainline Linux kernel with its
 [`nzxt-smart2`] driver, and status data is provided through a standard hwmon
 sysfs interface.
