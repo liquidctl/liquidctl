@@ -51,7 +51,7 @@ class HwmonDevice:
         class_path = Path("/sys/class/hidraw", name)
 
         sys_device = class_path / "device"
-        hwmon_devices = (sys_device / "hwmon")
+        hwmon_devices = sys_device / "hwmon"
 
         if not hwmon_devices.exists():
             return None
