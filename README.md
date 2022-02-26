@@ -122,26 +122,26 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
-| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
+| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | <sup>_h_</sup> |
+| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
 | DDR4 DRAM          | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | DDR4 DRAM          | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
-| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Graphics card      | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card      | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card      | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
-| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
+| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
@@ -149,6 +149,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._  
 <sup>_a_</sup> _Architecture-specific limitations._  
 <sup>_e_</sup> _Experimental support._  
+<sup>_h_</sup> _Can leverage hwmon driver._  
 <sup>_n_</sup> _Newly supported and requires git._  
 <sup>_p_</sup> _Only partially supported._  
 <sup>_x_</sup> _Only supported on Linux._  
