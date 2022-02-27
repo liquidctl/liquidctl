@@ -54,11 +54,9 @@ NZXT Kraken X (X42, X52, X62 or X72)
 # liquidctl --match dimm4 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
 ```
 
-<!-- stop here for PyPI -->
 
-
-## Table of contents
-[Table of contents]: #table-of-contents
+## Contents
+[Contents]: #contents
 
 1. [Supported devices]
 1. [Installation]
