@@ -18,27 +18,32 @@ def _get_version_relaxed():
 
     # first assuming that we're a git checkout
     try:
-        return (get_version(), None)
+        version = get_version()
+        if version:
+            return (version, None)
     except LookupError:
         pass
 
     # and then, if that also failed, assuming that we're a tarball
-    guess = get_version(parentdir_prefix_version="liquidctl-")
-    if "+" in guess:
-        guess += "-guessed"
-    else:
-        guess += "+guessed"
-    return (guess, None)
+    try:
+        guess = get_version(parentdir_prefix_version="liquidctl-")
+        if guess:
+            if "+" in guess:
+                guess += "-guessed"
+            else:
+                guess += "+guessed"
+            return (guess, None)
+    except LookupError:
+        pass
+
+    # finally, use a obviously invalid value
+    return ("0.0.0-unknown", None)
 
 
 # keep _version_tuple private for now, as it's only available in some cases and
 # don't want to commit to it yet
 
-try:
-    (version, _version_tuple) = _get_version_relaxed()
-except:
-    # if everything failed, use a placeholder value that's obviously invalid
-    (version, _version_tuple) = ("0.0.0-unknown", None)
+(version, _version_tuple) = _get_version_relaxed()
 
-
+# old field name (liquidctl.__version__ is preferred now)
 __version__ = version
