@@ -392,6 +392,9 @@ def main():
     _LOGGER.debug('platform: %s', platform.platform())
     _log_requirements()
 
+    if __name__ == '__main__':
+        _LOGGER.warning('python -m liquidctl.cli is deprecated, prefer python -m liquidctl')
+
     errors = _ErrorAcc()
 
     # unlike humans, machines want to know everything; imply verbose everywhere

@@ -418,7 +418,7 @@ To run the CLI directly, without building and installing a local package,
 execute:
 
 ```
-python -m liquidctl.cli [arguments]
+python -m liquidctl [arguments]
 ```
 
 
