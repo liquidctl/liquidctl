@@ -3,7 +3,7 @@
 # uses the psf/black style
 
 
-def _get_built_version():
+def _build_version():
 
     try:
         from liquidctl._version import version, version_tuple
@@ -13,7 +13,7 @@ def _get_built_version():
         return None
 
 
-def _compute_version_at_runtime():
+def _runtime_version():
 
     try:
         from setuptools_scm import get_version
@@ -40,14 +40,16 @@ def _compute_version_at_runtime():
     except LookupError:
         pass
 
-    # finally, use an obviously invalid value
-    return ("0.0.0-unknown", None)
+    return None
 
 
-# try to get the version written by setuptools_scm during the build, otherwise
-# compute one right now; _version_tuple is kept private as it's only available
-# in some cases and don't want to commit to it yet
-(version, _version_tuple) = _get_built_version() or _compute_version_at_runtime()
+# - try to get the version written by setuptools_scm during the build;
+# - otherwise try to compute one right now;
+# - failing that too, use an obviously invalid value
+#
+# (_version_tuple is kept private as it's only available in some cases and
+# don't want to commit to it yet)
+(version, _version_tuple) = _build_version() or _runtime_version() or ("0.0.0-unknown", None)
 
 # old field name (liquidctl.__version__ is preferred now)
 __version__ = version
