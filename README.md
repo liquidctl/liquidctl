@@ -312,9 +312,14 @@ Alternatively, the virtual environment can also be used directly, without
 activation, by prefixing all `python` and `pip` invocations with the
 environment's bin directory.
 
-```
+```bash
+# Linux/macOS/BSDs (POSIX)
 <path>/bin/python [arguments]
 <path>/bin/pip [arguments]
+
+# Windows
+<path>\Scripts\python [arguments]
+<path>\Scripts\pip [arguments]
 ```
 
 [virtual environment]: https://docs.python.org/3/library/venv.html
