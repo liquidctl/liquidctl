@@ -101,6 +101,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import itertools
 import logging
+import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -125,13 +126,12 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
-        """Instantiate a driver with a device handle."""
         super().__init__(device, description)
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
-        """Set the color mode.
+        """Set the color mode for a specific channel.
 
         Only supported by Smart Device V1/V2 and HUE 2 controllers.
         """
@@ -162,7 +162,8 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         self._write_colors(cid, mode, colors, sval, direction)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
+        """Set channel to a fixed speed duty."""
+
         if channel == 'sync':
             selected_channels = self._speed_channels
         else:
@@ -173,7 +174,6 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
             self._write_fixed_duty(cid, duty)
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Not Supported by this device."""
         raise NotSupportedByDevice()
 
     def _write(self, data):
@@ -189,6 +189,9 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
 
 class SmartDevice(_CommonSmartDeviceDriver):
     """NZXT Smart Device (V1) or Grid+ V3."""
+
+    # support for hwmon: nzxt-grid3, liquidtux
+    # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-grid3.c
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x1714, None, 'NZXT Smart Device (V1)', {
@@ -244,28 +247,52 @@ class SmartDevice(_CommonSmartDeviceDriver):
                           for i in range(color_channel_count)}
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-    def initialize(self, **kwargs):
-        """Initialize the device.
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
 
-        Detects all connected fans and LED accessories, and allows subsequent
-        calls to get_status.
+        Connected fans and LED accessories are detected.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
-        self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
-        self._write([0x1, 0x5d])  # start reporting
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
+            self._write([0x1, 0x5d])  # start reporting
+            self.device.clear_enqueued_reports()
 
-    def get_status(self, **kwargs):
-        """Get a status report.
+        msg = self.device.read(self._READ_LENGTH)
 
-        Returns a list of (key, value, unit) tuples.
-        """
+        fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
+        ret = [('Firmware version', fw, '')]
 
-        status = []
+        if self._color_channels:
+            lcount = msg[0x11]
+            ret.append(('LED accessories', lcount, ''))
+            if lcount > 0:
+                ltype, lsize = [('HUE+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
+                ret.append(('LED accessory type', ltype, ''))
+                ret.append(('LED count (total)', lcount*lsize, ''))
+
+        return ret
+
+    def _get_status_directly(self):
         fans = [None] * len(self._speed_channels)
         noise = []
 
         self.device.clear_enqueued_reports()
-        for i, _ in enumerate(self._speed_channels):
+        for i, _ in enumerate(fans):
             msg = self.device.read(self._READ_LENGTH)
             num = (msg[15] >> 4) + 1
             state = msg[15] & 0x3
@@ -278,24 +305,48 @@ class SmartDevice(_CommonSmartDeviceDriver):
             ]
             noise.append(msg[1])
 
-            if i != 0:
-                continue
+        # flatten fan data while checking for holes
+        ret = []
+        for i, fan in enumerate(fans):
+            if fan:
+                ret = ret + fan
+            else:
+                _LOGGER.warning('missing data fan for %d', i + 1)
 
-            fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
-            status.append(('Firmware version', fw, ''))
+        ret.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
 
-            if self._color_channels:
-                lcount = msg[0x11]
-                status.append(('LED accessories', lcount, ''))
-                if lcount > 0:
-                    ltype, lsize = [('HUE+ Strip', 10), ('Aer RGB', 8)][msg[0x10] >> 3]
-                    status.append(('LED accessory type', ltype, ''))
-                    status.append(('LED count (total)', lcount*lsize, ''))
+        return ret
 
-        status.append(('Noise level', round(sum(noise)/len(noise)), 'dB'))
+    def _get_status_from_hwmon(self):
+        ret = []
+        mode = ['DC', 'PWM']  # slightly simplified, but the device treats undetected == PWM
 
-        # flatten non None fan data and concat with status
-        return [x for fan_data in fans if fan_data for x in fan_data] + status
+        for i in range(len(self._speed_channels)):
+            n = i + 1
+            ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
+            ret.append((f'Fan {n} voltage', self._hwmon.get_int(f'in{i}_input') * 1e-3, 'V')),
+            ret.append((f'Fan {n} current', self._hwmon.get_int(f'curr{n}_input') * 1e-3, 'A')),
+            ret.append((f'Fan {n} control mode', mode[self._hwmon.get_int(f'pwm{n}_mode')], '')),
+
+        # noise level is not available through hwmon, but also not very accurate or useful
+
+        return ret
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly()
 
     def _write_colors(self, cid, mode, colors, sval, direction='forward'):
         mval, mod3, mod4, _, _ = self._COLOR_MODES[mode]
@@ -321,6 +372,8 @@ class SmartDevice(_CommonSmartDeviceDriver):
 
 class SmartDevice2(_CommonSmartDeviceDriver):
     """NZXT HUE 2 lighting and, optionally, fan controller."""
+
+    # support for hwmon: nzxt-smart2, Linux 5.17
 
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {
@@ -416,31 +469,43 @@ class SmartDevice2(_CommonSmartDeviceDriver):
         color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-    def initialize(self, **kwargs):
-        """Initialize the device.
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
 
-        Detects and reports all connected fans and LED accessories, and allows
-        subsequent calls to get_status.
+        Connected fans and LED accessories are detected.
 
-        Returns a list of (key, value, unit) tuples.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
         self.device.clear_enqueued_reports()
 
         # if fan controller, initialize fan reporting (#331)
         if self._speed_channels:
-            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-            self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
-            self._write([0x60, 0x03])
+            if self._hwmon and not direct_access:
+                _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                             self._hwmon.module)
+            else:
+                if self._hwmon:
+                    _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                    self._hwmon.module)
+                update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+                self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
+                self._write([0x60, 0x03])
 
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
-        status = []
+        ret = []
 
         def parse_firm_info(msg):
             fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
-            status.append(('Firmware version', fw, ''))
+            ret.append(('Firmware version', fw, ''))
 
         def parse_led_info(msg):
             channel_count = msg[14]
@@ -450,36 +515,65 @@ class SmartDevice2(_CommonSmartDeviceDriver):
                     accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
                     if accessory_id == 0:
                         break
-                    status.append((f'LED {c + 1} accessory {a + 1}',
+                    ret.append((f'LED {c + 1} accessory {a + 1}',
                                    Hue2Accessory(accessory_id), ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
-        return sorted(status)
+        return sorted(ret)
 
-    def get_status(self, **kwargs):
+    def _get_status_directly(self):
+        ret = []
+
+        def parse_fan_info(msg):
+            mode_offset = 16
+            rpm_offset = 24
+            duty_offset = 40
+            noise_offset = 56
+            raw_modes = [None, 'DC', 'PWM']
+
+            for i, _ in enumerate(self._speed_channels):
+                mode = raw_modes[msg[mode_offset + i]]
+                ret.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                ret.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
+                ret.append((f'Fan {i + 1} control mode', mode, ''))
+                rpm_offset += 2
+            ret.append(('Noise level', msg[noise_offset], 'dB'))
+
+        self.device.clear_enqueued_reports()
+        self._read_until({b'\x67\x02': parse_fan_info})
+        return sorted(ret)
+
+    def _get_status_from_hwmon(self):
+        ret = []
+        modes = ['DC', 'PWM']
+
+        for n in range(1, len(self._speed_channels) + 1):
+            ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
+            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}_input') * 100. / 255, '%')),
+            ret.append((f'Fan {n} control mode', modes[self._hwmon.get_int(f'pwm{n}_mode')], '')),
+
+        # noise level is not available through hwmon, but also not very accurate or useful
+
+        return sorted(ret)
+
+    def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
 
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples.
         """
 
         if not self._speed_channels:
             return []
-        status = []
 
-        def parse_fan_info(msg):
-            rpm_offset = 24
-            duty_offset = 40
-            noise_offset = 56
-            for i, _ in enumerate(self._speed_channels):
-                if ((msg[rpm_offset] != 0x0) and (msg[rpm_offset + 1] != 0x0)):
-                    status.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                    status.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
-                rpm_offset += 2
-            status.append(('Noise level', msg[noise_offset], 'dB'))
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
 
-        self.device.clear_enqueued_reports()
-        self._read_until({b'\x67\x02': parse_fan_info})
-        return sorted(status)
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly()
 
     def _read_until(self, parsers):
         for _ in range(self._MAX_READ_ATTEMPTS):

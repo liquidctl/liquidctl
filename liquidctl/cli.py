@@ -37,6 +37,7 @@ Other device options:
   --temperature-sensor <number>  The temperature sensor number for the Commander Pro
   --legacy-690lc                 Use Asetek 690LC in legacy mode (old Krakens)
   --non-volatile                 Store on non-volatile controller memory
+  --direct-access                Directly access the device despite kernel drivers
   --unsafe <features>            Comma-separated bleeding-edge features to enable
 
 Other interface options:
@@ -114,6 +115,7 @@ _PARSE_ARG = {
     '--pump-mode': str.lower,
     '--legacy-690lc': bool,
     '--non-volatile': bool,
+    '--direct-access': bool,
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
@@ -404,6 +406,7 @@ def main():
         args['--verbose'] = True
 
     opts = _make_opts(args)
+    opts['_internal_called_from_cli'] = True  # FOR INTERNAL USE ONLY, DO NOT REPLICATE ELSEWHERE
     filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
     device_id = None
 

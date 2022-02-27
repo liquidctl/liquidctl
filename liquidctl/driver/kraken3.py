@@ -23,6 +23,12 @@ _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
 
+_STATUS_TEMPERATURE = 'Liquid temperature'
+_STATUS_PUMP_SPEED = 'Pump speed'
+_STATUS_PUMP_DUTY = 'Pump duty'
+_STATUS_FAN_SPEED = 'Fan speed'
+_STATUS_FAN_DUTY = 'Fan duty'
+
 # Available speed channels for model X coolers
 # name -> (channel_id, min_duty, max_duty)
 # TODO adjust min duty value to what the firmware enforces
@@ -146,6 +152,9 @@ _ANIMATION_SPEEDS = {
 class KrakenX3(UsbHidDriver):
     """Fourth-generation Kraken X liquid cooler."""
 
+    # support for hwmon: nzxt-kraken3, liquidtux
+    # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-kraken3.c
+
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENX,
@@ -158,21 +167,35 @@ class KrakenX3(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
 
-    def initialize(self, **kwargs):
-        """Initialize the device.
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
 
-        Reports the current firmware of the device.  Returns a list of (key,
-        value, unit) tuples.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
         self.device.clear_enqueued_reports()
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._write([0x20, 0x03])  # lighting info
+
         # initialize
-        update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
-        self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
-        self._write([0x70, 0x01])
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+            self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
+            self._write([0x70, 0x01])
+
         status = []
 
         def parse_firm_info(msg):
@@ -205,12 +228,7 @@ class KrakenX3(UsbHidDriver):
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
         return sorted(status)
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _get_status_directly(self):
         self.device.clear_enqueued_reports()
         msg = self._read()
         if msg[15:17] == [0xff, 0xff]:
@@ -218,10 +236,38 @@ class KrakenX3(UsbHidDriver):
             _LOGGER.warning('try resetting the device or updating the firmware')
             _LOGGER.warning('(see https://github.com/liquidctl/liquidctl/issues/172)')
         return [
-            ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
-            ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
-            ('Pump duty', msg[19], '%'),
+            (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, '°C'),
+            (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], 'rpm'),
+            (_STATUS_PUMP_DUTY, msg[19], '%'),
         ]
+
+    def _get_status_from_hwmon(self):
+        return [
+            (_STATUS_TEMPERATURE, self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            (_STATUS_PUMP_SPEED, self._hwmon.get_int('fan1_input'), 'rpm'),
+            (_STATUS_PUMP_DUTY, self._hwmon.get_int('pwm1_input') * 100. / 255, '%'),
+        ]
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        # no driver currently supports pwm1_input, so silently fallback to
+        # direct mode if it isn't available; for the same reason, also don't
+        # yet issue a warning when directly accessing the device
+
+        if self._hwmon and not direct_access and self._hwmon.has_attribute('pwm1_input'):
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            level = logging.WARNING if direct_access else logging.INFO
+            _LOGGER.log(level, 'directly reading the status despite %s kernel driver',
+                        self._hwmon.module)
+
+        return self._get_status_directly()
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
@@ -248,7 +294,8 @@ class KrakenX3(UsbHidDriver):
         self._write_colors(cid, mode, colors, sval, direction)
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to use a speed profile."""
+        """Set channel to use a speed duty profile."""
+
         cid, dmin, dmax = self._speed_channels[channel]
         header = [0x72, cid, 0x00, 0x00]
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
@@ -261,6 +308,7 @@ class KrakenX3(UsbHidDriver):
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
+
         self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
 
     def _read(self):
@@ -365,9 +413,9 @@ class KrakenZ3(KrakenX3):
         self._write([0x74, 0x01])
         msg = self._read()
         return [
-            ('Liquid temperature', msg[15] + msg[16] / 10, '°C'),
-            ('Pump speed', msg[18] << 8 | msg[17], 'rpm'),
-            ('Pump duty', msg[19], '%'),
-            ('Fan speed', msg[24] << 8 | msg[23], 'rpm'),
-            ('Fan duty', msg[25], '%'),
+            (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, '°C'),
+            (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], 'rpm'),
+            (_STATUS_PUMP_DUTY, msg[19], '%'),
+            (_STATUS_FAN_SPEED, msg[24] << 8 | msg[23], 'rpm'),
+            (_STATUS_FAN_DUTY, msg[25], '%'),
         ]

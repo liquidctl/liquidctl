@@ -9,49 +9,47 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 
 ```
 $ liquidctl list
-Device #0: ASUS Strix RTX 2080 Ti OC
-Device #1: Corsair Vengeance RGB DIMM2
-Device #2: Corsair Vengeance RGB DIMM4
-Device #3: NZXT Smart Device (V1)
-Device #4: NZXT Kraken X (X42, X52, X62 or X72)
+Device #0: Corsair Vengeance RGB DIMM2
+Device #1: Corsair Vengeance RGB DIMM4
+Device #2: NZXT Smart Device (V1)
+Device #3: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
-
-# liquidctl status --unsafe=smbus,vengeance_rgb
-Corsair Vengeance RGB DIMM2
-└── Temperature    33.8  °C
-
-Corsair Vengeance RGB DIMM4
-└── Temperature    33.8  °C
-
 NZXT Smart Device (V1)
-├── Fan 1 speed                 1473  rpm
-├── Fan 1 voltage              11.91  V
-├── Fan 1 current               0.01  A
-├── Fan 1 control mode           PWM
-├── Fan 2 [...]
-├── Fan 2 [...]
-├── Firmware version           1.0.7
-├── LED accessories                2
-├── LED accessory type    HUE+ Strip
-├── LED count (total)             20
-└── Noise level                   65  dB
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+└── LED count (total)             20  
 
 NZXT Kraken X (X42, X52, X62 or X72)
-├── Liquid temperature     31.7  °C
-├── Fan speed               801  rpm
-├── Pump speed             2239  rpm
-└── Firmware version      6.0.2  
+└── Firmware version    6.0.2  
+
+# liquidctl status
+NZXT Smart Device (V1)
+├── Fan 1 speed            1499  rpm
+├── Fan 1 voltage         11.91  V
+├── Fan 1 current          0.05  A
+├── Fan 1 control mode      PWM  
+├── Fan 2 [...]
+├── Fan 3 [...]
+└── Noise level              61  dB
+
+NZXT Kraken X (X42, X52, X62 or X72)
+├── Liquid temperature    34.7  °C
+├── Fan speed              798  rpm
+└── Pump speed            2268  rpm
+
+# liquidctl status --match vengeance --unsafe=smbus,vengeance_rgb
+Corsair Vengeance RGB DIMM2
+└── Temperature    37.5  °C
+
+Corsair Vengeance RGB DIMM4
+└── Temperature    37.8  °C
 
 # liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
 # liquidctl --match kraken set pump speed 70
-# liquidctl --match "smart device" set sync speed 50
-
 # liquidctl --match kraken set sync color fixed 0080ff
 # liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower
-# liquidctl --match "rtx 2080" set led color fixed 2aff00 --unsafe=smbus
-# liquidctl --match dimm2 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
-# liquidctl --match dimm4 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
 ```
 
 
@@ -122,26 +120,26 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
-| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
+| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | <sup>_h_</sup> |
+| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
 | DDR4 DRAM          | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | DDR4 DRAM          | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
-| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Graphics card      | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card      | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card      | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
-| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
+| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
@@ -149,6 +147,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._  
 <sup>_a_</sup> _Architecture-specific limitations._  
 <sup>_e_</sup> _Experimental support._  
+<sup>_h_</sup> _Can leverage hwmon driver._  
 <sup>_n_</sup> _Newly supported and requires git._  
 <sup>_p_</sup> _Only partially supported._  
 <sup>_x_</sup> _Only supported on Linux._  

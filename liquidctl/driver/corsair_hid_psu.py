@@ -65,6 +65,8 @@ class FanControlMode(Enum):
 class CorsairHidPsu(UsbHidDriver):
     """Corsair HXi or RMi series power supply unit."""
 
+    # support for hwmon: corsair-psu, Linux 5.11 (5.13 recommended)
+
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x1c05, None, 'Corsair HX750i', {
             'fpowin115': (0.00013153276902318052, 1.0118732314945875, 9.783796618886313),
@@ -107,32 +109,46 @@ class CorsairHidPsu(UsbHidDriver):
         self.fpowin115 = fpowin115
         self.fpowin230 = fpowin230
 
-    def initialize(self, single_12v_ocp=False, **kwargs):
-        """Initialize the device.
+    def initialize(self, single_12v_ocp=False, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
 
-        Necessary to receive non-zero value responses from the device.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
 
-        Note: replies before calling this function appear to follow the
-        pattern <address> <cte 0xfe> <zero> <zero> <padding...>.
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
-        self.device.clear_enqueued_reports()
-        self._write([0xfe, 0x03])  # not well understood
-        self._read()
+        # necessary to receive non-zero status responses from the device:
+        # replies before calling this function appear to follow the pattern
+        # <address> <cte 0xfe> <zero> <zero> <padding...>
+
+        if self._hwmon:
+            if not direct_access:
+                _LOGGER.warning('bound to %s kernel driver, OCP and fan modes not changed',
+                                self._hwmon.module)
+                return
+            else:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+
+        self._write([0xfe, 0x03])
+        _ = self._read()
+
+        # don't check current OCP and fan control modes in case we're racing
+        # with a hwmon driver and the returned values, which aren't available
+        # through hwmon, are corrupted by the race
+
         mode = OCPMode.SINGLE_RAIL if single_12v_ocp else OCPMode.MULTI_RAIL
-        if mode != self._get_12v_ocp_mode():
-            _LOGGER.info('changing +12V OCP mode to %s', mode)
-            self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
-        if self._get_fan_control_mode() != FanControlMode.HARDWARE:
-            _LOGGER.info('resetting fan control to hardware mode')
-            self._set_fan_control_mode(FanControlMode.HARDWARE)
+        _LOGGER.info('setting +12V OCP mode to %s', mode)
+        self._exec(WriteBit.WRITE, _CORSAIR_12V_OCP_MODE, [mode.value])
 
-    def get_status(self, **kwargs):
-        """Get a status report.
+        _LOGGER.info('resetting fan control to hardware mode')
+        self._set_fan_control_mode(FanControlMode.HARDWARE)
 
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _get_status_directly(self):
         self.device.clear_enqueued_reports()
         ret = self._exec(WriteBit.WRITE, CMD.PAGE, [0])
         if ret[1] == 0xfe:
@@ -140,7 +156,7 @@ class CorsairHidPsu(UsbHidDriver):
 
         input_voltage = self._get_float(CMD.READ_VIN)
 
-        status = [
+        ret = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
             ('Temperature 1', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
@@ -154,20 +170,69 @@ class CorsairHidPsu(UsbHidDriver):
         for rail in [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]:
             name = _RAIL_NAMES[rail]
             self._exec(WriteBit.WRITE, CMD.PAGE, [rail])
-            status.append((f'{name} output voltage', self._get_float(CMD.READ_VOUT), 'V'))
-            status.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
-            status.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
+            ret.append((f'{name} output voltage', self._get_float(CMD.READ_VOUT), 'V'))
+            ret.append((f'{name} output current', self._get_float(CMD.READ_IOUT), 'A'))
+            ret.append((f'{name} output power', self._get_float(CMD.READ_POUT), 'W'))
 
         output_power = self._get_float(_CORSAIR_READ_OUTPUT_POWER)
         input_power = round(self._input_power_at(input_voltage, output_power), 0)
         efficiency = round(output_power / input_power * 100, 0)
 
-        status.append(('Total power output', output_power, 'W'))
-        status.append(('Estimated input power', input_power, 'W'))
-        status.append(('Estimated efficiency', efficiency, '%'))
+        ret.append(('Total power output', output_power, 'W'))
+        ret.append(('Estimated input power', input_power, 'W'))
+        ret.append(('Estimated efficiency', efficiency, '%'))
 
         self._exec(WriteBit.WRITE, CMD.PAGE, [0])
-        return status
+        return ret
+
+    def _get_status_from_hwmon(self):
+        # can't report some values (current and total uptime are only available
+        # on debugfs, and fan and ocp modes are not available at all); still,
+        # with this particular device, it is better to ignore them than to race
+        # with a kernel driver
+        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.module)
+
+        input_voltage = self._hwmon.get_int('in0_input') * 1e-3
+
+        ret = [
+            ('Temperature 1', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            ('Temperature 2', self._hwmon.get_int('temp2_input') * 1e-3, '°C'),
+            ('Fan speed', self._hwmon.get_int('fan1_input'), 'rpm'),
+            ('Input voltage', input_voltage, 'V'),
+        ]
+
+        for n, rail in zip(range(2, 5), [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]):
+            i = n - 1
+            name = _RAIL_NAMES[rail]
+            ret.append((f'{name} output voltage', self._hwmon.get_int(f'in{i}_input') * 1e-3, 'V'))
+            ret.append((f'{name} output current', self._hwmon.get_int(f'curr{n}_input') * 1e-3, 'A'))
+            ret.append((f'{name} output power', self._hwmon.get_int(f'power{n}_input') * 1e-6, 'W'))
+
+        output_power = self._hwmon.get_int('power1_input') * 1e-6
+        input_power = round(self._input_power_at(input_voltage, output_power), 0)
+        efficiency = round(output_power / input_power * 100, 0)
+
+        ret.append(('Total power output', output_power, 'W'))
+        ret.append(('Estimated input power', input_power, 'W'))
+        ret.append(('Estimated efficiency', efficiency, '%'))
+
+        return ret
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set channel to a fixed speed duty."""
@@ -192,8 +257,9 @@ class CorsairHidPsu(UsbHidDriver):
 
         for_in115v = quadratic(self.fpowin115, output_power)
         for_in230v = quadratic(self.fpowin230, output_power)
+        _LOGGER.debug('input power estimates: %.3f W @ 115 V; %.3f W @ 230 V', for_in115v, for_in230v)
 
-        # interpolate for input_voltage
+        # linearly interpolate for input_voltage
         return for_in115v + (for_in230v - for_in115v) / 115 * (input_voltage - 115)
 
     def _write(self, data):

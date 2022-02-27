@@ -36,6 +36,11 @@ _SPEED_CHANNELS = {  # (base, minimum duty, maximum duty)
     'pump':  (0xc0, 0, 100),
 }
 
+_STATUS_TEMPERATURE = 'Liquid temperature'
+_STATUS_FAN_SPEED = 'Fan speed'
+_STATUS_PUMP_SPEED = 'Pump speed'
+_STATUS_FWVERSION = 'Firmware version'
+
 # more aggressive than observed 4.0.3 and 6.0.2 firmware defaults
 _RESET_FAN_PROFILE = [(20, 25), (30, 50), (50, 90), (60, 100)]
 _RESET_PUMP_PROFILE = [(20, 50), (30, 60), (40, 90), (50, 100)]
@@ -89,6 +94,8 @@ _WRITE_LENGTH = 65
 class Kraken2(UsbHidDriver):
     """Third generation NZXT Kraken X or M liquid cooler."""
 
+    # support for hwmon: nzxt-kraken2, Linux 5.13
+
     DEVICE_KRAKENX = 'Kraken X'
     DEVICE_KRAKENM = 'Kraken M'
     SUPPORTED_DEVICES = [
@@ -105,31 +112,19 @@ class Kraken2(UsbHidDriver):
         self.device_type = device_type
         self.supports_lighting = True
         self.supports_cooling = self.device_type != self.DEVICE_KRAKENM
-        self._supports_cooling_profiles = None  # physical storage/later inferred from fw version
-        self._connected = False
-
-    def connect(self, **kwargs):
-        ret = super().connect(**kwargs)
-        self._connected = True
-        return ret
-
-    def disconnect(self, **kwargs):
-        super().disconnect(**kwargs)
-        self._connected = False
+        self._firmware_version = None  # read once necessary
 
     def initialize(self, **kwargs):
-        """Initialize the device.
+        """Initialize the device and the driver.
 
-        This method should be called once after the systems boot or resumes
-        from a suspended state, and before any other methods except `connect()`
-        or `disconnect()`.
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
-
-        # read early but only once, since self.supports_cooling_profiles can
-        # indirectly reuse this one; no need to clear old reports since the
-        # firmware version can be assumed to be constant for the lifetime of
-        # the connection
-        msg = self._read(clear_first=False)
 
         if self.supports_cooling_profiles:
             # due to a firmware limitation the same set of temperatures must be
@@ -138,28 +133,70 @@ class Kraken2(UsbHidDriver):
             self.set_speed_profile('fan', _RESET_FAN_PROFILE)
             self.set_speed_profile('pump', _RESET_PUMP_PROFILE)
 
-        firmware = '{}.{}.{}'.format(*self._firmware_version)
+        firmware = '{}.{}.{}'.format(*self.firmware_version)
         return [('Firmware version', firmware, '')]
 
-    def get_status(self, **kwargs):
+    def _get_status_directly(self, with_firmware):
+        # the firmware version is duplicated here as a temporary migration aid
+        # for GKraken; it will be removed once GKraken no longer needs it, or
+        # in liquidctl 1.10.x, whatever happens first
+
+        msg = self._read()
+
+        ret = [
+            (_STATUS_TEMPERATURE, msg[1] + msg[2]/10, '°C'),
+            (_STATUS_FAN_SPEED, msg[3] << 8 | msg[4], 'rpm'),
+            (_STATUS_PUMP_SPEED, msg[5] << 8 | msg[6], 'rpm'),
+        ]
+
+        # TODO remove
+        if with_firmware:
+            ret.append((_STATUS_FWVERSION, self.firmware_version, ''))
+
+        return ret
+
+    def _get_status_from_hwmon(self, with_firmware):
+        # the firmware version is duplicated here as a temporary migration aid
+        # for GKraken; it will be removed once GKraken no longer needs it, or
+        # in liquidctl 1.10.x, whatever happens first
+
+        ret = [
+            (_STATUS_TEMPERATURE, self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            (_STATUS_FAN_SPEED, self._hwmon.get_int('fan1_input'), 'rpm'),
+            (_STATUS_PUMP_SPEED, self._hwmon.get_int('fan2_input'), 'rpm'),
+        ]
+
+        # TODO remove
+        if with_firmware:
+            ret.append((_STATUS_FWVERSION, self.firmware_version, ''))
+
+        return ret
+
+    def get_status(self, direct_access=False, *, _internal_called_from_cli=False, **kwargs):
         """Get a status report.
 
-        Returns a list of (key, value, unit) tuples.
+        Returns a list of `(property, value, unit)` tuples.
         """
 
         if self.device_type == self.DEVICE_KRAKENM:
             return []
 
-        msg = self._read()
+        # already omit the firmware version when the caller is our own cli
+        with_firmware = not _internal_called_from_cli
 
-        return [
-            ('Liquid temperature', msg[1] + msg[2]/10, '°C'),
-            ('Fan speed', msg[3] << 8 | msg[4], 'rpm'),
-            ('Pump speed', msg[5] << 8 | msg[6], 'rpm'),
-        ]
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon(with_firmware)
+
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly(with_firmware)
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
+
         if not self.supports_lighting:
             raise NotSupportedByDevice()
 
@@ -213,7 +250,8 @@ class Kraken2(UsbHidDriver):
         return steps
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to use a speed profile."""
+        """Set channel to follow a speed duty profile."""
+
         if not self.supports_cooling_profiles:
             raise NotSupportedByDevice()
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
@@ -230,7 +268,8 @@ class Kraken2(UsbHidDriver):
             self._write([0x2, 0x4d, cbase + i, temp, duty])
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed."""
+        """Set channel to a fixed speed duty."""
+
         if not self.supports_cooling:
             raise NotSupportedByDevice()
         elif self.supports_cooling_profiles:
@@ -239,7 +278,8 @@ class Kraken2(UsbHidDriver):
             self.set_instantaneous_speed(channel, duty)
 
     def set_instantaneous_speed(self, channel, duty, **kwargs):
-        """Set channel to speed, but do not ensure persistence."""
+        """Set channel to speed duty, but do not guarantee persistence."""
+
         if not self.supports_cooling:
             raise NotSupportedByDevice()
         cbase, dmin, dmax = _SPEED_CHANNELS[channel]
@@ -249,13 +289,13 @@ class Kraken2(UsbHidDriver):
 
     @property
     def supports_cooling_profiles(self):
-        if self._supports_cooling_profiles is None:
-            if self.supports_cooling:
-                self._read(clear_first=False)
-                self._supports_cooling_profiles = self._firmware_version >= (3, 0, 0)
-            else:
-                self._supports_cooling_profiles = False
-        return self._supports_cooling_profiles
+        return self.supports_cooling and self.firmware_version >= (3, 0, 0)
+
+    @property
+    def firmware_version(self):
+        if self._firmware_version is None:
+            _ = self._read(clear_first=False)
+        return self._firmware_version
 
     def _read(self, clear_first=True):
         if clear_first:
