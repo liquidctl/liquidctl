@@ -298,11 +298,10 @@ likely cause it to become inaccessible from liquidctl._
 #### Creating a virtual environment
 [Creating a virtual environment]: #creating-a-virtual-environment
 
-Setting up a virtual environment is option, and can be skipped.
+Setting up a virtual environment is an optional step.  Even so, installing
+Python packages directly in the global environment is not generally advised.
 
-Even so, installing Python packages directly in the global environment is not
-generally advised.  Instead, it is usual to first set up a [virtual
-environment]:
+Instead, it is usual to first set up a [virtual environment]:
 
 ```bash
 # create virtual enviroment at <path>
@@ -336,7 +335,7 @@ python -m pip install liquidctl
 python -m pip install liquidctl==1.8.1
 ```
 
-If [git] is available, pip can also install the latest snapshot of the official
+If [git] is installed, pip can also install the latest snapshot of the official
 liquidctl source code repository on GitHub.
 
 ```bash
@@ -351,25 +350,24 @@ python -m pip install git+https://github.com/liquidctl/liquidctl#egg=liquidctl
 [Allowing access to the devices]: #allowing-access-to-the-devices
 
 Access permissions are not a concern on platforms like macOS or Windows, where
-unprivileged access is already allowed by default.
+unprivileged access is already allowed by default.  However, devices are not
+generally accessible by unprivileged users on Linux, FreeBSD or DragonFly BSD.
 
-However, on Linux, devices are not generally accessible by unprivileged users.
-That may still be desirable by most users (for these specific types of devices)
-and, thus, we include a set of udev rules – [`71-liquidctl.rules`] – that can
-be used to allow unprivileged read and write access to the devices supported by
-liquidctl. These rules are generally already included in downstream packages of
-liquidctl.
+For Linux, we provide a set of udev rules in [`71-liquidctl.rules`] that can be
+used to allow unprivileged read and write access to all devices supported by
+liquidctl.  These rules are generally already included in downstream Linux
+packages of liquidctl.
 
-Alternatively, `sudo` or `doas` can be used to invoke `liquidctl` as the super
-user.
+Alternatively, `sudo`, `doas` and similar mechanisms can be used to invoke
+`liquidctl` as the super user, on both Linux and BSDs.
 
 [`71-liquidctl.rules`]: extra/linux/71-liquidctl.rules
 
 #### Additional files
 [Additional files]: #additional-files
 
-Other files and tools are included in the source tree, and may be of some use
-in certain scenarios.
+Other files and tools are included in the source tree, which may be of use in
+certain scenarios:
 
 - [liquidctl(8) man page][liquidctl.8];
 - [completions for the liquidctl CLI in Bash][liquidctl.bash];
@@ -388,9 +386,9 @@ in certain scenarios.
 
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
-When working on the project itself, it is sometimes useful to set up the local
-environment in way where it is possible to run the CLI and the test suite
-without building and installing a local package.
+When working on the project itself, it is sometimes useful to set up a local
+development environment, where it is possible to directly run the CLI and the
+test suite, without building and installing a local package.
 
 For this, start by installing [git] and any system-level dependencies mentioned
 in [Manual installation].  Then, clone the repository and change into the
@@ -401,9 +399,9 @@ git clone https://github.com/liquidctl/liquidctl
 cd liquidctl
 ```
 
-Optionally set up a [virtual environment][Creating a virtual environment].
+Optionally, set up a [virtual environment][Creating a virtual environment].
 
-Next, and if the necessary Python build, test and runtime libraries are not
+Finally, if the necessary Python build, test and runtime libraries are not
 already installed on the environment (virtual or global), manually install
 them:
 
