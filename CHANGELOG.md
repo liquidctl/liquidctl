@@ -47,6 +47,35 @@ Fixed:
 - Reset Kraken X2 fan and pump profiles during initialization (#395, possibly)
 - Remove redundant prefix from CLI error messages
 
+### Notes for downstream packagers
+
+liquidctl now uses a PEP 517 build, and [PyPA/build] and [pradyunsg/installer]
+are the recommended frontends for a typical downstream package build process:
+
+```bash
+# build
+python -m build --wheel [--no-isolation]
+
+# install
+python -m installer --destdir=<dest> dist/*.whl
+```
+
+Additionally, liquidctl has switched from an ad-hoc solution to version
+management to [PyPA/setuptools_scm].  If the git tags aren't available,
+[environment variables][setuptools_scm env vars] can be (carefully) used to
+inject the version number.
+
+```bash
+export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_LIQUIDCTL=1.9.0
+python -m build [args]
+python -m installer [args]
+```
+
+[PyPA/build]: https://github.com/pypa/build
+[PyPA/setuptools_scm]: https://github.com/pypa/setuptools_scm
+[setuptools_scm env vars]: https://github.com/pypa/setuptools_scm#environment-variables
+[pradyunsg/installer]: https://github.com/pradyunsg/installer
+
 
 ## [1.8.1] – 2022-01-21
 
