@@ -216,7 +216,8 @@ pkg install py37-liquidctl
 [Manual installation]: #manual-installation
 
 _Warning: on systems that still default to Python 2, replace `python`/`pip`
-with `python3`/`pip3`._  
+with `python3`/`pip3`._
+
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
 liquidctl can be manually installed from the Python Package Index (PyPI), or
