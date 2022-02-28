@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-### Changes since 1.8.0
+### Changes since 1.8.1
 
 Added:
 - Add support for persisting settings on modern Asetek 690LC coolers (EVGA CLC
