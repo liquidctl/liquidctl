@@ -9,6 +9,43 @@ Added:
   and Corsair Hydro GT/GTX/v2)
 - Add support for setting fixed fan/pump speeds on the Corsair Commander Core
   (shipped with the Corsair Hydro Elite Capellix and LCD coolers)
+- Identify some devices with a matching Linux hwmon device (#403, PR #429)
+- Add `--direct-access` to force it in spite of the presence of kernel drivers
+  (#403, PR #429)
+- Add security policy: `SECURITY.md`
+- API: add `liquidctl.__version__`
+- extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR #424)
+
+Changed:
+- Log the Python interpreter version
+- If possible, log the version of all Python requirements
+- Move reporting of Kraken X2 firmware version to initialization
+- Move reporting of Smart Device V1/Grid+ V3 firmware version and accessories
+  to initialization (PR #429)
+- Don't re-initialize devices with a Linux hwmon driver (#403, PR #429)
+- If possible, read status from Linux hwmon (#403, PR #429)
+- Switch to a PEP 517 build (#430)
+- Allow directly invoking the CLI with `python -m liquidctl`
+- API: improve and clarify the documentation of `BaseDriver` methods
+
+Deprecated:
+- Deprecate directly invoking the CLI with `python -m liquidctl.cli` (use
+  `python -m liquidctl`)
+- API: deprecate including the firmware version in the output from
+  `KrakenX2.get_status()` (read it from `.initialize()`)
+
+Removed:
+- API: remove long deprecated support for connecting to Kraken X2 devices with
+  `KrakenX2.initialize()` (use standardized `.connect()`)
+- API: remove long deprecated support for disconnecting from Kraken X2 devices
+  with `KrakenX2.finalize()` (use standardized `.disconnect()`)
+- API: remove long deprecated `<device>.find_all_supported_devices()` (use
+  `liquidctl.find_liquidctl_devices()` or `<device>.find_supported_devices()`)
+
+Fixed:
+- Let all unexpected SMBus exceptions bubble up (#416)
+- Reset Kraken X2 fan and pump profiles during initialization (#395, possibly)
+- Remove redundant prefix from CLI error messages
 
 
 ## [1.8.1] – 2022-01-21
