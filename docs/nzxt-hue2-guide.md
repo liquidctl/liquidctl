@@ -52,7 +52,11 @@ NZXT Smart Device V2
 
 ## Monitoring
 
-The device can report fan information for each channel and the noise level at the onboard sensor
+_Changed in 1.9.0: the noise level is not available when data is read from
+[Linux hwmon]._  
+
+The device can report fan information for each channel and the noise level at
+the on-board sensor.
 
 ```
 # liquidctl status
@@ -62,8 +66,6 @@ NZXT Smart Device V2
 ├── Fan 2 speed                            934  rpm
 └── Noise level                             62  dB
 ```
-
-_The noise level is not available when data is read from [Linux hwmon]._
 
 
 ## Fan speeds
@@ -143,7 +145,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._
+_New in 1.9.0._  
 
 Smart Device V2 controllers are supported by the mainline Linux kernel with its
 [`nzxt-smart2`] driver, and status data is provided through a standard hwmon

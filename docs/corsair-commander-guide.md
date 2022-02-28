@@ -4,6 +4,9 @@ _Driver API and source code available in [`liquidctl.driver.commander_pro`](../l
 
 ## Initializing the device
 
+_Changed in 1.9.0: the firmware and bootloader versions are not available when
+data is read from [Linux hwmon]._  
+
 The device should be initialized every time it is powered on, including when
 the system resumes from suspending to memory.
 
@@ -33,9 +36,6 @@ Corsair Lighting Node Pro
 ├── Firmware version       0.10.4  
 └── Bootloader version        3.0  
 ```
-
-_The firmware and bootloader versions are not available when data is read from
-[Linux hwmon]._
 
 
 ## Retrieving the fan speeds, temperatures and voltages
@@ -181,7 +181,7 @@ seconds to take effect.
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._
+_New in 1.9.0._  
 
 Commander Pro controllers and the Obsidian 1000D are supported by the mainline
 Linux kernel with its [`corsair-cpro`] driver, and status data is provided

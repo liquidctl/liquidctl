@@ -96,6 +96,8 @@ Note that, regardless of the use of these options, alerts are always enabled (un
 
 ## Save settings to device
 
+_New in 1.9.0._  
+
 Use the `--non-volatile` option on a `set` command to save the current values of _all_ settings (pump speed, fan cruve, and light mode) to the device's on-board flash memory:
 
 ```

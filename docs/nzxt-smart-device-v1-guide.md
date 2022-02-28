@@ -17,8 +17,15 @@ All capabilities available at the hardware level are supported, but other featur
 
 
 ## Initialization
+[Initialization]: #initialization
 
-After powering on from Mechanical Off, or if there have been hardware changes, the device must first be initialized.  This takes a few seconds and should detect all connected fans and LED accessories.  Only then monitoring, proper fan control and all lighting effects will be available.
+_Changed in 1.9.0: the firmware version and the connected accessories are now
+reported after initialization._  
+
+After powering on from Mechanical Off, or if there have been hardware changes,
+the device must first be initialized.  This takes a few seconds and should
+detect all connected fans and LED accessories.  Only then monitoring, proper
+fan control and all lighting effects will be available.
 
 ```
 # liquidctl initialize
@@ -32,7 +39,13 @@ NZXT Smart Device (V1)
 
 ## Monitoring
 
-The device can report fan information for each channel, the noise level at the onboard sensor, as well as the type of the connected LED accessories.
+_Changed in 1.9.0: the firmware version and the connected accessories are no
+longer reported (see [Initialization])._  
+_Changed in 1.9.0: the noise level is not available when data is read from
+[Linux hwmon]._  
+
+The device can report fan information for each channel, the noise level at the
+onboard sensor, as well as the type of the connected LED accessories.
 
 ```
 # liquidctl status
@@ -51,8 +64,6 @@ NZXT Smart Device (V1)
 ├── Fan 3 control mode      PWM  
 └── Noise level              59  dB
 ```
-
-_The noise level is not available when data is read from [Linux hwmon]._
 
 
 ## Fan speeds
@@ -129,7 +140,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._
+_New in 1.9.0._  
 
 These devices are supported by the [liquidtux] `nzxt-grid3` driver, and status
 data is provided through a standard hwmon sysfs interface.
