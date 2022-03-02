@@ -109,7 +109,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 -->
 
 | Type               | Device family and specific documentation | Bus | Notes |
-| :-:                | :-- | :-: | :-- |
+| :--                | :-- | :-: | --: |
 | AIO liquid cooler  | [Corsair Hydro GT/GTX H80i, H100i, H110i](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
 | AIO liquid cooler  | [Corsair Hydro v2 H80i, H100i, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | USB | <sup>_Z_</sup> |
@@ -134,11 +134,11 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
-| Graphics card      | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card      | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card      | [EVGA GTX 1070 FTW, FTW DT Gaming, FTW Hybrid](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
-| Graphics card      | [EVGA GTX 1070 Ti FTW2](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
-| Graphics card      | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [ASUS Strix GTX 1070 OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [More Strix GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
+| Graphics card RGB  | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [More EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
