@@ -55,6 +55,30 @@ KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", 
     ATTRS{subsystem_device}=="0x866a", DRIVERS=="nvidia", TAG+="uaccess", \
     RUN{builtin}="kmod load i2c-dev"
 
+# EVGA GTX 1070 FTW
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6276", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 FTW DT Gaming
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6274", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 FTW Hybrid
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6278", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 Ti FTW2
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b82", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6775", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
 # EVGA GTX 1080 FTW
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
     ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x3842", \

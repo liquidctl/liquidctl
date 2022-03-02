@@ -160,6 +160,33 @@ def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0xe5
 
 
+def test_evga_pascal_experimental_devices_are_unsafe():
+    for dev_id, sub_dev_id, desc in EvgaPascal._MATCHES:
+        if 'experimental' not in desc:
+            continue
+
+        vbus = VirtualSmbus(
+                description='NVIDIA i2c adapter 1 at 1:00.0',
+                parent_vendor=NVIDIA,
+                parent_device=dev_id,
+                parent_subsystem_vendor=EVGA,
+                parent_subsystem_device=sub_dev_id,
+                parent_driver='nvidia',
+        )
+
+        card = next(EvgaPascal.probe(vbus))
+
+        insufficient = ['smbus']
+
+        # can connect but not read status or set color without specific
+        # experimental feature
+        with card.connect(unsafe=insufficient):
+            assert card.get_status(verbose=True, unsafe=insufficient) == []
+
+            with pytest.raises(UnsafeFeaturesNotEnabled):
+                card.set_color('led', 'off', [], unsafe=insufficient)
+
+
 # ASUS Turing
 
 

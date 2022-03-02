@@ -17,6 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 # FWUPD_GUID = [vendor]:[device] - use hwinfo to inspect
 NVIDIA = 0x10de
 NVIDIA_GTX_1070 = 0x1b81
+NVIDIA_GTX_1070_TI = 0x1b82
 NVIDIA_GTX_1080 = 0x1b80
 NVIDIA_RTX_2080_TI_REV_A = 0x1e07
 # https://www.nv-drivers.eu/nvidia-all-devices.html
@@ -29,7 +30,12 @@ ASUS_STRIX_GTX_1070 = 0x8599
 ASUS_STRIX_RTX_2080_TI_OC = 0x866a
 
 # subsystem vendor EVGA, subsystem devices
+# PCI_SUBSYS_ID = [subsystem vendor]:[subsystem device] - use hwinfo to inspect
 EVGA = 0x3842
+EVGA_GTX_1070_FTW = 0x6276
+EVGA_GTX_1070_FTW_DT_GAMING = 0x6274
+EVGA_GTX_1070_FTW_HYBRID = 0x6278
+EVGA_GTX_1070_TI_FTW2 = 0x6775
 EVGA_GTX_1080_FTW = 0x6286
 
 
@@ -92,6 +98,10 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
     _VENDOR = EVGA
     _ADDRESSES = [0x49]
     _MATCHES = [
+        (NVIDIA_GTX_1070, EVGA_GTX_1070_FTW, 'EVGA GTX 1070 FTW (experimental)'),
+        (NVIDIA_GTX_1070, EVGA_GTX_1070_FTW_DT_GAMING, 'EVGA GTX 1070 FTW DT Gaming (experimental)'),
+        (NVIDIA_GTX_1070, EVGA_GTX_1070_FTW_HYBRID, 'EVGA GTX 1070 FTW Hybrid (experimental)'),
+        (NVIDIA_GTX_1070_TI, EVGA_GTX_1070_TI_FTW2, 'EVGA GTX 1070 Ti FTW2 (experimental)'),
         (NVIDIA_GTX_1080, EVGA_GTX_1080_FTW, 'EVGA GTX 1080 FTW'),
     ]
 
@@ -118,6 +128,13 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
             _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
             yield dev
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'experimental' in self.description:
+            self._UNSAFE = ['smbus', 'experimental_evga_gpu']
+        else:
+            self._UNSAFE = ['smbus']
+
     def get_status(self, verbose=False, **kwargs):
         """Get a status report.
 
@@ -130,9 +147,9 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
         if not verbose:
             return []
 
-        if not check_unsafe('smbus', **kwargs):
-            _LOGGER.warning("%s: nothing returned, requires unsafe feature 'smbus'",
-                            self.description)
+        if not check_unsafe(*self._UNSAFE, **kwargs):
+            _LOGGER.warning("%s: nothing returned, requires unsafe features '%s'",
+                            self.description, ','.join(self._UNSAFE))
             return []
 
         mode = self.Mode(self._smbus.read_byte_data(self._address, self._REG_MODE))
@@ -169,7 +186,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
         preferable, if the use case allows for them.
         """
 
-        check_unsafe('smbus', error=True, **kwargs)
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
 
         colors = list(colors)
 

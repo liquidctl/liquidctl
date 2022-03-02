@@ -11,20 +11,26 @@ also be met:
 Jump to a specific section:
 
 * _Series 10/Pascal:_
-    - [ASUS Strix GTX 1070](#asus-strix-gtx-and-rtx)
-    - [EVGA GTX 1080 FTW](#evga-gtx-1080-ftw)
+    - [ASUS Strix GTX 1070][asus-gtx-rtx]
+    - [EVGA GTX 1070 FTW DT Gaming][evga-gp104]
+    - [EVGA GTX 1070 FTW Hybrid][evga-gp104]
+    - [EVGA GTX 1070 FTW][evga-gp104]
+    - [EVGA GTX 1070 Ti FTW2][evga-gp104]
+    - [EVGA GTX 1080 FTW][evga-gp104]
 * _Series 20/Turing:_
-    - [ASUS Strix RTX 2080 Ti OC](#asus-strix-gtx-and-rtx)
+    - [ASUS Strix RTX 2080 Ti OC][asus-gtx-rtx]
 * _[Inherent unsafeness of I²C]_
 
 
-## EVGA GTX 1080 FTW
+## EVGA GTX 1070, 1070 Ti and 1080
+[evga-gp104]: #evga-gtx-1070-1070-ti-and-1080
 
 Only RGB lighting supported.
 
 Unsafe features:
 
 - `smbus`: see [Inherent unsafeness of I²C]
+- `experimental_evga_gpu`: enable new/experimental devices
 
 ### Initialization
 
@@ -79,6 +85,7 @@ preferable, if the use case allows for them.
 ```
 
 ## ASUS Strix GTX and RTX
+[asus-gtx-rtx]: #asus-strix-gtx-and-rtx
 
 Only RGB lighting supported.
 
