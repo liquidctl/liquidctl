@@ -428,6 +428,11 @@ execute:
 python -m liquidctl [arguments]
 ```
 
+And to install `liquidctl` into the environment:
+
+```
+pip install .
+```
 
 ## Introducing the command-line interface
 [The command-line interface]: #introducing-the-command-line-interface
