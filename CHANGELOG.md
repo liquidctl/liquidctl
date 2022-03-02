@@ -13,6 +13,46 @@ Added:
 - Add `--direct-access` to force it in spite of the presence of kernel drivers
   (#403, PR #429)
 - Add security policy: `SECURITY.md`
+- Enable experimental support for EVGA GTX 1070 and 1070 Ti cards using the
+  existing `EvgaPascal` driver:
+    - EVGA GTX 1070 FTW DT Gaming
+    - EVGA GTX 1070 FTW Hybrid
+    - EVGA GTX 1070 FTW
+    - EVGA GTX 1070 Ti FTW2
+- Enable experimental support for various ASUS GTX and RTX cards using the
+  existing `RogTuring` driver:
+    - ASUS Strix GTX 1050 OC
+    - ASUS Strix GTX 1050 Ti OC
+    - ASUS Strix GTX 1060 6GB
+    - ASUS Strix GTX 1060 OC 6GB
+    - ASUS Strix GTX 1070
+    - ASUS Strix GTX 1070 Ti
+    - ASUS Strix GTX 1070 Ti Advanced
+    - ASUS Strix GTX 1080
+    - ASUS Strix GTX 1080 Advanced
+    - ASUS Strix GTX 1080 OC
+    - ASUS Strix GTX 1080 Ti
+    - ASUS Strix GTX 1080 Ti OC
+    - ASUS Strix GTX 1650 Super OC
+    - ASUS Strix GTX 1660 Super OC
+    - ASUS Strix GTX 1660 Ti OC
+    - ASUS Strix RTX 2060 Evo
+    - ASUS Strix RTX 2060 Evo OC
+    - ASUS Strix RTX 2060 OC
+    - ASUS Strix RTX 2060 Super
+    - ASUS Strix RTX 2060 Super Advanced
+    - ASUS Strix RTX 2060 Super Evo Advanced
+    - ASUS Strix RTX 2060 Super OC
+    - ASUS Strix RTX 2070
+    - ASUS Strix RTX 2070 Advanced
+    - ASUS Strix RTX 2070 OC
+    - ASUS Strix RTX 2070 Super Advanced
+    - ASUS Strix RTX 2070 Super OC
+    - ASUS Strix RTX 2080 OC
+    - ASUS Strix RTX 2080 Super Advanced
+    - ASUS Strix RTX 2080 Super OC
+    - ASUS Strix RTX 2080 Ti
+    - ASUS TUF RTX 3060 Ti OC
 - API: add `liquidctl.__version__`
 - extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR #424)
 
