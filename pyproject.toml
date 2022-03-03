@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "liquidctl/_version.py"
-version_scheme = "post-release"
+version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules -ra"
