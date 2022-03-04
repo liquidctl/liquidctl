@@ -110,8 +110,8 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 
 | Type               | Device family and specific documentation | Bus | Notes |
 | :--                | :-- | :-: | --: |
-| AIO liquid cooler  | [Corsair Hydro GT/GTX H80i, H100i, H110i](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
-| AIO liquid cooler  | [Corsair Hydro v2 H80i, H100i, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
+| AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | |
