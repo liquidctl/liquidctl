@@ -528,8 +528,7 @@ class HidapiBus(BaseBus):
                      usb_port=None, **kwargs):
         """Find compatible HID devices."""
         handles = HidapiDevice.enumerate(hid, vendor, product)
-        drivers = sorted(find_all_subclasses(UsbHidDriver),
-                         key=lambda x: (x.__module__, x.__name__))
+        drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
         _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                       ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in handles:
@@ -549,8 +548,7 @@ class PyUsbBus(BaseBus):
     def find_devices(self, vendor=None, product=None, bus=None, address=None,
                      usb_port=None, **kwargs):
         """ Find compatible regular USB devices."""
-        drivers = sorted(find_all_subclasses(UsbDriver),
-                         key=lambda x: (x.__module__, x.__name__))
+        drivers = sorted(find_all_subclasses(UsbDriver), key=lambda x: x.__name__)
         _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                       ', '.join(map(lambda x: x.__name__, drivers)))
         for handle in PyUsbDevice.enumerate(vendor, product):
