@@ -79,7 +79,7 @@ def _quoted(*names):
 
 # we inherit from _Base690Lc to reuse its implementation of connect
 # and disconnect, that emulates the stock SiUSBXp driver on Windows
-class CorsairAsetekProDriver(_Base690Lc):
+class HydroPro(_Base690Lc):
     """liquidctl driver for Corsair-branded sixth generation Asetek coolers."""
 
     SUPPORTED_DEVICES = [
@@ -260,3 +260,7 @@ class CorsairAsetekProDriver(_Base690Lc):
     @classmethod
     def probe(cls, handle, **kwargs):
         return super().probe(handle, **kwargs)
+
+
+# backward compatibility
+CorsairAsetekProDriver = HydroPro
