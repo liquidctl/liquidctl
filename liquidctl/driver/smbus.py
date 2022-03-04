@@ -48,7 +48,7 @@ if sys.platform == 'linux':
                 return
 
             drivers = sorted(find_all_subclasses(SmbusDriver),
-                             key=lambda x: (x.__module__, x.__name__))
+                             key=lambda x: x.__name__)
 
             _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
                           ', '.join(map(lambda x: x.__name__, drivers)))
