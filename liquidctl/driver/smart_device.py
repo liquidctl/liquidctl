@@ -122,7 +122,7 @@ _MIN_DUTY = 0
 _MAX_DUTY = 100
 
 
-class _CommonSmartDeviceDriver(UsbHidDriver):
+class _BaseSmartDevice(UsbHidDriver):
     """Common functions of Smart Device and Grid drivers."""
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
@@ -187,7 +187,7 @@ class _CommonSmartDeviceDriver(UsbHidDriver):
         raise NotImplementedError()
 
 
-class SmartDevice(_CommonSmartDeviceDriver):
+class SmartDevice(_BaseSmartDevice):
     """NZXT Smart Device (V1) or Grid+ V3."""
 
     # support for hwmon: nzxt-grid3, liquidtux
@@ -370,7 +370,7 @@ class SmartDevice(_CommonSmartDeviceDriver):
         self._write([0x2, 0x4d, cid, 0, duty])
 
 
-class SmartDevice2(_CommonSmartDeviceDriver):
+class SmartDevice2(_BaseSmartDevice):
     """NZXT HUE 2 lighting and, optionally, fan controller."""
 
     # support for hwmon: nzxt-smart2, Linux 5.17
