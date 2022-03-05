@@ -201,7 +201,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
         for dev_id, sub_dev_id, desc in pre_probed:
             dev = cls(smbus, desc, vendor_id=EVGA, product_id=EVGA_GTX_1080_FTW,
                       address=cls._ADDRESSES[0])
-            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
+            _LOGGER.debug('found %s: %s', cls.__name__, desc)
             yield dev
 
     def __init__(self, *args, **kwargs):
@@ -224,7 +224,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
             return []
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("%s: nothing returned, requires unsafe features '%s'",
+            _LOGGER.warning("%s: disabled, requires unsafe features '%s'",
                             self.description, ','.join(self._UNSAFE))
             return []
 
@@ -441,7 +441,7 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
             return []
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("%s: nothing returned, requires unsafe features '%s'",
+            _LOGGER.warning("%s: disabled, requires unsafe features '%s'",
                             self.description, ','.join(self._UNSAFE))
             return []
 

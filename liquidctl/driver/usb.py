@@ -107,7 +107,7 @@ class BaseUsbDriver(BaseDriver):
             consargs = devargs.copy()
             consargs.update(kwargs)
             dev = cls(handle, desc, **consargs)
-            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
+            _LOGGER.debug('found %s: %s', cls.__name__, desc)
             yield dev
 
     def __init__(self, device, description, **kwargs):
@@ -199,8 +199,7 @@ class UsbHidDriver(BaseUsbDriver):
         super().__init__(device, description, **kwargs)
         self._hwmon = HwmonDevice.from_hidraw(device.path)
         if self._hwmon:
-            _LOGGER.debug('HID is bound to %s kernel driver: %s', self._hwmon.module,
-                          self._hwmon.path)
+            _LOGGER.debug('has kernel driver: %s (%s)', self._hwmon.module, self._hwmon.path)
 
 
 class UsbDriver(BaseUsbDriver):
@@ -529,8 +528,12 @@ class HidapiBus(BaseBus):
         """Find compatible HID devices."""
         handles = HidapiDevice.enumerate(hid, vendor, product)
         drivers = sorted(find_all_subclasses(UsbHidDriver), key=lambda x: x.__name__)
-        _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
-                      ', '.join(map(lambda x: x.__name__, drivers)))
+        _LOGGER.debug('searching %s', self.__class__.__name__)
+        _LOGGER.debug(
+            '%s drivers: %s',
+            self.__class__.__name__,
+            ', '.join(map(lambda x: x.__name__, drivers))
+        )
         for handle in handles:
             if bus and handle.bus != bus:
                 continue
@@ -538,8 +541,24 @@ class HidapiBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            _LOGGER.debug('found HID device %04x:%04x', handle.vendor_id,
-                          handle.product_id)
+            # each handle is a HIDAPI hid_device, and that can either mean one
+            # entire HID interface, or one interface ⨯ usage page ⨯ usage id
+            # product, depending on the platform and backend; but, for brevity,
+            # refer them simply as "HID devices"
+            if 'usage' in handle.hidinfo and 'usage_page' in handle.hidinfo:
+                _LOGGER.debug(
+                    'HID device: %04x:%04x (usage_page=%#06x usage=%#06x)',
+                    handle.vendor_id,
+                    handle.product_id,
+                    handle.hidinfo['usage_page'],
+                    handle.hidinfo['usage'],
+                )
+            else:
+                _LOGGER.debug(
+                    'HID device: %04x:%04x (usage n/a)',
+                    handle.vendor_id,
+                    handle.product_id,
+                )
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)
 
@@ -549,8 +568,12 @@ class PyUsbBus(BaseBus):
                      usb_port=None, **kwargs):
         """ Find compatible regular USB devices."""
         drivers = sorted(find_all_subclasses(UsbDriver), key=lambda x: x.__name__)
-        _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
-                      ', '.join(map(lambda x: x.__name__, drivers)))
+        _LOGGER.debug('searching %s', self.__class__.__name__)
+        _LOGGER.debug(
+            '%s drivers: %s',
+            self.__class__.__name__,
+            ', '.join(map(lambda x: x.__name__, drivers))
+        )
         for handle in PyUsbDevice.enumerate(vendor, product):
             if bus and handle.bus != bus:
                 continue
@@ -558,7 +581,6 @@ class PyUsbBus(BaseBus):
                 continue
             if usb_port and handle.port != usb_port:
                 continue
-            _LOGGER.debug('found USB device %04x:%04x', handle.vendor_id,
-                          handle.product_id)
+            _LOGGER.debug('USB device: %04x:%04x', handle.vendor_id, handle.product_id)
             for drv in drivers:
                 yield from drv.probe(handle, vendor=vendor, product=product, **kwargs)

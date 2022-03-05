@@ -216,8 +216,8 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
 
         print(f'└── Driver: {type(dev).__name__}')
         if debug:
-            driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            _LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
+            driver_hier = (i.__name__ for i in inspect.getmro(type(dev)))
+            _LOGGER.debug('MRO: %s', ', '.join(driver_hier))
 
         for msg in warnings:
             _LOGGER.warning(msg)
