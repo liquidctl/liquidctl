@@ -8,23 +8,63 @@ also be met:
 - r/w permissions to card-specific `/dev/i2c-*` devices
 - specific unsafe features have been opted in
 
-Jump to a specific section:
+Jump to the appropriate section for a supported card:
 
 * _Series 10/Pascal:_
-    - [ASUS Strix GTX 1070](#asus-strix-gtx-and-rtx)
-    - [EVGA GTX 1080 FTW](#evga-gtx-1080-ftw)
+    - [ASUS Strix GTX 1050 OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1050 Ti OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1060 6GB][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1060 OC 6GB][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1070 OC][asus-gtx-rtx]
+    - [ASUS Strix GTX 1070 Ti Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1070 Ti][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1070][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1080 Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1080 OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1080 Ti OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1080 Ti][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1080][asus-gtx-rtx] _(experimental)_
+    - [EVGA GTX 1070 FTW DT Gaming][evga-gp104] _(experimental)_
+    - [EVGA GTX 1070 FTW Hybrid][evga-gp104] _(experimental)_
+    - [EVGA GTX 1070 FTW][evga-gp104] _(experimental)_
+    - [EVGA GTX 1070 Ti FTW2][evga-gp104] _(experimental)_
+    - [EVGA GTX 1080 FTW][evga-gp104]
+* _Series 16/Turing:_
+    - [ASUS Strix GTX 1650 Super OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1660 Super OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix GTX 1660 Ti OC][asus-gtx-rtx] _(experimental)_
 * _Series 20/Turing:_
-    - [ASUS Strix RTX 2080 Ti OC](#asus-strix-gtx-and-rtx)
+    - [ASUS Strix RTX 2060 Evo OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2060 Evo][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2060 OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2060 Super Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2060 Super Evo Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2060 Super OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2060 Super][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2070 Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2070 OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2070 Super Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2070 Super OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2070][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2080 OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2080 Super Advanced][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2080 Super OC][asus-gtx-rtx] _(experimental)_
+    - [ASUS Strix RTX 2080 Ti OC][asus-gtx-rtx]
+    - [ASUS Strix RTX 2080 Ti][asus-gtx-rtx] _(experimental)_
+* _Series 30/Ampere:_
+    - [ASUS TUF RTX 3060 Ti OC][asus-gtx-rtx] _(experimental)_
 * _[Inherent unsafeness of I²C]_
 
 
-## EVGA GTX 1080 FTW
+## EVGA GTX 1070, 1070 Ti and 1080
+[evga-gp104]: #evga-gtx-1070-1070-ti-and-1080
 
 Only RGB lighting supported.
 
 Unsafe features:
 
 - `smbus`: see [Inherent unsafeness of I²C]
+- `experimental_evga_gpu`: enable new/experimental devices
 
 ### Initialization
 
@@ -79,12 +119,14 @@ preferable, if the use case allows for them.
 ```
 
 ## ASUS Strix GTX and RTX
+[asus-gtx-rtx]: #asus-strix-gtx-and-rtx
 
 Only RGB lighting supported.
 
 Unsafe features:
 
 - `smbus`: see [Inherent unsafeness of I²C]
+- `experimental_asus_gpu`: enable new/experimental devices
 
 ### Initialization
 

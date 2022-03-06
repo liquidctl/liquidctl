@@ -48,22 +48,26 @@ if sys.platform == 'linux':
                 return
 
             drivers = sorted(find_all_subclasses(SmbusDriver),
-                             key=lambda x: (x.__module__, x.__name__))
+                             key=lambda x: x.__name__)
 
-            _LOGGER.debug('searching %s (%s)', self.__class__.__name__,
-                          ', '.join(map(lambda x: x.__name__, drivers)))
+            _LOGGER.debug('searching %s', self.__class__.__name__)
+            _LOGGER.debug(
+                '%s drivers: %s',
+                self.__class__.__name__,
+                ', '.join(map(lambda x: x.__name__, drivers))
+            )
 
             for i2c_dev in devices.iterdir():
                 try:
                     i2c_bus = LinuxI2cBus(i2c_dev)
                 except ValueError as err:
-                    _LOGGER.debug('skipping %s, %s', i2c_dev.name, err)
+                    _LOGGER.debug('I²C adapter: %s (skipped, %s)', i2c_dev.name, err)
                     continue
 
                 if bus and bus != i2c_bus.name:
                     continue
 
-                _LOGGER.debug('found I²C bus %s', i2c_bus.name)
+                _LOGGER.debug('I²C adapter: %s', i2c_bus.name)
                 yield from i2c_bus.find_devices(drivers, **kwargs)
 
     class LinuxI2cBus:
@@ -282,7 +286,7 @@ class SmbusDriver(BaseDriver):
             # for the 'smbus' feature themselves and, if necessary, raise
             # UnsafeFeaturesNotEnabled(*requirements)
             # (see also: check_unsafe(..., error=True))
-            _LOGGER.debug("SMBus is disabled, missing unsafe feature 'smbus'")
+            _LOGGER.debug("SMBus disabled, missing unsafe feature 'smbus'")
         return self
 
     def disconnect(self, **kwargs):

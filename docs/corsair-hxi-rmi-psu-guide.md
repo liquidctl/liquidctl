@@ -9,9 +9,17 @@ It is necessary to initialize the device once it has been powered on.
 # liquidctl initialize
 ```
 
-The +12V rails normally functions in multiple-rail mode, and `initialize` will by default reset the PSU to that behavior.  Single-rail mode can be optionally selected by passing `--single-12v-ocp` to `initialize`.
+The +12V rails normally functions in multiple-rail mode, and `initialize` will
+by default reset the PSU to that behavior.  Single-rail mode can be optionally
+selected by passing `--single-12v-ocp` to `initialize`.
+
+_Changed in 1.9.0: changing the OCP mode or resetting to hardware fan control
+is not available when the device was initialized by the [Linux hwmon] driver._  
 
 ## Monitoring
+
+_Changed in 1.9.0: OCP and fan control modes, as well current and total uptime,
+are not available when data is read from [Linux hwmon]._  
 
 The PSU is able to report monitoring data about its own hardware and basic
 electrical variables for the input and output sides.
@@ -78,3 +86,20 @@ would hopefully allow liquidctl to present more precise estimates.
 
 _<sup>1</sup> See comments in [issue #300](https://github.com/liquidctl/liquidctl/issues/300)._  
 _<sup>2</sup> Available at [80 PLUS® Certified Power Supplies and Manufacturers](https://www.clearesult.com/80plus/manufacturers/115V-Internal)._  
+
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+_New in 1.9.0._  
+
+These devices are supported by the mainline Linux kernel with its
+[`corsair-psu`] driver, and status data is provided through a standard hwmon
+sysfs interface.
+
+Starting with version 1.9.0, liquidctl automatically detects when a kernel
+driver is bound to the device and, whenever possible, uses it instead of
+directly accessing the device.  Alternatively, direct access to the device can
+be forced with `--direct-access`.
+
+[`corsair-psu`]: https://www.kernel.org/doc/html/latest/hwmon/corsair-psu.html

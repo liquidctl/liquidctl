@@ -43,16 +43,268 @@ KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess", \
 
 # Section: NVIDIA graphics cards
 
+# ASUS Strix GTX 1050 OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1c81", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85d8", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1050 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1c82", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85cd", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1050 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1c82", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85d1", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1060 6GB
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1c03", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85a4", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1060 OC 6GB
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1c03", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85ac", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
 # ASUS Strix GTX 1070
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
     ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8598", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1070 OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x1043", \
     ATTRS{subsystem_device}=="0x8599", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1070 Ti
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b82", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x861d", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1070 Ti Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b82", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x861e", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8592", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080 Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85aa", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080 OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b80", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85f9", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080 Ti
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85eb", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080 Ti
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85f1", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85ea", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1080 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x85e4", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1650 Super OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x2187", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x874f", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1660 Super OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x21c4", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8752", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix GTX 1660 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x2182", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x86a5", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 Evo
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f08", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x86d3", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 Evo OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e89", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8775", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f08", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x868e", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 Super
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8730", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 Super Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x86fc", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 Super Evo Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f47", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8703", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2060 Super OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f06", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x86fb", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e84", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8707", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f07", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8671", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1f07", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8670", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 Super Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1ec7", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x86ff", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 Super Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e84", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8728", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 Super Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e84", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8706", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 Super OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e84", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8727", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2070 Super OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e84", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8729", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2080 OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e87", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x865f", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2080 Super Advanced
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e81", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8712", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2080 Super OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e81", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8711", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS Strix RTX 2080 Ti
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1e04", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x8687", DRIVERS=="nvidia", TAG+="uaccess", \
     RUN{builtin}="kmod load i2c-dev"
 
 # ASUS Strix RTX 2080 Ti OC
 KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
     ATTRS{device}=="0x1e07", ATTRS{subsystem_vendor}=="0x1043", \
     ATTRS{subsystem_device}=="0x866a", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# ASUS TUF RTX 3060 Ti OC
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x2489", ATTRS{subsystem_vendor}=="0x1043", \
+    ATTRS{subsystem_device}=="0x87c6", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 FTW
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6276", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 FTW DT Gaming
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6274", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 FTW Hybrid
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b81", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6278", DRIVERS=="nvidia", TAG+="uaccess", \
+    RUN{builtin}="kmod load i2c-dev"
+
+# EVGA GTX 1070 Ti FTW2
+KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", \
+    ATTRS{device}=="0x1b82", ATTRS{subsystem_vendor}=="0x3842", \
+    ATTRS{subsystem_device}=="0x6775", DRIVERS=="nvidia", TAG+="uaccess", \
     RUN{builtin}="kmod load i2c-dev"
 
 # EVGA GTX 1080 FTW

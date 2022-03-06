@@ -88,6 +88,14 @@ hue\-saturation\-value HSV triple, H ∊ [0, 360], S,V ∊ [0, 100]: \fIhsv(20,7
 .IP \(bu
 hue\-saturation\-lightness HSL triple, H ∊ [0, 360], S,L ∊ [0, 100]: \fIhsl(20,100,62)\fR.
 .
+.if !\n[is_macos]\{
+.PP
+\fBliquidctl\fR automatically detects when a kernel driver is bound to the device
+and, whenever possible, uses it instead of directly accessing the device.
+Alternatively, direct access to the device can be forced with
+\fI\-\-direct\-access\fP.
+.
+.\}
 .SH OPTIONS
 .
 .SS Device selection options
@@ -166,6 +174,9 @@ Use Asetek 690LC in legacy mode (old Krakens).
 .TP
 .B \-\-non\-volatile
 Store on non\-volatile controller memory.
+.TP
+.B \-\-direct\-access
+Directly access the device despite kernel drivers.
 .TP
 .BI \-\-unsafe= features
 Comman-separated bleeding-edge features to enable.
@@ -497,8 +508,40 @@ The animation direction can be set with
 .BI \-\-direction= value ,
 where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .
+.SS ASUS Strix GTX 1050 OC
+.SS ASUS Strix GTX 1050 Ti OC
+.SS ASUS Strix GTX 1060 6GB
+.SS ASUS Strix GTX 1060 OC 6GB
 .SS ASUS Strix GTX 1070
+.SS ASUS Strix GTX 1070 OC
+.SS ASUS Strix GTX 1070 Ti
+.SS ASUS Strix GTX 1070 Ti Advanced
+.SS ASUS Strix GTX 1080
+.SS ASUS Strix GTX 1080 Advanced
+.SS ASUS Strix GTX 1080 OC
+.SS ASUS Strix GTX 1080 Ti
+.SS ASUS Strix GTX 1080 Ti OC
+.SS ASUS Strix GTX 1650 Super OC
+.SS ASUS Strix GTX 1660 Super OC
+.SS ASUS Strix GTX 1660 Ti OC
+.SS ASUS Strix RTX 2060 Evo
+.SS ASUS Strix RTX 2060 Evo OC
+.SS ASUS Strix RTX 2060 OC
+.SS ASUS Strix RTX 2060 Super
+.SS ASUS Strix RTX 2060 Super Advanced
+.SS ASUS Strix RTX 2060 Super Evo Advanced
+.SS ASUS Strix RTX 2060 Super OC
+.SS ASUS Strix RTX 2070
+.SS ASUS Strix RTX 2070 Advanced
+.SS ASUS Strix RTX 2070 OC
+.SS ASUS Strix RTX 2070 Super Advanced
+.SS ASUS Strix RTX 2070 Super OC
+.SS ASUS Strix RTX 2080 OC
+.SS ASUS Strix RTX 2080 Super Advanced
+.SS ASUS Strix RTX 2080 Super OC
+.SS ASUS Strix RTX 2080 Ti
 .SS ASUS Strix RTX 2080 Ti OC
+.SS ASUS TUF RTX 3060 Ti OC
 Fan channels: none.
 .PP
 Lighting channels: \fIled\fR.
@@ -556,6 +599,10 @@ When applicable the animation speed can be set with
 where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
 \fIfaster\fR, \fIfastest\fR, \fIludicrous\fR.
 .
+.SS EVGA GTX 1070 FTW
+.SS EVGA GTX 1070 FTW DT Gaming
+.SS EVGA GTX 1070 FTW Hybrid
+.SS EVGA GTX 1070 Ti FTW2
 .SS EVGA GTX 1080 FTW
 Fan channels: none.
 .PP

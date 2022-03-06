@@ -3,62 +3,58 @@
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
 [![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/main)
-[![Status of the build for Windows](https://ci.appveyor.com/api/projects/status/n5lgebd5m8iomx42/branch/main?svg=true)](https://ci.appveyor.com/project/jonasmalacofilho/liquidctl/branch/main)
 [![Developer's Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4949/badge)](https://bestpractices.coreinfrastructure.org/projects/4949)
 
 
 ```
 $ liquidctl list
-Device #0: ASUS Strix RTX 2080 Ti OC
-Device #1: Corsair Vengeance RGB DIMM2
-Device #2: Corsair Vengeance RGB DIMM4
-Device #3: NZXT Smart Device (V1)
-Device #4: NZXT Kraken X (X42, X52, X62 or X72)
+Device #0: Corsair Vengeance RGB DIMM2
+Device #1: Corsair Vengeance RGB DIMM4
+Device #2: NZXT Smart Device (V1)
+Device #3: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
-
-# liquidctl status --unsafe=smbus,vengeance_rgb
-Corsair Vengeance RGB DIMM2
-└── Temperature    33.8  °C
-
-Corsair Vengeance RGB DIMM4
-└── Temperature    33.8  °C
-
 NZXT Smart Device (V1)
-├── Fan 1 speed                 1473  rpm
-├── Fan 1 voltage              11.91  V
-├── Fan 1 current               0.01  A
-├── Fan 1 control mode           PWM
-├── Fan 2 [...]
-├── Fan 2 [...]
-├── Firmware version           1.0.7
-├── LED accessories                2
-├── LED accessory type    HUE+ Strip
-├── LED count (total)             20
-└── Noise level                   65  dB
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+└── LED count (total)             20  
 
 NZXT Kraken X (X42, X52, X62 or X72)
-├── Liquid temperature     31.7  °C
-├── Fan speed               801  rpm
-├── Pump speed             2239  rpm
-└── Firmware version      6.0.2  
+└── Firmware version    6.0.2  
+
+# liquidctl status
+NZXT Smart Device (V1)
+├── Fan 1 speed            1499  rpm
+├── Fan 1 voltage         11.91  V
+├── Fan 1 current          0.05  A
+├── Fan 1 control mode      PWM  
+├── Fan 2 [...]
+├── Fan 3 [...]
+└── Noise level              61  dB
+
+NZXT Kraken X (X42, X52, X62 or X72)
+├── Liquid temperature    34.7  °C
+├── Fan speed              798  rpm
+└── Pump speed            2268  rpm
+
+# liquidctl status --match vengeance --unsafe=smbus,vengeance_rgb
+Corsair Vengeance RGB DIMM2
+└── Temperature    37.5  °C
+
+Corsair Vengeance RGB DIMM4
+└── Temperature    37.8  °C
 
 # liquidctl --match kraken set fan speed  20 30  30 50  34 80  40 90  50 100
 # liquidctl --match kraken set pump speed 70
-# liquidctl --match "smart device" set sync speed 50
-
 # liquidctl --match kraken set sync color fixed 0080ff
 # liquidctl --match "smart device" set led color moving-alternating "hsv(30,98,100)" "hsv(30,98,10)" --speed slower
-# liquidctl --match "rtx 2080" set led color fixed 2aff00 --unsafe=smbus
-# liquidctl --match dimm2 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
-# liquidctl --match dimm4 set led color fixed "hsl(5, 100, 34)" --unsafe=smbus,vengeance_rgb
 ```
 
-<!-- stop here for PyPI -->
 
-
-## Table of contents
-[Table of contents]: #table-of-contents
+## Contents
+[Contents]: #contents
 
 1. [Supported devices]
 1. [Installation]
@@ -113,9 +109,9 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 -->
 
 | Type               | Device family and specific documentation | Bus | Notes |
-| :-:                | :-- | :-: | :-- |
-| AIO liquid cooler  | [Corsair Hydro GT/GTX H80i, H100i, H110i](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
-| AIO liquid cooler  | [Corsair Hydro v2 H80i, H100i, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
+| :--                | :-- | :-: | --: |
+| AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | USB | <sup>_Ze_</sup> |
+| AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | USB | <sup>_Z_</sup> |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | |
@@ -124,26 +120,28 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
-| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | |
-| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | |
+| AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | <sup>_h_</sup> |
+| AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
 | DDR4 DRAM          | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | DDR4 DRAM          | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
-| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | |
+| Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
+| Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | |
-| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | |
-| Graphics card      | [ASUS Strix GTX 1070](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card      | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card      | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
+| Graphics card RGB  | [ASUS Strix GTX 1070 OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [Additional ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
+| Graphics card RGB  | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [Additional EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
-| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
-| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | |
+| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
+| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
@@ -151,6 +149,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._  
 <sup>_a_</sup> _Architecture-specific limitations._  
 <sup>_e_</sup> _Experimental support._  
+<sup>_h_</sup> _Can leverage hwmon driver._  
 <sup>_n_</sup> _Newly supported and requires git._  
 <sup>_p_</sup> _Only partially supported._  
 <sup>_x_</sup> _Only supported on Linux._  
@@ -219,7 +218,9 @@ pkg install py37-liquidctl
 [Manual installation]: #manual-installation
 
 _Warning: on systems that still default to Python 2, replace `python`/`pip`
-with `python3`/`pip3`._  
+with `python3`/`pip3`._
+
+_Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
 liquidctl can be manually installed from the Python Package Index (PyPI), or
 directly from the source code repository.
@@ -298,11 +299,10 @@ likely cause it to become inaccessible from liquidctl._
 #### Creating a virtual environment
 [Creating a virtual environment]: #creating-a-virtual-environment
 
-Setting up a virtual environment is option, and can be skipped.
+Setting up a virtual environment is an optional step.  Even so, installing
+Python packages directly in the global environment is not generally advised.
 
-Even so, installing Python packages directly in the global environment is not
-generally advised.  Instead, it is usual to first set up a [virtual
-environment]:
+Instead, it is usual to first set up a [virtual environment]:
 
 ```bash
 # create virtual enviroment at <path>
@@ -315,9 +315,14 @@ Alternatively, the virtual environment can also be used directly, without
 activation, by prefixing all `python` and `pip` invocations with the
 environment's bin directory.
 
-```
+```bash
+# Linux/macOS/BSDs (POSIX)
 <path>/bin/python [arguments]
 <path>/bin/pip [arguments]
+
+# Windows
+<path>\Scripts\python [arguments]
+<path>\Scripts\pip [arguments]
 ```
 
 [virtual environment]: https://docs.python.org/3/library/venv.html
@@ -336,7 +341,7 @@ python -m pip install liquidctl
 python -m pip install liquidctl==1.8.1
 ```
 
-If [git] is available, pip can also install the latest snapshot of the official
+If [git] is installed, pip can also install the latest snapshot of the official
 liquidctl source code repository on GitHub.
 
 ```bash
@@ -351,25 +356,24 @@ python -m pip install git+https://github.com/liquidctl/liquidctl#egg=liquidctl
 [Allowing access to the devices]: #allowing-access-to-the-devices
 
 Access permissions are not a concern on platforms like macOS or Windows, where
-unprivileged access is already allowed by default.
+unprivileged access is already allowed by default.  However, devices are not
+generally accessible by unprivileged users on Linux, FreeBSD or DragonFly BSD.
 
-However, on Linux, devices are not generally accessible by unprivileged users.
-That may still be desirable by most users (for these specific types of devices)
-and, thus, we include a set of udev rules – [`71-liquidctl.rules`] – that can
-be used to allow unprivileged read and write access to the devices supported by
-liquidctl. These rules are generally already included in downstream packages of
-liquidctl.
+For Linux, we provide a set of udev rules in [`71-liquidctl.rules`] that can be
+used to allow unprivileged read and write access to all devices supported by
+liquidctl.  These rules are generally already included in downstream Linux
+packages of liquidctl.
 
-Alternatively, `sudo` or `doas` can be used to invoke `liquidctl` as the super
-user.
+Alternatively, `sudo`, `doas` and similar mechanisms can be used to invoke
+`liquidctl` as the super user, on both Linux and BSDs.
 
 [`71-liquidctl.rules`]: extra/linux/71-liquidctl.rules
 
 #### Additional files
 [Additional files]: #additional-files
 
-Other files and tools are included in the source tree, and may be of some use
-in certain scenarios.
+Other files and tools are included in the source tree, which may be of use in
+certain scenarios:
 
 - [liquidctl(8) man page][liquidctl.8];
 - [completions for the liquidctl CLI in Bash][liquidctl.bash];
@@ -388,9 +392,9 @@ in certain scenarios.
 
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
-When working on the project itself, it is sometimes useful to set up the local
-environment in way where it is possible to run the CLI and the test suite
-without building and installing a local package.
+When working on the project itself, it is sometimes useful to set up a local
+development environment, where it is possible to directly run the CLI and the
+test suite, without building and installing a local package.
 
 For this, start by installing [git] and any system-level dependencies mentioned
 in [Manual installation].  Then, clone the repository and change into the
@@ -401,9 +405,9 @@ git clone https://github.com/liquidctl/liquidctl
 cd liquidctl
 ```
 
-Optionally set up a [virtual environment][Creating a virtual environment].
+Optionally, set up a [virtual environment][Creating a virtual environment].
 
-Next, and if the necessary Python build, test and runtime libraries are not
+Finally, if the necessary Python build, test and runtime libraries are not
 already installed on the environment (virtual or global), manually install
 them:
 
@@ -421,9 +425,14 @@ To run the CLI directly, without building and installing a local package,
 execute:
 
 ```
-python -m liquidctl.cli [arguments]
+python -m liquidctl [arguments]
 ```
 
+And to install `liquidctl` into the environment:
+
+```
+pip install .
+```
 
 ## Introducing the command-line interface
 [The command-line interface]: #introducing-the-command-line-interface

@@ -3,42 +3,53 @@
 # uses the psf/black style
 
 
-def _get_version_relaxed():
+def _build_version():
 
-    # try to get the version written by setuptools_scm during the build
     try:
         from liquidctl._version import version, version_tuple
 
         return (version, version_tuple)
     except ModuleNotFoundError:
-        pass
+        return None
 
-    # if that failed, try to compute the version directly
-    from setuptools_scm import get_version
 
-    # first assuming that we're a git checkout
+def _runtime_version():
+
     try:
-        return (get_version(), None)
+        from setuptools_scm import get_version
+    except ModuleNotFoundError:
+        return None
+
+    # first, assume that we're a git checkout
+    try:
+        version = get_version()
+        if version:
+            return (version, None)
     except LookupError:
         pass
 
-    # and then, if that also failed, assuming that we're a tarball
-    guess = get_version(parentdir_prefix_version="liquidctl-")
-    if "+" in guess:
-        guess += "-guessed"
-    else:
-        guess += "+guessed"
-    return (guess, None)
+    # if that also failed, assume that we're a tarball
+    try:
+        guess = get_version(parentdir_prefix_version="liquidctl-")
+        if guess:
+            if "+" in guess:
+                guess += "-guessed"
+            else:
+                guess += "+guessed"
+            return (guess, None)
+    except LookupError:
+        pass
+
+    return None
 
 
-# keep _version_tuple private for now, as it's only available in some cases and
-# don't want to commit to it yet
+# - try to get the version written by setuptools_scm during the build;
+# - otherwise try to compute one right now;
+# - failing that too, use an obviously invalid value
+#
+# (_version_tuple is kept private as it's only available in some cases and
+# don't want to commit to it yet)
+(version, _version_tuple) = _build_version() or _runtime_version() or ("0.0.0-unknown", None)
 
-try:
-    (version, _version_tuple) = _get_version_relaxed()
-except:
-    # if everything failed, use a placeholder value that's obviously invalid
-    (version, _version_tuple) = ("0.0.0-unknown", None)
-
-
+# old field name (liquidctl.__version__ is preferred now)
 __version__ = version

@@ -3,13 +3,13 @@ from _testutils import MockPyusbDevice
 
 from collections import deque
 
-from liquidctl.driver.asetek_pro import CorsairAsetekProDriver
+from liquidctl.driver.asetek_pro import HydroPro
 
 
 @pytest.fixture
 def emulate():
     usb_dev = MockPyusbDevice()
-    cooler = CorsairAsetekProDriver(usb_dev, 'Emulated Asetek Pro cooler', fan_count=2)
+    cooler = HydroPro(usb_dev, 'Emulated Asetek Pro cooler', fan_count=2)
     return (usb_dev, cooler)
 
 

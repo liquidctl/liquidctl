@@ -37,6 +37,7 @@ Other device options:
   --temperature-sensor <number>  The temperature sensor number for the Commander Pro
   --legacy-690lc                 Use Asetek 690LC in legacy mode (old Krakens)
   --non-volatile                 Store on non-volatile controller memory
+  --direct-access                Directly access the device despite kernel drivers
   --unsafe <features>            Comma-separated bleeding-edge features to enable
 
 Other interface options:
@@ -114,6 +115,7 @@ _PARSE_ARG = {
     '--pump-mode': str.lower,
     '--legacy-690lc': bool,
     '--non-volatile': bool,
+    '--direct-access': bool,
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
@@ -214,8 +216,8 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
 
         print(f'└── Driver: {type(dev).__name__}')
         if debug:
-            driver_hier = [i.__name__ for i in inspect.getmro(type(dev)) if i != object]
-            _LOGGER.debug('hierarchy: %s', ', '.join(driver_hier[1:]))
+            driver_hier = (i.__name__ for i in inspect.getmro(type(dev)))
+            _LOGGER.debug('MRO: %s', ', '.join(driver_hier))
 
         for msg in warnings:
             _LOGGER.warning(msg)
@@ -318,38 +320,31 @@ def _log_requirements():
     else:
         _LOGGER.debug('importlib.metadata not available')
 
-_error_count = 0
 
-def _report_error(err, msg, *args, immediately=False, show_err=False):
-    global _error_count
+class _ErrorAcc:
+    __slots__ = ['_errors']
 
-    _error_count += 1
+    def __init__(self):
+        self._errors = 0
 
-    # log the err with traceback before reporting it properly, this time
-    # without traceback; this puts error messages are at the bottom of the
-    # output, where most users first look for them
-    _LOGGER.info('detailed error: %s: %r', msg, err, *args, exc_info=True)
+    def log(self, msg, *args, err=None, show_err=False):
+        self._errors += 1
+        if err:
+            # log the err with traceback before reporting it properly, this time
+            # without traceback; this puts error messages are at the bottom of the
+            # output, where most users first look for them
+            _LOGGER.info('detailed error: %s: %r', msg, err, *args, exc_info=True)
 
-    if show_err:
-        _LOGGER.error('%s: %r', msg, err, *args)
-    else:
-        _LOGGER.error(msg, *args)
+        if show_err and err:
+            _LOGGER.error('%s: %r', msg, err, *args)
+        else:
+            _LOGGER.error(msg, *args)
 
-    if immediately:
-        _exit_if_errors()
+    def exit_code(self):
+        return 0 if self.is_empty() else 1
 
-
-def _abort(msg, *args):
-    _LOGGER.error(msg, *args)
-    _exit_if_errors()
-
-
-def _exit_if_errors():
-    # don't report the total error count to potentially keep an error message
-    # at the very last line of the output, where most users first look for them
-
-    if _error_count > 0:
-        sys.exit(1)
+    def is_empty(self):
+        return not bool(self._errors)
 
 
 def main():
@@ -399,6 +394,11 @@ def main():
     _LOGGER.debug('platform: %s', platform.platform())
     _log_requirements()
 
+    if __name__ == '__main__':
+        _LOGGER.warning('python -m liquidctl.cli is deprecated, prefer python -m liquidctl')
+
+    errors = _ErrorAcc()
+
     # unlike humans, machines want to know everything; imply verbose everywhere
     # other than when setting default logging level and format (which are
     # inherently for human consumption)
@@ -406,6 +406,7 @@ def main():
         args['--verbose'] = True
 
     opts = _make_opts(args)
+    opts['_internal_called_from_cli'] = True  # FOR INTERNAL USE ONLY, DO NOT REPLICATE ELSEWHERE
     filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
     device_id = None
 
@@ -417,12 +418,14 @@ def main():
         no_filters = {opt: val for opt, val in opts.items() if opt not in _FILTER_OPTIONS}
         compat = list(find_liquidctl_devices(**no_filters))
         if device_id < 0 or device_id >= len(compat):
-            _abort('device index out of bounds')
+            errors.log('device index out of bounds')
+            return errors.exit_code()
         if filter_count:
             # check that --device matches other filter criteria
             matched_devs = [dev.device for dev in find_liquidctl_devices(**opts)]
             if compat[device_id].device not in matched_devs:
-                _abort('device index does not match remaining selection criteria')
+                errors.log('device index does not match remaining selection criteria')
+                return errors.exit_code()
             _LOGGER.warning('mixing --device <id> with other filters is not recommended; '
                             'to disambiguate between results prefer --pick <result>')
         selected = [compat[device_id]]
@@ -437,9 +440,11 @@ def main():
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
-        _abort('too many devices, filter or select one (see: liquidctl --help)')
+        errors.log('too many devices, filter or select one (see: liquidctl --help)')
+        return errors.exit_code()
     elif len(selected) == 0:
-        _abort('no device matches available drivers and selection criteria')
+        errors.log('no device matches available drivers and selection criteria')
+        return errors.exit_code()
 
     # for json
     obj_buf = []
@@ -470,31 +475,32 @@ def main():
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES, errno.EPERM]:
-                _report_error(err, f'insufficient permissions to access {dev.description}')
+                errors.log(f'insufficient permissions to access {dev.description}', err=err)
             elif err.args == ('open failed', ):
-                _report_error(err, f'could not open {dev.description}, possibly due to insufficient permissions')
+                errors.log(
+                    f'could not open {dev.description}, possibly due to insufficient permissions',
+                    err=err
+                )
             else:
-                _report_error(err, f'unexpected OS error with {dev.description}', show_err=True)
+                errors.log(f'unexpected OS error with {dev.description}', err=err, show_err=True)
         except NotSupportedByDevice as err:
-            _report_error(err, f'operation not supported by {dev.description}')
+            errors.log(f'operation not supported by {dev.description}', err=err)
         except NotSupportedByDriver as err:
-            _report_error(err, f'operation not supported by driver for {dev.description}')
+            errors.log(f'operation not supported by driver for {dev.description}', err=err)
         except UnsafeFeaturesNotEnabled as err:
             features = ','.join(err.args)
-            _report_error(err, f'missing --unsafe features for {dev.description}: {features!r}')
+            errors.log(f'missing --unsafe features for {dev.description}: {features!r}', err=err)
         except Exception as err:
-            _report_error(err, f'unexpected error with {dev.description}', show_err=True)
+            errors.log(f'unexpected error with {dev.description}', err=err, show_err=True)
 
-    _exit_if_errors()
-
-    if args['--json']:
+    if errors.is_empty() and args['--json']:
         # use __str__ for values that cannot be directly serialized to JSON
         # (e.g. enums)
         print(json.dumps(obj_buf, ensure_ascii=(os.getenv('LANG', None) == 'C'),
                          default=lambda x: str(x)))
 
-    sys.exit(0)
+    return errors.exit_code()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

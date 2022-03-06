@@ -17,38 +17,52 @@ All capabilities available at the hardware level are supported, but other featur
 
 
 ## Initialization
+[Initialization]: #initialization
 
-After powering on from Mechanical Off, or if there have been hardware changes, the device must first be initialized.  This takes a few seconds and should detect all connected fans and LED accessories.  Only then monitoring, proper fan control and all lighting effects will be available.
+_Changed in 1.9.0: the firmware version and the connected accessories are now
+reported after initialization._  
+
+After powering on from Mechanical Off, or if there have been hardware changes,
+the device must first be initialized.  This takes a few seconds and should
+detect all connected fans and LED accessories.  Only then monitoring, proper
+fan control and all lighting effects will be available.
 
 ```
 # liquidctl initialize
+NZXT Smart Device (V1)
+├── Firmware version           1.0.7  
+├── LED accessories                2  
+├── LED accessory type    HUE+ Strip  
+└── LED count (total)             20  
 ```
 
 
 ## Monitoring
 
-The device can report fan information for each channel, the noise level at the onboard sensor, as well as the type of the connected LED accessories.
+_Changed in 1.9.0: the firmware version and the connected accessories are no
+longer reported (see [Initialization])._  
+_Changed in 1.9.0: the noise level is not available when data is read from
+[Linux hwmon]._  
+
+The device can report fan information for each channel, the noise level at the
+onboard sensor, as well as the type of the connected LED accessories.
 
 ```
 # liquidctl status
 NZXT Smart Device (V1)
-├── Fan 1 speed                 1473  rpm
-├── Fan 1 voltage              11.91  V
-├── Fan 1 current               0.01  A
-├── Fan 1 control mode           PWM
-├── Fan 2 speed                 1341  rpm
-├── Fan 2 voltage              11.91  V
-├── Fan 2 current               0.02  A
-├── Fan 2 control mode            DC
-├── Fan 3 speed                 1352  rpm
-├── Fan 3 voltage              11.91  V
-├── Fan 3 current               0.02  A
-├── Fan 3 control mode           N/A
-├── Firmware version           1.0.7
-├── LED accessories                2
-├── LED accessory type    HUE+ Strip
-├── LED count (total)             20
-└── Noise level                   65  dB
+├── Fan 1 speed            1492  rpm
+├── Fan 1 voltage         11.91  V
+├── Fan 1 current          0.02  A
+├── Fan 1 control mode      PWM  
+├── Fan 2 speed            1368  rpm
+├── Fan 2 voltage         11.91  V
+├── Fan 2 current          0.02  A
+├── Fan 2 control mode      PWM  
+├── Fan 3 speed            1665  rpm
+├── Fan 3 voltage         11.91  V
+├── Fan 3 current          0.06  A
+├── Fan 3 control mode      PWM  
+└── Noise level              59  dB
 ```
 
 
@@ -121,3 +135,19 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | `covering-backwards-marquee` | Up to 8, one for each step |
 | `backwards-moving-alternating` | Two |
+
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+_New in 1.9.0._  
+
+These devices are supported by the [liquidtux] `nzxt-grid3` driver, and status
+data is provided through a standard hwmon sysfs interface.
+
+Starting with version 1.9.0, liquidctl automatically detects when a kernel
+driver is bound to the device and, whenever possible, uses it instead of
+directly accessing the device.  Alternatively, direct access to the device can
+be forced with `--direct-access`.
+
+[liquidtux]: https://github.com/liquidctl/liquidtux

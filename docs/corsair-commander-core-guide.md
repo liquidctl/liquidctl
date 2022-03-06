@@ -49,6 +49,8 @@ Corsair Commander Core (experimental)
 
 ## Programming the pump and fan speeds
 
+_New in 1.9.0._  
+
 Currently, the pump and each fan can be set to a fixed duty cycle. 
 
 ```

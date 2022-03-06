@@ -160,6 +160,33 @@ def test_evga_pascal_sets_non_volatile_color(evga_1080_ftw_bus):
         assert evga_1080_ftw_bus.read_byte_data(0x49, 0x23) == 0xe5
 
 
+def test_evga_pascal_experimental_devices_are_unsafe():
+    for dev_id, sub_dev_id, desc in EvgaPascal._MATCHES:
+        if 'experimental' not in desc:
+            continue
+
+        vbus = VirtualSmbus(
+                description='NVIDIA i2c adapter 1 at 1:00.0',
+                parent_vendor=NVIDIA,
+                parent_device=dev_id,
+                parent_subsystem_vendor=EVGA,
+                parent_subsystem_device=sub_dev_id,
+                parent_driver='nvidia',
+        )
+
+        card = next(EvgaPascal.probe(vbus))
+
+        insufficient = ['smbus']
+
+        # can connect but not read status or set color without specific
+        # experimental feature
+        with card.connect(unsafe=insufficient):
+            assert card.get_status(verbose=True, unsafe=insufficient) == []
+
+            with pytest.raises(UnsafeFeaturesNotEnabled):
+                card.set_color('led', 'off', [], unsafe=insufficient)
+
+
 # ASUS Turing
 
 
@@ -367,3 +394,39 @@ def test_rog_turing_sets_non_volatile_color(strix_2080ti_oc_bus):
     with card.connect(unsafe=enable):
         card.set_color('led', 'off', [], non_volatile=True, unsafe=enable)
         assert strix_2080ti_oc_bus.read_byte_data(0x2a, 0x0e) == 0x01
+
+
+def test_rog_turing_experimental_devices_are_unsafe():
+    for dev_id, sub_dev_id, desc in RogTuring._MATCHES:
+        if 'experimental' not in desc:
+            continue
+
+        vbus = VirtualSmbus(
+                description='NVIDIA i2c adapter 1 at 1:00.0',
+                parent_vendor=NVIDIA,
+                parent_device=dev_id,
+                parent_subsystem_vendor=ASUS,
+                parent_subsystem_device=sub_dev_id,
+                parent_driver='nvidia',
+        )
+
+        card = next(RogTuring.probe(vbus))
+
+        enable = ['smbus', 'experimental_asus_gpu']
+        insufficient = ['smbus']
+
+        # not usable if connected without specific experimental feature
+        with card.connect(unsafe=insufficient):
+            with pytest.raises(AssertionError):
+                card.get_status(verbose=True, unsafe=enable)
+
+            with pytest.raises(AssertionError):
+                card.set_color('led', 'off', [], unsafe=enable)
+
+        # once connected, still cannot read status or set color without
+        # specific experimental feature
+        with card.connect(unsafe=enable):
+            assert card.get_status(verbose=True, unsafe=insufficient) == []
+
+            with pytest.raises(UnsafeFeaturesNotEnabled):
+                card.set_color('led', 'off', [], unsafe=insufficient)

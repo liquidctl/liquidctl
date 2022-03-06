@@ -19,7 +19,7 @@ First-party software<!--(e.g. Corsair iCue)-->:
 Other commonly used tools<!--(e.g. OpenRGB)-->: 
 
 <!--
-Bellow you find some check lists.  Answer items with yes, no, unknown, or leave them blank.  Please try to answer as much items as you can, but do not feel obligated to fill the all.
+Bellow you find some check lists.  Answer items with yes, unknown, or leave them blank (for no).  Please try to answer as much items as you can, but do not feel obligated to fill the all.
 -->
 
 The device appears to support the following features:

@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "liquidctl/_version.py"
-version_scheme = "post-release"
+version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules -ra"
@@ -35,7 +35,6 @@ extend-exclude = '''
   | (^/liquidctl/driver/__init__\.py$)
   | (^/liquidctl/driver/asetek\.py$)
   | (^/liquidctl/driver/asetek_pro\.py$)
-  | (^/liquidctl/driver/base\.py$)
   | (^/liquidctl/driver/commander_core\.py$)
   | (^/liquidctl/driver/commander_pro\.py$)
   | (^/liquidctl/driver/corsair_hid_psu\.py$)
@@ -73,11 +72,9 @@ extend-exclude = '''
   | (^/tests/test_hydro_platinum\.py$)
   | (^/tests/test_keyval\.py$)
   | (^/tests/test_kraken2\.py$)
-  | (^/tests/test_kraken3\.py$)
   | (^/tests/test_nvidia\.py$)
   | (^/tests/test_nzxt_epsu\.py$)
   | (^/tests/test_rgb_fusion2\.py$)
-  | (^/tests/test_smart_device2\.py$)
   | (^/tests/test_smart_device\.py$)
   | (^/tests/test_smbus\.py$)
   | (^/tests/test_usb\.py$)

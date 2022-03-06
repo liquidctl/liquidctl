@@ -2,13 +2,118 @@
 
 ## [Unreleased]
 
-### Changes since 1.8.0
+### Changes since 1.8.1
 
 Added:
 - Add support for persisting settings on modern Asetek 690LC coolers (EVGA CLC
   and Corsair Hydro GT/GTX/v2)
 - Add support for setting fixed fan/pump speeds on the Corsair Commander Core
   (shipped with the Corsair Hydro Elite Capellix and LCD coolers)
+- Identify some devices with a matching Linux hwmon device (#403, PR #429)
+- Add `--direct-access` to force it in spite of the presence of kernel drivers
+  (#403, PR #429)
+- Add security policy: `SECURITY.md`
+- Enable experimental support for EVGA GTX 1070 and 1070 Ti cards using the
+  existing `EvgaPascal` driver:
+    - EVGA GTX 1070 FTW DT Gaming
+    - EVGA GTX 1070 FTW Hybrid
+    - EVGA GTX 1070 FTW
+    - EVGA GTX 1070 Ti FTW2
+- Enable experimental support for various ASUS GTX and RTX cards using the
+  existing `RogTuring` driver:
+    - ASUS Strix GTX 1050 OC
+    - ASUS Strix GTX 1050 Ti OC
+    - ASUS Strix GTX 1060 6GB
+    - ASUS Strix GTX 1060 OC 6GB
+    - ASUS Strix GTX 1070
+    - ASUS Strix GTX 1070 Ti
+    - ASUS Strix GTX 1070 Ti Advanced
+    - ASUS Strix GTX 1080
+    - ASUS Strix GTX 1080 Advanced
+    - ASUS Strix GTX 1080 OC
+    - ASUS Strix GTX 1080 Ti
+    - ASUS Strix GTX 1080 Ti OC
+    - ASUS Strix GTX 1650 Super OC
+    - ASUS Strix GTX 1660 Super OC
+    - ASUS Strix GTX 1660 Ti OC
+    - ASUS Strix RTX 2060 Evo
+    - ASUS Strix RTX 2060 Evo OC
+    - ASUS Strix RTX 2060 OC
+    - ASUS Strix RTX 2060 Super
+    - ASUS Strix RTX 2060 Super Advanced
+    - ASUS Strix RTX 2060 Super Evo Advanced
+    - ASUS Strix RTX 2060 Super OC
+    - ASUS Strix RTX 2070
+    - ASUS Strix RTX 2070 Advanced
+    - ASUS Strix RTX 2070 OC
+    - ASUS Strix RTX 2070 Super Advanced
+    - ASUS Strix RTX 2070 Super OC
+    - ASUS Strix RTX 2080 OC
+    - ASUS Strix RTX 2080 Super Advanced
+    - ASUS Strix RTX 2080 Super OC
+    - ASUS Strix RTX 2080 Ti
+    - ASUS TUF RTX 3060 Ti OC
+- API: add `liquidctl.__version__`
+- extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR #424)
+
+Changed:
+- Log the Python interpreter version
+- If possible, log the version of all Python requirements
+- Move reporting of Kraken X2 firmware version to initialization
+- Move reporting of Smart Device V1/Grid+ V3 firmware version and accessories
+  to initialization (PR #429)
+- Don't re-initialize devices with a Linux hwmon driver (#403, PR #429)
+- If possible, read status from Linux hwmon (#403, PR #429)
+- Switch to a PEP 517 build (#430)
+- Allow directly invoking the CLI with `python -m liquidctl`
+- API: improve and clarify the documentation of `BaseDriver` methods
+
+Deprecated:
+- Deprecate directly invoking the CLI with `python -m liquidctl.cli` (use
+  `python -m liquidctl`)
+- API: deprecate including the firmware version in the output from
+  `KrakenX2.get_status()` (read it from `.initialize()`)
+
+Removed:
+- API: remove long deprecated support for connecting to Kraken X2 devices with
+  `KrakenX2.initialize()` (use standardized `.connect()`)
+- API: remove long deprecated support for disconnecting from Kraken X2 devices
+  with `KrakenX2.finalize()` (use standardized `.disconnect()`)
+- API: remove long deprecated `<device>.find_all_supported_devices()` (use
+  `liquidctl.find_liquidctl_devices()` or `<device>.find_supported_devices()`)
+
+Fixed:
+- Let all unexpected SMBus exceptions bubble up (#416)
+- Reset Kraken X2 fan and pump profiles during initialization (#395, possibly)
+- Remove redundant prefix from CLI error messages
+
+### Notes for downstream packagers
+
+liquidctl now uses a PEP 517 build: [PyPA/build] and [pradyunsg/installer] are
+suggested for a typical downstream package build process:
+
+```bash
+# build
+python -m build --wheel [--no-isolation]
+
+# install
+python -m installer --destdir=<dest> dist/*.whl
+```
+
+Additionally, liquidctl has switched from an ad-hoc solution to version
+management to [setuptools_scm].  If the git tags aren't available,
+setuptools_scm supports environment variables to externally inject the version
+number.
+
+```bash
+export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_LIQUIDCTL=1.9.0
+python -m build [args]
+python -m installer [args]
+```
+
+[PyPA/build]: https://github.com/pypa/build
+[pradyunsg/installer]: https://github.com/pradyunsg/installer
+[setuptools_scm]: https://github.com/pypa/setuptools_scm
 
 
 ## [1.8.1] – 2022-01-21

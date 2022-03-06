@@ -177,7 +177,7 @@ class Ddr4Temperature(SmbusDriver):
             # accidental attempts of writes to the SPD EEPROM (DDR4 SPD writes
             # are also disabled by default in many motherboards)
             dev = cls(smbus, desc, address=(None, None, spd_addr))
-            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
+            _LOGGER.debug('found %s: %s', cls.__name__, desc)
             yield dev
 
     @classmethod
@@ -210,7 +210,7 @@ class Ddr4Temperature(SmbusDriver):
         """
 
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.warning("%s: nothing returned, requires unsafe features '%s'",
+            _LOGGER.warning("%s: disabled, requires unsafe features '%s'",
                             self.description, ','.join(self._UNSAFE))
             return []
 

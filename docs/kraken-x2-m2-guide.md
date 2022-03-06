@@ -19,6 +19,8 @@ This driver also supports the NZXT Kraken M22.  However, this device has no pump
 
 ## Initialization
 
+_Changed in 1.9.0: the firmware version is now reported after initialization._  
+
 All device should be (re)initialized after the system boots or resumes from a
 suspended state, or if there have been hardware changes.
 
@@ -37,6 +39,8 @@ command itself.
 
 
 ## Monitoring
+
+_Changed in 1.9.0: the firmware version is no longer reported on the CLI._  
 
 The cooler can report the fan and pump speed, as well as the liquid temperature.
 
@@ -129,3 +133,20 @@ they will be removed in a future version and are kept for now for backward compa
 | ✓ |   |   | `backwards-marquee-<length>` | One | 3 ≤ `length` ≤ 6 |
 | ✓ |   |   | `covering-backwards-marquee` | Up to 8, one for each step |
 | ✓ |   |   | `backwards-moving-alternating` | Two |
+
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+_New in 1.9.0._  
+
+Kraken X2 devices are supported by the mainline Linux kernel with its
+[`nzxt-kraken2`] driver, and status data is provided through a standard hwmon
+sysfs interface.
+
+Starting with version 1.9.0, liquidctl automatically detects when a kernel
+driver is bound to the device and, whenever possible, uses it instead of
+directly accessing the device.  Alternatively, direct access to the device can
+be forced with `--direct-access`.
+
+[`nzxt-kraken2`]: https://www.kernel.org/doc/html/latest/hwmon/nzxt-kraken2.html

@@ -117,6 +117,8 @@ def _fan_mode_desc(mode):
 class CommanderPro(UsbHidDriver):
     """Corsair Commander Pro LED and fan hub"""
 
+    # support for hwmon: corsair-cpro, Linux 5.9
+
     SUPPORTED_DEVICES = [
         (0x1b1c, 0x0c10, None, 'Corsair Commander Pro',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
@@ -156,20 +158,12 @@ class CommanderPro(UsbHidDriver):
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
         return ret
 
-    def initialize(self, **kwargs):
-        """Initialize the device and get the fan modes.
-
-        The device should be initialized every time it is powered on, including when
-        the system resumes from suspending to memory.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _initialize_directly(self, **kwargs):
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[1], res[2], res[3])
 
         res = self._send_command(_CMD_GET_BOOTLOADER)
-        bootloader_version = (res[1], res[2])               # is it possible for there to be a third value?
+        bootloader_version = (res[1], res[2])  # is it possible for there to be a third value?
 
         status = [
             ('Firmware version', '{}.{}.{}'.format(*fw_version), ''),
@@ -186,7 +180,6 @@ class CommanderPro(UsbHidDriver):
             ]
 
         if self._fan_count > 0:
-            # get the information about how the fans are connected, probably want to save this for later
             res = self._send_command(_CMD_GET_FAN_MODES)
             fanModes = res[1:self._fan_count+1]
             self._data.store('fan_modes', fanModes)
@@ -197,16 +190,70 @@ class CommanderPro(UsbHidDriver):
 
         return status
 
-    def get_status(self, **kwargs):
-        """Get a status report.
+    def _get_static_info_from_hwmon(self):
+        # firmware and bootloader versions are not available through hwmon, but
+        # we don't want to race with the kernel driver
+        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.module)
 
-        Returns a list of `(property, value, unit)` tuples.
+        status = []
+
+        if self._temp_probs > 0:
+            # use ints to mimic how we normally handle the raw data
+            sensors = [int(self._hwmon.has_attribute(f'temp{n}_input')) for n in range(1, 5)]
+            _LOGGER.debug('%r', sensors)
+            self._data.store('temp_sensors_connected', sensors)
+
+            for n, connected in zip(range(1, 5), sensors):
+                status.append((f'Temperature probe {n}', bool(connected), ''))
+
+        if self._fan_count > 0:
+            def hwmon_fan_mode(hwmon, n):
+                attr = f'fan{n}_label'
+                if not hwmon.has_attribute(attr):
+                    return _FAN_MODE_DISCONNECTED
+
+                label = hwmon.get_string(attr)
+                if label.endswith('4pin'):
+                    return _FAN_MODE_PWM
+                elif label.endswith('3pin'):
+                    return _FAN_MODE_DC
+                else:
+                    assert label.endswith('other')
+                    _LOGGER.warning('hwmon reported the fan mode as other')
+                    return None
+
+            fans = [hwmon_fan_mode(self._hwmon, n) for n in range(1, 7)]
+            _LOGGER.debug('%r', fans)
+            self._data.store('fan_modes', fans)
+
+            for n, mode in zip(range(1, 7), fans):
+                status.append((f'Fan {n} control mode', _fan_mode_desc(mode), ''))
+
+        return status
+
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
         """
 
-        if self._fan_count == 0 or self._temp_probs == 0:
-            _LOGGER.debug('only Commander Pro and Obsidian 1000D report status')
-            return []
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+            return self._get_static_info_from_hwmon()
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            return self._initialize_directly()
 
+    def _get_status_directly(self):
         temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
         fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
 
@@ -231,6 +278,53 @@ class CommanderPro(UsbHidDriver):
             status.append((f'{rail} rail', voltage, 'V'))
 
         return status
+
+    def _get_status_from_hwmon(self):
+        temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
+        fan_modes = self._data.load('fan_modes', default=[0]*self._fan_count)
+
+        status = []
+
+        # get the temperature sensor values
+        for i, probe_enabled in enumerate(temp_probes):
+            if probe_enabled:
+                n = i + 1
+                temp = self._hwmon.get_int(f'temp{n}_input') * 1e-3
+                status.append((f'Temperature {n}', temp, '°C'))
+
+        # get fan RPMs of connected fans
+        for i, fan_mode in enumerate(fan_modes):
+            if fan_mode == _FAN_MODE_DC or fan_mode == _FAN_MODE_PWM:
+                n = i + 1
+                speed = self._hwmon.get_int(f'fan{n}_input')
+                status.append((f'Fan {n} speed', speed, 'rpm'))
+
+        # get the real power supply voltages
+        for i, rail in enumerate(["+12V", "+5V", "+3.3V"]):
+            voltage = self._hwmon.get_int(f'in{i}_input') * 1e-3
+            status.append((f'{rail} rail', voltage, 'V'))
+
+        return status
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        if self._fan_count == 0 or self._temp_probs == 0:
+            _LOGGER.debug('only Commander Pro and Obsidian 1000D report status')
+            return []
+
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.warning('directly reading the status despite %s kernel driver',
+                            self._hwmon.module)
+
+        return self._get_status_directly()
 
     def _get_temp(self, sensor_num):
         """This will get the temperature in degrees celsius for the specified temp sensor.

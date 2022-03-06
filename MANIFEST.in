@@ -1,2 +1,1 @@
-exclude appveyor.yml
 recursive-exclude .github *
