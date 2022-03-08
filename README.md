@@ -270,17 +270,11 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.7 or later) and LibUSB 1.0 DLLs must be installed
-beforehand.
-
-Python can be installed from the [official website][python.org].  It is
-generally useful to select the option to add `python` and other tools to the
-`PATH`.
-
-The LibUSB DLLs can be found in [libusb/releases], within the `*.7z` archives.
-The appropriate files (i.e. `VS2019\MS64\Release\dll\*`) should be extracted to
-the system directory (`C:\Windows\System32`), or, alternatively, to the
-appropriate Python installation directory (e.g. `C:\Python310`).
+On Windows, Python (3.7 or later) must be installed beforehand, which can be
+done from from the [official website][python.org].  It is generally useful to
+select the option to add `python` and other tools to the `PATH`.  A LibUSB 1.0
+DLL is also necessary, but one will already be automatically installed with
+liquidctl.
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do
 not use the Microsoft HID Driver, require a libusb-compatible driver; these are
