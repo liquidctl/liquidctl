@@ -407,6 +407,7 @@ them:
 
 ```
 pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+pip install --upgrade "libusb_package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 pip install --upgrade "smbus; sys_platform == 'linux'"
 ```
 
