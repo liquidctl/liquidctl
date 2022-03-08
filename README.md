@@ -406,7 +406,8 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm "smbus; sys_platform == 'linux'"
+pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+pip install --upgrade "smbus; sys_platform == 'linux'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:
