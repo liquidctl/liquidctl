@@ -35,7 +35,7 @@ def test_aura_led_19AF_device_command_format(mockAuraLed_19AFDevice):
     mockAuraLed_19AFDevice.set_color(channel='sync', mode='off', colors=[]) # should perform 14 writes
     assert len(mockAuraLed_19AFDevice.device.sent) == 3 + 14
 
-    for i, (report, data) in enumerate(mockRgbFusion2_5702Device.device.sent):
+    for i, (report, data) in enumerate(mockAuraLed_19AFDevice.device.sent):
         assert report == 0xec
         assert len(data) == 64  
 
@@ -60,7 +60,7 @@ def test_aura_led_19AF_device_off_with_some_channel(mockAuraLed_19AFDevice):
     
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
     data1 = mockAuraLed_19AFDevice.device.sent[0].data
-    data2 = mockAuraLed_19ADDevice.device.send[1].data
+    data2 = mockAuraLed_19AFDevice.device.send[1].data
     assert data1[1] == 0x01 # key for argb1
     assert data1[4] == 0x00 # off
     assert data2[2] == 0x02 # channel argb1
@@ -73,7 +73,7 @@ def test_aura_led_19AF_static_with_some_channel(mockAuraLed_19AFDevice):
     
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
     data1 = mockAuraLed_19AFDevice.device.sent[0].data
-    data2 = mockAuraLed_19ADDevice.device.send[1].data
+    data2 = mockAuraLed_19AFDevice.device.send[1].data
     assert data1[1] == 0x01 # key for argb1
     assert data1[4] == 0x01 # static mode
     assert data2[2] == 0x02 # channel argb2
@@ -86,7 +86,7 @@ def test_aura_led_19AF_spectrum_cycle_with_some_channel(mockAuraLed_19AFDevice):
     
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
     data1 = mockAuraLed_19AFDevice.device.sent[0].data
-    data2 = mockAuraLed_19ADDevice.device.send[1].data
+    data2 = mockAuraLed_19AFDevice.device.send[1].data
     assert data1[1] == 0x01 # key for argb2
     assert data1[4] == 0x04 # spectrum cycle
     assert data2[2] == 0x04 # channel argb2
@@ -96,7 +96,7 @@ def test_aura_led_19AF_spectrum_cycle_with_some_channel(mockAuraLed_19AFDevice):
 def test_aura_led_19AF_device_sync_channel(mockAuraLed_19AFDevice):
     colors = [[0xff, 0, 0x80]]
     mockAuraLed_19AFDevice.set_color(channel='sync', mode='static', colors=iter(colors))
-    assert len(mockRgbFusion2_5702Device.device.sent) == 14  # 14 writes
+    assert len(mockAuraLed_19AFDevice.device.sent) == 14  # 14 writes
 
 
 def test_aura_led_19AF_device_invalid_set_color_arguments(mockAuraLed_19AFDevice):
