@@ -125,9 +125,10 @@ _COLOR_MODES = {
 
 
 class AuraLed(UsbHidDriver):
-    """liquidctl driver for Asus Aura LED USB controllers."""
-
-    """This driver only supports 'effect' mode, hence no speed/color channels"""
+    """
+    liquidctl driver for Asus Aura LED USB controllers.
+    This driver only supports 'effect' mode, hence no speed/color channels
+    """
     SUPPORTED_DEVICES = [
         (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
         # Device 0x18F3 is not fully supported at this time; users are welcome
@@ -138,14 +139,11 @@ class AuraLed(UsbHidDriver):
 
     def initialize(self, **kwargs):
         """Initialize the device.
-
         Returns a list of `(property, value, unit)` tuples, containing the
         firmware version and other useful information provided by the hardware.
         """
-
         # Get firmware version
         self._write(_FUNCTION_CODE["firmware"])
-        
         status = []
         data = self.device.read(_READ_LENGTH)
         if data[1] == 0x02:
@@ -153,10 +151,8 @@ class AuraLed(UsbHidDriver):
         else:
             status.append("Unexpected reply for firmware", "", "")
             return status
-
         # Get config table
         self._write(_FUNCTION_CODE["config"])
-
         data = self.device.read(_READ_LENGTH)
         if (data[1] == 0x30):
             start_index = 4  # index of first record
@@ -170,39 +166,30 @@ class AuraLed(UsbHidDriver):
                 count += 1
         else:
             status.append("Unexpected reply for config", "", "")
-
         # This stops Direct mode if it was previously applied
         self._write(_FUNCTION_CODE["end_direct"])
-        
         """
         Extra operations during initialization
         This is experimental and may not be necessary
-        
         self._write([0xec, 0x31, 0x0d, 0x00]);
         self._write([0xec, 0xb1, 0x00, 0x00]);
         self.device.read(_READ_LENGTH)
-            
         self._write([0xec, 0x31, 0x0e, 0x00]);
         self._write([0xec, 0xb1, 0x00, 0x00]);
         self.device.read(_READ_LENGTH)
-
         self._write([0xec, 0x31, 0x0f, 0x00]);
         self._write([0xec, 0xb1, 0x00, 0x00]);
         self.device.read(_READ_LENGTH)
-
         self._write([0xec, 0x83, 0x00, 0x00]);
         self.device.read(_READ_LENGTH)
         """
-        
         return status
 
     def get_status(self, **kwargs):
         """Get a status report."""
         status = []
-
         # Get config table
         self._write(_FUNCTION_CODE["config"])
-
         data = self.device.read(_READ_LENGTH)
         if data[1] == 0x30:
             start_index = 4  # index of first record
@@ -216,7 +203,6 @@ class AuraLed(UsbHidDriver):
                 count += 1
         else:
             status.append("Unexpected reply for config", "", "")
-        
         return status
 
     def set_color(self, channel, mode, colors, speed="normal", **kwargs):
@@ -244,7 +230,6 @@ class AuraLed(UsbHidDriver):
             # _LOGGER.error(message)
             raise KeyError(message) from None
             return
-
         """
         This is experimental (it's an example of direct mode)
         if mode == 'off':
@@ -252,14 +237,11 @@ class AuraLed(UsbHidDriver):
             self.reset_all_channels()
             return
         """
-
         if channel == "sync":
             selected_channels = _COLOR_CHANNELS.values()
         else:
             selected_channels = (_COLOR_CHANNELS[channel],)
-
         full_cmd_seq = []  # entire series of commands are added to this list
-
         """
         Experimental code for treating RGB channel differently from others
         if channel == "rgb":
@@ -286,10 +268,8 @@ class AuraLed(UsbHidDriver):
             #full_cmd_seq.append(cmd_tuple[1])
             #full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
             """
-        
         for cmd_seq in full_cmd_seq:
             self._write(cmd_seq)
-        
         self.end_color_sequence()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -330,11 +310,9 @@ class AuraLed(UsbHidDriver):
         Create command strings for specified color channel
         """
         mode = _COLOR_MODES[mode]
-
         channel_type = _COLOR_CHANNELS[channel].channel_type  # 0=RGB, 1=ARGB
         channel_id = _COLOR_CHANNELS[channel].channel_id
         rgb_offset = _COLOR_CHANNELS[channel].rgb_offset
-
         data1 = _FUNCTION_CODE["start_seq1"] + [channel_type, 0x00, 0x00, mode.value]
         data2 = _FUNCTION_CODE["start_seq2"] + [channel_id, 0x00] + [0, 0, 0] * rgb_offset
         data2 += single_color
