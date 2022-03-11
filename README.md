@@ -273,8 +273,7 @@ brew install python libusb
 On Windows, Python (3.7 or later) must be installed beforehand, which can be
 done from from the [official website][python.org].  It is generally useful to
 select the option to add `python` and other tools to the `PATH`.  A LibUSB 1.0
-DLL is also necessary, but one will already be automatically installed with
-liquidctl.
+DLL is also necessary, but one will already be provided by liquidctl.
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do
 not use the Microsoft HID Driver, require a libusb-compatible driver; these are
@@ -286,8 +285,12 @@ and, finally, click "Replace Driver".
 _Warning: replacing the driver for a device where that is not necessary will
 likely cause it to become inaccessible from liquidctl._  
 
+_Changed in 1.9.0: the LibUSB 1.0 DLL is now provided by liquidctl or one of
+its dependencies; on versions before 1.9.0, it is necessary to manually copy
+the DLL from an official [LibUSB release] into `C:\Windows\System32\`._  
+
 [python.org]: https://www.python.org/
-[libusb/releases]: https://github.com/libusb/libusb/releases
+[LibUSB release]: https://github.com/libusb/libusb/releases
 [Zadig]: https://zadig.akeo.ie/
 
 #### Creating a virtual environment
@@ -325,6 +328,7 @@ environment's bin directory.
 [Installing from PyPI or GitHub]: #installing-from-pypi-or-github
 
 [pip] can be used to install liquidctl from the Python Package Index (PyPI).
+It will also install the necessary Python libraries.
 
 
 ```bash
