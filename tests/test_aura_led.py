@@ -21,7 +21,7 @@ _INIT_19AF_CONFIG = Report(_INIT_19AF_CONFIG_DATA[0], _INIT_19AF_CONFIG_DATA[1:]
 
 @pytest.fixture
 def mockAuraLed_19AFDevice():
-    device = MockHidapiDevice(vendor_id=0x0b05, product_id=0x19af, address="addr")
+    device = MockHidapiDevice(vendor_id=0x0B05, product_id=0x19AF, address="addr")
     dev = AuraLed(device, "mock Aura LED Controller")
 
     dev.connect()
@@ -39,7 +39,7 @@ def test_aura_led_19AF_device_command_format(mockAuraLed_19AFDevice):
 
     for i, (report, data) in enumerate(mockAuraLed_19AFDevice.device.sent):
         assert report == 0xEC
-        assert len(data) == 64  
+        assert len(data) == 64
 
 
 def test_aura_led_19AF_device_get_status(mockAuraLed_19AFDevice):
@@ -57,7 +57,7 @@ def test_aura_led_19AF_device_initialize_status(mockAuraLed_19AFDevice):
 
 
 def test_aura_led_19AF_device_off_with_some_channel(mockAuraLed_19AFDevice):
-    colors = [[0xff, 0, 0x80]]  # should be ignored
+    colors = [[0xFF, 0, 0x80]]  # should be ignored
     mockAuraLed_19AFDevice.set_color(channel="argb1", mode="off", colors=iter(colors))
     
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
@@ -66,11 +66,11 @@ def test_aura_led_19AF_device_off_with_some_channel(mockAuraLed_19AFDevice):
     assert data1[1] == 0x01  # key for argb1
     assert data1[4] == 0x00  # off
     assert data2[2] == 0x02  # channel argb1
-    assert set_color.data[7:10] == [0x00, 0x00, 0x00]
+    assert data1[7:10] == [0x00, 0x00, 0x00]
 
 
 def test_aura_led_19AF_static_with_some_channel(mockAuraLed_19AFDevice):
-    colors = [[0xff, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
+    colors = [[0xFF, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
     mockAuraLed_19AFDevice.set_color(channel="argb1", mode="static", colors=iter(colors))
     
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
@@ -79,7 +79,7 @@ def test_aura_led_19AF_static_with_some_channel(mockAuraLed_19AFDevice):
     assert data1[1] == 0x01  # key for argb1
     assert data1[4] == 0x01  # static mode
     assert data2[2] == 0x02  # channel argb2
-    assert set_color.data[7:10] == [0xFF, 0x00, 0x80]
+    assert data1[7:10] == [0xFF, 0x00, 0x80]
 
 
 def test_aura_led_19AF_spectrum_cycle_with_some_channel(mockAuraLed_19AFDevice):
@@ -92,7 +92,7 @@ def test_aura_led_19AF_spectrum_cycle_with_some_channel(mockAuraLed_19AFDevice):
     assert data1[1] == 0x01  # key for argb2
     assert data1[4] == 0x04  # spectrum cycle
     assert data2[2] == 0x04  # channel argb2
-    assert set_color.data[7:10] == [0x00, 0x00, 0x00]
+    assert data1[7:10] == [0x00, 0x00, 0x00]
 
 
 def test_aura_led_19AF_device_sync_channel(mockAuraLed_19AFDevice):

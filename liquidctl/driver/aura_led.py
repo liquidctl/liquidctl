@@ -83,8 +83,9 @@ _FUNCTION_CODE = {
 # channel_type 0 designates RGB bus
 # channel_type 1 designates ARGB bus
 # "effect" mode channel IDs are different from "direct" mode channel IDs
-_ColorChannel = namedtuple("_ColorChannel", ["name", "channel_id", "direct_channel_id",
-                           "channel_type", "rgb_offset"])
+_ColorChannel = namedtuple(
+    "_ColorChannel", ["name", "channel_id", "direct_channel_id", "channel_type", "rgb_offset"]
+)
 
 _COLOR_CHANNELS = {
     channel.name: channel
@@ -111,10 +112,10 @@ _COLOR_MODES = {
         _ColorMode("chase_fade", 0x07, takes_color=True),
         _ColorMode("spectrum_cycle_chase_fade", 0x08, takes_color=False),
         _ColorMode("chase", 0x09, takes_color=True),
-        _ColorMode("spectrum_cycle_chase", 0x0a, takes_color=False),
-        _ColorMode("spectrum_cycle_wave", 0x0b, takes_color=False),
-        _ColorMode("chase_rainbow_pulse", 0x0c, takes_color=False),
-        _ColorMode("rainbow_flicker", 0x0d, takes_color=False),
+        _ColorMode("spectrum_cycle_chase", 0x0A, takes_color=False),
+        _ColorMode("spectrum_cycle_wave", 0x0B, takes_color=False),
+        _ColorMode("chase_rainbow_pulse", 0x0C, takes_color=False),
+        _ColorMode("rainbow_flicker", 0x0D, takes_color=False),
         _ColorMode("gentle_transition", 0x10, takes_color=False),
         _ColorMode("wave_propagation", 0x11, takes_color=False),
         _ColorMode("wave_propagation_pause", 0x12, takes_color=False),
@@ -148,9 +149,9 @@ class AuraLed(UsbHidDriver):
         status = []
         data = self.device.read(_READ_LENGTH)
         if (data[1] == 0x02):
-            status.append(("Firmware version", ''.join(map(chr, data[2:17])), ''))
+            status.append(("Firmware version", "".join(map(chr, data[2:17])), ""))
         else:
-            status.append("Unexpected reply for firmware", '', '')
+            status.append("Unexpected reply for firmware", "", "")
             return status
 
         # Get config table
@@ -158,15 +159,17 @@ class AuraLed(UsbHidDriver):
 
         data = self.device.read(_READ_LENGTH)
         if (data[1] == 0x30):
-            start_index = 4 # index of first record
-            num = 6 # number of bytes per record
+            start_index = 4  # index of first record
+            num = 6  # number of bytes per record
             count = 1
             while (start_index + num < _READ_LENGTH):
-                status.append(("Device Config: "+str(count), data[start_index:start_index+num], ''))
+                status.append(
+                    ("Device Config: "+str(count), data[start_index:start_index+num], '')
+                )
                 start_index += num
                 count += 1
         else:
-            status.append("Unexpected reply for config", '', '')
+            status.append("Unexpected reply for config", "", "")
 
         # This stops Direct mode if it was previous applied
         self._write(_FUNCTION_CODE["end_direct"])
@@ -194,9 +197,7 @@ class AuraLed(UsbHidDriver):
         return status
 
     def get_status(self, **kwargs):
-        """Get a status report.
-
-        """
+        """Get a status report."""
         status = []
 
         # Get config table
@@ -207,9 +208,9 @@ class AuraLed(UsbHidDriver):
             start_index = 4  # index of first record
             num = 6  # number of bytes per record
             count = 1
-            while (start_index + num < _READ_LENGTH):
+            while start_index + num < _READ_LENGTH:
                 status.append(
-                    ("Device Config: "+str(count), data[start_index:start_index+num], "")
+                    ("Device Config: " + str(count), data[start_index : start_index + num], "")
                 )
                 start_index += num
                 count += 1
@@ -319,7 +320,7 @@ class AuraLed(UsbHidDriver):
         for i in (0, 20, 40, 60, 80, 100):
             self._write(
                 _FUNCTION_CODE["direct"] 
-                + [_COLOR_CHANNELS[channel].direct_channel_id | (0x80 * (i==100)), i, 20]
+                + [_COLOR_CHANNELS[channel].direct_channel_id | (0x80 * (i == 100)), i, 20]
             )
         self.end_color_sequence()
         self._write(_FUNCTION_CODE["end_direct"])
@@ -335,11 +336,11 @@ class AuraLed(UsbHidDriver):
         rgb_offset = _COLOR_CHANNELS[channel].rgb_offset
 
         data1 = _FUNCTION_CODE["start_seq1"] + [channel_type, 0x00, 0x00, mode.value]
-        data2 = _FUNCTION_CODE['start_seq2'] + [channel_id, 0x00] + [0, 0, 0]*rgb_offset
+        data2 = _FUNCTION_CODE['start_seq2'] + [channel_id, 0x00] + [0, 0, 0] * rgb_offset
         data2 += single_color
         return (data1, data2)
 
-    def end_color_sequence(self):       
+    def end_color_sequence(self):
         self._write(_FUNCTION_CODE["end_seq1"])
         self._write(_FUNCTION_CODE["end_seq2"])
 
