@@ -30,19 +30,17 @@ some limitations in 'effect' mode, as follows:
 
 Acknowledgements:
 
-Aura LED light mode names were obtained from these sources:
-
-- Aura Addressable Header Controller
+- Aura Addressable Header Controller (for list of color mode names)
   https://gitlab.com/cneil02/aura-addressable-header-controller
 
-- OpenRGB Project
+- OpenRGB Project (for list of color mode names)
   https://github.com/CalcProgrammer1/OpenRGB
 
 - @dehjomz for discovering color modes 0x10, 0x11, 0x12, 0x13
 
-Aura LED control codes, however, were independently obtained from USB traffic 
-captured with Wireshark on Windows. This Aura LED controller uses very different 
-control codes from previous Aura LED controllers.
+Aura LED control codes were independently obtained from USB traffic captured using
+Wireshark on Windows. This Aura LED controller uses very different control codes
+from previous Aura LED controllers.
 
 Copyright (C) 2022  CaseySJ
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -85,7 +83,8 @@ _FUNCTION_CODE = {
 # channel_type 0 designates RGB bus
 # channel_type 1 designates ARGB bus
 # 'effect' mode channel IDs are different from 'direct' mode channel IDs
-_ColorChannel = namedtuple('_ColorChannel', ['name', 'channel_id', 'direct_channel_id' 'channel_type', 'rgb_offset'])
+_ColorChannel = namedtuple('_ColorChannel', ['name', 'channel_id', 'direct_channel_id',
+                           'channel_type', 'rgb_offset'])
 
 _COLOR_CHANNELS = {
     channel.name: channel
@@ -130,7 +129,10 @@ class AuraLed(UsbHidDriver):
     """This driver only supports 'effect' mode, hence no speed/color channels"""
     SUPPORTED_DEVICES = [
         (0x0b05, 0x19af, None, 'AsusTek Aura LED Controller', {}),
-        (0x0b05, 0x18f3, None, 'AsusTek Aura LED Controller', {}),
+        # Device 0x18f3 is not fully supported at this time; users are welcome
+        # to uncomment the line below if they wish to experiment with this
+        # driver and provide feedback
+        # (0x0b05, 0x18f3, None, 'AsusTek Aura LED Controller', {}),
     ]
 
     def initialize(self, **kwargs):
@@ -171,7 +173,7 @@ class AuraLed(UsbHidDriver):
         
         """
         Extra operations during initialization
-        This is experimental and appears to not be necessary
+        This is experimental and may not be necessary
         
         self._write([0xec, 0x31, 0x0d, 0x00]);
         self._write([0xec, 0xb1, 0x00, 0x00]);
@@ -272,9 +274,14 @@ class AuraLed(UsbHidDriver):
             full_cmd_seq.append(cmd_tuple[0])
             full_cmd_seq.append(cmd_tuple[1])
             full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
+            """
+            Asus Aura Crate sends command sequence twice, but our tests show
+            that this may be redundant. Nevertheless, let's keep this code here
+            in case we need to send commands twice as well
             #full_cmd_seq.append(cmd_tuple[0])
             #full_cmd_seq.append(cmd_tuple[1])
             #full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
+            """
         
         for cmd_seq in full_cmd_seq:
             self._write(cmd_seq)
