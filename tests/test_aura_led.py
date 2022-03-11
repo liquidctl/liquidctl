@@ -23,7 +23,6 @@ _INIT_19AF_CONFIG = Report(_INIT_19AF_CONFIG_DATA[0], _INIT_19AF_CONFIG_DATA[1:]
 def mockAuraLed_19AFDevice():
     device = MockHidapiDevice(vendor_id=0x0B05, product_id=0x19AF, address="addr")
     dev = AuraLed(device, "mock Aura LED Controller")
-
     dev.connect()
     return dev
 
@@ -36,7 +35,6 @@ def test_aura_led_19AF_device_command_format(mockAuraLed_19AFDevice):
         channel="sync", mode="off", colors=[]
     )  # should perform 14 writes
     assert len(mockAuraLed_19AFDevice.device.sent) == 3 + 14
-
     for i, (report, data) in enumerate(mockAuraLed_19AFDevice.device.sent):
         assert report == 0xEC
         assert len(data) == 64
@@ -51,7 +49,6 @@ def test_aura_led_19AF_device_initialize_status(mockAuraLed_19AFDevice):
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_FIRMWARE)
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_CONFIG)
     status_list = mockAuraLed_19AFDevice.initialize()
-    
     firmware_tuple = status_list[0]
     assert firmware_tuple[1] == "AULA3-AR32-0207"
 
@@ -59,7 +56,6 @@ def test_aura_led_19AF_device_initialize_status(mockAuraLed_19AFDevice):
 def test_aura_led_19AF_device_off_with_some_channel(mockAuraLed_19AFDevice):
     colors = [[0xFF, 0, 0x80]]  # should be ignored
     mockAuraLed_19AFDevice.set_color(channel="argb1", mode="off", colors=iter(colors))
-    
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
     data1 = mockAuraLed_19AFDevice.device.sent[0].data
     data2 = mockAuraLed_19AFDevice.device.sent[1].data
@@ -72,7 +68,6 @@ def test_aura_led_19AF_device_off_with_some_channel(mockAuraLed_19AFDevice):
 def test_aura_led_19AF_static_with_some_channel(mockAuraLed_19AFDevice):
     colors = [[0xFF, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
     mockAuraLed_19AFDevice.set_color(channel="argb1", mode="static", colors=iter(colors))
-    
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
     data1 = mockAuraLed_19AFDevice.device.sent[0].data
     data2 = mockAuraLed_19AFDevice.device.sent[1].data
@@ -85,7 +80,6 @@ def test_aura_led_19AF_static_with_some_channel(mockAuraLed_19AFDevice):
 def test_aura_led_19AF_spectrum_cycle_with_some_channel(mockAuraLed_19AFDevice):
     colors = [[0xFF, 0, 0x80], [0x30, 0x30, 0x30]]  # second color should be ignored
     mockAuraLed_19AFDevice.set_color(channel="argb2", mode="spectrum_cycle", colors=iter(colors))
-    
     assert len(mockAuraLed_19AFDevice.device.sent) == 5
     data1 = mockAuraLed_19AFDevice.device.sent[0].data
     data2 = mockAuraLed_19AFDevice.device.sent[1].data
@@ -117,6 +111,5 @@ def test_aura_led_19AF_device_initialize_status(mockAuraLed_19AFDevice):
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_FIRMWARE)
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_CONFIG)
     status_list = mockAuraLed_19AFDevice.initialize()
-    
     firmware_tuple = status_list[0]
     assert firmware_tuple[1] == "AULA3-AR32-0207"

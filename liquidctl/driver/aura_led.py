@@ -129,6 +129,7 @@ class AuraLed(UsbHidDriver):
     liquidctl driver for Asus Aura LED USB controllers.
     This driver only supports 'effect' mode, hence no speed/color channels
     """
+    
     SUPPORTED_DEVICES = [
         (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
         # Device 0x18F3 is not fully supported at this time; users are welcome
@@ -221,7 +222,7 @@ class AuraLed(UsbHidDriver):
                 raise ValueError(f"one color required for this mode") from None
         else:
             single_color = (0, 0, 0)
-        
+
         if channel != "sync" and channel not in _COLOR_CHANNELS:
             # _LOGGER.error("channel %s not valid", channel)
             message = "valid channels are "
@@ -325,4 +326,3 @@ class AuraLed(UsbHidDriver):
     def _write(self, data):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
-
