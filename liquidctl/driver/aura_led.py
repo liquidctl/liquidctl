@@ -154,13 +154,13 @@ class AuraLed(UsbHidDriver):
         # Get config table
         self._write(_FUNCTION_CODE["config"])
         data = self.device.read(_READ_LENGTH)
-        if (data[1] == 0x30):
+        if data[1] == 0x30:
             start_index = 4  # index of first record
             num = 6  # number of bytes per record
             count = 1
-            while (start_index + num < _READ_LENGTH):
+            while start_index + num < _READ_LENGTH:
                 status.append(
-                    ("Device Config: "+str(count), data[start_index:start_index+num], '')
+                    ("Device Config: " + str(count), data[start_index : start_index + num], '')
                 )
                 start_index += num
                 count += 1
