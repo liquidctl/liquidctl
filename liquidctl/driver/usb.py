@@ -66,6 +66,10 @@ try:
     import hidraw as hid
 except ModuleNotFoundError:
     import hid
+try:
+    import libusb_package
+except ModuleNotFoundError:
+    libusb_package = None
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 from liquidctl.driver.hwmon import HwmonDevice
@@ -321,7 +325,12 @@ class PyUsbDevice:
             args['idVendor'] = vid
         if pid:
             args['idProduct'] = pid
-        for handle in usb.core.find(find_all=True, **args):
+        if libusb_package and (sys.platform == 'win32' or sys.platform == 'cygwin'):
+            _LOGGER.debug('using libusb_package.find')
+            find = libusb_package.find
+        else:
+            find = usb.core.find
+        for handle in find(find_all=True, **args):
             yield cls(handle)
 
     @property

@@ -270,17 +270,10 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.7 or later) and LibUSB 1.0 DLLs must be installed
-beforehand.
-
-Python can be installed from the [official website][python.org].  It is
-generally useful to select the option to add `python` and other tools to the
-`PATH`.
-
-The LibUSB DLLs can be found in [libusb/releases], within the `*.7z` archives.
-The appropriate files (i.e. `VS2019\MS64\Release\dll\*`) should be extracted to
-the system directory (`C:\Windows\System32`), or, alternatively, to the
-appropriate Python installation directory (e.g. `C:\Python310`).
+On Windows, Python (3.7 or later) must be installed beforehand, which can be
+done from from the [official website][python.org].  It is generally useful to
+select the option to add `python` and other tools to the `PATH`.  A LibUSB 1.0
+DLL is also necessary, but one will already be provided by liquidctl.
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do
 not use the Microsoft HID Driver, require a libusb-compatible driver; these are
@@ -292,8 +285,12 @@ and, finally, click "Replace Driver".
 _Warning: replacing the driver for a device where that is not necessary will
 likely cause it to become inaccessible from liquidctl._  
 
+_Changed in 1.9.0: the LibUSB 1.0 DLL is now provided by liquidctl or one of
+its dependencies; on versions before 1.9.0, it is necessary to manually copy
+the DLL from an official [LibUSB release] into `C:\Windows\System32\`._  
+
 [python.org]: https://www.python.org/
-[libusb/releases]: https://github.com/libusb/libusb/releases
+[LibUSB release]: https://github.com/libusb/libusb/releases
 [Zadig]: https://zadig.akeo.ie/
 
 #### Creating a virtual environment
@@ -331,6 +328,7 @@ environment's bin directory.
 [Installing from PyPI or GitHub]: #installing-from-pypi-or-github
 
 [pip] can be used to install liquidctl from the Python Package Index (PyPI).
+It will also install the necessary Python libraries.
 
 
 ```bash
@@ -412,7 +410,9 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm "smbus; sys_platform == 'linux'"
+pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+pip install --upgrade "libusb_package; sys_platform == 'win32' or sys_platform == 'cygwin'"
+pip install --upgrade "smbus; sys_platform == 'linux'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:
