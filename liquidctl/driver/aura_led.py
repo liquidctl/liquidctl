@@ -61,64 +61,64 @@ _WRITE_LENGTH = 65
 
 _RESET_CHANNEL_ITERATIONS = 38
 
-_CMD_CODE = 0xec
+_CMD_CODE = 0xEC
 
 _FUNCTION_CODE = {
-    'direct': [_CMD_CODE, 0x40],
-    'end_direct': [_CMD_CODE, 0x35, 0x00, 0x00, 0x00, 0x00],
-    'end_effect': [_CMD_CODE, 0x35, 0x00, 0x00, 0x00, 0xff],
-    'start_seq1': [_CMD_CODE, 0x35],
-    'start_seq2': [_CMD_CODE, 0x36, 0x00],
-    'end_seq1': [_CMD_CODE, 0x35, 0x00, 0x00, 0x01, 0x05],
-    'end_seq2': [_CMD_CODE, 0x3f, 0x55, 0x00, 0x00],
-    'reset_seq1': [_CMD_CODE, 0x38, 0x01, 0x01],
-    'reset_seq2': [_CMD_CODE, 0x38, 0x00, 0x01],
-    'channel_off_pre1': [_CMD_CODE, 0x38, 0x01, 0x00],
-    'channel_off_pre2': [_CMD_CODE, 0x38, 0x00, 0x00],
-    'channel_off_prefix': [_CMD_CODE, 0x35, 0x01, 0x00, 0x00, 0xff],
-    'firmware': [_CMD_CODE, 0x82],
-    'config': [_CMD_CODE, 0xb0],
+    "direct": [_CMD_CODE, 0x40],
+    "end_direct": [_CMD_CODE, 0x35, 0x00, 0x00, 0x00, 0x00],
+    "end_effect": [_CMD_CODE, 0x35, 0x00, 0x00, 0x00, 0xFF],
+    "start_seq1": [_CMD_CODE, 0x35],
+    "start_seq2": [_CMD_CODE, 0x36, 0x00],
+    "end_seq1": [_CMD_CODE, 0x35, 0x00, 0x00, 0x01, 0x05],
+    "end_seq2": [_CMD_CODE, 0x3F, 0x55, 0x00, 0x00],
+    "reset_seq1": [_CMD_CODE, 0x38, 0x01, 0x01],
+    "reset_seq2": [_CMD_CODE, 0x38, 0x00, 0x01],
+    "channel_off_pre1": [_CMD_CODE, 0x38, 0x01, 0x00],
+    "channel_off_pre2": [_CMD_CODE, 0x38, 0x00, 0x00],
+    "channel_off_prefix": [_CMD_CODE, 0x35, 0x01, 0x00, 0x00, 0xFF],
+    "firmware": [_CMD_CODE, 0x82],
+    "config": [_CMD_CODE, 0xB0],
 }
 
 # channel_type 0 designates RGB bus
 # channel_type 1 designates ARGB bus
-# 'effect' mode channel IDs are different from 'direct' mode channel IDs
-_ColorChannel = namedtuple('_ColorChannel', ['name', 'channel_id', 'direct_channel_id',
-                           'channel_type', 'rgb_offset'])
+# "effect" mode channel IDs are different from "direct" mode channel IDs
+_ColorChannel = namedtuple("_ColorChannel", ["name", "channel_id", "direct_channel_id",
+                           "channel_type", "rgb_offset"])
 
 _COLOR_CHANNELS = {
     channel.name: channel
     for channel in [
-        _ColorChannel('rgb', 0x01, 0x00, 0x00, 0x0),
-        _ColorChannel('argb1', 0x02, 0x00, 0x01, 0x01),
-        _ColorChannel('argb2', 0x04, 0x01, 0x01, 0x02),
-        _ColorChannel('argb3', 0x08, 0x02, 0x01, 0x03),
+        _ColorChannel("rgb", 0x01, 0x00, 0x00, 0x0),
+        _ColorChannel("argb1", 0x02, 0x00, 0x01, 0x01),
+        _ColorChannel("argb2", 0x04, 0x01, 0x01, 0x02),
+        _ColorChannel("argb3", 0x08, 0x02, 0x01, 0x03),
     ]
 }
 
-_ColorMode = namedtuple('_ColorMode', ['name', 'value', 'takes_color'])
+_ColorMode = namedtuple("_ColorMode", ["name", "value", "takes_color"])
 
 _COLOR_MODES = {
     mode.name: mode
     for mode in [
-        _ColorMode('off', 0x00, takes_color=False),
-        _ColorMode('static', 0x01, takes_color=True),
-        _ColorMode('breathing', 0x02, takes_color=True),
-        _ColorMode('flashing', 0x03, takes_color=True),
-        _ColorMode('spectrum_cycle', 0x04, takes_color=False),
-        _ColorMode('rainbow', 0x05, takes_color=False),
-        _ColorMode('spectrum_cycle_breathing', 0x06, takes_color=False),
-        _ColorMode('chase_fade', 0x07, takes_color=True),
-        _ColorMode('spectrum_cycle_chase_fade', 0x08, takes_color=False),
-        _ColorMode('chase', 0x09, takes_color=True),
-        _ColorMode('spectrum_cycle_chase', 0x0a, takes_color=False),
-        _ColorMode('spectrum_cycle_wave', 0x0b, takes_color=False),
-        _ColorMode('chase_rainbow_pulse', 0x0c, takes_color=False),
-        _ColorMode('rainbow_flicker', 0x0d, takes_color=False),
-        _ColorMode('gentle_transition', 0x10, takes_color=False),
-        _ColorMode('wave_propagation', 0x11, takes_color=False),
-        _ColorMode('wave_propagation_pause', 0x12, takes_color=False),
-        _ColorMode('red_pulse', 0x13, takes_color=False),
+        _ColorMode("off", 0x00, takes_color=False),
+        _ColorMode("static", 0x01, takes_color=True),
+        _ColorMode("breathing", 0x02, takes_color=True),
+        _ColorMode("flashing", 0x03, takes_color=True),
+        _ColorMode("spectrum_cycle", 0x04, takes_color=False),
+        _ColorMode("rainbow", 0x05, takes_color=False),
+        _ColorMode("spectrum_cycle_breathing", 0x06, takes_color=False),
+        _ColorMode("chase_fade", 0x07, takes_color=True),
+        _ColorMode("spectrum_cycle_chase_fade", 0x08, takes_color=False),
+        _ColorMode("chase", 0x09, takes_color=True),
+        _ColorMode("spectrum_cycle_chase", 0x0a, takes_color=False),
+        _ColorMode("spectrum_cycle_wave", 0x0b, takes_color=False),
+        _ColorMode("chase_rainbow_pulse", 0x0c, takes_color=False),
+        _ColorMode("rainbow_flicker", 0x0d, takes_color=False),
+        _ColorMode("gentle_transition", 0x10, takes_color=False),
+        _ColorMode("wave_propagation", 0x11, takes_color=False),
+        _ColorMode("wave_propagation_pause", 0x12, takes_color=False),
+        _ColorMode("red_pulse", 0x13, takes_color=False),
     ]
 }
 
@@ -128,11 +128,11 @@ class AuraLed(UsbHidDriver):
 
     """This driver only supports 'effect' mode, hence no speed/color channels"""
     SUPPORTED_DEVICES = [
-        (0x0b05, 0x19af, None, 'AsusTek Aura LED Controller', {}),
-        # Device 0x18f3 is not fully supported at this time; users are welcome
+        (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
+        # Device 0x18F3 is not fully supported at this time; users are welcome
         # to uncomment the line below if they wish to experiment with this
         # driver and provide feedback
-        # (0x0b05, 0x18f3, None, 'AsusTek Aura LED Controller', {}),
+        # (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller", {}),
     ]
 
     def initialize(self, **kwargs):
@@ -143,18 +143,18 @@ class AuraLed(UsbHidDriver):
         """
 
         # Get firmware version
-        self._write(_FUNCTION_CODE['firmware'])
+        self._write(_FUNCTION_CODE["firmware"])
         
         status = []
         data = self.device.read(_READ_LENGTH)
         if (data[1] == 0x02):
-            status.append(('Firmware version', ''.join(map(chr, data[2:17])), ''))
+            status.append(("Firmware version", ''.join(map(chr, data[2:17])), ''))
         else:
-            status.append('Unexpected reply for firmware', '', '')
+            status.append("Unexpected reply for firmware", '', '')
             return status
 
         # Get config table
-        self._write(_FUNCTION_CODE['config'])
+        self._write(_FUNCTION_CODE["config"])
 
         data = self.device.read(_READ_LENGTH)
         if (data[1] == 0x30):
@@ -162,14 +162,14 @@ class AuraLed(UsbHidDriver):
             num = 6 # number of bytes per record
             count = 1
             while (start_index + num < _READ_LENGTH):
-                status.append(('Device Config: '+str(count), data[start_index:start_index+num], ''))
+                status.append(("Device Config: "+str(count), data[start_index:start_index+num], ''))
                 start_index += num
                 count += 1
         else:
-            status.append('Unexpected reply for config', '', '')
+            status.append("Unexpected reply for config", '', '')
 
         # This stops Direct mode if it was previous applied
-        self._write(_FUNCTION_CODE['end_direct'])
+        self._write(_FUNCTION_CODE["end_direct"])
         
         """
         Extra operations during initialization
@@ -200,23 +200,25 @@ class AuraLed(UsbHidDriver):
         status = []
 
         # Get config table
-        self._write(_FUNCTION_CODE['config'])
+        self._write(_FUNCTION_CODE["config"])
 
         data = self.device.read(_READ_LENGTH)
-        if (data[1] == 0x30):
-            start_index = 4 # index of first record
-            num = 6 # number of bytes per record
+        if data[1] == 0x30:
+            start_index = 4  # index of first record
+            num = 6  # number of bytes per record
             count = 1
             while (start_index + num < _READ_LENGTH):
-                status.append(('Device Config: '+str(count), data[start_index:start_index+num], ''))
+                status.append(
+                    ("Device Config: "+str(count), data[start_index:start_index+num], "")
+                )
                 start_index += num
                 count += 1
         else:
-            status.append('Unexpected reply for config', '', '')
+            status.append("Unexpected reply for config", "", "")
         
         return status
 
-    def set_color(self, channel, mode, colors, speed='normal', **kwargs):
+    def set_color(self, channel, mode, colors, speed="normal", **kwargs):
         """Set the color mode for a specific channel.
 
         `colors` should be an iterable of zero or one `[red, green, blue]`
@@ -229,15 +231,15 @@ class AuraLed(UsbHidDriver):
                 r, g, b = next(colors)
                 single_color = (r, g, b)
             except StopIteration:
-                raise ValueError(f'one color required for mode={mode.name}') from None
+                raise ValueError(f"one color required for mode={mode.name}") from None
         else:
             single_color = (0, 0, 0)
         
-        if channel != 'sync' and channel not in _COLOR_CHANNELS:
-            # _LOGGER.error('channel %s not valid', channel)
-            message = 'valid channels are '
+        if channel != "sync" and channel not in _COLOR_CHANNELS:
+            # _LOGGER.error("channel %s not valid", channel)
+            message = "valid channels are "
             for chan in _COLOR_CHANNELS:
-                message += chan + ' '
+                message += chan + " "
             # _LOGGER.error(message)
             raise KeyError(message) from None
             return
@@ -250,38 +252,38 @@ class AuraLed(UsbHidDriver):
             return
         """
 
-        if channel == 'sync':
+        if channel == "sync":
             selected_channels = _COLOR_CHANNELS.values()
         else:
             selected_channels = (_COLOR_CHANNELS[channel],)
 
-        full_cmd_seq = [] # entire series of commands are added to this list
+        full_cmd_seq = []  # entire series of commands are added to this list
 
         """
         Experimental code for treating RGB channel differently from others
-        if channel == 'rgb':
+        if channel == "rgb":
             cmd_tuple=self.construct_color_commands(channel, mode, single_color)
             self._write(cmd_tuple[0])
             self._write(cmd_tuple[1])
-            self._write(_FUNCTION_CODE['end_seq2'])
+            self._write(_FUNCTION_CODE["end_seq2"])
             self.end_color_sequence()
             self._write(cmd_tuple[0])
             self._write(cmd_tuple[1])
-            self._write(_FUNCTION_CODE['end_seq2'])
+            self._write(_FUNCTION_CODE["end_seq2"])
         else:
         """
         for chan in selected_channels:
-            cmd_tuple=self.construct_color_commands(chan.name, mode, single_color)
+            cmd_tuple = self.construct_color_commands(chan.name, mode, single_color)
             full_cmd_seq.append(cmd_tuple[0])
             full_cmd_seq.append(cmd_tuple[1])
-            full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
+            full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
             """
             Asus Aura Crate sends command sequence twice, but our tests show
             that this may be redundant. Nevertheless, let's keep this code here
             in case we need to send commands twice as well
             #full_cmd_seq.append(cmd_tuple[0])
             #full_cmd_seq.append(cmd_tuple[1])
-            #full_cmd_seq.append(_FUNCTION_CODE['end_seq2'])
+            #full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
             """
         
         for cmd_seq in full_cmd_seq:
@@ -299,26 +301,28 @@ class AuraLed(UsbHidDriver):
 
     def reset_all_channels(self):
         """Reset all LED channels."""
-        #for i in range(_RESET_CHANNEL_ITERATIONS):
+        # for i in range(_RESET_CHANNEL_ITERATIONS):
         for i in range(5):
-            self._write(_FUNCTION_CODE['reset_seq1'])
-            self._write(_FUNCTION_CODE['reset_seq2'])
+            self._write(_FUNCTION_CODE["reset_seq1"])
+            self._write(_FUNCTION_CODE["reset_seq2"])
 
     def channel_off(self, channel):
         """
         Uses direct mode to disable a specific channel
         """
-        self._write(_FUNCTION_CODE['end_effect'])
+        self._write(_FUNCTION_CODE["end_effect"])
         for i in range(5):
-            self._write(_FUNCTION_CODE['channel_off_pre1'])
-            self._write(_FUNCTION_CODE['channel_off_pre2'])
-        self._write(_FUNCTION_CODE['channel_off_prefix'])
+            self._write(_FUNCTION_CODE["channel_off_pre1"])
+            self._write(_FUNCTION_CODE["channel_off_pre2"])
+        self._write(_FUNCTION_CODE["channel_off_prefix"])
         # set all LEDs to off, 20 at a time
         for i in (0, 20, 40, 60, 80, 100):
-            self._write(_FUNCTION_CODE['direct'] + 
-            [_COLOR_CHANNELS[channel].direct_channel_id | (0x80 * (i==100)), i, 20])
+            self._write(
+                _FUNCTION_CODE["direct"] 
+                + [_COLOR_CHANNELS[channel].direct_channel_id | (0x80 * (i==100)), i, 20]
+            )
         self.end_color_sequence()
-        self._write(_FUNCTION_CODE['end_direct'])
+        self._write(_FUNCTION_CODE["end_direct"])
 
     def construct_color_commands(self, channel, mode, single_color):
         """
@@ -326,20 +330,20 @@ class AuraLed(UsbHidDriver):
         """
         mode = _COLOR_MODES[mode]
 
-        channel_type = _COLOR_CHANNELS[channel].channel_type # 0=RGB, 1=ARGB
+        channel_type = _COLOR_CHANNELS[channel].channel_type  # 0=RGB, 1=ARGB
         channel_id = _COLOR_CHANNELS[channel].channel_id
         rgb_offset = _COLOR_CHANNELS[channel].rgb_offset
 
-        data1 = _FUNCTION_CODE['start_seq1'] + [channel_type, 0x00, 0x00, mode.value]
+        data1 = _FUNCTION_CODE["start_seq1"] + [channel_type, 0x00, 0x00, mode.value]
         data2 = _FUNCTION_CODE['start_seq2'] + [channel_id, 0x00] + [0, 0, 0]*rgb_offset
         data2 += single_color
         return (data1, data2)
 
     def end_color_sequence(self):       
-        self._write(_FUNCTION_CODE['end_seq1'])
-        self._write(_FUNCTION_CODE['end_seq2'])
+        self._write(_FUNCTION_CODE["end_seq1"])
+        self._write(_FUNCTION_CODE["end_seq2"])
 
     def _write(self, data):
-        padding = [0x0]*(_WRITE_LENGTH - len(data))
+        padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
 
