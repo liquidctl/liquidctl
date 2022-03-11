@@ -148,7 +148,7 @@ class AuraLed(UsbHidDriver):
         
         status = []
         data = self.device.read(_READ_LENGTH)
-        if (data[1] == 0x02):
+        if data[1] == 0x02:
             status.append(("Firmware version", "".join(map(chr, data[2:17])), ""))
         else:
             status.append("Unexpected reply for firmware", "", "")
@@ -171,7 +171,7 @@ class AuraLed(UsbHidDriver):
         else:
             status.append("Unexpected reply for config", "", "")
 
-        # This stops Direct mode if it was previous applied
+        # This stops Direct mode if it was previously applied
         self._write(_FUNCTION_CODE["end_direct"])
         
         """
@@ -231,8 +231,8 @@ class AuraLed(UsbHidDriver):
             try:
                 r, g, b = next(colors)
                 single_color = (r, g, b)
-            except StopIteration:
-                raise ValueError(f"one color required for mode={mode.name}") from None
+            except:
+                raise ValueError(f"one color required for this mode") from None
         else:
             single_color = (0, 0, 0)
         
@@ -319,7 +319,7 @@ class AuraLed(UsbHidDriver):
         # set all LEDs to off, 20 at a time
         for i in (0, 20, 40, 60, 80, 100):
             self._write(
-                _FUNCTION_CODE["direct"] 
+                _FUNCTION_CODE["direct"]
                 + [_COLOR_CHANNELS[channel].direct_channel_id | (0x80 * (i == 100)), i, 20]
             )
         self.end_color_sequence()
@@ -336,7 +336,7 @@ class AuraLed(UsbHidDriver):
         rgb_offset = _COLOR_CHANNELS[channel].rgb_offset
 
         data1 = _FUNCTION_CODE["start_seq1"] + [channel_type, 0x00, 0x00, mode.value]
-        data2 = _FUNCTION_CODE['start_seq2'] + [channel_id, 0x00] + [0, 0, 0] * rgb_offset
+        data2 = _FUNCTION_CODE["start_seq2"] + [channel_id, 0x00] + [0, 0, 0] * rgb_offset
         data2 += single_color
         return (data1, data2)
 
