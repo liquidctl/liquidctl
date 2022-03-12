@@ -5,10 +5,9 @@
 ### Changes since 1.8.1
 
 Added:
-- Add support for persisting settings on modern Asetek 690LC coolers (EVGA CLC
-  and Corsair Hydro GT/GTX/v2)
+- Add support for persisting settings on modern Asetek 690LC coolers (#355)
 - Add support for setting fixed fan/pump speeds on the Corsair Commander Core
-  (shipped with the Corsair Hydro Elite Capellix and LCD coolers)
+  (PR #405)
 - Identify some devices with a matching Linux hwmon device (#403, PR #429)
 - Add `--direct-access` to force it in spite of the presence of kernel drivers
   (#403, PR #429)
@@ -54,7 +53,8 @@ Added:
     - ASUS Strix RTX 2080 Ti
     - ASUS TUF RTX 3060 Ti OC
 - API: add `liquidctl.__version__`
-- extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR #424)
+- extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR #424,
+  PR #426)
 
 Changed:
 - Log the Python interpreter version
@@ -65,14 +65,18 @@ Changed:
 - Don't re-initialize devices with a Linux hwmon driver (#403, PR #429)
 - If possible, read status from Linux hwmon (#403, PR #429)
 - Switch to a PEP 517 build (#430)
+- Replace ah-hoc version management with `setuptools_scm`
 - Allow directly invoking the CLI with `python -m liquidctl`
+- Windows: provide libsub-1.0.dll automatically with `libusb_package`
 - API: improve and clarify the documentation of `BaseDriver` methods
+- API: rename `CorsairAsetekProDriver` to `HydroPro`
 
 Deprecated:
 - Deprecate directly invoking the CLI with `python -m liquidctl.cli` (use
   `python -m liquidctl`)
 - API: deprecate including the firmware version in the output from
   `KrakenX2.get_status()` (read it from `.initialize()`)
+- API: deprecate `CorsairAsetekProDriver` alias (use `HydroPro`)
 
 Removed:
 - API: remove long deprecated support for connecting to Kraken X2 devices with
@@ -84,7 +88,8 @@ Removed:
 
 Fixed:
 - Let all unexpected SMBus exceptions bubble up (#416)
-- Reset Kraken X2 fan and pump profiles during initialization (#395, possibly)
+- Reset Kraken X2 fan and pump profiles during initialization (possibly related
+  to #395)
 - Remove redundant prefix from CLI error messages
 
 ### Notes for downstream packagers
@@ -278,7 +283,7 @@ Changelog since 1.5.1:
  - Add `sync` pseudo lighting channel to Commander/Lighting Node Pro devices
  - Add duty cycles to Hydro Platinum and Pro XT status output
  - Add input power and efficiency estimates to the status output of Corsair HXi and RMi PSUs
- - Add the Contributor Covenant, version 1.4 as our code of conduct 
+ - Add the Contributor Covenant, version 1.4 as our code of conduct
 ### Changed
  - Remove `pro_xt_lighting` unsafe feature guard
  - Enforce correct casing of constants in driver APIs
