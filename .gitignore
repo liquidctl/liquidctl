@@ -1,7 +1,7 @@
 *.egg-info/
 .krakenduty-poc
-.tox/
+/.tox/
+/build/
+/dist/
 __pycache__/
-build/
-dist/
 liquidctl/_version.py
