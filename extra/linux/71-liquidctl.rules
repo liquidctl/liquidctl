@@ -353,6 +353,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c15", TAG+="uacc
 # Corsair Hydro H100i Pro XT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c20", TAG+="uaccess"
 
+# Corsair Hydro H100i Pro XT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c2d", TAG+="uaccess"
+
 # Corsair Hydro H100i v2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c09", TAG+="uaccess"
 
@@ -371,14 +374,23 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c13", TAG+="uacc
 # Corsair Hydro H115i Pro XT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c21", TAG+="uaccess"
 
+# Corsair Hydro H115i Pro XT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c2e", TAG+="uaccess"
+
 # Corsair Hydro H150i Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c12", TAG+="uaccess"
 
 # Corsair Hydro H150i Pro XT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c22", TAG+="uaccess"
 
+# Corsair Hydro H150i Pro XT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c2f", TAG+="uaccess"
+
 # Corsair Hydro H60i Pro XT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c29", TAG+="uaccess"
+
+# Corsair Hydro H60i Pro XT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c30", TAG+="uaccess"
 
 # Corsair Hydro H80i GT
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c02", TAG+="uaccess"
