@@ -64,8 +64,8 @@ Changed:
   to initialization (PR #429)
 - Don't re-initialize devices with a Linux hwmon driver (#403, PR #429)
 - If possible, read status from Linux hwmon (#403, PR #429)
-- Switch to a PEP 517 build (#430)
-- Replace ah-hoc version management with `setuptools_scm`
+- Switch to a PEP 517 build (#430, PR #431)
+- Replace ah-hoc version management with `setuptools_scm` (#430, PR #431)
 - Allow directly invoking the CLI with `python -m liquidctl`
 - Windows: provide libsub-1.0.dll automatically with `libusb_package`
 - API: improve and clarify the documentation of `BaseDriver` methods
