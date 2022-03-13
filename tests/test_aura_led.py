@@ -34,7 +34,7 @@ def test_aura_led_19AF_device_command_format(mockAuraLed_19AFDevice):
     mockAuraLed_19AFDevice.set_color(
         channel="sync", mode="off", colors=[]
     )  # should perform 14 writes
-    assert len(mockAuraLed_19AFDevice.device.sent) == 3 + 14
+    assert len(mockAuraLed_19AFDevice.device.sent) == 2 + 14
     for i, (report, data) in enumerate(mockAuraLed_19AFDevice.device.sent):
         assert report == 0xEC
         assert len(data) == 64
