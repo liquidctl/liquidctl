@@ -2,7 +2,8 @@
 _Driver API and source code available in [`liquidctl.driver.aura_led_`](../liquidctl/driver/aura_led_.py)._
 
 ```
-Some features of this driver are still being worked on. Your use of this driver means you understand and accept that it is a beta release.
+Some features of this driver are still being worked on. Your use of this driver means
+you understand and accept that it is a beta release.
 ```
 
 This driver supports Asus Aura USB-based lighting controllers that appear in Asus Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate the lighting on each addressable LED in each channel. The other mode is _effect_ mode in which the controller itself modulates the lighting on each addressable LED in each channel. Effect mode requires the application to send a single set of command codes to the controller in order to initiate the given effect. The controller handles the rest until such time that the application sends a different command set.
@@ -13,11 +14,14 @@ The disadvantage, however, is the inability to set different lighting modes to d
 
 There are two known variants of the Aura LED USB-based controller:
 
-- Device 0x19AF: found in Asus ProArt Z690-Creator WiFi
-- Device 0x18F3: found in Asus ROG Maximus Z690 Formula 
+- Device `0x19AF`: found in Asus ProArt Z690-Creator WiFi
+- Device `0x18F3`: found in Asus ROG Maximus Z690 Formula 
 
 ```
-Please note that support for *device 0x18F3* is not properly or sufficiently developed so this device has been commented-out in the driver. Users may uncomment the line in `SUPPORTED_DEVICES` to experiment and provide feedback. Wireshark USB traffic  capture, in particular, will be very helpful.
+Please note that support for device `0x18F3` is not properly or sufficiently developed
+so this device has been commented-out in the driver. Users may uncomment the line in
+`SUPPORTED_DEVICES` to experiment and provide feedback. Wireshark USB traffic  capture,
+in particular, will be very helpful.
 ```
 
 ## Initialization
@@ -67,8 +71,7 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | `wave_propagation_pause` | None | name given by us |
 | `red_pulse` | None | name given by us |
 
-In addition to these, it is also possible to use the `sync` pseudo-channel to
-apply a setting to all lighting channels.
+In addition to these, it is also possible to use the `sync` pseudo-channel to apply a setting to all lighting channels.
 
 
 ## Correspondence between lighting channels and physical locations
