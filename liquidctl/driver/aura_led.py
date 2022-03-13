@@ -132,9 +132,11 @@ class AuraLed(UsbHidDriver):
 
     SUPPORTED_DEVICES = [
         (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
-        # Device 0x18F3 is not fully supported at this time; users are welcome
-        # to uncomment the line below if they wish to experiment with this
-        # driver and provide feedback
+        """
+        Device 0x18F3 is not fully supported at this time; users are welcome
+        to uncomment the line below if they wish to experiment with this
+        driver and provide feedback
+        """
         # (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller", {}),
     ]
 
