@@ -133,6 +133,7 @@ class AuraLed(UsbHidDriver):
     to uncomment the 2nd line below in SUPPORTED_DEVICES if they wish to experiment
     with this driver and provide feedback
     """
+
     SUPPORTED_DEVICES = [
         (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
         # (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller", {}),
