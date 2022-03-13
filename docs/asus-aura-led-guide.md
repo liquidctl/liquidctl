@@ -1,5 +1,5 @@
 # Asus Aura LED (USB-based) controllers
-_Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led_.py)._
+_Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led.py)._
 
 __NOTE:__
 Some features of this driver are still being worked on. Your use of this driver indicates that you understand and accept it is a beta release.
