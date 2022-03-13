@@ -67,7 +67,7 @@ Changed:
 - Switch to a PEP 517 build (#430, PR #431)
 - Replace ah-hoc version management with `setuptools_scm` (#430, PR #431)
 - Allow directly invoking the CLI with `python -m liquidctl`
-- Windows: provide libsub-1.0.dll automatically with `libusb_package`
+- Windows: provide libsub-1.0.dll automatically with `libusb-package`
 - API: improve and clarify the documentation of `BaseDriver` methods
 - API: rename `CorsairAsetekProDriver` to `HydroPro`
 
