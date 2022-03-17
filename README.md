@@ -78,7 +78,7 @@ Corsair Vengeance RGB DIMM4
 1. [Automation and running at boot]
     1. [Set up Linux using systemd]
     1. [Set up Windows using Task Scheduler]
-    1. [Set up macOS using launchd]
+    1. [Set up macOS using various methods]
 1. [Troubleshooting]
 1. [Additional documentation]
 1. [License]
@@ -714,8 +714,8 @@ A slightly more complex example can be seen in [issue #14](https://github.com/li
 
 As an alternative to using Task Scheduler, the batch file can simply be placed in the startup folder; you can run `shell:startup` to [find out where that is](https://support.microsoft.com/en-us/help/4026268/windows-10-change-startup-apps).
 
-### Set up macOS using launchd
-[Set up macOS using launchd]: #set-up-macos-using-launchd
+### Set up macOS using various methods
+[Set up macOS using various methods]: #set-up-macos-using-various-methods
 
 You can follow either or both of the guides below to automatically configure your devices during login or after waking from sleep. The guides are hosted on tonymacx86:
 
