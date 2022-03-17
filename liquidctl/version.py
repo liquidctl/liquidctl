@@ -3,6 +3,10 @@
 # uses the psf/black style
 
 
+# keep setuptools_scm parameters in sync with pyproject.toml
+_SETUPTOOLS_SCM_PARAMS = {"version_scheme": "release-branch-semver"}
+
+
 def _build_version():
 
     try:
@@ -22,7 +26,7 @@ def _runtime_version():
 
     # first, assume that we're a git checkout
     try:
-        version = get_version()
+        version = get_version(**_SETUPTOOLS_SCM_PARAMS)
         if version:
             return (version, None)
     except LookupError:
@@ -30,7 +34,7 @@ def _runtime_version():
 
     # if that also failed, assume that we're a tarball
     try:
-        guess = get_version(parentdir_prefix_version="liquidctl-")
+        guess = get_version(parentdir_prefix_version="liquidctl-", **_SETUPTOOLS_SCM_PARAMS)
         if guess:
             if "+" in guess:
                 guess += "-guessed"
