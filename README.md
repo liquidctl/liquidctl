@@ -717,7 +717,7 @@ As an alternative to using Task Scheduler, the batch file can simply be placed i
 ### Set up macOS using launchd
 [Set up macOS using launchd]: #set-up-macos-using-launchd
 
-You can use a shell script and launchd to automatically configure your devices during login or after waking from sleep. Two detailed guides are available on tonymacx86:
+You can follow either or both of the guides below to automatically configure your devices during login or after waking from sleep. The guides are hosted on tonymacx86:
 
 - [This guide](https://www.tonymacx86.com/threads/gigabyte-z490-vision-d-thunderbolt-3-i5-10400-amd-rx-580.298642/post-2138475) is for controllers that lose their state during sleep (e.g. Gigabyte RGB Fusion 2.0) and need to be reinitialized after wake-from-sleep. This guide uses _Automator_ to initialize supported devices at login, and _sleepwatcher_ to initialize supported devices after wake-from-sleep.
 - [This guide](https://www.tonymacx86.com/threads/asus-z690-proart-creator-wifi-thunderbolt-4-i7-12700k-amd-rx-6800-xt.318311/post-2306524) is for controllers that do not lose their state during sleep (e.g. Asus Aura LED). This driver uses the _launchctl_ method to initialize supported devices at login.
