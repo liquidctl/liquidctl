@@ -78,7 +78,7 @@ Fixed:
 
 ### Notes for downstream packagers
 
-liquidctl now uses a PEP 517 build: [PyPA/build] and [pradyunsg/installer] are
+liquidctl now uses a PEP 517 build: [PyPA/build] and [PyPA/installer] are
 suggested for a typical downstream package build process:
 
 ```bash
@@ -101,7 +101,7 @@ python -m installer [args]
 ```
 
 [PyPA/build]: https://github.com/pypa/build
-[pradyunsg/installer]: https://github.com/pradyunsg/installer
+[PyPA/installer]: https://github.com/pypa/installer
 [setuptools_scm]: https://github.com/pypa/setuptools_scm
 
 
