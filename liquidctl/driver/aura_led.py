@@ -186,8 +186,12 @@ class AuraLed(UsbHidDriver):
             count = 1
             while start_index + num < _READ_LENGTH:
                 status.append(
-                    ("Device Config: " + str(count), 
-                        ", ".join("0x{:02x}".format(x) for x in data[start_index : start_index + num]), ""
+                    (
+                        "Device Config: " + str(count),
+                        ", ".join(
+                            "0x{:02x}".format(x) for x in data[start_index : start_index + num]
+                        ),
+                        ""
                     )
                 )
                 start_index += num
