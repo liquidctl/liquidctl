@@ -129,13 +129,14 @@ class AuraLed(UsbHidDriver):
     liquidctl driver for Asus Aura LED USB controllers.
     This driver only supports 'effect' mode, hence no speed/color channels
 
-    Device 0x18F3 is not fully supported at this time; users are welcome
-    to uncomment the 2nd line below in SUPPORTED_DEVICES if they wish to experiment
-    with this driver and provide feedback
+    Devices 0x1939 and 0x18F3 are not fully supported at this time; users are welcome
+    to uncomment the 2nd and/or 3rd line below in SUPPORTED_DEVICES if they wish to
+    experiment with this driver and provide feedback
     """
 
     SUPPORTED_DEVICES = [
         (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
+        # (0x0B05, 0x1939, None, "AsusTek Aura LED Controller", {}),
         # (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller", {}),
     ]
 

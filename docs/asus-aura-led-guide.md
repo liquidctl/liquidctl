@@ -11,12 +11,13 @@ This driver employs the _effect_ mode (fire and forget). The selected lighting m
 
 The disadvantage, however, is the inability to set different lighting modes to different lighting channels. All channels remain synchronized.
 
-There are two known variants of the Aura LED USB-based controller:
+There are three known variants of the Aura LED USB-based controller:
 
 - Device `0x19AF`: found in Asus ProArt Z690-Creator WiFi
+- Device `0x1939` [^1]
 - Device `0x18F3`[^1]: found in Asus ROG Maximus Z690 Formula
 
-[^1]: Support for device `0x18F3` is not properly or sufficiently developed so this device has been commented-out in the driver. Users may uncomment the line in `SUPPORTED_DEVICES` to experiment and provide feedback. Wireshark USB traffic  capture, in particular, will be very helpful.
+[^1]: Support for devices `0x1939` and `0x18F3` is not properly or sufficiently developed so these devices have been commented-out in the driver. Users may uncomment the line(s) in `SUPPORTED_DEVICES` to experiment and provide feedback. Wireshark USB traffic  capture, in particular, will be very helpful.
 
 
 ## Initialization
@@ -24,9 +25,27 @@ There are two known variants of the Aura LED USB-based controller:
 Asus Aura LED controller does not need to be initialized before use. Initialization is optional and recommended.
 
 ```
-# liquidctl initialize
+# liquidctl -m Aura initialize
 AsusTek Aura LED Controller
 └── Firmware version    AULA3-AR32-0207
+```
+
+## Status
+
+The `status` function currently returns a list of 6-byte values whose meanings are not fully understood. This information is provided nevertheless in the hopes of encouraging someone to interpret them properly.
+```
+% liquidctl -m Aura status
+AsusTek Aura LED Controller
+├── Device Config: 1     [30, 159, 3, 1, 0, 0]  
+├── Device Config: 2     [120, 60, 0, 1, 0, 0]  
+├── Device Config: 3     [120, 60, 0, 1, 0, 0]  
+├── Device Config: 4     [120, 60, 0, 0, 0, 0]  
+├── Device Config: 5        [0, 0, 0, 1, 4, 2]  
+├── Device Config: 6      [1, 244, 0, 0, 0, 0]  
+├── Device Config: 7        [0, 0, 0, 0, 0, 0]  
+├── Device Config: 8        [0, 0, 0, 0, 0, 0]  
+├── Device Config: 9        [0, 0, 0, 0, 0, 0]  
+└── Device Config: 10       [0, 0, 0, 0, 0, 0]  
 ```
 
 ## RGB lighting
@@ -34,11 +53,11 @@ AsusTek Aura LED Controller
 There is one 12V RGB channel named `rgb` and three 5V Addressable RGB channels named `argb1`, `argb2`, and `argb3`. Because the driver uses `effect` mode, all channels are synchronized. It is not possible to set different color modes to different channels except through `direct` mode.
 
 ```
-# liquidctl set rgb color static af5a2f
-# liquidctl set argb1 color breathing 350017
-# liquidctl set argb2 color rainbow
-# liquidctl set argb3 color spectrum-cycle
-# liquidctl set sync color gentle-transition
+# liquidctl -m Aura set rgb color static af5a2f
+# liquidctl -m Aura set argb1 color breathing 350017
+# liquidctl -m Aura set argb2 color rainbow
+# liquidctl -m Aura set argb3 color spectrum-cycle
+# liquidctl -m Aura set sync color gentle-transition
 ```
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports zero or one color. 
