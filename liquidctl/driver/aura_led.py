@@ -191,7 +191,7 @@ class AuraLed(UsbHidDriver):
                         ", ".join(
                             "0x{:02x}".format(x) for x in data[start_index : start_index + num]
                         ),
-                        ""
+                        "",
                     )
                 )
                 start_index += num
