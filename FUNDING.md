@@ -26,7 +26,7 @@ Repository [liquidctl-git<sup>AUR</sup>][liquidctl-git-aur] and
 Support Jonas through:
 
  - [Patreon][jonas-patreon]
- - [PayPayl][jonas-paypal]
+ - [PayPal][jonas-paypal]
  - [Amazon (BR) wishlist][jonas-amazon]
 
 
