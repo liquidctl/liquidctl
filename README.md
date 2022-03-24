@@ -795,7 +795,7 @@ This project uses [short SPDX License List identifiers][SPDX-Short-Identifiers]
 to concisely and unambiguously indicate the applicable license in each source
 file.
 
-[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
+[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/using-SPDX-short-identifiers-in-source-files/
 
 
 ## Related projects
