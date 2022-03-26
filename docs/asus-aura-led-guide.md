@@ -36,16 +36,16 @@ The `status` function currently returns a list of 6-byte values whose meanings a
 ```
 % liquidctl -m Aura status
 AsusTek Aura LED Controller
-├── Device Config: 1     [30, 159, 3, 1, 0, 0]  
-├── Device Config: 2     [120, 60, 0, 1, 0, 0]  
-├── Device Config: 3     [120, 60, 0, 1, 0, 0]  
-├── Device Config: 4     [120, 60, 0, 0, 0, 0]  
-├── Device Config: 5        [0, 0, 0, 1, 4, 2]  
-├── Device Config: 6      [1, 244, 0, 0, 0, 0]  
-├── Device Config: 7        [0, 0, 0, 0, 0, 0]  
-├── Device Config: 8        [0, 0, 0, 0, 0, 0]  
-├── Device Config: 9        [0, 0, 0, 0, 0, 0]  
-└── Device Config: 10       [0, 0, 0, 0, 0, 0]  
+├── Device Config: 1     0x1e, 0x9f, 0x03, 0x01, 0x00, 0x00
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00
+├── Device Config: 3     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00
+├── Device Config: 4     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x04, 0x02
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 ```
 
 ## RGB lighting
