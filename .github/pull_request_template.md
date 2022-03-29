@@ -2,11 +2,11 @@ Describe what the changes are meant to address.
 
 If the implementation is not trivial, please also include a short overview.
 
-<!-- Tags (fill and keep as many as applicable): -->
+<!-- Tags (fill in and keep as many as applicable): -->
 
-Fixes: #number of issue (implies Closes tag) or commit SHA
-Closes: #number of issue or pull request
-Related: #number of issue/pull request, or link to external discussion
+Fixes: <!-- #number of issue (implies Closes tag) or commit SHA -->
+Closes: <!-- #number of issue or pull request -->
+Related: <!-- #number of issue/pull request, or link to external discussion -->
 
 ---
 
