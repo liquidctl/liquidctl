@@ -23,8 +23,6 @@ Device #3: NZXT Kraken X (X42, X52, X62 or X72)
 ```
 -->
 
-<!-- Finally, please also fill the form bellow. -->
-
 ---
 
 Additional information about the system:
