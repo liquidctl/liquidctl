@@ -326,6 +326,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c1c", TAG+="uacc
 # Corsair Commander Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="uaccess"
 
+# Corsair iCUE Commander Core XT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c2a", TAG+="uaccess"
+
 # Corsair HX1000i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c07", TAG+="uaccess"
 
