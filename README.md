@@ -236,7 +236,7 @@ On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
 - Python 3.7 or later _(python3, python)_
-- pkg_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
+- pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - docopt _(python3-docopt, python-docopt)_
 - colorlog _(python3-colorlog, python-colorlog)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
@@ -247,16 +247,9 @@ names are listed in parenthesis):
 Additionally, to build, install and test liquidctl, the following are also
 needed:
 
-- setuptools Python package _(python3-setuptools, python-setuptools)_
+- setuptools\_scm Python package _(python3-setuptools-scm, python3-setuptools_scm, python-setuptools-scm)_
 - pip (optional) _(python3-pip, python-pip)_
 - pytest (optional) _(python3-pytest, pytest, python-pytest)_
-
-Finally, if cython-hidapi is installed from source, some additional build tools
-and development headers are also required:
-
-- Python development headers _(python3-dev, python3-devel)_
-- LibUSB 1.0 development headers _(libusb-1.0-0-dev, libusbx-devel)_
-- libudev developemnt headers _(libudev-dev, libudev-devel)_
 
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
