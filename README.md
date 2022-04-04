@@ -192,7 +192,7 @@ shows more information about the packaging status in various distributions.
 ### macOS Homebrew
 [macOS Homebrew]: #macos-homebrew
 
-For macOS, liquidctl is available on Homebrew, generally at a very recent
+For macOS, liquidctl is available on Homebrew, generally at the most recent
 version.  It is also easy to install the latest development snapshot from the
 official source code repository.
 
@@ -264,9 +264,9 @@ brew install python libusb
 [Windows system dependencies]: #windows-system-level-dependencies
 
 On Windows, Python (3.7 or later) must be installed beforehand, which can be
-done from from the [official website][python.org].  It is generally useful to
-select the option to add `python` and other tools to the `PATH`.  A LibUSB 1.0
-DLL is also necessary, but one will already be provided by liquidctl.
+done from the [official website][python.org].  It is recommended to select the
+option to add `python` and other tools to the `PATH`.  A LibUSB 1.0 DLL is
+technically also necessary, but one will already be provided by liquidctl.
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do
 not use the Microsoft HID Driver, require a libusb-compatible driver; these are
@@ -321,7 +321,7 @@ environment's bin directory.
 [Installing from PyPI or GitHub]: #installing-from-pypi-or-github
 
 [pip] can be used to install liquidctl from the Python Package Index (PyPI).
-It will also install the necessary Python libraries.
+This will also install the necessary Python libraries.
 
 
 ```bash
@@ -384,8 +384,8 @@ certain scenarios:
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
 When working on the project itself, it is sometimes useful to set up a local
-development environment, where it is possible to directly run the CLI and the
-test suite, without building and installing a local package.
+development environment, making it possible to directly run the CLI and the
+test suite, without first building and installing a local package.
 
 For this, start by installing [git] and any system-level dependencies mentioned
 in [Manual installation].  Then, clone the repository and change into the
@@ -436,7 +436,7 @@ Brackets `[ ]`, parenthesis `( )`, less than/greater than `< >` and ellipsis `..
 
 The `--verbose` option will print some extra information, like automatically made adjustments to user-provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
 
-_Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG=debug` or/and `LIBUSB_DEBUG=4` environment variables._  
+_Note: in addition to `--debug`, setting the `PYUSB_DEBUG=debug` and `LIBUSB_DEBUG=4` environment variables can be helpful with problems suspected to relate to PyUSB or LibUSB._
 
 ### Listing and selecting devices
 [Listing and selecting devices]: #listing-and-selecting-devices
