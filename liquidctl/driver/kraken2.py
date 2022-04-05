@@ -151,7 +151,8 @@ class Kraken2(UsbHidDriver):
 
         # TODO remove
         if with_firmware:
-            ret.append((_STATUS_FWVERSION, self.firmware_version, ''))
+            firmware_version = '{}.{}.{}'.format(*self.firmware_version)
+            ret.append((_STATUS_FWVERSION, firmware_version, ''))
 
         return ret
 
@@ -168,7 +169,8 @@ class Kraken2(UsbHidDriver):
 
         # TODO remove
         if with_firmware:
-            ret.append((_STATUS_FWVERSION, self.firmware_version, ''))
+            firmware_version = '{}.{}.{}'.format(*self.firmware_version)
+            ret.append((_STATUS_FWVERSION, firmware_version, ''))
 
         return ret
 
