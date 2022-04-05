@@ -109,6 +109,13 @@ python -m installer [args]
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
   from more than one program and driver instance (#274)
 
+### Checksums
+
+```
+9e1ae595be2c3ea5899e12741c11307da27e86bc88f7f93c5ae40bb2aa03dc70  dist/liquidctl-1.9.0.tar.gz
+3820c29c0fc86bd6bd601d55a593f1cd476cd563875b45488bef26fc272abf6d  dist/liquidctl-1.9.0-py3-none-any.whl
+```
+
 
 ## [1.8.1] – 2022-01-21
 
