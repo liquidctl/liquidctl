@@ -549,7 +549,7 @@ class SmartDevice2(_BaseSmartDevice):
 
         for n in range(1, len(self._speed_channels) + 1):
             ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
-            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}_input') * 100. / 255, '%')),
+            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}') * 100. / 255, '%')),
             ret.append((f'Fan {n} control mode', modes[self._hwmon.get_int(f'pwm{n}_mode')], '')),
 
         # noise level is not available through hwmon, but also not very accurate or useful

@@ -245,7 +245,7 @@ class KrakenX3(UsbHidDriver):
         return [
             (_STATUS_TEMPERATURE, self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
             (_STATUS_PUMP_SPEED, self._hwmon.get_int('fan1_input'), 'rpm'),
-            (_STATUS_PUMP_DUTY, self._hwmon.get_int('pwm1_input') * 100. / 255, '%'),
+            (_STATUS_PUMP_DUTY, self._hwmon.get_int('pwm1') * 100. / 255, '%'),
         ]
 
     def get_status(self, direct_access=False, **kwargs):
@@ -254,11 +254,11 @@ class KrakenX3(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        # no driver currently supports pwm1_input, so silently fallback to
+        # no driver currently supports pwm1, so silently fallback to
         # direct mode if it isn't available; for the same reason, also don't
         # yet issue a warning when directly accessing the device
 
-        if self._hwmon and not direct_access and self._hwmon.has_attribute('pwm1_input'):
+        if self._hwmon and not direct_access and self._hwmon.has_attribute('pwm1'):
             _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
             return self._get_status_from_hwmon()
 
