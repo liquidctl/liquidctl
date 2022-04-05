@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.9.0] – 2022-04-05
 
 ### Changes since 1.8.1
 
@@ -103,6 +103,11 @@ python -m installer [args]
 [PyPA/build]: https://github.com/pypa/build
 [PyPA/installer]: https://github.com/pypa/installer
 [setuptools_scm]: https://github.com/pypa/setuptools_scm
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
 
 
 ## [1.8.1] – 2022-01-21
