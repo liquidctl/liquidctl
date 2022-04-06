@@ -18,6 +18,13 @@ Starting with 1.9.0, liquidctl now uses a PEP 517 build.  See the notes for the
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
   from more than one program and driver instance (#274)
 
+### Checksums
+
+```
+b4467e842d9a6adc804317a991354db041417f4f7dcf7d76799f2b1593ed1276  dist/liquidctl-1.9.1.tar.gz
+a23312c07b1ceec850e7739a2428e9fc47c95cd0650269653a9e726d53c12057  dist/liquidctl-1.9.1-py3-none-any.whl
+```
+
 
 ## [1.9.0] – 2022-04-05
 
