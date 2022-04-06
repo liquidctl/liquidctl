@@ -795,13 +795,14 @@ file.
 Sibling project of Linux kernel _hwmon_ drivers for devices supported by
 liquidctl.
 
+### [codifryed/coolero](https://gitlab.com/codifryed/coolero)
+
+Graphical interface to monitor and control cooling devices supported by
+liquidctl.
+
 ### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 
 Graphical interface to control many different types of RGB devices.
-
-### [leinardi/GKraken](https://gitlab.com/leinardi/gkraken)
-
-Graphical interface for NZXT Kraken X and Z coolers, using the liquidctl APIs.
 
 ### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
 
