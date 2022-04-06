@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.9.1] – 2022-04-05
+
+### Changes since 1.8.1
+
+Fixed:
+- Remove excess `_input` suffix when reading `pwmN` attributes from hwmon
+  (#445, PR #446)
+
+### Notes for downstream packagers
+
+Starting with 1.9.0, liquidctl now uses a PEP 517 build.  See the notes for the
+1.9.0 release for more information.
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
+
+
 ## [1.9.0] – 2022-04-05
 
 ### Changes since 1.8.1

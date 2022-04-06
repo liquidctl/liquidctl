@@ -328,8 +328,8 @@ This will also install the necessary Python libraries.
 # the latest stable version
 python -m pip install liquidctl
 
-# a specific version (e.g. 1.9.0)
-python -m pip install liquidctl==1.9.0
+# a specific version (e.g. 1.9.1)
+python -m pip install liquidctl==1.9.1
 ```
 
 If [git] is installed, pip can also install the latest snapshot of the official
