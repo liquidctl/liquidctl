@@ -803,13 +803,3 @@ liquidctl.
 ### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 
 Graphical interface to control many different types of RGB devices.
-
-### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
-
-Retired in 2020, but a great source of information on how Corsair devices work.
-There are ongoing efforts to port the last drivers to liquidctl, and joining
-them is a great way to get involved.
-
-### [liquidctl/collected-device-data](https://github.com/liquidctl/collected-device-data)
-
-Device information collected for developing and maintaining liquidctl.
