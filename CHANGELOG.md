@@ -2,7 +2,7 @@
 
 ## [1.9.1] – 2022-04-05
 
-### Changes since 1.8.1
+### Changes since 1.9.0
 
 Fixed:
 - Remove excess `_input` suffix when reading `pwmN` attributes from hwmon
