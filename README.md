@@ -217,8 +217,8 @@ pkg install py37-liquidctl
 ### Manual installation
 [Manual installation]: #manual-installation
 
-_Warning: on systems that still default to Python 2, replace `python`/`pip`
-with `python3`/`pip3`._
+_Warning: on systems that still default to Python 2, replace `python`
+with `python3`._
 
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
@@ -302,17 +302,15 @@ python -m venv <path>
 Once set up, the virtual environment can be activated on the current shell
 (more information in the [official documentation][virtual environment]).
 Alternatively, the virtual environment can also be used directly, without
-activation, by prefixing all `python` and `pip` invocations with the
-environment's bin directory.
+activation, by prefixing all `python` invocations with the environment's bin
+directory.
 
 ```bash
 # Linux/macOS/BSDs (POSIX)
 <path>/bin/python [arguments]
-<path>/bin/pip [arguments]
 
 # Windows
 <path>\Scripts\python [arguments]
-<path>\Scripts\pip [arguments]
 ```
 
 [virtual environment]: https://docs.python.org/3/library/venv.html
@@ -403,9 +401,9 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
-pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
-pip install --upgrade "smbus; sys_platform == 'linux'"
+python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
+python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:
@@ -424,7 +422,7 @@ python -m liquidctl [arguments]
 And to install `liquidctl` into the environment:
 
 ```
-pip install .
+python -m pip install .
 ```
 
 ## Introducing the command-line interface
