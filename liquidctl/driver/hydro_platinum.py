@@ -408,15 +408,15 @@ class HydroPlatinum(UsbHidDriver):
         return data
 
     def _send_set_cooling(self):
-        data = self._generate_cooling_payload(self._fan_names[0:2])
-        data2 = self._generate_cooling_payload(self._fan_names[2:])
-
         pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
+
+        data = self._generate_cooling_payload(self._fan_names[0:2])
         data[_PUMP_MODE_OFFSET] = pump_mode.value
         _LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
-        data2[_PUMP_MODE_OFFSET] = 0xff
 
         if len(self._fan_names) == 3:
+            data2 = self._generate_cooling_payload(self._fan_names[2:])
+            data2[_PUMP_MODE_OFFSET] = 0xff
             self._send_command(_FEATURE_COOLING2, _CMD_SET_COOLING, data=data2)
 
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
