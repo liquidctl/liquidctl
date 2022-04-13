@@ -518,7 +518,10 @@ class SmartDevice2(_BaseSmartDevice):
                     ret.append((f'LED {c + 1} accessory {a + 1}',
                                    Hue2Accessory(accessory_id), ''))
 
-        self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
+        parsers = {b'\x11\x01': parse_firm_info}
+        if self._color_channels['sync'] > 0:
+            parsers[b'\x21\x03'] = parse_led_info
+        self._read_until(parsers)
         return sorted(ret)
 
     def _get_status_directly(self):
@@ -589,6 +592,9 @@ class SmartDevice2(_BaseSmartDevice):
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
 
+        if self._color_channels['sync'] == 0:
+            raise NotSupportedByDevice()
+
         color_count = len(colors)
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
@@ -625,6 +631,40 @@ class SmartDevice2(_BaseSmartDevice):
         msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00]  # fan channel passed as bitflag in last 3 bits of 3rd byte
         msg[cid + 3] = duty  # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
         self._write(msg)
+
+
+class H1SmartDevice(SmartDevice2):
+    SUPPORTED_DEVICES = [
+        (0x1e71, 0x2015, None, 'NZXT H1 V2', {
+            'speed_channel_count': 2,
+            'color_channel_count': 0
+        }),
+    ]
+
+    def _get_status_directly(self):
+        ret = []
+
+        def parse_fan_info(msg):
+            mode_offset = 16
+            rpm_offset = 24
+            duty_offset = 40
+            raw_modes = [None, 'DC', 'PWM']
+
+            for i, _ in enumerate(self._speed_channels):
+                mode = raw_modes[msg[mode_offset + i]]
+                ret.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
+                ret.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
+                ret.append((f'Fan {i + 1} control mode', mode, ''))
+                rpm_offset += 2
+
+        def parse_pump_info(msg):
+            pump_offset = 18
+            ret.append(('Pump speed', msg[pump_offset] << 8 | msg[pump_offset - 1], 'rpm'))
+
+        # parse fans and pump status
+        self.device.clear_enqueued_reports()
+        self._read_until({b'\x75\x02': parse_pump_info, b'\x67\x02': parse_fan_info})
+        return sorted(ret)
 
 
 # backward compatibility
