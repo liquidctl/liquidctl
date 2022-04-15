@@ -76,7 +76,7 @@ NZXT Smart Device V2
 
 ## Fan speeds
 
-_Only NZXT Smart Device V2 and NZXT H1 V2 Smar Device_
+_Only NZXT Smart Device V2 and NZXT H1 V2 Smart Device_
 
 Fan speeds can only be set to fixed duty values.
 
