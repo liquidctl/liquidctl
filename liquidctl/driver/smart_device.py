@@ -645,25 +645,24 @@ class H1SmartDevice(SmartDevice2):
         ret = []
 
         def parse_fan_info(msg):
-            mode_offset = 16
+            mode_offset = 21
             rpm_offset = 24
-            duty_offset = 40
+            duty_offset = 25
+            pump_offset = 18
             raw_modes = [None, 'DC', 'PWM']
 
             for i, _ in enumerate(self._speed_channels):
                 mode = raw_modes[msg[mode_offset + i]]
-                ret.append((f'Fan {i + 1} speed', msg[rpm_offset + 1] << 8 | msg[rpm_offset], 'rpm'))
-                ret.append((f'Fan {i + 1} duty', msg[duty_offset + i], '%'))
+                ret.append((f'Fan {i + 1} speed', msg[rpm_offset] << 8 | msg[rpm_offset - 1], 'rpm'))
+                ret.append((f'Fan {i + 1} duty', msg[duty_offset], '%'))
                 ret.append((f'Fan {i + 1} control mode', mode, ''))
-                rpm_offset += 2
-
-        def parse_pump_info(msg):
-            pump_offset = 18
+                rpm_offset += 5
+                duty_offset += 5
             ret.append(('Pump speed', msg[pump_offset] << 8 | msg[pump_offset - 1], 'rpm'))
 
         # parse fans and pump status
         self.device.clear_enqueued_reports()
-        self._read_until({b'\x75\x02': parse_pump_info, b'\x67\x02': parse_fan_info})
+        self._read_until({b'\x75\x02': parse_fan_info})
         return sorted(ret)
 
 
