@@ -66,7 +66,7 @@ def test_reads_status_directly(mock_smart2, has_hwmon, direct_access):
         ("Fan 2 control mode", "PWM", ""),
         ("Fan 2 duty", 100, "%"),
         ("Fan 2 speed", 1785, "rpm"),
-        ("Pump speed", 4000, "rpm")
+        ("Pump speed", 4000, "rpm"),
     ]
 
     got = mock_smart2.get_status(direct_access=direct_access)
