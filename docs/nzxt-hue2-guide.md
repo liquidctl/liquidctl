@@ -85,10 +85,10 @@ Fan speeds can only be set to fixed duty values.
 ```
 
 | Channel | Minimum duty | Maximum duty | Note |
-| --- | --- | --- | - |
-| fan1 | 0% | 100% ||
-| fan2 | 0% | 100% ||
-| fan3 | 0% | 100% ||
+| --- | --- | --- | --- |
+| fan1 | 0% | 100% | H1 V2: GPU exhaust fan |
+| fan2 | 0% | 100% | H1 V2: AIO fan |
+| fan3 | 0% | 100% | H1 V2: not available |
 | sync | 0% | 100% | all available channels |
 
 *Always check that the settings are appropriate for the use case, and that they correctly apply and persist.*
