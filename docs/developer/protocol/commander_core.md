@@ -218,9 +218,9 @@ Data Type: `0x10 0x00`
 | ---------- | ----------- |
 | 0x00 | Number of temperature sensors |
 | 0x01 | 0x00 if connected or 0x01 if not connected |
-| 0x02, 0x03 | Temperature in Celsius (needs to be divided by 10) |
+| 0x02, 0x03 | Temperature in Celsius with 10ths decimal (3b:01 = 315 = 31.5C) |
 | 0x04 | 0x00 if connected or 0x01 if not connected |
-| 0x05, 0x06 | Temperature in Celsius (needs to be divided by 10) |
+| 0x05, 0x06 | Temperature in Celsius with 10ths decimal (3b:01 = 315 = 31.5C) |
 
 ### `0x60 0x6d` - Hardware Speed Device Mode
 
@@ -260,3 +260,39 @@ Data Type: `0x04 0x00`
 | 0x09, 0x0a | Speed as percentage for Fan 4 |
 | 0x0b, 0x0c | Speed as percentage for Fan 5 |
 | 0x0d, 0x0e | Speed as percentage for Fan 6 |
+
+### `0x62 0x6d` - Hardware Speed Curve (Percentage)
+
+Data Type: `0x05 0x00`
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00 | Number of Ports |
+| 0x01-0x1e | Speed Curve for AIO/EXT |
+| 0x1f-0x3c | Speed Curve for Fan 1 |
+| 0x3d-0x5a | Speed Curve for Fan 2 |
+| 0x5b-0x78 | Speed Curve for Fan 3 |
+| 0x79-0x96 | Speed Curve for Fan 4 |
+| 0x97-0xb4 | Speed Curve for Fan 5 |
+| 0xb5-0xd2 | Speed Curve for Fan 6 |
+
+Speed Curve:
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00 | Temperature sensor to use 0x00 for water 0x01 for plugged in sensor |
+| 0x01 | Number of speed curve points |
+| 0x02-0x05 | Speed curve point 1 |
+| 0x06-0x09 | Speed curve point 2 |
+| 0x0a-0x0d | Speed curve point 3 |
+| 0x0e-0x11 | Speed curve point 4 |
+| 0x12-0x15 | Speed curve point 5 |
+| 0x16-0x19 | Speed curve point 6 |
+| 0x1a-0x1d | Speed curve point 7 |
+
+Speed Point:
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00, 0x01 | Temperature in Celsius with 10ths decimal (3b:01 = 315 = 31.5C) |
+| 0x02, 0x03 | Point speed (%) |

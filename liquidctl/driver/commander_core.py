@@ -38,6 +38,7 @@ _MODE_GET_TEMPS = (0x21,)
 _MODE_CONNECTED_SPEEDS = (0x1a,)
 _MODE_HW_SPEED_MODE = (0x60, 0x6d)
 _MODE_HW_FIXED_PERCENT = (0x61, 0x6d)
+_MODE_HW_CURVE_PERCENT = (0x62, 0x6d)
 
 _DATA_TYPE_SPEEDS = (0x06, 0x00)
 _DATA_TYPE_LED_COUNT = (0x0f, 0x00)
@@ -45,6 +46,10 @@ _DATA_TYPE_TEMPS = (0x10, 0x00)
 _DATA_TYPE_CONNECTED_SPEEDS = (0x09, 0x00)
 _DATA_TYPE_HW_SPEED_MODE = (0x03, 0x00)
 _DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
+_DATA_TYPE_HW_CURVE_PERCENT = (0x05, 0x00)
+
+_FAN_MODE_FIXED_PERCENT = 0x00
+_FAN_MODE_CURVE_PERCENT = 0x02
 
 
 class CommanderCore(UsbHidDriver):
@@ -110,7 +115,38 @@ class CommanderCore(UsbHidDriver):
         raise NotSupportedByDriver
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        raise NotSupportedByDriver
+        channels = CommanderCore._parse_channels(channel)
+
+        # TODO format the data for the commander core
+        print(list(profile))
+
+        with self._wake_device_context():
+            # Set hardware speed mode
+            res = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
+            device_count = res[0]
+
+            data = bytearray(res[0:device_count + 1])
+            for chan in channels:
+                data[chan + 1] = _FAN_MODE_CURVE_PERCENT
+            self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
+
+            # Read in data and split by device
+            res = self._read_data(_MODE_HW_CURVE_PERCENT, _DATA_TYPE_HW_CURVE_PERCENT)
+            device_count = res[0]
+            data_by_device = []
+            i = 1
+            for _ in range(0, device_count):
+                count = res[i+1]
+                start = i
+                end = i + 4 * count + 2
+                i = end
+                data_by_device.append(res[start:end])
+
+            # Modify the correct channels
+            # TODO modify data for channels in channels array
+
+            out = bytes([device_count]) + b''.join(data_by_device)
+            self._write_data(_MODE_HW_CURVE_PERCENT, _DATA_TYPE_HW_CURVE_PERCENT, out)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         channels = CommanderCore._parse_channels(channel)
@@ -122,7 +158,7 @@ class CommanderCore(UsbHidDriver):
 
             data = bytearray(res[0:device_count + 1])
             for chan in channels:
-                data[chan + 1] = 0x00  # Set the device's hardware mode to fixed percent
+                data[chan + 1] = _FAN_MODE_FIXED_PERCENT
             self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
 
             # Set speed
