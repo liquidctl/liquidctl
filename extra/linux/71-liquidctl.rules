@@ -434,6 +434,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="2500", TAG+="uacc
 # NZXT Grid+ V3
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1711", TAG+="uaccess"
 
+# NZXT H1 V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2015", TAG+="uaccess"
+
 # NZXT HUE 2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2001", TAG+="uaccess"
 
@@ -472,6 +475,3 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200d", TAG+="uacc
 
 # NZXT Smart Device V2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200f", TAG+="uaccess"
-
-# NZXT H1 V2
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2015", TAG+="uaccess"
