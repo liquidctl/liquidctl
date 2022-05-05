@@ -1,8 +1,10 @@
+# uses the psf/black style
+
 import pytest
 from _testutils import MockHidapiDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
-from liquidctl.driver.smart_device import H1SmartDevice
+from liquidctl.driver.smart_device import H1V2
 
 SAMPLE_STATUS = bytes.fromhex(
     "75021320020d85bcabab94188f5f010000a00f0032020284021e1e02f9066464"
@@ -10,7 +12,7 @@ SAMPLE_STATUS = bytes.fromhex(
 )
 
 
-class MockH1Smart(MockHidapiDevice):
+class MockH1V2(MockHidapiDevice):
     def __init__(self, raw_speed_channels, raw_led_channels):
         super().__init__()
         self.raw_speed_channels = raw_speed_channels
@@ -32,13 +34,13 @@ class MockH1Smart(MockHidapiDevice):
 
 @pytest.fixture
 def mock_smart2():
-    raw = MockH1Smart(raw_speed_channels=2, raw_led_channels=0)
-    dev = H1SmartDevice(raw, "Mock H1 V2", speed_channel_count=2, color_channel_count=0)
+    raw = MockH1V2(raw_speed_channels=2, raw_led_channels=0)
+    dev = H1V2(raw, "Mock H1 V2", speed_channel_count=2, color_channel_count=0)
     dev.connect()
     return dev
 
 
-@pytest.mark.parametrize("has_hwmon,direct_access", [(False, True)])
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True), (True, False)])
 def test_initializes(mock_smart2, has_hwmon, direct_access, tmp_path):
     if has_hwmon:
         mock_smart2._hwmon = HwmonDevice("mock_module", tmp_path)
@@ -52,8 +54,8 @@ def test_initializes(mock_smart2, has_hwmon, direct_access, tmp_path):
         assert writes == 2
 
 
-@pytest.mark.parametrize("has_hwmon,direct_access", [(False, True)])
-def test_reads_status_directly(mock_smart2, has_hwmon, direct_access):
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (False, True), (True, True)])
+def test_reads_status(mock_smart2, has_hwmon, direct_access):
     if has_hwmon:
         mock_smart2._hwmon = HwmonDevice(None, None)
 
@@ -78,9 +80,6 @@ def test_constructor_sets_up_all_channels(mock_smart2):
     assert mock_smart2._speed_channels == {
         "fan1": (0, 0, 100),
         "fan2": (1, 0, 100),
-    }
-    assert mock_smart2._color_channels == {
-        "sync": 0,
     }
 
 

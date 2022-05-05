@@ -55,6 +55,18 @@ lighting channel supports up to 6 accessories and a total of 40 LEDs.
 A microphone is still present onboard for noise level optimization through CAM
 and AI.
 
+NZXT H1 V2
+----------
+
+The second revision of the NZXT H1 case, labeled H1 V2, ships with a variant of the
+NZXT Smart Device V2 that handles both the internal fans and the AIO pump. Two fan and
+one pump channels are available, where the formers can be controlled via PWM or DC.
+
+The pump speed is not user controllable. The device reports the state, speed and duty
+of each fan channel, as well as the pump speed.
+
+There are no lighting channels available nor an onboard microphone.
+
 RGB & Fan Controller
 --------------------
 
@@ -466,7 +478,8 @@ class SmartDevice2(_BaseSmartDevice):
                           for i in range(speed_channel_count)}
         color_channels = {f'led{i + 1}': (1 << i)
                           for i in range(color_channel_count)}
-        color_channels['sync'] = (1 << color_channel_count) - 1
+        if color_channels:
+            color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, direct_access=False, **kwargs):
@@ -519,7 +532,7 @@ class SmartDevice2(_BaseSmartDevice):
                                    Hue2Accessory(accessory_id), ''))
 
         parsers = {b'\x11\x01': parse_firm_info}
-        if self._color_channels['sync'] > 0:
+        if self._color_channels:
             parsers[b'\x21\x03'] = parse_led_info
         self._read_until(parsers)
         return sorted(ret)
@@ -592,7 +605,7 @@ class SmartDevice2(_BaseSmartDevice):
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
 
-        if self._color_channels['sync'] == 0:
+        if not self._color_channels:
             raise NotSupportedByDevice()
 
         color_count = len(colors)
@@ -633,7 +646,7 @@ class SmartDevice2(_BaseSmartDevice):
         self._write(msg)
 
 
-class H1SmartDevice(SmartDevice2):
+class H1V2(SmartDevice2):
     SUPPORTED_DEVICES = [
         (0x1e71, 0x2015, None, 'NZXT H1 V2', {
             'speed_channel_count': 2,
@@ -641,7 +654,7 @@ class H1SmartDevice(SmartDevice2):
         }),
     ]
 
-    def _get_status_directly(self):
+    def get_status(self, direct_access=False, **kwargs):
         ret = []
 
         def parse_fan_info(msg):
