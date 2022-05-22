@@ -198,7 +198,7 @@ class AuraLed(UsbHidDriver):
             status.append(("ARGB channels: " + str(argb_channels), "", ""))
             status.append((" RGB channels: " + str(rgb_channels), "", ""))
 
-            if kwargs['debug'] == True:
+            if kwargs["debug"] == True:
                 num = 6  # number of bytes per record
                 count = 1
                 while start_index + num < _READ_LENGTH:
