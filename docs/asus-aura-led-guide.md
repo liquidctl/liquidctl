@@ -32,28 +32,41 @@ AsusTek Aura LED Controller
 
 ## Status
 
-The `status` function currently returns a list of 6-byte values whose meanings are not fully understood. This information is provided nevertheless in the hopes of encouraging someone to interpret them properly. However, on the first line the 3rd and 4th columns seem to represent the number of available ARGB and RGB channels, respectively.
+The `status` function currently returns a list of 6-byte values whose full meanings are not fully understood. This information is provided nevertheless in the hopes of encouraging someone to interpret them properly. However, on the first line the 3rd and 4th columns seem to represent the number of available ARGB and RGB channels, respectively.
 
-On Asus ProArt Z690-Creator WiFi we get the following (3 ARGB, 1 RGB):
+On Asus ProArt Z690-Creator WiFi we get the following (2 ARGB, 1 RGB):
 ```
 % liquidctl -m Aura status
-AsusTek Aura LED Controller
-├── Device Config: 1     0x1e, 0x9f, 0x03, 0x01, 0x00, 0x00
-├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00
-├── Device Config: 3     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00
-├── Device Config: 4     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00
-├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x04, 0x02
-├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00
-├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+AsusTek Aura LED Controller (experimental)
+├── ARGB channels: 2      
+└──  RGB channels: 1  
+```
+
+To display the set of 6-byte status values, use --debug on the command line. The following will be returned:
+
+```
+% liquidctl --debug -m Aura status
+AsusTek Aura LED Controller (experimental)
+├── ARGB channels: 2                                         
+├──  RGB channels: 1                                         
+├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00  
+├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x03, 0x02  
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
 ```
 
 On Asus ROG Strix Z690-i Gaming WiFi (mini-ITX) we get the following (2 ARGB, 1 RGB):
 ```
-% liquidctl -m Aura status
-AsusTek Aura LED Controller
+% liquidctl --debug -m Aura status
+AsusTek Aura LED Controller (experimental)
+├── ARGB channels: 2                                         
+├──  RGB channels: 1  
 ├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
 ├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00  
 ├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00  
@@ -68,8 +81,10 @@ AsusTek Aura LED Controller
 
 On some Asus Z490 boards (controller ID 0x18F3) we get the following (1 ARGB, 1 RGB):
 ```
-% liquidctl -m Aura status
-AsusTek Aura LED Controller
+% liquidctl --debug -m Aura status
+AsusTek Aura LED Controller (experimental)
+├── ARGB channels: 1                                         
+├──  RGB channels: 1  
 ├── Device Config: 1     0x1e, 0x9f, 0x01, 0x01, 0x00, 0x00 
 ├── Device Config: 2     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00 
 ├── Device Config: 3     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 

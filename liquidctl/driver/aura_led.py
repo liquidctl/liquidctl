@@ -192,20 +192,27 @@ class AuraLed(UsbHidDriver):
         data = self.device.read(_READ_LENGTH)
         if data[1] == 0x30:
             start_index = 4  # index of first record
-            num = 6  # number of bytes per record
-            count = 1
-            while start_index + num < _READ_LENGTH:
-                status.append(
-                    (
-                        "Device Config: " + str(count),
-                        ", ".join(
-                            "0x{:02x}".format(x) for x in data[start_index : start_index + num]
-                        ),
-                        "",
+
+            argb_channels = data[start_index + 2]
+            rgb_channels = data[start_index + 3]
+            status.append(("ARGB channels: " + str(argb_channels), "", ""))
+            status.append((" RGB channels: " + str(rgb_channels), "", ""))
+
+            if kwargs['debug'] == True:
+                num = 6  # number of bytes per record
+                count = 1
+                while start_index + num < _READ_LENGTH:
+                    status.append(
+                        (
+                            "Device Config: " + str(count),
+                            ", ".join(
+                                "0x{:02x}".format(x) for x in data[start_index : start_index + num]
+                            ),
+                            "",
+                        )
                     )
-                )
-                start_index += num
-                count += 1
+                    start_index += num
+                    count += 1
         else:
             status.append("Unexpected reply for config", "", "")
         return status
