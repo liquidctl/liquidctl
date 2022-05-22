@@ -32,7 +32,7 @@ AsusTek Aura LED Controller
 
 ## Status
 
-The `status` function returns the number of ARGB and RGB channels detected by the controller. If the command invoked with `--debug` flag, the entire reply from the controller will be displayed in groups of 6 bytes. This information has not been fully decoded, but is provided in the event that someone is able to decipher it.
+The `status` function returns the number of ARGB and RGB channels detected by the controller. If the command is invoked with `--debug` flag, the entire reply from the controller will be displayed in groups of 6 bytes. This information has not been fully decoded, but is provided in the event that someone is able to decipher it.
 
 On Asus ProArt Z690-Creator WiFi the following is returned:
 ```
