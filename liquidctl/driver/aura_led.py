@@ -6,6 +6,14 @@ Supported controllers:
 
 This controller is found on Asus ProArt Z690-Creator WiFi and other boards
 
+Additional controllers (requires user testing and feedback):
+
+- idVendor=0x0B05, idProduct=0x1939
+- idVendor=0x0B05, idProduct=0x18F3
+
+These controllers have not been sufficiently tested. Users are asked to test and
+report issues.
+
 Limitations:
 
 This controller only supports 'effect' modes that are managed entirely by the
@@ -59,7 +67,7 @@ _LOGGER = logging.getLogger(__name__)
 _READ_LENGTH = 65
 _WRITE_LENGTH = 65
 
-_RESET_CHANNEL_ITERATIONS = 38
+_RESET_CHANNEL_ITERATIONS = 5  # Aura Crate software uses 38
 
 _CMD_CODE = 0xEC
 
@@ -90,10 +98,10 @@ _ColorChannel = namedtuple(
 _COLOR_CHANNELS = {
     channel.name: channel
     for channel in [
-        _ColorChannel("rgb", 0x01, 0x00, 0x00, 0x0),
-        _ColorChannel("argb1", 0x02, 0x00, 0x01, 0x01),
-        _ColorChannel("argb2", 0x04, 0x01, 0x01, 0x02),
-        _ColorChannel("argb3", 0x08, 0x02, 0x01, 0x03),
+        _ColorChannel("led1", 0x01, 0x00, 0x00, 0x0),  # rgb channel
+        _ColorChannel("led2", 0x02, 0x00, 0x01, 0x01),  # argb channel
+        _ColorChannel("led3", 0x04, 0x01, 0x01, 0x02),  # argb channel
+        _ColorChannel("led4", 0x08, 0x02, 0x01, 0x03),  # argb channel
     ]
 }
 
@@ -129,15 +137,14 @@ class AuraLed(UsbHidDriver):
     liquidctl driver for Asus Aura LED USB controllers.
     This driver only supports 'effect' mode, hence no speed/color channels
 
-    Devices 0x1939 and 0x18F3 are not fully supported at this time; users are welcome
-    to uncomment the 2nd and/or 3rd line below in SUPPORTED_DEVICES if they wish to
-    experiment with this driver and provide feedback
+    Devices 0x1939 and 0x18F3 are not fully supported at this time; users are asked
+    to experiment with this driver and provide feedback
     """
 
     SUPPORTED_DEVICES = [
-        (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller", {}),
-        # (0x0B05, 0x1939, None, "AsusTek Aura LED Controller", {}),
-        # (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller", {}),
+        (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller (experimental)", {}),
+        (0x0B05, 0x1939, None, "AsusTek Aura LED Controller (experimental)", {}),
+        (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller (experimental)", {}),
     ]
 
     def initialize(self, **kwargs):
@@ -147,6 +154,8 @@ class AuraLed(UsbHidDriver):
         """
         # Get firmware version
         self._write(_FUNCTION_CODE["firmware"])
+        
+        # Build reply string
         status = []
         data = self.device.read(_READ_LENGTH)
         if data[1] == 0x02:
@@ -157,6 +166,7 @@ class AuraLed(UsbHidDriver):
 
         # This stops Direct mode if it was previously applied
         self._write(_FUNCTION_CODE["end_direct"])
+        
         """
         Extra operations during initialization
         This is experimental and may not be necessary
@@ -225,6 +235,7 @@ class AuraLed(UsbHidDriver):
             # _LOGGER.error(message)
             raise KeyError(message) from None
             return
+            
         """
         This is experimental (it's an example of direct mode)
         if mode == 'off':
@@ -232,14 +243,16 @@ class AuraLed(UsbHidDriver):
             self.reset_all_channels()
             return
         """
+        
         if channel == "sync":
             selected_channels = _COLOR_CHANNELS.values()
         else:
             selected_channels = (_COLOR_CHANNELS[channel],)
         full_cmd_seq = []  # entire series of commands are added to this list
+        
         """
         Experimental code for treating RGB channel differently from others
-        if channel == "rgb":
+        if channel == "led1":
             cmd_tuple=self.construct_color_commands(channel, mode, single_color)
             self._write(cmd_tuple[0])
             self._write(cmd_tuple[1])
@@ -250,11 +263,13 @@ class AuraLed(UsbHidDriver):
             self._write(_FUNCTION_CODE["end_seq2"])
         else:
         """
+        
         for chan in selected_channels:
             cmd_tuple = self.construct_color_commands(chan.name, mode, single_color)
             full_cmd_seq.append(cmd_tuple[0])
             full_cmd_seq.append(cmd_tuple[1])
             full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
+            
             """
             Asus Aura Crate sends command sequence twice, but our tests show
             that this may be redundant. Nevertheless, let's keep this code here
@@ -263,6 +278,7 @@ class AuraLed(UsbHidDriver):
             #full_cmd_seq.append(cmd_tuple[1])
             #full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
             """
+            
         for cmd_seq in full_cmd_seq:
             self._write(cmd_seq)
         self.end_color_sequence()
@@ -277,8 +293,7 @@ class AuraLed(UsbHidDriver):
 
     def reset_all_channels(self):
         """Reset all LED channels."""
-        # for i in range(_RESET_CHANNEL_ITERATIONS):
-        for i in range(5):
+        for i in range(_RESET_CHANNEL_ITERATIONS):
             self._write(_FUNCTION_CODE["reset_seq1"])
             self._write(_FUNCTION_CODE["reset_seq2"])
 
@@ -287,10 +302,13 @@ class AuraLed(UsbHidDriver):
         Uses direct mode to disable a specific channel
         """
         self._write(_FUNCTION_CODE["end_effect"])
-        for i in range(5):
+        
+        for i in range(_RESET_CHANNEL_ITERATIONS):
             self._write(_FUNCTION_CODE["channel_off_pre1"])
             self._write(_FUNCTION_CODE["channel_off_pre2"])
+            
         self._write(_FUNCTION_CODE["channel_off_prefix"])
+        
         # set all LEDs to off, 20 at a time
         for i in (0, 20, 40, 60, 80, 100):
             self._write(

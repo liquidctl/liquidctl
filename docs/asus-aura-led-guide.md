@@ -17,7 +17,7 @@ There are three known variants of the Aura LED USB-based controller:
 - Device `0x1939` [^1]
 - Device `0x18F3`[^1]: found in Asus ROG Maximus Z690 Formula
 
-[^1]: Support for devices `0x1939` and `0x18F3` is not properly or sufficiently developed so these devices have been commented-out in the driver. Users may uncomment the line(s) in `SUPPORTED_DEVICES` to experiment and provide feedback. Wireshark USB traffic  capture, in particular, will be very helpful.
+[^1]: Support for devices `0x1939` and `0x18F3` is not properly or sufficiently developed so users asked to experiment and provide feedback. [Wireshark USB traffic capture](./developer/capturing-usb-traffic.md), in particular, will be very helpful.
 
 
 ## Initialization
@@ -32,7 +32,9 @@ AsusTek Aura LED Controller
 
 ## Status
 
-The `status` function currently returns a list of 6-byte values whose meanings are not fully understood. This information is provided nevertheless in the hopes of encouraging someone to interpret them properly.
+The `status` function currently returns a list of 6-byte values whose meanings are not fully understood. This information is provided nevertheless in the hopes of encouraging someone to interpret them properly. However, on the first line the 3rd and 4th columns seem to represent the number of available ARGB and RGB channels, respectively.
+
+On Asus ProArt Z690-Creator WiFi we get the following (3 ARGB, 1 RGB):
 ```
 % liquidctl -m Aura status
 AsusTek Aura LED Controller
@@ -48,15 +50,47 @@ AsusTek Aura LED Controller
 └── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 ```
 
+On Asus ROG Strix Z690-i Gaming WiFi (mini-ITX) we get the following (2 ARGB, 1 RGB):
+```
+% liquidctl -m Aura status
+AsusTek Aura LED Controller
+├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00  
+├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x03, 0x02  
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+```
+
+On some Asus Z490 boards (controller ID 0x18F3) we get the following (1 ARGB, 1 RGB):
+```
+% liquidctl -m Aura status
+AsusTek Aura LED Controller
+├── Device Config: 1     0x1e, 0x9f, 0x01, 0x01, 0x00, 0x00 
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00 
+├── Device Config: 3     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+├── Device Config: 5     0x00, 0x00, 0x00, 0x06, 0x07, 0x02 
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00 
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+```
+
 ## RGB lighting
 
-There is one 12V RGB channel named `rgb` and three 5V Addressable RGB channels named `argb1`, `argb2`, and `argb3`. Because the driver uses `effect` mode, all channels are synchronized. It is not possible to set different color modes to different channels except through `direct` mode.
+There is one 12V RGB channel named `led1` and three 5V Addressable RGB channels named `led2`, `led3`, and `led4`. Because the driver uses `effect` mode, all channels are synchronized. It is not possible to set different color modes to different channels except through `direct` mode. Nevertheless, independent channel names are provided in case the situation changes with a BIOS update in the future.
 
 ```
-# liquidctl -m Aura set rgb color static af5a2f
-# liquidctl -m Aura set argb1 color breathing 350017
-# liquidctl -m Aura set argb2 color rainbow
-# liquidctl -m Aura set argb3 color spectrum-cycle
+# liquidctl -m Aura set led1 color static af5a2f
+# liquidctl -m Aura set led2 color breathing 350017
+# liquidctl -m Aura set led3 color rainbow
+# liquidctl -m Aura set led4 color spectrum-cycle
 # liquidctl -m Aura set sync color gentle-transition
 ```
 
@@ -86,7 +120,3 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 
 In addition to these, it is also possible to use the `sync` pseudo-channel to apply a setting to all lighting channels.
 
-
-## Correspondence between lighting channels and physical locations
-
-Each user may need to create a table that associates generic channel names to specific areas or headers on their motherboard. 
