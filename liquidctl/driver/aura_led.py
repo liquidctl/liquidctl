@@ -154,7 +154,7 @@ class AuraLed(UsbHidDriver):
         """
         # Get firmware version
         self._write(_FUNCTION_CODE["firmware"])
-        
+
         # Build reply string
         status = []
         data = self.device.read(_READ_LENGTH)
@@ -166,7 +166,7 @@ class AuraLed(UsbHidDriver):
 
         # This stops Direct mode if it was previously applied
         self._write(_FUNCTION_CODE["end_direct"])
-        
+
         """
         Extra operations during initialization
         This is experimental and may not be necessary
@@ -235,7 +235,7 @@ class AuraLed(UsbHidDriver):
             # _LOGGER.error(message)
             raise KeyError(message) from None
             return
-            
+
         """
         This is experimental (it's an example of direct mode)
         if mode == 'off':
@@ -243,13 +243,13 @@ class AuraLed(UsbHidDriver):
             self.reset_all_channels()
             return
         """
-        
+
         if channel == "sync":
             selected_channels = _COLOR_CHANNELS.values()
         else:
             selected_channels = (_COLOR_CHANNELS[channel],)
         full_cmd_seq = []  # entire series of commands are added to this list
-        
+
         """
         Experimental code for treating RGB channel differently from others
         if channel == "led1":
@@ -263,13 +263,13 @@ class AuraLed(UsbHidDriver):
             self._write(_FUNCTION_CODE["end_seq2"])
         else:
         """
-        
+
         for chan in selected_channels:
             cmd_tuple = self.construct_color_commands(chan.name, mode, single_color)
             full_cmd_seq.append(cmd_tuple[0])
             full_cmd_seq.append(cmd_tuple[1])
             full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
-            
+
             """
             Asus Aura Crate sends command sequence twice, but our tests show
             that this may be redundant. Nevertheless, let's keep this code here
@@ -278,7 +278,7 @@ class AuraLed(UsbHidDriver):
             #full_cmd_seq.append(cmd_tuple[1])
             #full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
             """
-            
+
         for cmd_seq in full_cmd_seq:
             self._write(cmd_seq)
         self.end_color_sequence()
@@ -302,13 +302,13 @@ class AuraLed(UsbHidDriver):
         Uses direct mode to disable a specific channel
         """
         self._write(_FUNCTION_CODE["end_effect"])
-        
+
         for i in range(_RESET_CHANNEL_ITERATIONS):
             self._write(_FUNCTION_CODE["channel_off_pre1"])
             self._write(_FUNCTION_CODE["channel_off_pre2"])
-            
+
         self._write(_FUNCTION_CODE["channel_off_prefix"])
-        
+
         # set all LEDs to off, 20 at a time
         for i in (0, 20, 40, 60, 80, 100):
             self._write(
