@@ -1,37 +1,46 @@
-# Rules that grant unprivileged access to devices supported by liquidctl
+# Rules that grant unprivileged access to devices supported by liquidctl.
 #
 # Users and distros are encouraged to use these if they want liquidctl to work
-# without requiring root privileges (e.g. with the use of `sudo`).
+# without requiring root privileges (e.g. without the use of `sudo`).
 #
 # In the case of I²C/SMBus devices, these rules also cause the loading of the
-# `i2c-dev` kernel module.  The module is required for access to I²C/SMBus
-# devices from userspace, and loading kernel modules is in itself a privileged
-# operation.
+# `i2c-dev` kernel module.  This module is required for access to I²C/SMBus
+# devices from userspace, and manually loading kernel modules is in itself a
+# privileged operation.
 #
-# Distros will likely want to place this file in `/usr/lib/udev/rules.d/`,
-# while users installing this manually SHOULD use `/etc/udev/rules.d/` instead.
+# Distros will likely want to place this file in `/usr/lib/udev/rules.d/`, while
+# users installing this manually SHOULD use `/etc/udev/rules.d/` instead.
 #
-# The suggested name for this file is `71-liquidctl.rules`.  This was chosen
-# based on the numbering of other uaccess tagging rule files in my system (not
-# very scientific, I know, but I could not find any documented policy for
-# this), as well as the need to let users overrule these rules.
+# The suggested name for this file is `71-liquidctl.rules`.  Whatever name is
+# used, it MUST lexically appear before 73-seat-late.rules.  The suggested name
+# was chosen so that it is also lexically after systemd-provided 70-uaccess.rules.
 #
-# These rules assume a system with modern versions of systemd/udev, that
-# support the `uaccess` tag; on older systems the rules can be changed to set
-# GROUP="plugdev" and MODE="0660" instead.  The currently deprecated 'plugdev'
-# group is not used by default to avoid generating warnings on systems that
-# have already removed it.
+# Once installed, reload and trigger the new rules with:
 #
-# These rules also assume that only physical sessions (or "seats") need
-# unprivileged access to the devices.  In case headless sessions are also
-# expected to interactively run liquidctl, using GROUP and MODE might be
-# preferable to TAG+="uaccess".
+#   # udevadm control --reload
+#   # udevadm trigger
+#
+# Note that this will not change the mode of `/dev/hidraw*` devices that have
+# already been created.  In practice, this means that HIDs may continue to require
+# privileged access until, either, they are rebound to their kernel drivers, or
+# the system is rebooted.
+#
+# These rules assume a system with modern versions of systemd/udev, that support
+# the `uaccess` tag.  On older systems the rules can be changed to instead set
+# GROUP="plugdev" and MODE="0660"; other groups and modes may also be used.
+#
+# The use of the `uaccess` mechanism assumes that only physical sessions (or
+# "seats") need unprivileged access to the devices.[^1][^2]  In case headless
+# sessions are also expected to interactively run liquidctl, GROUP and MODE should
+# also be set, as a fallback.
 #
 # Finally, this file was automatically generated.  To update it, from a Linux
 # shell and the current directory, execute:
 #
 #     $ python generate-uaccess-udev-rules.py > 71-liquidctl.rules
 #
+# [^1]: https://github.com/systemd/systemd/issues/4288
+# [^2]: https://wiki.archlinux.org/title/Users_and_groups#Pre-systemd_groups
 
 
 # Section: special cases
@@ -433,6 +442,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="2500", TAG+="uacc
 
 # NZXT Grid+ V3
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1711", TAG+="uaccess"
+
+# NZXT H1 V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2015", TAG+="uaccess"
 
 # NZXT HUE 2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2001", TAG+="uaccess"

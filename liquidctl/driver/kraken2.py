@@ -136,43 +136,23 @@ class Kraken2(UsbHidDriver):
         firmware = '{}.{}.{}'.format(*self.firmware_version)
         return [('Firmware version', firmware, '')]
 
-    def _get_status_directly(self, with_firmware):
-        # the firmware version is duplicated here as a temporary migration aid
-        # for GKraken; it will be removed once GKraken no longer needs it, or
-        # in liquidctl 1.10.x, whatever happens first
-
+    def _get_status_directly(self):
         msg = self._read()
 
-        ret = [
+        return [
             (_STATUS_TEMPERATURE, msg[1] + msg[2]/10, '°C'),
             (_STATUS_FAN_SPEED, msg[3] << 8 | msg[4], 'rpm'),
             (_STATUS_PUMP_SPEED, msg[5] << 8 | msg[6], 'rpm'),
         ]
 
-        # TODO remove
-        if with_firmware:
-            ret.append((_STATUS_FWVERSION, self.firmware_version, ''))
-
-        return ret
-
-    def _get_status_from_hwmon(self, with_firmware):
-        # the firmware version is duplicated here as a temporary migration aid
-        # for GKraken; it will be removed once GKraken no longer needs it, or
-        # in liquidctl 1.10.x, whatever happens first
-
-        ret = [
+    def _get_status_from_hwmon(self):
+        return [
             (_STATUS_TEMPERATURE, self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
             (_STATUS_FAN_SPEED, self._hwmon.get_int('fan1_input'), 'rpm'),
             (_STATUS_PUMP_SPEED, self._hwmon.get_int('fan2_input'), 'rpm'),
         ]
 
-        # TODO remove
-        if with_firmware:
-            ret.append((_STATUS_FWVERSION, self.firmware_version, ''))
-
-        return ret
-
-    def get_status(self, direct_access=False, *, _internal_called_from_cli=False, **kwargs):
+    def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
@@ -181,18 +161,15 @@ class Kraken2(UsbHidDriver):
         if self.device_type == self.DEVICE_KRAKENM:
             return []
 
-        # already omit the firmware version when the caller is our own cli
-        with_firmware = not _internal_called_from_cli
-
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
-            return self._get_status_from_hwmon(with_firmware)
+            return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
                             self._hwmon.module)
 
-        return self._get_status_directly(with_firmware)
+        return self._get_status_directly()
 
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""

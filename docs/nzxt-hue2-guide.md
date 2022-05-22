@@ -26,6 +26,12 @@ It provides two HUE 2 lighting channels and three independent fan channels with 
 
 A microphone is still present onboard for noise level optimization through CAM and AI.
 
+## NZXT H1 V2
+
+The second revision of the NZXT H1 case, labeled H1 V2, ships with a variant of the NZXT Smart Device V2 that handles both the internal fans and the AIO pump. Two fan and one pump channels are available,
+where the formers can be controlled via PWM or DC. The pump speed is not user controllable. The device reports the state, speed and duty of each fan channel, as well as the pump speed.
+
+There are no lighting channels available nor an onboard microphone.
 
 ## NZXT RGB & Fan Controller
 
@@ -70,7 +76,7 @@ NZXT Smart Device V2
 
 ## Fan speeds
 
-_Only NZXT Smart Device V2_
+_Only NZXT Smart Device V2 and NZXT H1 V2_
 
 Fan speeds can only be set to fixed duty values.
 
@@ -79,10 +85,10 @@ Fan speeds can only be set to fixed duty values.
 ```
 
 | Channel | Minimum duty | Maximum duty | Note |
-| --- | --- | --- | - |
-| fan1 | 0% | 100% ||
-| fan2 | 0% | 100% ||
-| fan3 | 0% | 100% ||
+| --- | --- | --- | --- |
+| fan1 | 0% | 100% | H1 V2: GPU exhaust fan |
+| fan2 | 0% | 100% | H1 V2: AIO fan |
+| fan3 | 0% | 100% | H1 V2: not available |
 | sync | 0% | 100% | all available channels |
 
 *Always check that the settings are appropriate for the use case, and that they correctly apply and persist.*

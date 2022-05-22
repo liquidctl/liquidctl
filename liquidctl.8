@@ -1,6 +1,6 @@
 '\" t
 .nr is_macos 0
-.TH LIQUIDCTL 8 2022\-01\-06 "liquidctl" "System Manager's Manual"
+.TH LIQUIDCTL 8 2022\-04\-05 "liquidctl" "System Manager's Manual"
 .
 .SH NAME
 liquidctl \- monitor and control liquid coolers and other devices
@@ -477,9 +477,11 @@ where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .SS NZXT RGB & Fan Controller
 .SS NZXT HUE 2
 .SS NZXT HUE 2 Ambient
-Fan channels (only Smart Device V2 and RGB & Fan Controller): \fIfan[1\(en3]\fR.
+.SS NZXT H1 V2
+Fan channels (only Smart Device V2, RGB & Fan Controller and H1 V2):
+\fIfan[1\(en3]\fR.
 .PP
-Lighting channels: \fIled[1\(en2]\fR, \fIsync\fR.
+Lighting channels (all but H1 V2): \fIled[1\(en2]\fR, \fIsync\fR.
 .PP
 Additional lighting channels (only HUE 2): \fIled[3\(en4]\fR.
 .TS

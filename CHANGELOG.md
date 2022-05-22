@@ -1,6 +1,32 @@
 # Changelog
 
-## [Unreleased]
+## [1.9.1] – 2022-04-05
+
+### Changes since 1.9.0
+
+Fixed:
+- Remove excess `_input` suffix when reading `pwmN` attributes from hwmon
+  (#445, PR #446)
+
+### Notes for downstream packagers
+
+Starting with 1.9.0, liquidctl now uses a PEP 517 build.  See the notes for the
+1.9.0 release for more information.
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
+
+### Checksums
+
+```
+b4467e842d9a6adc804317a991354db041417f4f7dcf7d76799f2b1593ed1276  dist/liquidctl-1.9.1.tar.gz
+a23312c07b1ceec850e7739a2428e9fc47c95cd0650269653a9e726d53c12057  dist/liquidctl-1.9.1-py3-none-any.whl
+```
+
+
+## [1.9.0] – 2022-04-05
 
 ### Changes since 1.8.1
 
@@ -103,6 +129,18 @@ python -m installer [args]
 [PyPA/build]: https://github.com/pypa/build
 [PyPA/installer]: https://github.com/pypa/installer
 [setuptools_scm]: https://github.com/pypa/setuptools_scm
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
+
+### Checksums
+
+```
+9e1ae595be2c3ea5899e12741c11307da27e86bc88f7f93c5ae40bb2aa03dc70  dist/liquidctl-1.9.0.tar.gz
+3820c29c0fc86bd6bd601d55a593f1cd476cd563875b45488bef26fc272abf6d  dist/liquidctl-1.9.0-py3-none-any.whl
+```
 
 
 ## [1.8.1] – 2022-01-21

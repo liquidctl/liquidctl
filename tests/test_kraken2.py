@@ -86,7 +86,6 @@ def test_kraken_get_status_directly(mockKrakenXDevice, has_hwmon, direct_access)
         ('Liquid temperature', pytest.approx(30.9), '°C'),
         ('Fan speed', 1499, 'rpm'),
         ('Pump speed', 2702, 'rpm'),
-        ('Firmware version', (6, 0, 2), ''),
     ]
 
     assert sorted(got) == sorted(expected)
@@ -104,7 +103,6 @@ def test_kraken_get_status_from_hwmon(mockKrakenXDevice, tmp_path):
         ('Liquid temperature', pytest.approx(20.9), '°C'),
         ('Fan speed', 2499, 'rpm'),
         ('Pump speed', 1702, 'rpm'),
-        ('Firmware version', (6, 0, 2), ''),
     ]
 
     assert sorted(got) == sorted(expected)

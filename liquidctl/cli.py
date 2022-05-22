@@ -406,7 +406,6 @@ def main():
         args['--verbose'] = True
 
     opts = _make_opts(args)
-    opts['_internal_called_from_cli'] = True  # FOR INTERNAL USE ONLY, DO NOT REPLICATE ELSEWHERE
     filter_count = sum(1 for opt in opts if opt in _FILTER_OPTIONS)
     device_id = None
 

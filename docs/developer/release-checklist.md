@@ -2,21 +2,21 @@
 
 ## Prepare system
 
- - [ ] Ensure publishing dependencies are installed:
-       `pacman -S twine`
+ - [ ] Ensure publishing dependencies are installed: twine
+ - [ ] Export helper enviroment variable: `export VERSION=<version>`
 
 ## Prepare repository
 
- - [ ] Update liquidctl/version.py
  - [ ] Update last update date in the man page
- - [ ] Make sure the CHANGELOG is up to date
+ - [ ] Update the CHANGELOG
  - [ ] Remove "N/New driver, ..." notes from the table of supported devices (and merge lines if appropriate)
+ - [ ] Update version in pip install liquidctl==version examples
  - [ ] Regenerate the udev rules:
        `(cd extra/linux && python generate-uaccess-udev-rules.py > 71-liquidctl.rules)`
  - [ ] Commit:
        `git commit -m "release: prepare for v$VERSION"`
 
-## Test
+## Test locally
 
  - [ ] Run unit and doc tests:
        `python -m pytest`
@@ -31,30 +31,35 @@ Then install locally and:
        `extra/krakenduty-poc train && extra/krakenduty-poc status`
  - [ ] Test liquiddump:
        `extra/liquiddump | jq -c .`
- - [ ] Test krakenx (git):
-       `colctl --mode fading --color_count 2 --color0 192,32,64 --color1 246,11,21 --fan_speed "(30, 100), (40, 100)" --pump_speed "(30, 100), (40, 100)"`
 
-## Source distribution
+## Test in CI
 
- - [ ] Build the source distribution and wheel:
-       `python -m build`
- - [ ] Check that all necessary files are in the `dist/liquidctl-$VERSION.tar.gz` sdist
- - [ ] Check the `dist/liquidctl-$VERSION.whl` wheel
+ - [ ] Push HEAD:
+       `git push origin HEAD`
+ - [ ] Check all CI statuses (pytest, flake8 linting, and `list --verbose`)
+
+## Build source distribution and wheel
+
  - [ ] Tag HEAD with changelog and PGP signature:
        `git tag -as "v$VERSION"`
- - [ ] Push HEAD and vVERSION tag:
-       `git push origin HEAD "v$VERSION"`
- - [ ] Check all CI statuses (pytest, flake8 linting, and `list --verbose`)
- - [ ] Sign the source distribution:
+ - [ ] Build the source distribution and wheel (stash any changes to this file beforehand):
+       `python -m build`
+ - [ ] Check that all necessary files are in the `dist/liquidctl-$VERSION.tar.gz` sdist
+ - [ ] Check the contents of the `dist/liquidctl-$VERSION.whl` wheel
+ - [ ] Sign both sdist and wheel:
        `gpg --detach-sign -a "dist/liquidctl-$VERSION.tar.gz"`
+       `gpg --detach-sign -a "dist/liquidctl-$VERSION-py3-none-any.whl"`
 
 ## Release
 
- - [ ] Upload:
-       `twine upload dist/liquidctl-$VERSION.tar.gz{,.asc}`
- - [ ] Upgrade the vVERSION tag on GitHub to a release (with sdist and corresponding GPG signatures)
- - [ ] Update the HEAD changelog with the release file SHA256 sums:
-       `sha256sum dist/liquidctl-$VERSION.tar.gz | tee "dist/liquidctl-$VERSION.sha256sums"`
+ - [ ] Push vVERSION tag:
+       `git push origin "v$VERSION"`
+ - [ ] Upload sdist and wheel to PyPI:
+       `twine upload dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}{,.asc}`
+ - [ ] Generate SHA256 checksums for the release files:
+       `sha256sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl} | tee "dist/liquidctl-$VERSION.sha256sums"`
+ - [ ] Upgrade the vVERSION tag on GitHub to a release (with sdist, wheel, and corresponding GPG signatures)
+ - [ ] Update the HEAD changelog with the SHA256 checksums
 
 ## Post release
 

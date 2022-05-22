@@ -134,9 +134,10 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
+| Fan/AIO controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | |
 | Graphics card RGB  | [ASUS Strix GTX 1070 OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card RGB  | [Additional ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
+| Graphics card RGB  | [Additional ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uex_</sup> |
 | Graphics card RGB  | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [Additional EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
 | Motherboard        | [Asus Aura LED Z690 motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_e_</sup> |
@@ -193,7 +194,7 @@ shows more information about the packaging status in various distributions.
 ### macOS Homebrew
 [macOS Homebrew]: #macos-homebrew
 
-For macOS, liquidctl is available on Homebrew, generally at a very recent
+For macOS, liquidctl is available on Homebrew, generally at the most recent
 version.  It is also easy to install the latest development snapshot from the
 official source code repository.
 
@@ -218,8 +219,8 @@ pkg install py37-liquidctl
 ### Manual installation
 [Manual installation]: #manual-installation
 
-_Warning: on systems that still default to Python 2, replace `python`/`pip`
-with `python3`/`pip3`._
+_Warning: on systems that still default to Python 2, replace `python`
+with `python3`._
 
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
@@ -237,7 +238,7 @@ On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
 - Python 3.7 or later _(python3, python)_
-- pkg_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
+- pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - docopt _(python3-docopt, python-docopt)_
 - colorlog _(python3-colorlog, python-colorlog)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
@@ -248,16 +249,9 @@ names are listed in parenthesis):
 Additionally, to build, install and test liquidctl, the following are also
 needed:
 
-- setuptools Python package _(python3-setuptools, python-setuptools)_
+- setuptools\_scm Python package _(python3-setuptools-scm, python3-setuptools_scm, python-setuptools-scm)_
 - pip (optional) _(python3-pip, python-pip)_
 - pytest (optional) _(python3-pytest, pytest, python-pytest)_
-
-Finally, if cython-hidapi is installed from source, some additional build tools
-and development headers are also required:
-
-- Python development headers _(python3-dev, python3-devel)_
-- LibUSB 1.0 development headers _(libusb-1.0-0-dev, libusbx-devel)_
-- libudev developemnt headers _(libudev-dev, libudev-devel)_
 
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
@@ -272,9 +266,9 @@ brew install python libusb
 [Windows system dependencies]: #windows-system-level-dependencies
 
 On Windows, Python (3.7 or later) must be installed beforehand, which can be
-done from from the [official website][python.org].  It is generally useful to
-select the option to add `python` and other tools to the `PATH`.  A LibUSB 1.0
-DLL is also necessary, but one will already be provided by liquidctl.
+done from the [official website][python.org].  It is recommended to select the
+option to add `python` and other tools to the `PATH`.  A LibUSB 1.0 DLL is
+technically also necessary, but one will already be provided by liquidctl.
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do
 not use the Microsoft HID Driver, require a libusb-compatible driver; these are
@@ -310,17 +304,15 @@ python -m venv <path>
 Once set up, the virtual environment can be activated on the current shell
 (more information in the [official documentation][virtual environment]).
 Alternatively, the virtual environment can also be used directly, without
-activation, by prefixing all `python` and `pip` invocations with the
-environment's bin directory.
+activation, by prefixing all `python` invocations with the environment's bin
+directory.
 
 ```bash
 # Linux/macOS/BSDs (POSIX)
 <path>/bin/python [arguments]
-<path>/bin/pip [arguments]
 
 # Windows
 <path>\Scripts\python [arguments]
-<path>\Scripts\pip [arguments]
 ```
 
 [virtual environment]: https://docs.python.org/3/library/venv.html
@@ -329,15 +321,15 @@ environment's bin directory.
 [Installing from PyPI or GitHub]: #installing-from-pypi-or-github
 
 [pip] can be used to install liquidctl from the Python Package Index (PyPI).
-It will also install the necessary Python libraries.
+This will also install the necessary Python libraries.
 
 
 ```bash
 # the latest stable version
 python -m pip install liquidctl
 
-# a specific version (e.g. 1.8.1)
-python -m pip install liquidctl==1.8.1
+# a specific version (e.g. 1.9.1)
+python -m pip install liquidctl==1.9.1
 ```
 
 If [git] is installed, pip can also install the latest snapshot of the official
@@ -392,8 +384,8 @@ certain scenarios:
 _Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
 
 When working on the project itself, it is sometimes useful to set up a local
-development environment, where it is possible to directly run the CLI and the
-test suite, without building and installing a local package.
+development environment, making it possible to directly run the CLI and the
+test suite, without first building and installing a local package.
 
 For this, start by installing [git] and any system-level dependencies mentioned
 in [Manual installation].  Then, clone the repository and change into the
@@ -411,9 +403,9 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
-pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
-pip install --upgrade "smbus; sys_platform == 'linux'"
+python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
+python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:
@@ -432,7 +424,7 @@ python -m liquidctl [arguments]
 And to install `liquidctl` into the environment:
 
 ```
-pip install .
+python -m pip install .
 ```
 
 ## Introducing the command-line interface
@@ -444,7 +436,7 @@ Brackets `[ ]`, parenthesis `( )`, less than/greater than `< >` and ellipsis `..
 
 The `--verbose` option will print some extra information, like automatically made adjustments to user-provided settings.  And if there is a problem, the `--debug` flag will make liquidctl output more information to help identify its cause; be sure to include this when opening a new issue.
 
-_Note: when debugging issues with PyUSB or libusb it can be useful to set the `PYUSB_DEBUG=debug` or/and `LIBUSB_DEBUG=4` environment variables._  
+_Note: in addition to `--debug`, setting the `PYUSB_DEBUG=debug` and `LIBUSB_DEBUG=4` environment variables can be helpful with problems suspected to relate to PyUSB or LibUSB._
 
 ### Listing and selecting devices
 [Listing and selecting devices]: #listing-and-selecting-devices
@@ -806,20 +798,11 @@ file.
 Sibling project of Linux kernel _hwmon_ drivers for devices supported by
 liquidctl.
 
+### [codifryed/coolero](https://gitlab.com/codifryed/coolero)
+
+Graphical interface to monitor and control cooling devices supported by
+liquidctl.
+
 ### [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB)
 
 Graphical interface to control many different types of RGB devices.
-
-### [leinardi/GKraken](https://gitlab.com/leinardi/gkraken)
-
-Graphical interface for NZXT Kraken X and Z coolers, using the liquidctl APIs.
-
-### [audiohacked/OpenCorsairLink](https://github.com/audiohacked/OpenCorsairLink)
-
-Retired in 2020, but a great source of information on how Corsair devices work.
-There are ongoing efforts to port the last drivers to liquidctl, and joining
-them is a great way to get involved.
-
-### [liquidctl/collected-device-data](https://github.com/liquidctl/collected-device-data)
-
-Device information collected for developing and maintaining liquidctl.

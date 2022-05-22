@@ -55,6 +55,18 @@ lighting channel supports up to 6 accessories and a total of 40 LEDs.
 A microphone is still present onboard for noise level optimization through CAM
 and AI.
 
+NZXT H1 V2
+----------
+
+The second revision of the NZXT H1 case, labeled H1 V2, ships with a variant of the
+NZXT Smart Device V2 that handles both the internal fans and the AIO pump. Two fan and
+one pump channels are available, where the formers can be controlled via PWM or DC.
+
+The pump speed is not user controllable. The device reports the state, speed and duty
+of each fan channel, as well as the pump speed.
+
+There are no lighting channels available nor an onboard microphone.
+
 RGB & Fan Controller
 --------------------
 
@@ -466,7 +478,8 @@ class SmartDevice2(_BaseSmartDevice):
                           for i in range(speed_channel_count)}
         color_channels = {f'led{i + 1}': (1 << i)
                           for i in range(color_channel_count)}
-        color_channels['sync'] = (1 << color_channel_count) - 1
+        if color_channels:
+            color_channels['sync'] = (1 << color_channel_count) - 1
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
     def initialize(self, direct_access=False, **kwargs):
@@ -518,7 +531,10 @@ class SmartDevice2(_BaseSmartDevice):
                     ret.append((f'LED {c + 1} accessory {a + 1}',
                                    Hue2Accessory(accessory_id), ''))
 
-        self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info})
+        parsers = {b'\x11\x01': parse_firm_info}
+        if self._color_channels:
+            parsers[b'\x21\x03'] = parse_led_info
+        self._read_until(parsers)
         return sorted(ret)
 
     def _get_status_directly(self):
@@ -549,7 +565,7 @@ class SmartDevice2(_BaseSmartDevice):
 
         for n in range(1, len(self._speed_channels) + 1):
             ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
-            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}_input') * 100. / 255, '%')),
+            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}') * 100. / 255, '%')),
             ret.append((f'Fan {n} control mode', modes[self._hwmon.get_int(f'pwm{n}_mode')], '')),
 
         # noise level is not available through hwmon, but also not very accurate or useful
@@ -589,6 +605,9 @@ class SmartDevice2(_BaseSmartDevice):
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
         mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
 
+        if not self._color_channels:
+            raise NotSupportedByDevice()
+
         color_count = len(colors)
         if maxcolors == 40:
             led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
@@ -625,6 +644,39 @@ class SmartDevice2(_BaseSmartDevice):
         msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00]  # fan channel passed as bitflag in last 3 bits of 3rd byte
         msg[cid + 3] = duty  # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
         self._write(msg)
+
+
+class H1V2(SmartDevice2):
+    SUPPORTED_DEVICES = [
+        (0x1e71, 0x2015, None, 'NZXT H1 V2', {
+            'speed_channel_count': 2,
+            'color_channel_count': 0
+        }),
+    ]
+
+    def get_status(self, direct_access=False, **kwargs):
+        ret = []
+
+        def parse_fan_info(msg):
+            mode_offset = 21
+            rpm_offset = 24
+            duty_offset = 25
+            pump_offset = 18
+            raw_modes = [None, 'DC', 'PWM']
+
+            for i, _ in enumerate(self._speed_channels):
+                mode = raw_modes[msg[mode_offset + i]]
+                ret.append((f'Fan {i + 1} speed', msg[rpm_offset] << 8 | msg[rpm_offset - 1], 'rpm'))
+                ret.append((f'Fan {i + 1} duty', msg[duty_offset], '%'))
+                ret.append((f'Fan {i + 1} control mode', mode, ''))
+                rpm_offset += 5
+                duty_offset += 5
+            ret.append(('Pump speed', msg[pump_offset] << 8 | msg[pump_offset - 1], 'rpm'))
+
+        # parse fans and pump status
+        self.device.clear_enqueued_reports()
+        self._read_until({b'\x75\x02': parse_fan_info})
+        return sorted(ret)
 
 
 # backward compatibility
