@@ -235,11 +235,9 @@ class AuraLed(UsbHidDriver):
             single_color = (0, 0, 0)
 
         if channel != "sync" and channel not in _COLOR_CHANNELS:
-            # _LOGGER.error("channel %s not valid", channel)
             message = "valid channels are "
             for chan in _COLOR_CHANNELS:
                 message += chan + " "
-            # _LOGGER.error(message)
             raise KeyError(message) from None
             return
 

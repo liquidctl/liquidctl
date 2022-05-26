@@ -2,7 +2,7 @@
 _Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led.py)._
 
 __NOTE:__
-Some features of this driver are still being developed and/or refined. Your use of this driver indicates that you acknowledge it is a beta release.
+This driver is marked `experimental` because of the need for additional testing and feedback by the community. The API is unstable and may be changed in the future.
 
 
 This driver supports Asus Aura USB-based lighting controllers that appear in various Asus Z490, Z590, and Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate lighting effects on each addressable LED. The other mode is _effect_ mode in which the controller itself modulates lighting effects on each addressable LED. Effect mode requires the application to issue a single set of command codes to the controller in order to initiate the given effect. The controller continues to process that effect until the application sends a different command.
