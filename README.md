@@ -78,7 +78,7 @@ Corsair Vengeance RGB DIMM4
 1. [Automation and running at boot]
     1. [Set up Linux using systemd]
     1. [Set up Windows using Task Scheduler]
-    1. [Set up macOS using launchd]
+    1. [Set up macOS using various methods]
 1. [Troubleshooting]
 1. [Additional documentation]
 1. [License]
@@ -139,7 +139,8 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Graphics card RGB  | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [Additional ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uex_</sup> |
 | Graphics card RGB  | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card RGB  | [Additional EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uex_</sup> |
+| Graphics card RGB  | [Additional EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
+| Motherboard        | [Asus Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_e_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
@@ -705,10 +706,13 @@ A slightly more complex example can be seen in [issue #14](https://github.com/li
 
 As an alternative to using Task Scheduler, the batch file can simply be placed in the startup folder; you can run `shell:startup` to [find out where that is](https://support.microsoft.com/en-us/help/4026268/windows-10-change-startup-apps).
 
-### Set up macOS using launchd
-[Set up macOS using launchd]: #set-up-macos-using-launchd
+### Set up macOS using various methods
+[Set up macOS using various methods]: #set-up-macos-using-various-methods
 
-You can use a shell script and launchd to automatically configure your devices during login or after waking from sleep.  A [detailed guide](https://www.tonymacx86.com/threads/gigabyte-z490-vision-d-thunderbolt-3-i5-10400-amd-rx-580.298642/page-24#post-2138475) is available on tonymacx86.
+You can follow either or both of the guides below to automatically configure your devices during login or after waking from sleep. The guides are hosted on tonymacx86:
+
+- [This guide](https://www.tonymacx86.com/threads/gigabyte-z490-vision-d-thunderbolt-3-i5-10400-amd-rx-580.298642/post-2138475) is for controllers that lose their state during sleep (e.g. Gigabyte RGB Fusion 2.0) and need to be reinitialized after wake-from-sleep. This guide uses _Automator_ to initialize supported devices at login, and _sleepwatcher_ to initialize supported devices after wake-from-sleep.
+- [This guide](https://www.tonymacx86.com/threads/asus-z690-proart-creator-wifi-thunderbolt-4-i7-12700k-amd-rx-6800-xt.318311/post-2306524) is for controllers that do not lose their state during sleep (e.g. Asus Aura LED). This driver uses the _launchctl_ method to initialize supported devices at login.
 
 
 ## Troubleshooting
