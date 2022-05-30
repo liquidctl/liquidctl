@@ -285,9 +285,13 @@ class SmartDevice(_BaseSmartDevice):
             self.device.clear_enqueued_reports()
 
         msg = self.device.read(self._READ_LENGTH)
+        fw = tuple(msg[0xb:0xf])
+        _LOGGER.debug('raw firmware version: %r', fw)
 
-        fw = '{}.{}.{}'.format(msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
-        ret = [('Firmware version', fw, '')]
+        # NZXT/CAM has simplified how they report the firmware version from its
+        # raw 4-component form
+        fw_human = f'{fw[0]}.{fw[3]}'
+        ret = [('Firmware version', fw_human, '')]
 
         if self._color_channels:
             lcount = msg[0x11]

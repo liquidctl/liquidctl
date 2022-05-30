@@ -30,7 +30,7 @@ fan control and all lighting effects will be available.
 ```
 # liquidctl initialize
 NZXT Smart Device (V1)
-├── Firmware version           1.0.7  
+├── Firmware version             1.7  
 ├── LED accessories                2  
 ├── LED accessory type    HUE+ Strip  
 └── LED count (total)             20  

@@ -16,7 +16,7 @@ Device #3: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
 NZXT Smart Device (V1)
-├── Firmware version           1.0.7  
+├── Firmware version             1.7  
 ├── LED accessories                2  
 ├── LED accessory type    HUE+ Strip  
 └── LED count (total)             20  

@@ -55,7 +55,7 @@ def test_smart_device_initializes(mockSmartDevice, has_hwmon, direct_access, tmp
         dev.device.preload_read(Report(capdata[0], capdata[1:]))
 
     expected = [
-        ('Firmware version', '1.0.7', ''),
+        ('Firmware version', '1.7', ''),
         ('LED accessories', 2, ''),
         ('LED accessory type', 'HUE+ Strip', ''),
         ('LED count (total)', 20, ''),
