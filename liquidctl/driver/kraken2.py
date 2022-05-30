@@ -137,7 +137,7 @@ class Kraken2(UsbHidDriver):
         _LOGGER.debug('raw firmware version: %r', fw)
 
         # after the transition to the unified 5.x/6.x firmware, NZXT/CAM
-        # simplified how they reports the firmware version from its raw
+        # simplified how they report the firmware version from its raw
         # 4-component form
         fw_human = f'{fw[0]}.{fw[3]}' if fw[0] >= 5 else f'{fw[0]}.{fw[2]}.{fw[3]}'
         return [('Firmware version', fw_human, '')]
