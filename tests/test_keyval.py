@@ -113,7 +113,13 @@ def test_fs_backend_load_store_loads_from_fallback_dir_that_is_symlink(tmpdir):
 
     run_dir = tmpdir.mkdir('run_dir')
     fb_dir = os.path.join(run_dir, 'symlink')
-    os.symlink(run_dir, fb_dir, target_is_directory=True)
+    try:
+        os.symlink(run_dir, fb_dir, target_is_directory=True)
+    except OSError as _:
+        if sys.platform == 'win32':
+            pytest.skip('unable to create Windows symlink with current permissions')
+        else:
+            raise
 
     # don't store any initial value so that the fallback location is checked
 
