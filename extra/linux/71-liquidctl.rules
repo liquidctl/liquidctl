@@ -329,13 +329,13 @@ KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", 
 # Asetek 690LC (assuming NZXT Kraken X)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
 
-# Asus Aura LED Controller 
+# AsusTek Aura LED Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="19af", TAG+="uaccess"
 
-# Asus Aura LED Controller 
+# AsusTek Aura LED Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1939", TAG+="uaccess"
 
-# Asus Aura LED Controller
+# AsusTek Aura LED Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18f3", TAG+="uaccess"
 
 # Corsair Commander Core
