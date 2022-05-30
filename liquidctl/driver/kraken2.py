@@ -41,7 +41,7 @@ _STATUS_FAN_SPEED = 'Fan speed'
 _STATUS_PUMP_SPEED = 'Pump speed'
 _STATUS_FWVERSION = 'Firmware version'
 
-# more aggressive than observed 4.0.3 and 6.0.2 firmware defaults
+# more aggressive than observed 4.0.3 and 6.2 firmware defaults
 _RESET_FAN_PROFILE = [(20, 25), (30, 50), (50, 90), (60, 100)]
 _RESET_PUMP_PROFILE = [(20, 50), (30, 60), (40, 90), (50, 100)]
 
@@ -133,8 +133,14 @@ class Kraken2(UsbHidDriver):
             self.set_speed_profile('fan', _RESET_FAN_PROFILE)
             self.set_speed_profile('pump', _RESET_PUMP_PROFILE)
 
-        firmware = '{}.{}.{}'.format(*self.firmware_version)
-        return [('Firmware version', firmware, '')]
+        fw = self.firmware_version
+        _LOGGER.debug('raw firmware version: %r', fw)
+
+        # after the transition to the unified 5.x/6.x firmware, NZXT/CAM
+        # simplified how they reports the firmware version from its raw
+        # 4-component form
+        fw_human = f'{fw[0]}.{fw[3]}' if fw[0] >= 5 else f'{fw[0]}.{fw[2]}.{fw[3]}'
+        return [('Firmware version', fw_human, '')]
 
     def _get_status_directly(self):
         msg = self._read()
@@ -266,7 +272,7 @@ class Kraken2(UsbHidDriver):
 
     @property
     def supports_cooling_profiles(self):
-        return self.supports_cooling and self.firmware_version >= (3, 0, 0)
+        return self.supports_cooling and self.firmware_version[0] >= 3
 
     @property
     def firmware_version(self):
@@ -278,7 +284,7 @@ class Kraken2(UsbHidDriver):
         if clear_first:
             self.device.clear_enqueued_reports()
         msg = self.device.read(_READ_LENGTH)
-        self._firmware_version = (msg[0xb], msg[0xc] << 8 | msg[0xd], msg[0xe])
+        self._firmware_version = tuple(msg[0xb:0xf])
         return msg
 
     def _write(self, data):

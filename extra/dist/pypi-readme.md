@@ -19,7 +19,7 @@ NZXT Smart Device (V1)
 └── LED count (total)             20  
 
 NZXT Kraken X (X42, X52, X62 or X72)
-└── Firmware version    6.0.2  
+└── Firmware version    6.2  
 
 # liquidctl status
 NZXT Smart Device (V1)

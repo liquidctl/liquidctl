@@ -17,7 +17,7 @@ def mockKrakenXDevice():
 
 @pytest.fixture
 def mockOldKrakenXDevice():
-    device = _MockKrakenDevice(fw_version=(2, 5, 8))
+    device = _MockKrakenDevice(fw_version=(2, 1, 8))
     dev = Kraken2(device, 'Mock X62', device_type=Kraken2.DEVICE_KRAKENX)
 
     dev.connect()
@@ -72,7 +72,13 @@ def test_kraken_connect(mockKrakenXDevice):
 def test_kraken_initialize(mockKrakenXDevice):
     (fw_ver,) = mockKrakenXDevice.initialize()
 
-    assert fw_ver[1] == '6.0.2'
+    assert fw_ver[1] == '6.2'
+
+
+def test_old_kraken_initialize(mockOldKrakenXDevice):
+    (fw_ver,) = mockOldKrakenXDevice.initialize()
+
+    assert fw_ver[1] == '2.1.8'
 
 
 @pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True)])
@@ -144,7 +150,7 @@ def test_kraken_speed_profiles_not_supported(mockOldKrakenXDevice):
 
 def test_krakenM_initialize(mockKrakenMDevice):
     (fw_ver,) = mockKrakenMDevice.initialize()
-    assert fw_ver[1] == '6.0.2'
+    assert fw_ver[1] == '6.2'
 
 
 def test_krakenM_get_status(mockKrakenMDevice):

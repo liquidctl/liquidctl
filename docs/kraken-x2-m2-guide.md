@@ -27,7 +27,7 @@ suspended state, or if there have been hardware changes.
 ```
 # liquidctl initialize
 NZXT Kraken X (X42, X52, X62 or X72)
-└── Firmware version    6.0.2  
+└── Firmware version    6.2  
 ```
 
 With this generation of Kraken X coolers, it is especially important that
