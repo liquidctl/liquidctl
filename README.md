@@ -140,7 +140,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Graphics card RGB  | [Additional ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uex_</sup> |
 | Graphics card RGB  | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [Additional EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
-| Motherboard        | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_e_</sup> |
+| Motherboard        | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_en_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
