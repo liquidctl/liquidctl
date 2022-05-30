@@ -5,7 +5,7 @@ from collections import deque
 
 from liquidctl.driver.aura_led import AuraLed
 
-# Sample data for Aura LED controller from Asus ProArt Z690-Creator WiFi
+# Sample data for Aura LED controller from ASUS ProArt Z690-Creator WiFi
 _INIT_19AF_FIRMWARE_DATA = bytes.fromhex(
     "ec0241554c41332d415233322d30323037000000000000000000000000000000"
     "000000000000000000000000000000000000000000000000000000000000000000"

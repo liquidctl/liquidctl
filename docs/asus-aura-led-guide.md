@@ -1,11 +1,11 @@
-# Asus Aura LED (USB-based) controllers
+# ASUS Aura LED (USB-based) controllers
 _Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led.py)._
 
 __NOTE:__
 This driver is marked `experimental` because of the need for additional testing and feedback by the community. The API is unstable and may be changed in the future.
 
 
-This driver supports Asus Aura USB-based lighting controllers that appear in various Asus Z490, Z590, and Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate lighting effects on each addressable LED. The other mode is _effect_ mode in which the controller itself modulates lighting effects on each addressable LED. Effect mode requires the application to issue a single set of command codes to the controller in order to initiate the given effect. The controller continues to process that effect until the application sends a different command.
+This driver supports ASUS Aura USB-based lighting controllers that appear in various ASUS Z490, Z590, and Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate lighting effects on each addressable LED. The other mode is _effect_ mode in which the controller itself modulates lighting effects on each addressable LED. Effect mode requires the application to issue a single set of command codes to the controller in order to initiate the given effect. The controller continues to process that effect until the application sends a different command.
 
 This driver employs the _effect_ mode (fire and forget). The selected lighting mode remains in effect until it is explicitly changed. This means the selected lighting mode remains in effect (a) on cold boot, (b) on warm boot, (c) after wake-from-sleep.
 
@@ -13,16 +13,16 @@ The disadvantage, however, is the inability to set different lighting modes to d
 
 There are three known variants of the Aura LED USB-based controller:
 
-- Device `0x19AF`: found in Asus ProArt Z690-Creator WiFi
+- Device `0x19AF`: found in ASUS ProArt Z690-Creator WiFi
 - Device `0x1939` [^1]
-- Device `0x18F3`[^1]: found in Asus ROG Maximus Z690 Formula
+- Device `0x18F3`[^1]: found in ASUS ROG Maximus Z690 Formula
 
 [^1]: Support for devices `0x1939` and `0x18F3` may not be sufficiently developed so users are asked to experiment and provide feedback. [Wireshark USB traffic capture](./developer/capturing-usb-traffic.md), in particular, will be very helpful.
 
 
 ## Initialization
 
-Asus Aura LED controller does not need to be initialized before use. Initialization is optional.
+ASUS Aura LED controller does not need to be initialized before use. Initialization is optional.
 
 ```
 # liquidctl -m Aura initialize
@@ -34,7 +34,7 @@ AsusTek Aura LED Controller
 
 The `status` function returns the number of ARGB and RGB channels detected by the controller. If the command is invoked with `--debug` flag, the entire reply from the controller will be displayed in groups of 6 bytes. This information has not been fully decoded, but is provided in the event that someone is able to decipher it.
 
-On Asus ProArt Z690-Creator WiFi the following is returned:
+On ASUS ProArt Z690-Creator WiFi the following is returned:
 ```
 % liquidctl -m Aura status
 AsusTek Aura LED Controller (experimental)
@@ -61,7 +61,7 @@ AsusTek Aura LED Controller (experimental)
 └── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
 ```
 
-On Asus ROG Strix Z690-i Gaming WiFi (mini-ITX) the following is returned:
+On ASUS ROG Strix Z690-i Gaming WiFi (mini-ITX) the following is returned:
 ```
 % liquidctl --debug -m Aura status
 AsusTek Aura LED Controller (experimental)
@@ -79,7 +79,7 @@ AsusTek Aura LED Controller (experimental)
 └── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
 ```
 
-On some Asus Z490 boards (controller ID 0x18F3) the following is returned:
+On some ASUS Z490 boards (controller ID 0x18F3) the following is returned:
 ```
 % liquidctl --debug -m Aura status
 AsusTek Aura LED Controller (experimental)

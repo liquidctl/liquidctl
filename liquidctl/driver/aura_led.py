@@ -1,10 +1,10 @@
-"""liquidctl driver for Asus Aura LED USB controllers.
+"""liquidctl driver for ASUS Aura LED USB controllers.
 
 Supported controllers:
 
 - AsusTek Aura LED Controller: idVendor=0x0b05, idProduct=0x19af
 
-This controller is found on Asus ProArt Z690-Creator WiFi and other boards
+This controller is found on ASUS ProArt Z690-Creator WiFi and other boards
 
 Additional controllers (requires user testing and feedback):
 
@@ -134,7 +134,7 @@ _COLOR_MODES = {
 
 class AuraLed(UsbHidDriver):
     """
-    liquidctl driver for Asus Aura LED USB controllers.
+    liquidctl driver for ASUS Aura LED USB controllers.
     This driver only supports 'effect' mode, hence no speed/color channels
 
     Devices 0x1939 and 0x18F3 are not fully supported at this time; users are asked
@@ -276,7 +276,7 @@ class AuraLed(UsbHidDriver):
             full_cmd_seq.append(_FUNCTION_CODE["end_seq2"])
 
             """
-            Asus Aura Crate sends command sequence twice, but our tests show
+            ASUS Aura Crate sends command sequence twice, but our tests show
             that this may be redundant. Nevertheless, let's keep this code here
             in case we need to send commands twice as well
             #full_cmd_seq.append(cmd_tuple[0])
