@@ -154,7 +154,7 @@ class HydroPlatinum(UsbHidDriver):
             consargs = devargs.copy()
             consargs.update(kwargs)
             dev = cls(handle, desc, **consargs)
-            _LOGGER.debug('instantiated %s driver for %s', cls.__name__, desc)
+            _LOGGER.debug('%s identified: %s', cls.__name__, desc)
             yield dev
 
     def __init__(self, device, description, fan_count, fan_leds, **kwargs):

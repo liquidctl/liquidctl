@@ -111,7 +111,7 @@ class BaseUsbDriver(BaseDriver):
             consargs = devargs.copy()
             consargs.update(kwargs)
             dev = cls(handle, desc, **consargs)
-            _LOGGER.debug('found %s: %s', cls.__name__, desc)
+            _LOGGER.debug('%s identified: %s', cls.__name__, desc)
             yield dev
 
     def __init__(self, device, description, **kwargs):
