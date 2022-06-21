@@ -19,7 +19,7 @@ Changed:
 Fixed:
 
 - Skip `keyval` unit test on Windows when lacking sufficient permissions to
-  create symlinks
+  create symlinks (#460)
 
 Removed:
 
