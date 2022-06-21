@@ -1,5 +1,37 @@
 # Changelog
 
+## [Unreleased]
+
+### Changes since 1.9.1
+
+Added:
+
+- Add experimental support for NZXT H1 V2 case Smart Device (PR #451)
+- Add experimental driver for Asus Aura LED USB controllers (PR #456)
+
+Changed:
+
+- Hydro Platinum/Pro XT: only compute packets that will be sent
+- Kraken X2: report modern firmware versions in simplified form
+- Smart Device (V1)/Grid+ V3: report firmware version in simplified form
+- Debug: make it clear when a device is identified
+
+Fixed:
+
+- Skip `keyval` unit test on Windows when lacking sufficient permissions to
+  create symlinks
+
+Removed:
+
+- API: remove deprecated firmware version from the output of
+  `KrakenX2.get_status()`
+
+### Know issues
+
+- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
+  from more than one program and driver instance (#274)
+
+
 ## [1.9.1] – 2022-04-05
 
 ### Changes since 1.9.0
