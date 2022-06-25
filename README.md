@@ -134,7 +134,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
-| Fan/AIO controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | _en_ |
+| Fan/AIO controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_en_</sup> |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Motherboard        | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_en_</sup> |
