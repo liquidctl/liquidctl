@@ -135,11 +135,8 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/AIO controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | _en_ |
-| Graphics card RGB  | [ASUS Strix GTX 1070 OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card RGB  | [ASUS Strix RTX 2080 Ti OC](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card RGB  | [Additional ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Uex_</sup> |
-| Graphics card RGB  | [EVGA GTX 1080 FTW](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Graphics card RGB  | [Additional EVGA GTX 1070 and 1070 Ti cards](docs/nvidia-guide.md) | I²C | <sup>_Uenx_</sup> |
+| Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
+| Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Motherboard        | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_en_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
