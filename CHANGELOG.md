@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.10.0] – 2022-07-03
 
 ### Changes since 1.9.1
 
