@@ -65,5 +65,11 @@ Valid channel values are `pump`, `fanN`, where 1 <= N <= 6 is the fan number, an
 In iCUE the pump can be set to different modes that correspond to a fixed percent that can be used in liquidctl.
 Quiet is 75%, Balanced is 85% and Extreme is 100%. 
 
-Note: The pump and some fans have a limit to how slow they can go and will not stop when set to zero.
-This is a hardware limitation that cannot be changed.
+_Note: the pump and some fans have a limit to how slow they can go and will not stop when set to zero.
+This is a hardware limitation that cannot be changed._
+
+_Note: the cooler's lights flash with every update.
+Due to limitations in both the device hardware and liquidctl, there currently is no way to solve this problem.
+For more information, see: [#448]._
+
+[#448]: https://github.com/liquidctl/liquidctl/issues/448
