@@ -15,6 +15,7 @@ Changed:
 - Kraken X2: report modern firmware versions in simplified form
 - Smart Device (V1)/Grid+ V3: report firmware version in simplified form
 - Debug: make it clear when a device is identified
+- Nvidia: promote all supported cards to stable status
 
 Fixed:
 

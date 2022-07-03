@@ -134,10 +134,10 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
-| Fan/AIO controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_en_</sup> |
+| Fan/AIO controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_e_</sup> |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
-| Motherboard        | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_en_</sup> |
+| Motherboard        | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_e_</sup> |
 | Motherboard        | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
@@ -325,8 +325,8 @@ This will also install the necessary Python libraries.
 # the latest stable version
 python -m pip install liquidctl
 
-# a specific version (e.g. 1.9.1)
-python -m pip install liquidctl==1.9.1
+# a specific version (e.g. 1.10.0)
+python -m pip install liquidctl==1.10.0
 ```
 
 If [git] is installed, pip can also install the latest snapshot of the official
