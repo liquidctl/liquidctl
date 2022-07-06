@@ -40,6 +40,12 @@ Other device options:
   --non-volatile                 Store on non-volatile controller memory
   --direct-access                Directly access the device despite kernel drivers
   --unsafe <features>            Comma-separated bleeding-edge features to enable
+  --fan1-mode <mode>             The fan mode to configure when initializing the device
+  --fan2-mode <mode>             The fan mode to configure when initializing the device
+  --fan3-mode <mode>             The fan mode to configure when initializing the device
+  --fan4-mode <mode>             The fan mode to configure when initializing the device
+  --fan5-mode <mode>             The fan mode to configure when initializing the device
+  --fan6-mode <mode>             The fan mode to configure when initializing the device
 
 Other interface options:
   -v, --verbose                  Output additional information
@@ -117,6 +123,12 @@ _PARSE_ARG = {
     '--legacy-690lc': bool,
     '--non-volatile': bool,
     '--direct-access': bool,
+    '--fan1-mode': str.lower,
+    '--fan2-mode': str.lower,
+    '--fan3-mode': str.lower,
+    '--fan4-mode': str.lower,
+    '--fan5-mode': str.lower,
+    '--fan6-mode': str.lower,
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
