@@ -10,6 +10,21 @@ sensors available for use with a particular device.
 To avoid jerks in pump or fan speeds, an exponential moving average is used as
 low-pass filter on sensor data.
 
+Profiles are specified as comma-separated lists of `(temperature,duty)` pairs.
+For example: `(20,50),(40,65),(40,65),(50,100)` specifies a duty of 65% at
+40°C.  The profile will be linearly interpolated between the specified points.
+
+Escape sequences or appropriate single or double quotes should be employed to
+escape characters that are reserved by the shell in use (e.g. in the case of
+bash, the parenthesis and any optional whitespace).  In practice, wrapping the
+profile in double quotes should be sufficient for most users.
+
+Examples:
+  yoda --match grid show-sensors
+  yoda --match grid control fan1 with "(20,20),(35,100)" on nct6793.systin
+  yoda --match kraken show-sensors
+  yoda --match kraken control pump with "(20,50),(50,100)" on istats.cpu and fan with "(20,25),(34,100)" on _internal.liquid
+
 Usage:
   yoda [options] show-sensors
   yoda [options] control (<channel> with <profile> on <sensor> [and])...
@@ -34,12 +49,6 @@ Options:
   --version                Display the version number
   --help                   Show this message
 
-Examples:
-  yoda --match grid show-sensors
-  yoda --match grid control fan1 with '(20,20),(35,100)' on nct6793.systin
-  yoda --match kraken show-sensors
-  yoda --match kraken control pump with '(20,50),(50,100)' on istats.cpu and fan with '(20,25),(34,100)' on _internal.liquid
-
 Requirements:
   all platforms  liquidctl, including the Python APIs (pip install liquidctl)
   Linux/FreeBSD  psutil (pip install psutil)
@@ -47,6 +56,7 @@ Requirements:
   Windows        none, system sensors not yet supported
 
 Changelog:
+  0.0.5  Document how profiles are specified
   0.0.4  Fix casing of log and error messages
   0.0.3  Remove duplicate option definition
   0.0.2  Add low-pass filter and basic error handling.
@@ -73,7 +83,7 @@ if sys.platform == 'darwin':
 elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
     import psutil
 
-VERSION = '0.0.4'
+VERSION = '0.0.5'
 
 LOGGER = logging.getLogger(__name__)
 
