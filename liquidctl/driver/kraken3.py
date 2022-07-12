@@ -57,7 +57,7 @@ _COLOR_CHANNELS_KRAKENX = {
 # Available color channels and IDs for model Z coolers
 _COLOR_CHANNELS_KRAKENZ = {
     'external': 0b001,
-    'lcd': 0b1111
+    'screen': 0b1111
 }
 
 # Available LED channel modes/animations
@@ -408,6 +408,7 @@ class KrakenZ3(KrakenX3):
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
         self.orientation = 0 # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.brightness = 50 # default 50%
+        self.initialized = False
 
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
@@ -471,6 +472,7 @@ class KrakenZ3(KrakenX3):
             status.append(('LCD Orientation', orientation_str, ''))
 
         self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info, b'\x31\x01': parse_lcd_info})
+        self.initialized = True
         return sorted(status)
 
     def get_status(self, **kwargs):
@@ -490,38 +492,33 @@ class KrakenZ3(KrakenX3):
             (_STATUS_FAN_DUTY, msg[25], '%'),
         ]
 
-    def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
+    def set_color(self, channel, mode, value, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel."""
         """supported channel is lcd,
-            supported modes wip, static image for now, and brightness and orientation config
+            config brightness and orientation
             speed doesn't do anything,
             direction doesnt do anything
             """
+        assert channel == "screen" and len(mode) == 2 and mode[0] == "config", \
+                f'invalid screen config args'
 
-        ######### start of should delete block
-        # get orientation and brightness, should be removed if there is a way to store from init
-        self._write([0x30, 0x01])
-        def parse_lcd_info(msg):
-            self.brightness = msg[0x18]
-            on = msg[0x1a] #orientation number
-            self.orientation = on
-        self._read_until({b'\x31\x01': parse_lcd_info})
-        ########## end of should delete block
+        # get orientation and brightness
+        if not self.initialized:
+            self._write([0x30, 0x01])
+            def parse_lcd_info(msg):
+                self.brightness = msg[0x18]
+                on = msg[0x1a] #orientation number
+                self.orientation = on
+            self._read_until({b'\x31\x01': parse_lcd_info})
 
         cid = self._color_channels[channel]
         assert cid == 0b1111, f'Invalid Channel: {channel}'
 
-        if len(mode) > 1: # only supporting static for now
-            if len(mode) > 2:
-                if mode[0].lower() == "config":
-                    if mode[1].lower() == "brightness":
-                        self._write([0x30, 0x02, 0x01, int(mode[2]), 0x0, 0x0,0x1, self.orientation])
-                    elif mode[1].lower() == "orientation":
-                        self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(mode[2])])
-            else:
-                if mode[0].lower() == "static":
-                    self._send_static(mode[1])
-    
-    def _send_static(path):
-        pass
+        if mode[1].lower() == "brightness":
+            self._write([0x30, 0x02, 0x01, value, 0x0, 0x0,0x1, self.orientation])
+            return
+        elif mode[1].lower() == "orientation":
+            self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, value])
+            return
+
         
