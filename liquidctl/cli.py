@@ -7,6 +7,7 @@ Usage:
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
+  liquidctl [options] set screen <mode> ...
   liquidctl --help
   liquidctl --version
 
@@ -279,6 +280,8 @@ def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
     dev.set_color(args['<channel>'].lower(), args['<mode>'].lower(), color, **opts)
 
+def _device_set_screen(dev, args, **opts):
+    dev.set_color("lcd", args['<mode>'], NULL, **opts)
 
 def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
@@ -468,6 +471,8 @@ def main():
                     _device_set_speed(dev, args, **opts)
                 elif args['set'] and args['color']:
                     _device_set_color(dev, args, **opts)
+                elif args['set'] and args['screen']:
+                    _device_set_screen(dev, args, **opts)
                 else:
                     assert False, 'unreachable'
         except OSError as err:

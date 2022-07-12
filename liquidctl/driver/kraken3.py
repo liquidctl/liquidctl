@@ -3,7 +3,7 @@
 Supported devices:
 
 - NZXT Kraken X (X53, X63 and Z73)
-- NZXT Kraken Z (Z53, Z63 and Z73); no LCD screen control yet
+- NZXT Kraken Z (Z53, Z63 and Z73);
 
 Copyright (C) 2020–2022  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -57,6 +57,7 @@ _COLOR_CHANNELS_KRAKENX = {
 # Available color channels and IDs for model Z coolers
 _COLOR_CHANNELS_KRAKENZ = {
     'external': 0b001,
+    'lcd': 0b1111
 }
 
 # Available LED channel modes/animations
@@ -403,6 +404,75 @@ class KrakenZ3(KrakenX3):
         })
     ]
 
+    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+        super().__init__(device, description, speed_channels, color_channels, **kwargs)
+        self.orientation = 0 # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
+        self.brightness = 50 # default 50%
+
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
+        """
+
+        self.device.clear_enqueued_reports()
+        # request static infos
+        self._write([0x10, 0x01])  # firmware info
+        self._write([0x20, 0x03])  # lighting info
+        self._write([0x30, 0x01])  # lcd info
+
+        # initialize
+        if self._hwmon and not direct_access:
+            _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
+                         self._hwmon.module)
+        else:
+            if self._hwmon:
+                _LOGGER.warning('forcing re-initialization despite %s kernel driver',
+                                self._hwmon.module)
+            update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
+            self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
+            self._write([0x70, 0x01])
+
+        status = []
+
+        def parse_firm_info(msg):
+            fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
+            status.append(('Firmware version', fw, ''))
+
+        def parse_led_info(msg):
+            channel_count = msg[14]
+            assert channel_count + 1 == len(self._color_channels) - ('sync' in self._color_channels), \
+                   f'Unexpected number of color channels received: {channel_count}'
+
+            def find(channel, accessory):
+                offset = 15  # offset of first channel/first accessory
+                acc_id = msg[offset + channel * HUE2_MAX_ACCESSORIES_IN_CHANNEL + accessory]
+                return Hue2Accessory(acc_id) if acc_id else None
+
+            for i in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
+                accessory = find(0, i)
+                if not accessory:
+                    break
+                status.append((f'LED accessory {i + 1}', accessory, ''))
+
+        
+        def parse_lcd_info(msg):
+            self.brightness = msg[0x18]
+            on = msg[0x1a] #orientation number
+            self.orientation = on
+            orientation_str = "NORMAL" if on == 0 else "ROTATION90" if on == 1 else "ROTATION180" if on == 2 else "ROTATION270" if on == 3 else "NORMAL"
+            status.append(('LCD Brightness', str(self.brightness), ''))
+            status.append(('LCD Orientation', orientation_str, ''))
+
+        self._read_until({b'\x11\x01': parse_firm_info, b'\x21\x03': parse_led_info, b'\x31\x01': parse_lcd_info})
+        return sorted(status)
+
     def get_status(self, **kwargs):
         """Get a status report.
 
@@ -419,3 +489,39 @@ class KrakenZ3(KrakenX3):
             (_STATUS_FAN_SPEED, msg[24] << 8 | msg[23], 'rpm'),
             (_STATUS_FAN_DUTY, msg[25], '%'),
         ]
+
+    def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
+        """Set the color mode for a specific channel."""
+        """supported channel is lcd,
+            supported modes wip, static image for now, and brightness and orientation config
+            speed doesn't do anything,
+            direction doesnt do anything
+            """
+
+        ######### start of should delete block
+        # get orientation and brightness, should be removed if there is a way to store from init
+        self._write([0x30, 0x01])
+        def parse_lcd_info(msg):
+            self.brightness = msg[0x18]
+            on = msg[0x1a] #orientation number
+            self.orientation = on
+        self._read_until({b'\x31\x01': parse_lcd_info})
+        ########## end of should delete block
+
+        cid = self._color_channels[channel]
+        assert cid == 0b1111, f'Invalid Channel: {channel}'
+
+        if len(mode) > 1: # only supporting static for now
+            if len(mode) > 2:
+                if mode[0].lower() == "config":
+                    if mode[1].lower() == "brightness":
+                        self._write([0x30, 0x02, 0x01, int(mode[2]), 0x0, 0x0,0x1, self.orientation])
+                    elif mode[1].lower() == "orientation":
+                        self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(mode[2])])
+            else:
+                if mode[0].lower() == "static":
+                    self._send_static(mode[1])
+    
+    def _send_static(path):
+        pass
+        
