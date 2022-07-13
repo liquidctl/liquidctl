@@ -47,6 +47,20 @@ Corsair Commander Core (experimental)
 └── Water temperature    35.8  °C
 ```
 
+The Core XT variant of the device is not meant for use with an AIO, so parameters relating to the pump are
+not present.
+
+```
+Corsair Commander Core XT (experimental)
+├── Fan speed 1    2737  rpm
+├── Fan speed 2    2786  rpm
+├── Fan speed 3       0  rpm
+├── Fan speed 4       0  rpm
+├── Fan speed 5       0  rpm
+└── Fan speed 6       0  rpm
+```
+
+
 ## Programming the pump and fan speeds
 
 _New in 1.9.0._  
@@ -59,8 +73,9 @@ Currently, the pump and each fan can be set to a fixed duty cycle.
                channel    duty
 ```
 
-Valid channel values are `pump`, `fanN`, where 1 <= N <= 6 is the fan number, and
-`fans`, to simultaneously configure all fans.
+Valid channel values on the Core (non-XT) are `pump`, `fanN`, where 1 <= N <= 6 is the fan number.
+On the Core XT, the `pump` channel is not present. The `fans` channel can be used to simultaneously
+configure all fans.
 
 In iCUE the pump can be set to different modes that correspond to a fixed percent that can be used in liquidctl.
 Quiet is 75%, Balanced is 85% and Extreme is 100%. 

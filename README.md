@@ -127,6 +127,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | DDR4 DRAM          | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
+| Fan/LED controller | [Corsair Commander Core XT](docs/corsair-commander-core-guide.md) | USB HID | <sup>_enp_</sup> |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |

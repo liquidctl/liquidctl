@@ -2,13 +2,17 @@
 
 ## Compatible devices
 
-| Device Name | USB ID | LED channels | Fan channels | Temperature channels | 
-|:-----------:|:------:|:------------:|:------------:|:--------------------:|
-| Commander Core | `1b1c:0c1c` | 7 | 6 | 2 |
+| Device Name | USB ID | LED channels | Fan channels | Temperature channels | AIO |
+|:-----------:|:------:|:------------:|:------------:|:--------------------:|:---:|
+| Commander Core | `1b1c:0c1c` | 7 | 6 | 2 | Yes |
+| Commander Core XT | `1b1c:0c2a` | 7 | 6 | 2 | No |
 
 The Commander Core is typically shipped with the Corsair iCUE Elite Capellix
 AIOs.  The first two LED and temperature channels go to the EXT port, typically
 in use by the AIO.
+
+The Commander Core XT is a standalone product that shares the same protocol, but
+does not include support for an AIO, and as a result channel numbers are offset down by 1.
 
 ## Command formats
 
@@ -152,16 +156,16 @@ Response:
 
 Data Type: `0x06 0x00`
 
-| Byte index | Description |
-| ---------- | ----------- |
-| 0x00 | Number of speed items |
-| 0x01, 0x02 | Speed of AIO/EXT port |
-| 0x03, 0x04 | Speed of Fan 1 |
-| 0x05, 0x06 | Speed of Fan 2 |
-| 0x07, 0x08 | Speed of Fan 3 |
-| 0x09, 0x0a | Speed of Fan 4 |
-| 0x0b, 0x0c | Speed of Fan 5 |
-| 0x0d, 0x0e | Speed of Fan 6 |
+| Byte index | Description (Core) | Description (Core XT) |
+| ---------- | ------------------ | --------------------- |
+| 0x00 | Number of speed items | Number of speed items |
+| 0x01, 0x02 | Speed of AIO/EXT port | Speed of Fan 1 |
+| 0x03, 0x04 | Speed of Fan 1 | Speed of Fan 2 |
+| 0x05, 0x06 | Speed of Fan 2 | Speed of Fan 3 |
+| 0x07, 0x08 | Speed of Fan 3 | Speed of Fan 4 |
+| 0x09, 0x0a | Speed of Fan 4 | Speed of Fan 5 |
+| 0x0b, 0x0c | Speed of Fan 5 | Speed of Fan 6 |
+| 0x0d, 0x0e | Speed of Fan 6 | |
 
 ### `0x1a` - Connected Speed Devices
 
@@ -169,16 +173,16 @@ Data Type: `0x09 0x00`
 
 Connection State: 0x07 if connected or 0x01 if not connected
 
-| Byte index | Description |
-| ---------- | ----------- |
-| 0x00 | Number of Ports |
-| 0x01 | AIO/EXT Connection State|
-| 0x02 | Fan 1 Connection State |
-| 0x03 | Fan 2 Connection State |
-| 0x04 | Fan 3 Connection State |
-| 0x05 | Fan 4 Connection State |
-| 0x06 | Fan 5 Connection State |
-| 0x07 | Fan 6 Connection State |
+| Byte index | Description (Core) | Description (Core XT) |
+| ---------- | ------------------ | --------------------- |
+| 0x00 | Number of Ports | Number of Ports |
+| 0x01 | AIO/EXT Connection State | Fan 1 Connection State |
+| 0x02 | Fan 1 Connection State | Fan 2 Connection State |
+| 0x03 | Fan 2 Connection State | Fan 3 Connection State |
+| 0x04 | Fan 3 Connection State | Fan 4 Connection State |
+| 0x05 | Fan 4 Connection State | Fan 5 Connection State |
+| 0x06 | Fan 5 Connection State | Fan 6 Connection State |
+| 0x07 | Fan 6 Connection State | |
 
 
 ### `0x20` - Connected LEDs
@@ -226,16 +230,16 @@ Data Type: `0x10 0x00`
 
 Data Type: `0x03 0x00`
 
-| Byte index | Description |
-| ---------- | ----------- |
-| 0x00 | Number of Ports |
-| 0x01 | AIO/EXT Speed Mode |
-| 0x02 | Fan 1 Speed Mode |
-| 0x03 | Fan 2 Speed Mode |
-| 0x04 | Fan 3 Speed Mode |
-| 0x05 | Fan 4 Speed Mode |
-| 0x06 | Fan 5 Speed Mode |
-| 0x07 | Fan 6 Speed Mode |
+| Byte index | Description (Core) | Description (Core XT) |
+| ---------- | ------------------ | --------------------- |
+| 0x00 | Number of Ports | Number of Ports |
+| 0x01 | AIO/EXT Speed Mode | Fan 1 Speed Mode |
+| 0x02 | Fan 1 Speed Mode | Fan 2 Speed Mode |
+| 0x03 | Fan 2 Speed Mode | Fan 3 Speed Mode |
+| 0x04 | Fan 3 Speed Mode | Fan 4 Speed Mode |
+| 0x05 | Fan 4 Speed Mode | Fan 5 Speed Mode |
+| 0x06 | Fan 5 Speed Mode | Fan 6 Speed Mode |
+| 0x07 | Fan 6 Speed Mode | |
 
 Speed Modes:
 
@@ -250,13 +254,13 @@ Note: This list is not complete and currently only contains what has been confir
 
 Data Type: `0x04 0x00`
 
-| Byte index | Description |
-| ---------- | ----------- |
-| 0x00 | Number of Ports |
-| 0x01, 0x02 | Speed as percentage for AIO/EXT port |
-| 0x03, 0x04 | Speed as percentage for Fan 1 |
-| 0x05, 0x06 | Speed as percentage for Fan 2 |
-| 0x07, 0x08 | Speed as percentage for Fan 3 |
-| 0x09, 0x0a | Speed as percentage for Fan 4 |
-| 0x0b, 0x0c | Speed as percentage for Fan 5 |
-| 0x0d, 0x0e | Speed as percentage for Fan 6 |
+| Byte index | Description (Core) | Description (Core XT) |
+| ---------- | ------------------ | --------------------- |
+| 0x00 | Number of Ports | Number of Ports |
+| 0x01, 0x02 | Speed as percentage for AIO/EXT port | Speed as percentage for Fan 1 |
+| 0x03, 0x04 | Speed as percentage for Fan 1 | Speed as percentage for Fan 2 |
+| 0x05, 0x06 | Speed as percentage for Fan 2 | Speed as percentage for Fan 3 |
+| 0x07, 0x08 | Speed as percentage for Fan 3 | Speed as percentage for Fan 4 |
+| 0x09, 0x0a | Speed as percentage for Fan 4 | Speed as percentage for Fan 5 |
+| 0x0b, 0x0c | Speed as percentage for Fan 5 | Speed as percentage for Fan 6 |
+| 0x0d, 0x0e | Speed as percentage for Fan 6 | |
