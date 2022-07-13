@@ -47,9 +47,9 @@ def test_kraken3_backwards_modes_are_deprecated(caplog):
              'backwards-rainbow-flow', 'backwards-super-rainbow',
              'backwards-rainbow-pulse']
 
-    from liquidctl.driver.kraken3 import KrakenX3
-    from liquidctl.driver.kraken3 import _COLOR_CHANNELS_KRAKENX
-    from liquidctl.driver.kraken3 import _SPEED_CHANNELS_KRAKENX
+    from liquidctl.driver.krakenx3 import KrakenX3
+    from liquidctl.driver.krakenx3 import _COLOR_CHANNELS_KRAKENX
+    from liquidctl.driver.krakenx3 import _SPEED_CHANNELS_KRAKENX
 
     for mode in modes:
         base_mode = mode.replace('backwards-', '')
