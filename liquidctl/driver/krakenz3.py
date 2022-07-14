@@ -17,6 +17,8 @@ from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
                            Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL, \
                            map_direction
 
+from PIL import Image
+
 _LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
@@ -208,20 +210,56 @@ class KrakenZ3(UsbDriver):
                     self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(mode[2])])
                     return
             elif mode[0].lower() == "static":
-                self._send_static_image()
+                data = self._prepare_image_file(mode[1], 1)
+                self._send_static_image(data)
+
+    def _prepare_image_file(self, path, rotation):
+        '''
+        Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
+        '''
+        try: 
+            img = Image.open(path)
+            img = img.resize((320, 320))
+            img = img.rotate(rotation * 90)
+            return img.getdata()
+        except IOError:
+            pass 
     
-    def _send_static_image(self):
-        self._write([0x36, 0x01, 0x01]) # start frame transfer
+    def _send_static_image(self, data):
+        '''
+        expects a PIL data type or other nested array[[],[]]
+        '''
+        bucketIndex = 0
+        self._delete_bucket(bucketIndex)
+        self._setup_bucket(bucketIndex, bucketIndex + 1)
+        self._write([0x36, 0x01, bucketIndex]) # start frame transfer
         self._bulk_write([0x12, 0xfa, 0x01, 0xe8, 0xab, 0xcd, 0xef, 0x98, 
         0x76, 0x54, 0x32, 0x10, 0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
+        pixelDataIndex = 0
         for i in range(800):
             frame = []
             for p in range(0, 512, 4):
-                frame.append(0x96)
+                frame.append(data[pixelDataIndex][0])
+                frame.append(data[pixelDataIndex][1])
+                frame.append(data[pixelDataIndex][2])
                 frame.append(0)
-                frame.append(0)
-                frame.append(0)
+                pixelDataIndex += 1
             self._bulk_write(frame)
-        self._write([0x36, 0x02]) # en frame transfer
+        self._write([0x36, 0x02]) # end frame transfer
+        self._switch_bucket(bucketIndex)
+
+
+    def _delete_bucket(self, bucketIndex):
+        self._write([0x32, 0x2, bucketIndex])
+
+    def _switch_bucket(self, bucketIndex, mode = 0x4):
+        self._write([0x38, 0x1, mode, bucketIndex])
+
+    def _get_memory_start_slot(self, bucketIndex):
+        return 400 * bucketIndex
+    
+    def _setup_bucket(self, startBucketIndex, endBucketIndex):
+        startMemoryAddress = self._get_memory_start_slot(startBucketIndex)
+        self._write([0x32, 0x1, startBucketIndex, endBucketIndex, startMemoryAddress & 0xff, startMemoryAddress >> 8, 0x90, 0x1, 0x1])
         
 
