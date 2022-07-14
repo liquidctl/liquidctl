@@ -210,7 +210,7 @@ class KrakenZ3(UsbDriver):
                     self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(mode[2])])
                     return
             elif mode[0].lower() == "static":
-                data = self._prepare_image_file(mode[1], 1)
+                data = self._prepare_image_file(mode[1], self.orientation)
                 self._send_static_image(data)
 
     def _prepare_image_file(self, path, rotation):
@@ -220,7 +220,7 @@ class KrakenZ3(UsbDriver):
         try: 
             img = Image.open(path)
             img = img.resize((320, 320))
-            img = img.rotate(rotation * 90)
+            img = img.rotate(rotation * -90)
             return img.getdata()
         except IOError:
             pass 
