@@ -11,6 +11,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import itertools
 import logging
+from time import sleep
 
 from liquidctl.driver.usb import UsbDriver, UsbHidDriver
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
@@ -18,6 +19,7 @@ from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
                            map_direction
 
 from PIL import Image
+from PIL import GifImagePlugin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -139,6 +141,17 @@ class KrakenZ3(UsbDriver):
                 return
         assert False, f'missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
+    def _read_until_return(self, parsers):
+        for _ in range(_MAX_READ_ATTEMPTS):
+            msg = self.device.read(0x81, _READ_LENGTH)
+            prefix = bytes(msg[0:2])
+            func = parsers.pop(prefix, None)
+            if func:
+                return func(msg)
+            if not parsers:
+                return
+        assert False, f'missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})'
+
     def _write(self, data):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(0x1, data + padding)
@@ -209,11 +222,15 @@ class KrakenZ3(UsbDriver):
                 elif mode[1].lower() == "orientation":
                     self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(mode[2])])
                     return
+            elif mode[0].lower() == "liquid":
+                self._switch_bucket(0, 2)
             elif mode[0].lower() == "static":
-                data = self._prepare_image_file(mode[1], self.orientation)
-                self._send_static_image(data)
+                data = self._prepare_static_file(mode[1], self.orientation)
+                self._send_data(data, [0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
+            elif mode[0].lower() == "gif":
+                self._prepare_gif_file(mode[1], self.orientation, self._send_static_image)
 
-    def _prepare_image_file(self, path, rotation):
+    def _prepare_static_file(self, path, rotation):
         '''
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
         '''
@@ -221,36 +238,94 @@ class KrakenZ3(UsbDriver):
             img = Image.open(path)
             img = img.resize((320, 320))
             img = img.rotate(rotation * -90)
-            return img.getdata()
+            data = img.getdata()
+            result = []
+            pixelDataIndex = 0
+            for i in range(800):
+                for p in range(0, 512, 4):
+                    result.append(data[pixelDataIndex][0])
+                    result.append(data[pixelDataIndex][1])
+                    result.append(data[pixelDataIndex][2])
+                    result.append(0)
+                    pixelDataIndex += 1
+            return result
+        except IOError:
+            pass
+
+    def _prepare_gif_file(self, path, rotation, frame_callback):
+        '''
+        Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
+        '''
+        try: 
+            img = Image.open(path)
+            img = img.resize((320, 320))
+            img = img.rotate(rotation * -90)
+            for f in range(0,img.n_frames):
+                img.seek(f)
+                frame_callback(img.getdata())
         except IOError:
             pass 
     
-    def _send_static_image(self, data):
+            
+
+    def _send_data(self, data, bulk_info):
         '''
         expects a PIL data type or other nested array[[],[]]
         '''
-        bucketIndex = 0
-        self._delete_bucket(bucketIndex)
+        self._write([0x36, 0x03]) # unknown
+        bucketIndex = self._find_next_unoccupied_bucket()
+        bucketIndex = self._prepare_bucket(bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1)
+        self._write([0x20, 0x03]) # unknown
+        self._write([0x74, 0x01]) # keepalive
+        self._write([0x70, 0x01]) # unknown
+        self._write([0x74, 0x01]) # keepalive
         self._setup_bucket(bucketIndex, bucketIndex + 1)
+        sleep(0.1)
         self._write([0x36, 0x01, bucketIndex]) # start frame transfer
+        sleep(0.1)
         self._bulk_write([0x12, 0xfa, 0x01, 0xe8, 0xab, 0xcd, 0xef, 0x98, 
-        0x76, 0x54, 0x32, 0x10, 0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
-        pixelDataIndex = 0
-        for i in range(800):
-            frame = []
-            for p in range(0, 512, 4):
-                frame.append(data[pixelDataIndex][0])
-                frame.append(data[pixelDataIndex][1])
-                frame.append(data[pixelDataIndex][2])
-                frame.append(0)
-                pixelDataIndex += 1
-            self._bulk_write(frame)
+        0x76, 0x54, 0x32, 0x10] + bulk_info)
+        sleep(0.001)
+        for i in range(0, len(data), _BULK_WRITE_LENGTH):
+            x = i
+            self._bulk_write(data[x:x+_BULK_WRITE_LENGTH])
+        sleep(0.001)
         self._write([0x36, 0x02]) # end frame transfer
+        sleep(0.1)
         self._switch_bucket(bucketIndex)
+        sleep(0.01)
+        self._write([0x74, 0x01]) # keepalive
 
+    def _find_next_unoccupied_bucket(self, startingBucket = 0):
+        buckets = {}
+        for bI in range(startingBucket, 15):
+            self._write([0x30, 0x04, bI]) # query bucket
+            response = self._read()
+            buckets[bI] = (response[16], response[22])
+            if response[16] and response[22] == 0:
+                return bI
+        return -1
+    
+    def _prepare_bucket(self, bucketIndex, bucketFilled):
+        '''
+        if a bucket delete returns 0x9 then try next bucket
+        if bucket already had data then delete it twice
+        '''
+        assert bucketIndex < 16, "reached max bucket"
+        delete_response = self._delete_bucket(bucketIndex)
+        if not delete_response:
+            return self._prepare_bucket(bucketIndex + 1, True)
+        else:
+            if bucketFilled:
+                return self._prepare_bucket(bucketIndex, False)
+        return bucketIndex
 
     def _delete_bucket(self, bucketIndex):
         self._write([0x32, 0x2, bucketIndex])
+        def parse_delete_result(msg):
+            return msg[14] == 0x1
+
+        return self._read_until_return({b'\x33\x02': parse_delete_result})
 
     def _switch_bucket(self, bucketIndex, mode = 0x4):
         self._write([0x38, 0x1, mode, bucketIndex])
