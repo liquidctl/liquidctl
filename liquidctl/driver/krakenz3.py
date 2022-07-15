@@ -18,6 +18,7 @@ from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
                            map_direction
 
 import io
+import math
 from PIL import Image, ImageSequence
 
 _LOGGER = logging.getLogger(__name__)
@@ -231,10 +232,8 @@ class KrakenZ3(UsbDriver):
                 data = self._prepare_static_file(mode[1], self.orientation)
                 self.send_data(data, [0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
             elif mode[0].lower() == "gif":
-                with open(mode[1], mode='rb') as file:
-                #data = self._prepare_gif_file(mode[1], self.orientation)
-                    data = file.read()
-                    self.send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(3, 'little')))
+                data = self._prepare_gif_file(mode[1], self.orientation)
+                self.send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(3, 'little')))
 
     def _prepare_static_file(self, path, rotation):
         '''
@@ -308,33 +307,27 @@ class KrakenZ3(UsbDriver):
 
         bucketIndex = self._find_next_unoccupied_bucket(buckets)                                        # find the first unoccupied bucket in the list
         bucketIndex = self._prepare_bucket(bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1)  # prepare bucket or find a more suitable one
-        bucketMemoryStart, bucketMemorySize = self._get_bucket_memory_info(buckets, bucketIndex)        # extracts the bucket starting address and size
+        bucketMemoryStart = self._get_bucket_memory_offset(buckets, bucketIndex)                        # extracts the bucket starting address
 
-        self._setup_bucket(bucketIndex, bucketIndex + 1, bucketMemoryStart, bucketMemorySize)           # setup bucket for transfer
+        packetCount = list(math.floor((math.ceil(len(data) / _BULK_WRITE_LENGTH) + 1) / 2)              # calculates the number of needed packets
+                        .to_bytes(2, 'little')) 
+
+        self._setup_bucket(bucketIndex, bucketIndex + 1, bucketMemoryStart, packetCount)                # setup bucket for transfer
         self._write_return([0x36, 0x01, bucketIndex])                                                   # start data transfer
         
-        self._bulk_write([0x12, 0xfa, 0x01, 0xe8, 0xab, 0xcd, 0xef, 0x98, 0x76, 0x54, 0x32, 0x10] + bulkInfo)       # first bulk write message contains a standard part and information about the transfer                               
+        self._bulk_write([0x12, 0xfa, 0x01, 0xe8, 0xab, 0xcd, 0xef, 0x98, 0x76, 0x54, 0x32, 0x10]       # first bulk write message contains a standard part and information about the transfer
+                          + bulkInfo)
 
         for i in range(0, len(data), _BULK_WRITE_LENGTH):                                               # start sending data in 512mb chunks
             x = i
             self._bulk_write(list(data[x:x+_BULK_WRITE_LENGTH]))
-
-        # for i in range(800):
-        #     frame = []
-        #     for p in range(0, 512, 4):
-        #         frame.append(96)
-        #         frame.append(0)
-        #         frame.append(0)
-        #         frame.append(0)
-        #     self._bulk_write(frame)
-
         
-        self._write([0x36, 0x02])                                                                # end data transfer
+        self._write([0x36, 0x02])                                                                       # end data transfer
         sleep(0.001)
-        if not self._switch_bucket(bucketIndex):                                                                # switch to newly written bucket
+        if not self._switch_bucket(bucketIndex):                                                        # switch to newly written bucket
             print("failed to display image")
         sleep(0.001)
-        self._write([0x74, 0x01])                                                                # keepalive
+        self._write([0x74, 0x01])                                                                       # keepalive
         sleep(1)
 
     def _query_buckets(self):
@@ -369,16 +362,18 @@ class KrakenZ3(UsbDriver):
                 return bucketIndex
         return -1
 
-    def _get_bucket_memory_info(self, buckets, bucketIndex):
+    def _get_bucket_memory_offset(self, buckets, bucketIndex):
         '''
-        returns the memory start address and bucket memory size
+        returns the memory start address
+        memory offset is calculated as the offset of the previous bucket
+        plus its size
         '''
-        bucket = buckets[bucketIndex]
-        if not any(bucket[15:]):
-            memoryStart = 400 * bucketIndex
-            return [memoryStart & 0xff, memoryStart >> 8], [0x90, 0x1]
-        else:
-            return [bucket[18], bucket[19]], [bucket[20], bucket[21]]
+        if bucketIndex == 0x0:
+            return [0x0, 0x0]
+        bucket = buckets[bucketIndex - 1]
+        return list((int.from_bytes([bucket[17], bucket[18]], "little") + 
+                    int.from_bytes([bucket[19], bucket[20]], "little"))
+                    .to_bytes(2, 'little'))
     
     def _prepare_bucket(self, bucketIndex, bucketFilled):
         '''
