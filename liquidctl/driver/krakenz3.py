@@ -294,7 +294,9 @@ class KrakenZ3(UsbDriver):
 
     def send_data(self, data, bulkInfo):
         '''
-        expects a PIL data type or other nested array[[],[]]
+        sends image or gif to device
+        data is an array of bytes to write
+        bulk info contains info about the transfer
         '''
         self._write_return([0x36, 0x03])                                                                # unknown
 
