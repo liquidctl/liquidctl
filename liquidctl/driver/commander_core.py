@@ -51,8 +51,13 @@ class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
 
     SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c1c, None, 'Corsair Commander Core (experimental)', {})
+        (0x1b1c, 0x0c1c, None, 'Corsair Commander Core (experimental)', {"has_pump": True}),
+        (0x1b1c, 0x0c2a, None, 'Corsair Commander Core XT (experimental)', {"has_pump": False})
     ]
+
+    def __init__(self, device, description, has_pump, **kwargs):
+        super().__init__(device, description, **kwargs)
+        self._has_pump = has_pump
 
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
@@ -71,20 +76,32 @@ class CommanderCore(UsbHidDriver):
             for i in range(0, num_devices):
                 connected = u16le_from(led_data, offset=i * 4) == 2
                 num_leds = u16le_from(led_data, offset=i * 4 + 2)
-                label = 'AIO LED count' if i == 0 else f'RGB port {i} LED count'
+                if self._has_pump:
+                    label = 'AIO LED count' if i == 0 else f'RGB port {i} LED count'
+                else:
+                    label = f'RGB port {i+1} LED count'
+
                 status += [(label, num_leds if connected else None, '')]
 
             # Get what fans are connected
             res = self._read_data(_MODE_CONNECTED_SPEEDS, _DATA_TYPE_CONNECTED_SPEEDS)
             num_devices = res[0]
             for i in range(0, num_devices):
-                label = 'AIO port connected' if i == 0 else f'Fan port {i} connected'
+                if self._has_pump:
+                    label = 'AIO port connected' if i == 0 else f'Fan port {i} connected'
+                else:
+                    label = f'Fan port {i+1} connected'
+
                 status += [(label, res[i + 1] == 0x07, '')]
 
             # Get what temp sensors are connected
             for i, temp in enumerate(self._get_temps()):
                 connected = temp is not None
-                label = 'Water temperature sensor' if i == 0 else f'Temperature sensor {i}'
+                if self._has_pump:
+                    label = 'Water temperature sensor' if i == 0 and self._has_pump else f'Temperature sensor {i}'
+                else:
+                    label = f'Temperature sensor {i+1}'
+
                 status += [(label, connected, '')]
 
         return status
@@ -95,13 +112,22 @@ class CommanderCore(UsbHidDriver):
 
         with self._wake_device_context():
             for i, speed in enumerate(self._get_speeds()):
-                label = 'Pump speed' if i == 0 else f'Fan speed {i}'
+                if self._has_pump:
+                    label = 'Pump speed' if i == 0 else f'Fan speed {i}'
+                else:
+                    label = f'Fan speed {i+1}'
+
                 status += [(label, speed, 'rpm')]
 
             for i, temp in enumerate(self._get_temps()):
                 if temp is None:
                     continue
-                label = 'Water temperature' if i == 0 else f'Temperature {i}'
+
+                if self._has_pump:
+                    label = 'Water temperature' if i == 0 else f'Temperature {i}'
+                else:
+                    label = f'Temperature {i}'
+
                 status += [(label, temp, '°C')]
 
         return status
@@ -113,7 +139,7 @@ class CommanderCore(UsbHidDriver):
         raise NotSupportedByDriver
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        channels = CommanderCore._parse_channels(channel)
+        channels = self._parse_channels(channel)
 
         with self._wake_device_context():
             # Set hardware speed mode
@@ -226,15 +252,23 @@ class CommanderCore(UsbHidDriver):
 
         self._send_command(_CMD_WRITE, buf)
 
-    @staticmethod
-    def _parse_channels(channel):
-        if channel == 'pump':
+    def _fan_to_channel(self, fan):
+        if self._has_pump:
+            return fan
+        else:
+            # On devices without a pump, channel 0 is fan 1
+            return fan - 1
+
+    def _parse_channels(self, channel):
+        if self._has_pump and channel == 'pump':
             return [0]
         elif channel == "fans":
-            return range(1, _FAN_COUNT + 1)
+            return [self._fan_to_channel(x) for x in range(1, _FAN_COUNT + 1)]
         elif channel.startswith("fan") and channel[3:].isnumeric() and 0 < int(channel[3:]) <= _FAN_COUNT:
-            return [int(channel[3:])]
+            return [self._fan_to_channel(int(channel[3:]))]
         else:
             fan_names = ['fan' + str(i) for i in range(1, _FAN_COUNT + 1)]
             fan_names_part = '", "'.join(fan_names)
-            raise ValueError(f'unknown channel, should be one of: "pump", "{fan_names_part}" or "fans"')
+            if self._has_pump:
+                fan_names.insert(0, "pump")
+            raise ValueError(f'unknown channel, should be one of: "{fan_names_part}" or "fans"')
