@@ -9,7 +9,6 @@ Copyright (C) 2020–2022  Tom Frey, Jonas Malaco, Shady Nawara and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import itertools
 import logging
 from time import sleep
 
@@ -18,8 +17,8 @@ from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
                            Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL, \
                            map_direction
 
-from PIL import Image
-from PIL import GifImagePlugin
+import io
+from PIL import Image, ImageSequence
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -156,6 +155,10 @@ class KrakenZ3(UsbDriver):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(0x1, data + padding)
 
+    def _write_return(self, data):
+        self._write(data)
+        return self._read()
+
     def _bulk_write(self, data):
         padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
         self.device.write(0x2, data + padding)
@@ -196,13 +199,13 @@ class KrakenZ3(UsbDriver):
         self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
 
     def set_color(self, channel, mode, color, speed='normal', direction='forward', **kwargs):
-        """Set the color mode for a specific channel."""
-        """supported channel is screen,
-            mode is an array ["config|static", "path to image|brightness|orientation", "brightness,orientation value"]
-            color is unused,
-            speed is unused,
-            direction is unused
-            """
+        '''
+        supported channel is screen,
+        mode is an array ["config|static|liquid", "path to image|brightness|orientation", "brightness,orientation value"]
+        color is unused,
+        speed is unused,
+        direction is unused
+        '''
         assert channel == "screen", f'Invalid Channel: {channel}'
 
         # get orientation and brightness
@@ -226,12 +229,16 @@ class KrakenZ3(UsbDriver):
                 self._switch_bucket(0, 2)
             elif mode[0].lower() == "static":
                 data = self._prepare_static_file(mode[1], self.orientation)
-                self._send_data(data, [0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
+                self.send_data(data, [0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
             elif mode[0].lower() == "gif":
-                self._prepare_gif_file(mode[1], self.orientation, self._send_static_image)
+                with open(mode[1], mode='rb') as file:
+                #data = self._prepare_gif_file(mode[1], self.orientation)
+                    data = file.read()
+                    self.send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(3, 'little')))
 
     def _prepare_static_file(self, path, rotation):
         '''
+        path is the path to any image file
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
         '''
         try: 
@@ -252,59 +259,126 @@ class KrakenZ3(UsbDriver):
         except IOError:
             pass
 
-    def _prepare_gif_file(self, path, rotation, frame_callback):
+    def _prepare_gif_file(self, path, rotation):
         '''
+        path is the path of the gif file
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
+        Gifs are resized to 320x320 and rotated to match the desired orientation
+        result is a bytesIo stream
         '''
         try: 
             img = Image.open(path)
-            img = img.resize((320, 320))
-            img = img.rotate(rotation * -90)
-            for f in range(0,img.n_frames):
-                img.seek(f)
-                frame_callback(img.getdata())
+
+            frames = ImageSequence.Iterator(img)
+
+            # Wrap on-the-fly thumbnail generator
+            def prepare_frames(frames):
+                for frame in frames:
+                    resized = frame.copy()
+                    resized = resized.resize((320, 320))
+                    resized = resized.rotate(rotation * -90)
+                    yield resized
+
+            frames = prepare_frames(frames)
+
+            result_img = next(frames) # Handle first frame separately
+            result_img.info = img.info # Copy sequence info
+
+            result_bytes = io.BytesIO()
+            result_img.save(result_bytes, format='GIF', save_all=True, append_images=list(frames), loop=0)
+
+            return result_bytes.getvalue()
         except IOError:
             pass 
     
             
 
-    def _send_data(self, data, bulk_info):
+    def send_data(self, data, bulkInfo):
         '''
         expects a PIL data type or other nested array[[],[]]
         '''
-        self._write([0x36, 0x03]) # unknown
-        bucketIndex = self._find_next_unoccupied_bucket()
-        bucketIndex = self._prepare_bucket(bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1)
-        self._write([0x20, 0x03]) # unknown
-        self._write([0x74, 0x01]) # keepalive
-        self._write([0x70, 0x01]) # unknown
-        self._write([0x74, 0x01]) # keepalive
-        self._setup_bucket(bucketIndex, bucketIndex + 1)
-        sleep(0.1)
-        self._write([0x36, 0x01, bucketIndex]) # start frame transfer
-        sleep(0.1)
-        self._bulk_write([0x12, 0xfa, 0x01, 0xe8, 0xab, 0xcd, 0xef, 0x98, 
-        0x76, 0x54, 0x32, 0x10] + bulk_info)
-        sleep(0.001)
-        for i in range(0, len(data), _BULK_WRITE_LENGTH):
-            x = i
-            self._bulk_write(data[x:x+_BULK_WRITE_LENGTH])
-        sleep(0.001)
-        self._write([0x36, 0x02]) # end frame transfer
-        sleep(0.1)
-        self._switch_bucket(bucketIndex)
-        sleep(0.01)
-        self._write([0x74, 0x01]) # keepalive
+        self._write_return([0x36, 0x03])                                                                # unknown
 
-    def _find_next_unoccupied_bucket(self, startingBucket = 0):
+        buckets = self._query_buckets()                                                                 # query all buckets and store their response
+        
+        self._write_return([0x20, 0x03])                                                                # unknown
+        self._write_return([0x74, 0x01])                                                                # keepalive
+        self._write_return([0x70, 0x01])                                                                # unknown
+        self._write_return([0x74, 0x01])                                                                # keepalive
+
+        bucketIndex = self._find_next_unoccupied_bucket(buckets)                                        # find the first unoccupied bucket in the list
+        bucketIndex = self._prepare_bucket(bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1)  # prepare bucket or find a more suitable one
+        bucketMemoryStart, bucketMemorySize = self._get_bucket_memory_info(buckets, bucketIndex)        # extracts the bucket starting address and size
+
+        self._setup_bucket(bucketIndex, bucketIndex + 1, bucketMemoryStart, bucketMemorySize)           # setup bucket for transfer
+        self._write_return([0x36, 0x01, bucketIndex])                                                   # start data transfer
+        
+        self._bulk_write([0x12, 0xfa, 0x01, 0xe8, 0xab, 0xcd, 0xef, 0x98, 0x76, 0x54, 0x32, 0x10] + bulkInfo)       # first bulk write message contains a standard part and information about the transfer                               
+
+        for i in range(0, len(data), _BULK_WRITE_LENGTH):                                               # start sending data in 512mb chunks
+            x = i
+            self._bulk_write(list(data[x:x+_BULK_WRITE_LENGTH]))
+
+        # for i in range(800):
+        #     frame = []
+        #     for p in range(0, 512, 4):
+        #         frame.append(96)
+        #         frame.append(0)
+        #         frame.append(0)
+        #         frame.append(0)
+        #     self._bulk_write(frame)
+
+        
+        self._write([0x36, 0x02])                                                                # end data transfer
+        sleep(0.001)
+        if not self._switch_bucket(bucketIndex):                                                                # switch to newly written bucket
+            print("failed to display image")
+        sleep(0.001)
+        self._write([0x74, 0x01])                                                                # keepalive
+        sleep(1)
+
+    def _query_buckets(self):
+        '''
+        Queries all 16 buckets and stores their response
+        Response in structures as follow:
+        - standard part (14 bytes) - unknown
+        ---- following is all 0x0 if bucket is unoccupied
+        - bucket index (1 byte)
+        - asset index (1 byte) - same as bucket index + 1
+        - 0x2 (1 byte) - unknown
+        - starting memory address (2 bytes) - address sometimes changes so must be read from here
+        - memory size (2 bytes) - size sometimes changes so must be read from here
+        - 0x1 (1 byte) - unknown
+        - 0x0|0x1 (1 byte) - most likely used/unused but could also be something else
+        '''
         buckets = {}
-        for bI in range(startingBucket, 15):
-            self._write([0x30, 0x04, bI]) # query bucket
-            response = self._read()
-            buckets[bI] = (response[16], response[22])
-            if response[16] and response[22] == 0:
-                return bI
+        for bI in range(0, 16):
+            response = self._write_return([0x30, 0x04, bI]) # query bucket   
+            buckets[bI] = response
+        return buckets
+    
+    
+    def _find_next_unoccupied_bucket(self, buckets):
+        '''
+        finds the first available unoccupied bucket
+        buckets are unoccupied when bytes 14 onward are 0x0
+        returns -1 if unoccupied buckets are found
+        '''
+        for bucketIndex, bucketInfo in buckets.items():
+            if not any(bucketInfo[15:]):
+                return bucketIndex
         return -1
+
+    def _get_bucket_memory_info(self, buckets, bucketIndex):
+        '''
+        returns the memory start address and bucket memory size
+        '''
+        bucket = buckets[bucketIndex]
+        if not any(bucket[15:]):
+            memoryStart = 400 * bucketIndex
+            return [memoryStart & 0xff, memoryStart >> 8], [0x90, 0x1]
+        else:
+            return [bucket[18], bucket[19]], [bucket[20], bucket[21]]
     
     def _prepare_bucket(self, bucketIndex, bucketFilled):
         '''
@@ -313,6 +387,7 @@ class KrakenZ3(UsbDriver):
         '''
         assert bucketIndex < 16, "reached max bucket"
         delete_response = self._delete_bucket(bucketIndex)
+        sleep(0.1)
         if not delete_response:
             return self._prepare_bucket(bucketIndex + 1, True)
         else:
@@ -328,13 +403,11 @@ class KrakenZ3(UsbDriver):
         return self._read_until_return({b'\x33\x02': parse_delete_result})
 
     def _switch_bucket(self, bucketIndex, mode = 0x4):
-        self._write([0x38, 0x1, mode, bucketIndex])
-
-    def _get_memory_start_slot(self, bucketIndex):
-        return 400 * bucketIndex
+        response = self._write_return([0x38, 0x1, mode, bucketIndex])
+        return response[14] == 0x1
     
-    def _setup_bucket(self, startBucketIndex, endBucketIndex):
-        startMemoryAddress = self._get_memory_start_slot(startBucketIndex)
-        self._write([0x32, 0x1, startBucketIndex, endBucketIndex, startMemoryAddress & 0xff, startMemoryAddress >> 8, 0x90, 0x1, 0x1])
+    def _setup_bucket(self, startBucketIndex, endBucketIndex, startingMemoryAddress, memorySize):
+        response = self._write_return([0x32, 0x1, startBucketIndex, endBucketIndex, startingMemoryAddress[0], startingMemoryAddress[1], memorySize[0], memorySize[1], 0x1])
+        return response[14] == 0x1
         
 
