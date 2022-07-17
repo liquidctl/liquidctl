@@ -341,6 +341,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18f3", TAG+="uacc
 # Corsair Commander Core
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c1c", TAG+="uaccess"
 
+# Corsair Commander Core XT
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c2a", TAG+="uaccess"
+
 # Corsair Commander Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="uaccess"
 
