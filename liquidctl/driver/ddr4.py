@@ -261,6 +261,10 @@ class Ddr4Temperature(SmbusDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_screen(self, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class VengeanceRgb(Ddr4Temperature):
     """Corsair Vengeance RGB DDR4 module."""

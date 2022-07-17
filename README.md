@@ -400,7 +400,7 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm pillow
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 ```

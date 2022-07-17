@@ -291,6 +291,10 @@ class Kraken2(UsbHidDriver):
         padding = [0x0]*(_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
 
+    def set_screen(self, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 # deprecated aliases
 KrakenTwoDriver = Kraken2

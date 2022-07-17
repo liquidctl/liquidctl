@@ -7,7 +7,10 @@ Usage:
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
-  liquidctl [options] set <channel> <mode> ...
+  liquidctl [options] set lcd screen <mode>
+  liquidctl [options] set lcd screen brightness <value>
+  liquidctl [options] set lcd screen orientation (0|90|180|270)
+  liquidctl [options] set lcd screen (static|gif) <path>
   liquidctl --help
   liquidctl --version
 
@@ -66,6 +69,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 """
 
+from ast import arg
 import datetime
 import errno
 import inspect
@@ -281,7 +285,32 @@ def _device_set_color(dev, args, **opts):
     dev.set_color(args['<channel>'].lower(), args['<mode>'].lower(), color, **opts)
 
 def _device_set_screen(dev, args, **opts):
-    dev.set_color(args["<channel>"], args["<mode>"], [], **opts)
+    mode = None
+    value = None
+    if args["<mode>"]:
+        mode = args["<mode>"]
+    elif args["brightness"]:
+        mode = "brightness"
+        value = args["<value>"]
+    elif args["orientation"]:
+        mode = "orientation"
+        if args["0"]:
+            value = 0
+        elif args["90"]:
+            value = 90
+        elif args["180"]:
+            value = 180
+        elif args["270"]:
+            value = 270
+    elif args["static"]:
+        mode = "static"
+        value = args["<path>"]
+    elif args["gif"]:
+        mode = "gif"
+        value = args["<path>"]
+    else:
+        raise ValueError()
+    dev.set_screen(mode, value, **opts)
 
 def _device_set_speed(dev, args, **opts):
     if len(args['<temperature>']) > 0:
@@ -471,7 +500,7 @@ def main():
                     _device_set_speed(dev, args, **opts)
                 elif args['set'] and args['color']:
                     _device_set_color(dev, args, **opts)
-                elif args['set'] and args['<mode>']:
+                elif args['set'] and args['screen']:
                     _device_set_screen(dev, args, **opts)
                 else:
                     assert False, 'unreachable'

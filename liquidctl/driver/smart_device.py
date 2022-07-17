@@ -198,6 +198,10 @@ class _BaseSmartDevice(UsbHidDriver):
     def _write_fixed_duty(self, cid, duty):
         raise NotImplementedError()
 
+    def set_screen(self, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class SmartDevice(_BaseSmartDevice):
     """NZXT Smart Device (V1) or Grid+ V3."""

@@ -1,9 +1,8 @@
-"""liquidctl drivers for fourth-generation NZXT Kraken X and Z liquid coolers.
+"""liquidctl drivers for fourth-generation NZXT Kraken X liquid coolers.
 
 Supported devices:
 
 - NZXT Kraken X (X53, X63 and Z73)
-- NZXT Kraken Z (Z53, Z63 and Z73);
 
 Copyright (C) 2020–2022  Tom Frey, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -12,37 +11,29 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 
-from liquidctl.driver.usb import UsbDriver, UsbHidDriver
+from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import normalize_profile, interpolate_profile, clamp, \
                            Hue2Accessory, HUE2_MAX_ACCESSORIES_IN_CHANNEL, \
                            map_direction
+
+from liquidctl.driver.krakenz3 import KrakenZ3
 
 _LOGGER = logging.getLogger(__name__)
 
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
-_BULK_WRITE_LENGTH = 512
 _MAX_READ_ATTEMPTS = 12
 
 _STATUS_TEMPERATURE = 'Liquid temperature'
 _STATUS_PUMP_SPEED = 'Pump speed'
 _STATUS_PUMP_DUTY = 'Pump duty'
-_STATUS_FAN_SPEED = 'Fan speed'
-_STATUS_FAN_DUTY = 'Fan duty'
 
 # Available speed channels for model X coolers
 # name -> (channel_id, min_duty, max_duty)
 # TODO adjust min duty value to what the firmware enforces
 _SPEED_CHANNELS_KRAKENX = {
     'pump': (0x1, 20, 100),
-}
-
-# Available speed channels for model Z coolers
-# name -> (channel_id, min_duty, max_duty)
-# TODO adjust min duty values to what the firmware enforces
-_SPEED_CHANNELS_KRAKENZ = {
-    'pump': (0x1, 20, 100),
-    'fan': (0x2, 0, 100),
 }
 
 _CRITICAL_TEMPERATURE = 59
@@ -53,12 +44,6 @@ _COLOR_CHANNELS_KRAKENX = {
     'ring': 0b010,
     'logo': 0b100,
     'sync': 0b111
-}
-
-# Available color channels and IDs for model Z coolers
-_COLOR_CHANNELS_KRAKENZ = {
-    'external': 0b001,
-    'screen': 0b1111
 }
 
 # Available LED channel modes/animations
@@ -394,7 +379,9 @@ class KrakenX3(UsbHidDriver):
             footer = [backward_byte, color_count, mode_related, static_byte, led_size]
             self._write(header + color + footer)
 
-
+    def set_screen(self, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
 
 
         

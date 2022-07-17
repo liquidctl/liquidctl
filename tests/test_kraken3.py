@@ -4,8 +4,8 @@ import pytest
 from _testutils import MockHidapiDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
-from liquidctl.driver.krakenx3 import KrakenX3
-from liquidctl.driver.krakenx3 import (
+from liquidctl.driver.kraken3 import KrakenX3
+from liquidctl.driver.kraken3 import (
     _COLOR_CHANNELS_KRAKENX,
     _SPEED_CHANNELS_KRAKENX,
 )

@@ -186,6 +186,10 @@ class _Base690Lc(UsbDriver):
 
         super().disconnect(**kwargs)
 
+    def set_screen(self, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class _ModernBase690Lc(_Base690Lc):
 
@@ -427,7 +431,7 @@ class Legacy690Lc(_Base690Lc):
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
-        raise NotSupportedByDevice
+        raise NotSupportedByDevice()
 
 
 class Hydro690Lc(_ModernBase690Lc):
