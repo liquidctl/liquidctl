@@ -613,9 +613,10 @@ class KrakenZ3(UsbDriver):
         memory offset is calculated as the offset of the previous bucket
         plus its size
         """
-        if bucketIndex == 0x0:
-            return [0x0, 0x0]
-        bucket = buckets[bucketIndex - 1]
+        if bucketIndex == 0:
+            bucket = buckets[len(buckets) - 1]
+        else:
+            bucket = buckets[bucketIndex - 1]
         return list(
             (
                 int.from_bytes([bucket[17], bucket[18]], "little")
