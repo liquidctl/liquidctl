@@ -296,7 +296,7 @@ class CorsairHidPsu(UsbHidDriver):
         secs = int.from_bytes(self._exec(WriteBit.READ, command)[2:], byteorder='little')
         return timedelta(seconds=secs)
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 

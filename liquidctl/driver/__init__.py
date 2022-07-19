@@ -32,7 +32,6 @@ from liquidctl.driver import corsair_hid_psu
 from liquidctl.driver import hydro_platinum
 from liquidctl.driver import kraken2
 from liquidctl.driver import kraken3
-from liquidctl.driver import krakenz3
 from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device

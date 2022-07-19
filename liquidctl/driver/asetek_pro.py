@@ -257,7 +257,7 @@ class HydroPro(_Base690Lc):
         else:
             raise ValueError(f'unknown channel: {channel}')
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 

@@ -344,6 +344,6 @@ class AuraLed(UsbHidDriver):
         padding = [0x0] * (_WRITE_LENGTH - len(data))
         self.device.write(data + padding)
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()

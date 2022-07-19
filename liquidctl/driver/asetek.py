@@ -186,7 +186,7 @@ class _Base690Lc(UsbDriver):
 
         super().disconnect(**kwargs)
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 

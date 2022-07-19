@@ -261,7 +261,7 @@ class Ddr4Temperature(SmbusDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 

@@ -304,7 +304,7 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
@@ -538,6 +538,6 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()

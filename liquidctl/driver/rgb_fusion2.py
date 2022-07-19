@@ -243,7 +243,7 @@ class RgbFusion2(UsbHidDriver):
         """Request for the previously sent lighting settings to be applied."""
         self._send_feature_report([_REPORT_ID, 0x28, 0xff])
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 

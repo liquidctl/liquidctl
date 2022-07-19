@@ -4,10 +4,12 @@ import pytest
 from _testutils import MockHidapiDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
-from liquidctl.driver.kraken3 import KrakenX3
+from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3
 from liquidctl.driver.kraken3 import (
     _COLOR_CHANNELS_KRAKENX,
     _SPEED_CHANNELS_KRAKENX,
+    _COLOR_CHANNELS_KRAKENZ,
+    _SPEED_CHANNELS_KRAKENZ,
 )
 from liquidctl.util import HUE2_MAX_ACCESSORIES_IN_CHANNEL as MAX_ACCESSORIES
 from liquidctl.util import Hue2Accessory
@@ -37,6 +39,21 @@ def mock_krakenx3():
 
     dev.connect()
     return dev
+
+
+@pytest.fixture
+def mock_krakenz3():
+    raw = MockKraken(raw_led_channels=1)
+    dev = KrakenZ3(
+        raw,
+        "Mock Kraken Z73",
+        speed_channels=_SPEED_CHANNELS_KRAKENZ,
+        color_channels=_COLOR_CHANNELS_KRAKENZ,
+    )
+
+    dev.connect()
+    return dev
+
 
 class MockKraken(MockHidapiDevice):
     def __init__(self, raw_led_channels):
@@ -116,3 +133,12 @@ def test_krakenx3_not_totally_broken(mock_krakenx3):
     mock_krakenx3.set_color(channel="ring", mode="fixed", colors=iter([[3, 2, 1]]), speed="fastest")
     mock_krakenx3.set_speed_profile(channel="pump", profile=iter([(20, 20), (30, 50), (40, 100)]))
     mock_krakenx3.set_fixed_speed(channel="pump", duty=50)
+
+
+def test_krakenz3_not_totally_broken(mock_krakenz3):
+    """Reasonable example calls to untested APIs do not raise exceptions."""
+    mock_krakenz3.initialize()
+    mock_krakenz3.device.preload_read(Report(0, SAMPLE_STATUS))
+    _ = mock_krakenz3.get_status()
+    mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
+    mock_krakenz3.set_fixed_speed(channel="pump", duty=50)

@@ -422,6 +422,6 @@ class HydroPlatinum(UsbHidDriver):
 
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()

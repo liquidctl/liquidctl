@@ -273,6 +273,6 @@ class CommanderCore(UsbHidDriver):
                 fan_names.insert(0, "pump")
             raise ValueError(f'unknown channel, should be one of: "{fan_names_part}" or "fans"')
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice

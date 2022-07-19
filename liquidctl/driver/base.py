@@ -92,7 +92,7 @@ class BaseDriver:
 
         raise NotImplementedError()
 
-    def set_screen(self, mode, value, **kwargs):
+    def set_screen(self, channel, mode, value, **kwargs):
         """Set the screen mode and content."""
 
         raise NotImplementedError()
