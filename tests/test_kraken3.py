@@ -70,6 +70,10 @@ class MockKraken(MockHidapiDevice):
             if self.raw_led_channels > 1:
                 reply[15 + 1 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_RING.value
                 reply[15 + 2 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_LOGO.value
+        elif data[0:2] == [0x30, 0x01]:
+            reply[0:2] = [0x31, 0x01]
+            reply[0x18] = 50
+            reply[0x1A] = 3
         self.preload_read(Report(0, reply))
         return super().write(data)
 

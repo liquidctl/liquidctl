@@ -15,18 +15,9 @@ import io
 import math
 import logging
 
-try:
-    # The hidapi package, depending on how it's compiled, exposes one or two
-    # top level modules: hid and, optionally, hidraw.  When both are available,
-    # hid will be a libusb-based fallback implementation, and we prefer hidraw.
-    import hidraw as hid
-except ModuleNotFoundError:
-    import hid
-
-
 from PIL import Image, ImageSequence
 
-from liquidctl.driver.usb import UsbHidDriver, UsbDriver, HidapiDevice
+from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import (
     normalize_profile,
@@ -36,7 +27,6 @@ from liquidctl.util import (
     HUE2_MAX_ACCESSORIES_IN_CHANNEL,
     map_direction,
 )
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -165,11 +155,65 @@ _ANIMATION_SPEEDS = {
 }
 
 
-class Kraken3Base:
-    def __init__(self, hid_device, speed_channels, color_channels):
-        self.hid_device = hid_device
+class KrakenX3(UsbHidDriver):
+    """Fourth-generation Kraken X liquid cooler."""
+
+    # support for hwmon: nzxt-kraken3, liquidtux
+    # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-kraken3.c
+
+    SUPPORTED_DEVICES = [
+        (
+            0x1E71,
+            0x2007,
+            None,
+            "NZXT Kraken X (X53, X63 or X73)",
+            {
+                "speed_channels": _SPEED_CHANNELS_KRAKENX,
+                "color_channels": _COLOR_CHANNELS_KRAKENX,
+            },
+        )
+    ]
+
+    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+        super().__init__(device, description)
         self._speed_channels = speed_channels
         self._color_channels = color_channels
+
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
+        """
+
+        self.device.clear_enqueued_reports()
+        # request static infos
+        self._write([0x10, 0x01])  # firmware info
+        self._write([0x20, 0x03])  # lighting info
+
+        # initialize
+        if self._hwmon and not direct_access:
+            _LOGGER.info(
+                "bound to %s kernel driver, assuming it is already initialized", self._hwmon.module
+            )
+        else:
+            if self._hwmon:
+                _LOGGER.warning(
+                    "forcing re-initialization despite %s kernel driver", self._hwmon.module
+                )
+            update_interval = (lambda secs: 1 + round((secs - 0.5) / 0.25))(0.5)  # see issue #128
+            self._write([0x70, 0x02, 0x01, 0xB8, update_interval])
+            self._write([0x70, 0x01])
+
+        self.status = []
+
+        self._read_until({b"\x11\x01": self.parse_firm_info, b"\x21\x03": self.parse_led_info})
+        return sorted(self.status)
 
     def parse_firm_info(self, msg):
         fw = f"{msg[0x11]}.{msg[0x12]}.{msg[0x13]}"
@@ -199,225 +243,9 @@ class Kraken3Base:
             self.status.append(("Pump Logo LEDs", "detected" if found_logo else "missing", ""))
             assert found_ring and found_logo, "Pump ring and/or logo were not detected"
 
-    def parse_lcd_info(self, msg):
-        self.brightness = msg[0x18]
-        self.orientation = msg[0x1A]
-        self.status.append(("LCD Brightness", self.brightness, "%"))
-        self.status.append(("LCD Orientation", self.orientation * 90, "°"))
-
-    def _hid_read(self):
-        data = self.hid_device.read(_READ_LENGTH)
-        return data
-
-    def _hid_read_until(self, parsers):
-        for _ in range(_MAX_READ_ATTEMPTS):
-            msg = self.hid_device.read(_READ_LENGTH)
-            prefix = bytes(msg[0:2])
-            func = parsers.pop(prefix, None)
-            if func:
-                func(msg)
-            if not parsers:
-                return
-        assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
-
-    def _hid_read_until_first_match(self, parsers):
-        for _ in range(_MAX_READ_ATTEMPTS):
-            msg = self.hid_device.read(_READ_LENGTH)
-            prefix = bytes(msg[0:2])
-            func = parsers.pop(prefix, None)
-            if func:
-                return func(msg)
-            if not parsers:
-                return
-        assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
-
-    def _hid_write(self, data):
-        padding = [0x0] * (_WRITE_LENGTH - len(data))
-        self.hid_device.write(data + padding)
-
-    def _hid_write_then_read(self, data):
-        self._hid_write(data)
-        return self._hid_read()
-
-    def set_color(self, channel, mode, colors, speed="normal", direction="forward", **kwargs):
-        """Set the color mode for a specific channel."""
-
-        if "backwards" in mode:
-            _LOGGER.warning("deprecated mode, move to direction=backward option")
-            mode = mode.replace("backwards-", "")
-            direction = "backward"
-
-        cid = self._color_channels[channel]
-        _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
-        colors = [[g, r, b] for [r, g, b] in colors]
-        if len(colors) < mincolors:
-            raise ValueError(f"not enough colors for mode={mode}, at least {mincolors} required")
-        elif maxcolors == 0:
-            if colors:
-                _LOGGER.warning("too many colors for mode=%s, none needed", mode)
-            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
-        elif len(colors) > maxcolors:
-            _LOGGER.warning("too many colors for mode=%s, dropping to %d", mode, maxcolors)
-            colors = colors[:maxcolors]
-
-        sval = _ANIMATION_SPEEDS[speed]
-        self._write_colors(cid, mode, colors, sval, direction)
-
-    def set_speed_profile(self, channel, profile, **kwargs):
-        """Set channel to use a speed duty profile."""
-
-        cid, dmin, dmax = self._speed_channels[channel]
-        header = [0x72, cid, 0x00, 0x00]
-        norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
-        stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
-        interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
-        for temp, duty in zip(stdtemps, interp):
-            _LOGGER.info(
-                "setting %s PWM duty to %d%% for liquid temperature >= %d°C", channel, duty, temp
-            )
-        self._hid_write(header + interp)
-
-    def set_fixed_speed(self, channel, duty, **kwargs):
-        """Set channel to a fixed speed duty."""
-
-        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
-
-    def _write_colors(self, cid, mode, colors, sval, direction):
-        mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
-        color_count = len(colors)
-
-        if "super-fixed" == mode or "super-breathing" == mode:
-            color = list(itertools.chain(*colors)) + [0x00, 0x00, 0x00] * (maxcolors - color_count)
-            speed_value = _SPEED_VALUE[speed_scale][sval]
-            self._hid_write([0x22, 0x10, cid, 0x00] + color)
-            self._hid_write([0x22, 0x11, cid, 0x00])
-            self._hid_write(
-                [0x22, 0xA0, cid, 0x00, mval]
-                + speed_value
-                + [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01]
-            )
-
-        elif mode == "wings":  # wings requires special handling
-            self._hid_write([0x22, 0x10, cid])  # clear out all independent LEDs
-            self._hid_write([0x22, 0x11, cid])  # clear out all independent LEDs
-            color_lists = {}
-            color_lists[0] = colors[0] * 2
-            color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
-            color_lists[2] = [int(x // 4) for x in color_lists[1]]
-            color_lists[3] = [0x00] * 8
-            speed_value = _SPEED_VALUE[speed_scale][sval]
-            for i in range(8):  # send color scheme first, before enabling wings mode
-                mod = 0x05 if i in [3, 7] else 0x01
-                alt = [0x04, 0x84] if i // 4 == 0 else [0x84, 0x04]
-                msg = (
-                    [0x22, 0x20, cid, i, 0x04]
-                    + speed_value
-                    + [mod]
-                    + [0x00] * 7
-                    + [0x02]
-                    + alt
-                    + [0x00] * 10
-                )
-                self._hid_write(msg + color_lists[i % 4])
-            self._hid_write([0x22, 0x03, cid, 0x08])  # this actually enables wings mode
-
-        else:
-            opcode = [0x2A, 0x04]
-            address = [cid, cid]
-            speed_value = _SPEED_VALUE[speed_scale][sval]
-            header = opcode + address + [mval] + speed_value
-            color = list(itertools.chain(*colors)) + [0, 0, 0] * (16 - color_count)
-
-            if "marquee" in mode:
-                backward_byte = 0x04
-            elif mode == "starry-night" or "moving-alternating" in mode:
-                backward_byte = 0x01
-            else:
-                backward_byte = 0x00
-
-            backward_byte += map_direction(direction, 0, 0x02)
-
-            if mode == "fading" or mode == "pulse" or mode == "breathing":
-                mode_related = 0x08
-            elif mode == "tai-chi":
-                mode_related = 0x05
-            elif mode == "water-cooler":
-                mode_related = 0x05
-                color_count = 0x01
-            elif mode == "loading":
-                mode_related = 0x04
-            else:
-                mode_related = 0x00
-
-            static_byte = _STATIC_VALUE[cid]
-            led_size = size_variant if mval == 0x03 or mval == 0x05 else 0x03
-            footer = [backward_byte, color_count, mode_related, static_byte, led_size]
-            self._hid_write(header + color + footer)
-
-
-class KrakenX3(Kraken3Base, UsbHidDriver):
-    """Fourth-generation Kraken X liquid cooler."""
-
-    # support for hwmon: nzxt-kraken3, liquidtux
-    # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-kraken3.c
-
-    SUPPORTED_DEVICES = [
-        (
-            0x1E71,
-            0x2007,
-            None,
-            "NZXT Kraken X (X53, X63 or X73)",
-            {
-                "speed_channels": _SPEED_CHANNELS_KRAKENX,
-                "color_channels": _COLOR_CHANNELS_KRAKENX,
-            },
-        )
-    ]
-
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
-        UsbHidDriver.__init__(self, device, description)
-
-        Kraken3Base.__init__(self, self.device, speed_channels, color_channels)
-
-    def initialize(self, direct_access=False, **kwargs):
-        """Initialize the device and the driver.
-
-        This method should be called every time the systems boots, resumes from
-        a suspended state, or if the device has just been (re)connected.  In
-        those scenarios, no other method, except `connect()` or `disconnect()`,
-        should be called until the device and driver has been (re-)initialized.
-
-        Returns None or a list of `(property, value, unit)` tuples, similarly
-        to `get_status()`.
-        """
-
-        self.device.clear_enqueued_reports()
-        # request static infos
-        self._hid_write([0x10, 0x01])  # firmware info
-        self._hid_write([0x20, 0x03])  # lighting info
-
-        # initialize
-        if self._hwmon and not direct_access:
-            _LOGGER.info(
-                "bound to %s kernel driver, assuming it is already initialized", self._hwmon.module
-            )
-        else:
-            if self._hwmon:
-                _LOGGER.warning(
-                    "forcing re-initialization despite %s kernel driver", self._hwmon.module
-                )
-            update_interval = (lambda secs: 1 + round((secs - 0.5) / 0.25))(0.5)  # see issue #128
-            self._hid_write([0x70, 0x02, 0x01, 0xB8, update_interval])
-            self._hid_write([0x70, 0x01])
-
-        self.status = []
-
-        self._hid_read_until({b"\x11\x01": self.parse_firm_info, b"\x21\x03": self.parse_led_info})
-        return sorted(self.status)
-
     def _get_status_directly(self):
         self.device.clear_enqueued_reports()
-        msg = self._hid_read()
+        msg = self._read()
         if msg[15:17] == [0xFF, 0xFF]:
             _LOGGER.warning("unexpected temperature reading, possible firmware fault;")
             _LOGGER.warning("try resetting the device or updating the firmware")
@@ -457,12 +285,146 @@ class KrakenX3(Kraken3Base, UsbHidDriver):
 
         return self._get_status_directly()
 
+    def set_color(self, channel, mode, colors, speed="normal", direction="forward", **kwargs):
+        """Set the color mode for a specific channel."""
+
+        if "backwards" in mode:
+            _LOGGER.warning("deprecated mode, move to direction=backward option")
+            mode = mode.replace("backwards-", "")
+            direction = "backward"
+
+        cid = self._color_channels[channel]
+        _, _, _, mincolors, maxcolors = _COLOR_MODES[mode]
+        colors = [[g, r, b] for [r, g, b] in colors]
+        if len(colors) < mincolors:
+            raise ValueError(f"not enough colors for mode={mode}, at least {mincolors} required")
+        elif maxcolors == 0:
+            if colors:
+                _LOGGER.warning("too many colors for mode=%s, none needed", mode)
+            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
+        elif len(colors) > maxcolors:
+            _LOGGER.warning("too many colors for mode=%s, dropping to %d", mode, maxcolors)
+            colors = colors[:maxcolors]
+
+        sval = _ANIMATION_SPEEDS[speed]
+        self._write_colors(cid, mode, colors, sval, direction)
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        """Set channel to use a speed duty profile."""
+
+        cid, dmin, dmax = self._speed_channels[channel]
+        header = [0x72, cid, 0x00, 0x00]
+        norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
+        stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
+        interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
+        for temp, duty in zip(stdtemps, interp):
+            _LOGGER.info(
+                "setting %s PWM duty to %d%% for liquid temperature >= %d°C", channel, duty, temp
+            )
+        self._write(header + interp)
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel to a fixed speed duty."""
+
+        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
+
+    def _read(self):
+        data = self.device.read(_READ_LENGTH)
+        return data
+
+    def _read_until(self, parsers):
+        for _ in range(_MAX_READ_ATTEMPTS):
+            msg = self._read()
+            prefix = bytes(msg[0:2])
+            func = parsers.pop(prefix, None)
+            if func:
+                func(msg)
+            if not parsers:
+                return
+        assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
+
+    def _write(self, data):
+        padding = [0x0] * (_WRITE_LENGTH - len(data))
+        self.device.write(data + padding)
+
+    def _write_colors(self, cid, mode, colors, sval, direction):
+        mval, size_variant, speed_scale, mincolors, maxcolors = _COLOR_MODES[mode]
+        color_count = len(colors)
+
+        if "super-fixed" == mode or "super-breathing" == mode:
+            color = list(itertools.chain(*colors)) + [0x00, 0x00, 0x00] * (maxcolors - color_count)
+            speed_value = _SPEED_VALUE[speed_scale][sval]
+            self._write([0x22, 0x10, cid, 0x00] + color)
+            self._write([0x22, 0x11, cid, 0x00])
+            self._write(
+                [0x22, 0xA0, cid, 0x00, mval]
+                + speed_value
+                + [0x08, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01]
+            )
+
+        elif mode == "wings":  # wings requires special handling
+            self._write([0x22, 0x10, cid])  # clear out all independent LEDs
+            self._write([0x22, 0x11, cid])  # clear out all independent LEDs
+            color_lists = {}
+            color_lists[0] = colors[0] * 2
+            color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
+            color_lists[2] = [int(x // 4) for x in color_lists[1]]
+            color_lists[3] = [0x00] * 8
+            speed_value = _SPEED_VALUE[speed_scale][sval]
+            for i in range(8):  # send color scheme first, before enabling wings mode
+                mod = 0x05 if i in [3, 7] else 0x01
+                alt = [0x04, 0x84] if i // 4 == 0 else [0x84, 0x04]
+                msg = (
+                    [0x22, 0x20, cid, i, 0x04]
+                    + speed_value
+                    + [mod]
+                    + [0x00] * 7
+                    + [0x02]
+                    + alt
+                    + [0x00] * 10
+                )
+                self._write(msg + color_lists[i % 4])
+            self._write([0x22, 0x03, cid, 0x08])  # this actually enables wings mode
+
+        else:
+            opcode = [0x2A, 0x04]
+            address = [cid, cid]
+            speed_value = _SPEED_VALUE[speed_scale][sval]
+            header = opcode + address + [mval] + speed_value
+            color = list(itertools.chain(*colors)) + [0, 0, 0] * (16 - color_count)
+
+            if "marquee" in mode:
+                backward_byte = 0x04
+            elif mode == "starry-night" or "moving-alternating" in mode:
+                backward_byte = 0x01
+            else:
+                backward_byte = 0x00
+
+            backward_byte += map_direction(direction, 0, 0x02)
+
+            if mode == "fading" or mode == "pulse" or mode == "breathing":
+                mode_related = 0x08
+            elif mode == "tai-chi":
+                mode_related = 0x05
+            elif mode == "water-cooler":
+                mode_related = 0x05
+                color_count = 0x01
+            elif mode == "loading":
+                mode_related = 0x04
+            else:
+                mode_related = 0x00
+
+            static_byte = _STATIC_VALUE[cid]
+            led_size = size_variant if mval == 0x03 or mval == 0x05 else 0x03
+            footer = [backward_byte, color_count, mode_related, static_byte, led_size]
+            self._write(header + color + footer)
+
     def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
 
-class KrakenZ3(Kraken3Base, UsbDriver):
+class KrakenZ3(KrakenX3):
     """Fourth-generation Kraken Z liquid cooler."""
 
     SUPPORTED_DEVICES = [
@@ -479,19 +441,12 @@ class KrakenZ3(Kraken3Base, UsbDriver):
     ]
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
-        UsbDriver.__init__(self, device, description, **kwargs)
+        super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-        hidinfo = next(
-            info
-            for info in hid.enumerate(device.vendor_id, device.product_id)
-            if info["serial_number"] == device.serial_number
+        self.bulk_device = next(
+            handle for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
         )
-        assert hidinfo, "Could not find device in HID bus"
-
-        self.hid_device = HidapiDevice(hid, hidinfo)
-        self.hid_device.open()
-
-        Kraken3Base.__init__(self, self.hid_device, speed_channels, color_channels)
+        self.bulk_device.open()
 
         self.orientation = 0  # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.brightness = 50  # default 50%
@@ -508,20 +463,29 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         to `get_status()`.
         """
 
-        self.hid_device.clear_enqueued_reports()
+        self.device.clear_enqueued_reports()
         # request static infos
-        self._hid_write([0x10, 0x01])  # firmware info
-        self._hid_write([0x20, 0x03])  # lighting info
-        self._hid_write([0x30, 0x01])  # lcd info
+        self._write([0x10, 0x01])  # firmware info
+        self._write([0x20, 0x03])  # lighting info
+        self._write([0x30, 0x01])  # lcd info
 
         # initialize
+        if self._hwmon and not direct_access:
+            _LOGGER.info(
+                "bound to %s kernel driver, assuming it is already initialized", self._hwmon.module
+            )
+        else:
+            if self._hwmon:
+                _LOGGER.warning(
+                    "forcing re-initialization despite %s kernel driver", self._hwmon.module
+                )
         update_interval = (lambda secs: 1 + round((secs - 0.5) / 0.25))(0.5)  # see issue #128
-        self._hid_write([0x70, 0x02, 0x01, 0xB8, update_interval])
-        self._hid_write([0x70, 0x01])
+        self._write([0x70, 0x02, 0x01, 0xB8, update_interval])
+        self._write([0x70, 0x01])
 
         self.status = []
 
-        self._hid_read_until(
+        self._read_until(
             {
                 b"\x11\x01": self.parse_firm_info,
                 b"\x21\x03": self.parse_led_info,
@@ -531,9 +495,11 @@ class KrakenZ3(Kraken3Base, UsbDriver):
 
         return sorted(self.status)
 
-    def _bulk_write(self, data):
-        padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
-        self.device.write(0x2, data + padding)
+    def parse_lcd_info(self, msg):
+        self.brightness = msg[0x18]
+        self.orientation = msg[0x1A]
+        self.status.append(("LCD Brightness", self.brightness, "%"))
+        self.status.append(("LCD Orientation", self.orientation * 90, "°"))
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -541,9 +507,9 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        self.hid_device.clear_enqueued_reports()
-        self._hid_write([0x74, 0x01])
-        msg = self._hid_read()
+        self.device.clear_enqueued_reports()
+        self._write([0x74, 0x01])
+        msg = self._read()
         return [
             (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, "°C"),
             (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], "rpm"),
@@ -551,6 +517,25 @@ class KrakenZ3(Kraken3Base, UsbDriver):
             (_STATUS_FAN_SPEED, msg[24] << 8 | msg[23], "rpm"),
             (_STATUS_FAN_DUTY, msg[25], "%"),
         ]
+
+    def _read_until_first_match(self, parsers):
+        for _ in range(_MAX_READ_ATTEMPTS):
+            msg = self._read()
+            prefix = bytes(msg[0:2])
+            func = parsers.pop(prefix, None)
+            if func:
+                return func(msg)
+            if not parsers:
+                return
+        assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
+
+    def _write_then_read(self, data):
+        self._write(data)
+        return self._read()
+
+    def _bulk_write(self, data):
+        padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
+        self.bulk_device.write(0x2, data + padding)
 
     def set_screen(self, channel, mode, value, **kwargs):
         """
@@ -568,25 +553,25 @@ class KrakenZ3(Kraken3Base, UsbDriver):
             assert value != None, f"Mode: {mode} needs a value"
 
         # get orientation and brightness
-        self._hid_write([0x30, 0x01])
+        self._write([0x30, 0x01])
 
         def parse_lcd_info(msg):
             self.brightness = msg[0x18]
             self.orientation = msg[0x1A]
 
-        self._hid_read_until({b"\x31\x01": parse_lcd_info})
+        self._read_until({b"\x31\x01": parse_lcd_info})
 
         if mode == "brightness":
             value_int = int(value)
             assert value_int >= 0 and value_int <= 100, "Invalid brightness value"
-            self._hid_write([0x30, 0x02, 0x01, value_int, 0x0, 0x0, 0x1, self.orientation])
+            self._write([0x30, 0x02, 0x01, value_int, 0x0, 0x0, 0x1, self.orientation])
             return
         elif mode == "orientation":
             value_int = int(value)
             assert (
                 value_int == 0 or value_int == 90 or value_int == 180 or value_int == 270
             ), "Invalid orientation value"
-            self._hid_write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(value_int / 90)])
+            self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(value_int / 90)])
             return
         elif mode == "static":
             data = self._prepare_static_file(value, self.orientation)
@@ -658,14 +643,14 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         data is an array of bytes to write
         bulk info contains info about the transfer
         """
-        self._hid_write_then_read([0x36, 0x03])  # unknown
+        self._write_then_read([0x36, 0x03])  # unknown
 
         buckets = self._query_buckets()  # query all buckets and store their response
 
-        self._hid_write_then_read([0x20, 0x03])  # unknown
-        self._hid_write_then_read([0x74, 0x01])  # keepalive
-        self._hid_write_then_read([0x70, 0x01])  # unknown
-        self._hid_write_then_read([0x74, 0x01])  # keepalive
+        self._write_then_read([0x20, 0x03])  # unknown
+        self._write_then_read([0x74, 0x01])  # keepalive
+        self._write_then_read([0x70, 0x01])  # unknown
+        self._write_then_read([0x74, 0x01])  # keepalive
 
         bucketIndex = self._find_next_unoccupied_bucket(
             buckets
@@ -688,7 +673,7 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         self._setup_bucket(
             bucketIndex, bucketIndex + 1, bucketMemoryStart, packetCount
         )  # setup bucket for transfer
-        self._hid_write_then_read([0x36, 0x01, bucketIndex])  # start data transfer
+        self._write_then_read([0x36, 0x01, bucketIndex])  # start data transfer
 
         self._bulk_write(
             [
@@ -711,10 +696,10 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         for i in range(0, len(data), _BULK_WRITE_LENGTH):  # start sending data in 512mb chunks
             self._bulk_write(list(data[i : i + _BULK_WRITE_LENGTH]))
 
-        self._hid_write([0x36, 0x02])  # end data transfer
+        self._write([0x36, 0x02])  # end data transfer
         if not self._switch_bucket(bucketIndex):  # switch to newly written bucket
             _LOGGER.warning("Failed to switch active bucket")
-        self.device.release()  # release device when finished
+        self.bulk_device.release()  # release device when finished
 
     def _query_buckets(self):
         """
@@ -732,7 +717,7 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         """
         buckets = {}
         for bI in range(0, 16):
-            response = self._hid_write_then_read([0x30, 0x04, bI])  # query bucket
+            response = self._write_then_read([0x30, 0x04, bI])  # query bucket
             buckets[bI] = response
         return buckets
 
@@ -782,25 +767,25 @@ class KrakenZ3(Kraken3Base, UsbDriver):
         """
         deletes bucket, returns true if successful, false otherwise
         """
-        self._hid_write([0x32, 0x2, bucketIndex])
+        self._write([0x32, 0x2, bucketIndex])
 
         def parse_delete_result(msg):
             return msg[14] == 0x1
 
-        return self._hid_read_until_first_match({b"\x33\x02": parse_delete_result})
+        return self._read_until_first_match({b"\x33\x02": parse_delete_result})
 
     def _switch_bucket(self, bucketIndex, mode=0x4):
         """
         switches active bucket, returns true if successful, false otherwise
         """
-        response = self._hid_write_then_read([0x38, 0x1, mode, bucketIndex])
+        response = self._write_then_read([0x38, 0x1, mode, bucketIndex])
         return response[14] == 0x1
 
     def _setup_bucket(self, startBucketIndex, endBucketIndex, startingMemoryAddress, memorySize):
         """
         sets bucket for transmission, returns true if successful, false otherwise
         """
-        response = self._hid_write_then_read(
+        response = self._write_then_read(
             [
                 0x32,
                 0x1,
