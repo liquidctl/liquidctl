@@ -446,6 +446,11 @@ class KrakenZ3(KrakenX3):
         self.bulk_device = next(
             handle for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
         )
+
+        assert (
+            self.bulk_device.serial_number == self.device.serial_number
+        ), "Cannot find bulk out device"
+
         self.bulk_device.open()
 
         self.orientation = 0  # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees

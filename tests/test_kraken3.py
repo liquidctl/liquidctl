@@ -1,7 +1,7 @@
 # uses the psf/black style
 
 import pytest
-from _testutils import MockHidapiDevice, Report
+from _testutils import MockHidapiDevice, MockPyusbDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3
@@ -44,7 +44,7 @@ def mock_krakenx3():
 @pytest.fixture
 def mock_krakenz3():
     raw = MockKraken(raw_led_channels=1)
-    dev = KrakenZ3(
+    dev = MockKrakenZ3(
         raw,
         "Mock Kraken Z73",
         speed_channels=_SPEED_CHANNELS_KRAKENZ,
@@ -76,6 +76,15 @@ class MockKraken(MockHidapiDevice):
             reply[0x1A] = 3
         self.preload_read(Report(0, reply))
         return super().write(data)
+
+class MockKrakenZ3(KrakenZ3):
+    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+        KrakenX3.__init__(self, device, description, speed_channels, color_channels, **kwargs)
+
+        self.bulk_device = MockPyusbDevice(0x1E71, 0x3008)
+
+        self.orientation = 0
+        self.brightness = 50
 
 
 @pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True), (True, False)])
@@ -146,3 +155,4 @@ def test_krakenz3_not_totally_broken(mock_krakenz3):
     _ = mock_krakenz3.get_status()
     mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
     mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
+    mock_krakenz3.set_screen("lcd", "liquid", None)
