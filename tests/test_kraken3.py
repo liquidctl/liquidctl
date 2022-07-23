@@ -77,6 +77,7 @@ class MockKraken(MockHidapiDevice):
         self.preload_read(Report(0, reply))
         return super().write(data)
 
+
 class MockKrakenZ3(KrakenZ3):
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
         KrakenX3.__init__(self, device, description, speed_channels, color_channels, **kwargs)
