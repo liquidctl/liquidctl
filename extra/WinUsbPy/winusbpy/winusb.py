@@ -3,7 +3,7 @@ from .winusbutils import *
 
 
 class WinUSBApi(object):
-    """ Facade class wrapping USB library WinUSB"""
+    """Facade class wrapping USB library WinUSB"""
 
     def __init__(self):
 
@@ -31,11 +31,15 @@ class WinUSBApi(object):
         return function_caller(args)
 
     def exec_function_kernel32(self, function_name, *args):
-        function_caller = self._configure_ctype_function(self._kernel32_functions_dict, function_name)
+        function_caller = self._configure_ctype_function(
+            self._kernel32_functions_dict, function_name
+        )
         return function_caller(args)
 
     def exec_function_setupapi(self, function_name, *args):
-        function_caller = self._configure_ctype_function(self._setupapi_functions_dict, function_name)
+        function_caller = self._configure_ctype_function(
+            self._setupapi_functions_dict, function_name
+        )
         return function_caller(args)
 
     def _configure_ctype_function(self, dll_dict_functions, function_name):

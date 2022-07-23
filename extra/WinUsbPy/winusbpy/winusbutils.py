@@ -1,7 +1,16 @@
 from ctypes import *
 from ctypes.wintypes import *
-from .winusbclasses import UsbSetupPacket, Overlapped, UsbInterfaceDescriptor, LpSecurityAttributes, GUID, \
-    SpDevinfoData, SpDeviceInterfaceData, SpDeviceInterfaceDetailData, PipeInfo
+from .winusbclasses import (
+    UsbSetupPacket,
+    Overlapped,
+    UsbInterfaceDescriptor,
+    LpSecurityAttributes,
+    GUID,
+    SpDevinfoData,
+    SpDeviceInterfaceData,
+    SpDeviceInterfaceDetailData,
+    PipeInfo,
+)
 
 WinUsb_Initialize = "WinUsb_Initialize"
 WinUsb_ControlTransfer = "WinUsb_ControlTransfer"
@@ -39,7 +48,7 @@ SPDRP_MFG = 11
 
 
 def get_winusb_functions(windll):
-    """ Functions availabe from WinUsb dll and their types"""
+    """Functions availabe from WinUsb dll and their types"""
     winusb_dict = {}
     winusb_functions = {}
     winusb_restypes = {}
@@ -58,7 +67,15 @@ def get_winusb_functions(windll):
     # BOOL __stdcall WinUsb_GetDescriptor(_In_ WINUSB_INTERFACE_HANDLE InterfaceHandle,_In_ UCHAR DescriptorType,_In_ UCHAR Index,_In_ USHORT LanguageID,_Out_ PUCHAR Buffer,_In_ ULONG BufferLength,_Out_ PULONG LengthTransferred);
     winusb_functions[WinUsb_GetDescriptor] = windll.WinUsb_GetDescriptor
     winusb_restypes[WinUsb_GetDescriptor] = BOOL
-    winusb_argtypes[WinUsb_GetDescriptor] = [c_void_p, c_ubyte, c_ubyte, c_ushort, POINTER(c_ubyte), c_ulong, POINTER(c_ulong)]
+    winusb_argtypes[WinUsb_GetDescriptor] = [
+        c_void_p,
+        c_ubyte,
+        c_ubyte,
+        c_ushort,
+        POINTER(c_ubyte),
+        c_ulong,
+        POINTER(c_ulong),
+    ]
 
     # BOOL __stdcall WinUsb_GetOverlappedResult(_In_ WINUSB_INTERFACE_HANDLE InterfaceHandle,_In_ LPOVERLAPPED lpOverlapped,_Out_ LPDWORD lpNumberOfBytesTransferred,_In_ BOOL bWait);
     winusb_functions[WinUsb_GetOverlappedResult] = windll.WinUsb_GetOverlappedResult
@@ -98,7 +115,11 @@ def get_winusb_functions(windll):
     # BOOL __stdcall WinUsb_QueryInterfaceSettings(_In_ WINUSB_INTERFACE_HANDLE InterfaceHandle,_In_ UCHAR AlternateSettingNumber,_Out_ PUSB_INTERFACE_DESCRIPTOR UsbAltInterfaceDescriptor);
     winusb_functions[WinUsb_QueryInterfaceSettings] = windll.WinUsb_QueryInterfaceSettings
     winusb_restypes[WinUsb_QueryInterfaceSettings] = BOOL
-    winusb_argtypes[WinUsb_QueryInterfaceSettings] = [c_void_p, c_ubyte, POINTER(UsbInterfaceDescriptor)]
+    winusb_argtypes[WinUsb_QueryInterfaceSettings] = [
+        c_void_p,
+        c_ubyte,
+        POINTER(UsbInterfaceDescriptor),
+    ]
 
     winusb_functions[WinUsb_QueryPipe] = windll.WinUsb_QueryPipe
     winusb_restypes[WinUsb_QueryPipe] = BOOL
@@ -179,22 +200,40 @@ def get_setupapi_functions(setupapi):
     # BOOL SetupDiEnumDeviceInterfaces(_In_ HDEVINFO DeviceInfoSet,_In_opt_ PSP_DEVINFO_DATA DeviceInfoData,_In_ const GUID *InterfaceClassGuid,_In_ DWORD MemberIndex,_Out_ PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
     setupapi_functions[SetupDiEnumDeviceInterfaces] = setupapi.SetupDiEnumDeviceInterfaces
     setupapi_restypes[SetupDiEnumDeviceInterfaces] = BOOL
-    setupapi_argtypes[SetupDiEnumDeviceInterfaces] = [c_void_p, POINTER(SpDevinfoData), POINTER(GUID), DWORD,
-                                                      POINTER(SpDeviceInterfaceData)]
+    setupapi_argtypes[SetupDiEnumDeviceInterfaces] = [
+        c_void_p,
+        POINTER(SpDevinfoData),
+        POINTER(GUID),
+        DWORD,
+        POINTER(SpDeviceInterfaceData),
+    ]
 
     # BOOL SetupDiGetDeviceInterfaceDetail(_In_ HDEVINFO DeviceInfoSet,_In_ PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData,_Out_opt_ PSP_DEVICE_INTERFACE_DETAIL_DATA DeviceInterfaceDetailData,_In_ DWORD DeviceInterfaceDetailDataSize,_Out_opt_  PDWORD RequiredSize,_Out_opt_  PSP_DEVINFO_DATA DeviceInfoData);
     setupapi_functions[SetupDiGetDeviceInterfaceDetail] = setupapi.SetupDiGetDeviceInterfaceDetailW
     setupapi_restypes[SetupDiGetDeviceInterfaceDetail] = BOOL
-    setupapi_argtypes[SetupDiGetDeviceInterfaceDetail] = [c_void_p, POINTER(SpDeviceInterfaceData),
-                                                          POINTER(SpDeviceInterfaceDetailData), DWORD, POINTER(DWORD),
-                                                          POINTER(SpDevinfoData)]
+    setupapi_argtypes[SetupDiGetDeviceInterfaceDetail] = [
+        c_void_p,
+        POINTER(SpDeviceInterfaceData),
+        POINTER(SpDeviceInterfaceDetailData),
+        DWORD,
+        POINTER(DWORD),
+        POINTER(SpDevinfoData),
+    ]
 
     # BOOL SetupDiGetDeviceInterfaceDetail(_In_ HDEVINFO DeviceInfoSet,_In_ PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData,_Out_opt_ PSP_DEVICE_INTERFACE_DETAIL_DATA DeviceInterfaceDetailData,_In_ DWORD DeviceInterfaceDetailDataSize,_Out_opt_  PDWORD RequiredSize,_Out_opt_  PSP_DEVINFO_DATA DeviceInfoData);
-    setupapi_functions[SetupDiGetDeviceRegistryProperty] = setupapi.SetupDiGetDeviceRegistryPropertyW
+    setupapi_functions[
+        SetupDiGetDeviceRegistryProperty
+    ] = setupapi.SetupDiGetDeviceRegistryPropertyW
     setupapi_restypes[SetupDiGetDeviceRegistryProperty] = BOOL
-    setupapi_argtypes[SetupDiGetDeviceRegistryProperty] = [c_void_p, POINTER(SpDevinfoData),
-                                                          DWORD, POINTER(DWORD),
-                                                          c_void_p, DWORD, POINTER(DWORD)]
+    setupapi_argtypes[SetupDiGetDeviceRegistryProperty] = [
+        c_void_p,
+        POINTER(SpDevinfoData),
+        DWORD,
+        POINTER(DWORD),
+        c_void_p,
+        DWORD,
+        POINTER(DWORD),
+    ]
     # [HDEVINFO, PSP_DEVINFO_DATA, DWORD, PDWORD, PBYTE, DWORD, PDWORD]
 
     # BOOL SetupDiEnumDeviceInfo(HDEVINFO DeviceInfoSet, DWORD MemberIndex, PSP_DEVINFO_DATA DeviceInfoData);
@@ -216,7 +255,10 @@ def is_device(vid, pid, path, name=None):
     if name and name.lower() == path.lower():
         return True
     if vid and pid:
-        if path.lower().find('vid_%04x' % int(str(vid), 0)) != -1 and path.lower().find('pid_%04x' % int(str(pid), 0)) != -1:
+        if (
+            path.lower().find("vid_%04x" % int(str(vid), 0)) != -1
+            and path.lower().find("pid_%04x" % int(str(pid), 0)) != -1
+        ):
             return True
     else:
         return False

@@ -15,8 +15,8 @@ DIGCF_PROFILE = 0x00000008
 DIGCF_DEVICE_INTERFACE = 0x00000010
 
 """Flags controlling File acccess"""
-GENERIC_WRITE = (1073741824)
-GENERIC_READ = (-2147483648)
+GENERIC_WRITE = 1073741824
+GENERIC_READ = -2147483648
 FILE_SHARE_READ = 1
 FILE_SHARE_WRITE = 2
 OPEN_EXISTING = 3
@@ -39,43 +39,65 @@ ERROR_IO_PENDING = 997
 
 
 class UsbSetupPacket(Structure):
-    _fields_ = [("request_type", c_ubyte), ("request", c_ubyte),
-                ("value", c_ushort), ("index", c_ushort), ("length", c_ushort)]
+    _fields_ = [
+        ("request_type", c_ubyte),
+        ("request", c_ubyte),
+        ("value", c_ushort),
+        ("index", c_ushort),
+        ("length", c_ushort),
+    ]
 
 
 class Overlapped(Structure):
-    _fields_ = [('Internal', LPVOID),
-                ('InternalHigh', LPVOID),
-                ('Offset', DWORD),
-                ('OffsetHigh', DWORD),
-                ('Pointer', LPVOID),
-                ('hEvent', HANDLE),]
+    _fields_ = [
+        ("Internal", LPVOID),
+        ("InternalHigh", LPVOID),
+        ("Offset", DWORD),
+        ("OffsetHigh", DWORD),
+        ("Pointer", LPVOID),
+        ("hEvent", HANDLE),
+    ]
 
 
 class UsbInterfaceDescriptor(Structure):
-    _fields_ = [("b_length", c_ubyte), ("b_descriptor_type", c_ubyte),
-                ("b_interface_number", c_ubyte), ("b_alternate_setting", c_ubyte),
-                ("b_num_endpoints", c_ubyte), ("b_interface_class", c_ubyte),
-                ("b_interface_sub_class", c_ubyte), ("b_interface_protocol", c_ubyte),
-                ("i_interface", c_ubyte)]
+    _fields_ = [
+        ("b_length", c_ubyte),
+        ("b_descriptor_type", c_ubyte),
+        ("b_interface_number", c_ubyte),
+        ("b_alternate_setting", c_ubyte),
+        ("b_num_endpoints", c_ubyte),
+        ("b_interface_class", c_ubyte),
+        ("b_interface_sub_class", c_ubyte),
+        ("b_interface_protocol", c_ubyte),
+        ("i_interface", c_ubyte),
+    ]
 
 
 class PipeInfo(Structure):
-    _fields_ = [("pipe_type", c_ulong,), ("pipe_id", c_ubyte),
-                ("maximum_packet_size", c_ushort), ("interval", c_ubyte)]
+    _fields_ = [
+        (
+            "pipe_type",
+            c_ulong,
+        ),
+        ("pipe_id", c_ubyte),
+        ("maximum_packet_size", c_ushort),
+        ("interval", c_ubyte),
+    ]
 
 
 class LpSecurityAttributes(Structure):
-    _fields_ = [("n_length", DWORD), ("lp_security_descriptor", c_void_p),
-                ("b_Inherit_handle", BOOL)]
+    _fields_ = [
+        ("n_length", DWORD),
+        ("lp_security_descriptor", c_void_p),
+        ("b_Inherit_handle", BOOL),
+    ]
 
 
 class GUID(Structure):
-    _fields_ = [("data1", DWORD), ("data2", WORD),
-                ("data3", WORD), ("data4", c_byte * 8)]
+    _fields_ = [("data1", DWORD), ("data2", WORD), ("data3", WORD), ("data4", c_byte * 8)]
 
     def __repr__(self):
-        return u'GUID("%s")' % str(self)
+        return 'GUID("%s")' % str(self)
 
     def __str__(self):
         p = c_wchar_p()
@@ -95,8 +117,7 @@ class GUID(Structure):
         return self != GUID_null
 
     def __eq__(self, other):
-        return isinstance(other, GUID) and \
-               bytes(self) == bytes(other)
+        return isinstance(other, GUID) and bytes(self) == bytes(other)
 
     def __hash__(self):
         # We make GUID instances hashable, although they are mutable.
@@ -107,13 +128,21 @@ GUID_null = GUID()
 
 
 class SpDevinfoData(Structure):
-    _fields_ = [("cb_size", DWORD), ("class_guid", GUID),
-                ("dev_inst", DWORD), ("reserved", POINTER(c_ulong))]
+    _fields_ = [
+        ("cb_size", DWORD),
+        ("class_guid", GUID),
+        ("dev_inst", DWORD),
+        ("reserved", POINTER(c_ulong)),
+    ]
 
 
 class SpDeviceInterfaceData(Structure):
-    _fields_ = [("cb_size", DWORD), ("interface_class_guid", GUID),
-                ("flags", DWORD), ("reserved", POINTER(c_ulong))]
+    _fields_ = [
+        ("cb_size", DWORD),
+        ("interface_class_guid", GUID),
+        ("flags", DWORD),
+        ("reserved", POINTER(c_ulong)),
+    ]
 
 
 class SpDeviceInterfaceDetailData(Structure):
