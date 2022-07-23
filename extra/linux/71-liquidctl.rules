@@ -325,6 +325,9 @@ KERNEL=="i2c-*", ATTR{name}=="NVIDIA i2c adapter 1 *", ATTRS{vendor}=="0x10de", 
 
 # Section: USB devices and USB HIDs
 
+# Aquacomputer D5 Next
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00e", TAG+="uaccess"
+
 # Asetek 690LC (assuming EVGA CLC)
 # Asetek 690LC (assuming NZXT Kraken X)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
