@@ -14,8 +14,12 @@ import itertools
 import io
 import math
 import logging
+import sys
 
 from PIL import Image, ImageSequence
+
+if sys.platform in ["win32", "cygwin"]:
+    from extra.WinUsbPy.winusbpy import *
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -443,15 +447,25 @@ class KrakenZ3(KrakenX3):
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-        self.bulk_device = next(
-            handle for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
-        )
+        if sys.platform in ["win32", "cygwin"]:
+            self.bulk_device = WinUsbPy()
+            assert self.bulk_device.list_usb_devices(
+                deviceinterface=True, present=True
+            ), "Cannot find bulk out device"
+            assert self.bulk_device.init_winusb_device(
+                "1e71", "3008"
+            ), "Cannot find bulk out device"
 
-        assert (
-            self.bulk_device.serial_number == self.device.serial_number
-        ), "Cannot find bulk out device"
+        else:
+            self.bulk_device = next(
+                handle for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
+            )
 
-        self.bulk_device.open()
+            assert (
+                self.bulk_device.serial_number == self.device.serial_number
+            ), "Cannot find bulk out device"
+
+            self.bulk_device.open()
 
         self.orientation = 0  # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.brightness = 50  # default 50%
@@ -540,7 +554,10 @@ class KrakenZ3(KrakenX3):
 
     def _bulk_write(self, data):
         padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
-        self.bulk_device.write(0x2, data + padding)
+        out_data = data + padding
+        if sys.platform in ["win32", "cygwin"]:
+            out_data = bytes(data + padding)
+        self.bulk_device.write(0x2, out_data)
 
     def set_screen(self, channel, mode, value, **kwargs):
         """
@@ -704,7 +721,11 @@ class KrakenZ3(KrakenX3):
         self._write([0x36, 0x02])  # end data transfer
         if not self._switch_bucket(bucketIndex):  # switch to newly written bucket
             _LOGGER.warning("Failed to switch active bucket")
-        self.bulk_device.release()  # release device when finished
+
+        if sys.platform in ["win32", "cygwin"]:
+            self.bulk_device.close_winusb_device()
+        else:
+            self.bulk_device.release()  # release device when finished
 
     def _query_buckets(self):
         """
