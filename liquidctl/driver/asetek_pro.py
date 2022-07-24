@@ -183,7 +183,7 @@ class HydroPro(_Base690Lc):
             # possible to combine it with other modes, but exploring that would
             # require some experimentation
             temps = (30, 40, 50)
-            self._post([0x5f, temps[0], 0x00, temps[1], 0x00, temps[1], 0x00]
+            self._post([0x5f, temps[0], 0x00, temps[1], 0x00, temps[2], 0x00]
                        + colors[0] + colors[1] + colors[2], read_length=6)
             self._post([0x5e, 0x01], read_length=3)
             self.device.release()
