@@ -26,7 +26,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.error import NotSupportedByDevice
+from liquidctl.error import NotSupportedByDriver
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -222,15 +222,15 @@ class Aquacomputer(UsbHidDriver):
 
     def set_speed_profile(self, channel, profile, **kwargs):
         # Not yet reverse engineered / implemented
-        raise NotSupportedByDevice()
+        raise NotSupportedByDriver()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         # Not yet implemented
-        raise NotSupportedByDevice()
+        raise NotSupportedByDriver()
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented
-        raise NotSupportedByDevice()
+        raise NotSupportedByDriver()
 
     @property
     def firmware_version(self):
