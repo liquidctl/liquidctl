@@ -8,7 +8,7 @@ being required.
 The status HID report exposes sensor values such as liquid temperature and
 two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
-pump additionally exposes a +5V voltage sensor reading.
+pump additionally exposes +5V and +12V voltage rail readings.
 
 Driver
 ------
