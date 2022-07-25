@@ -19,7 +19,7 @@ import sys
 from PIL import Image, ImageSequence
 
 if sys.platform in ["win32", "cygwin"]:
-    from extra.WinUsbPy.winusbpy import *
+    from winusbpy import *
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
