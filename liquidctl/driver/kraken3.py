@@ -24,6 +24,7 @@ if sys.platform in ["win32", "cygwin"]:
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import (
+    LazyHexRepr,
     normalize_profile,
     interpolate_profile,
     clamp,
@@ -565,7 +566,8 @@ class KrakenZ3(KrakenX3):
         padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
         out_data = data + padding
         if sys.platform in ["win32", "cygwin"]:
-            out_data = bytes(data + padding)
+            _LOGGER.debug('writting %d bytes: %r', len(out_data), LazyHexRepr(out_data))
+            out_data = bytes(out_data)
         self.bulk_device.write(0x2, out_data)
 
     def set_screen(self, channel, mode, value, **kwargs):
