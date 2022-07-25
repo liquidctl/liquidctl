@@ -449,21 +449,30 @@ class KrakenZ3(KrakenX3):
 
         if sys.platform in ["win32", "cygwin"]:
             self.bulk_device = WinUsbPy()
-            assert self.bulk_device.list_usb_devices(
-                deviceinterface=True, present=True
-            ), "Cannot find bulk out device"
-            assert self.bulk_device.init_winusb_device(
-                "1e71", "3008"
-            ), "Cannot find bulk out device"
-
+            device_list = self.bulk_device.list_usb_devices(deviceinterface=True, present=True)
+            found_device = False
+            for dev in device_list:
+                if dev.path.find("vid_1e71&pid_3008") != -1 and dev.parent_path.find(
+                    self.device.serial_number
+                ):
+                    # device found
+                    found_device = True
+                    assert self.bulk_device.init_winusb_device_with_path(
+                        dev.path
+                    ), "Cannot open bulk out device"
+                    break
+            assert found_device, "Cannot find bulk out device"
         else:
             self.bulk_device = next(
-                handle for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
+                (
+                    handle
+                    for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
+                    if handle.serial_number == self.device.serial_number
+                ),
+                None,
             )
 
-            assert (
-                self.bulk_device.serial_number == self.device.serial_number
-            ), "Cannot find bulk out device"
+            assert self.bulk_device, "Cannot find bulk out device"
 
             self.bulk_device.open()
 
