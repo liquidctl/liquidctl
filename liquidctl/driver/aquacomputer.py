@@ -58,6 +58,7 @@ class Aquacomputer(UsbHidDriver):
                     "fan_sensors": [0x6C, 0x5F],
                     "temp_sensors": [0x57],
                     "plus_5v_voltage": 0x39,
+                    "plus_12v_voltage": 0x37,
                     "temp_sensors_label": ["Liquid temperature"],
                     "fan_speed_label": ["Pump speed", "Fan speed"],
                     "fan_power_label": ["Pump power", "Fan power"],
@@ -150,6 +151,14 @@ class Aquacomputer(UsbHidDriver):
                 "V",
             )
             sensor_readings.append(plus_5v_voltage)
+
+            # Read +12V voltage rail value
+            plus_12v_voltage = (
+                "+12V voltage",
+                get_unaligned_be16(msg, self._device_info["plus_12v_voltage"]) * 1e-2,
+                "V",
+            )
+            sensor_readings.append(plus_12v_voltage)
 
         return sensor_readings
 
