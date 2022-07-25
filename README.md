@@ -125,6 +125,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
 | DDR4 DRAM          | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | DDR4 DRAM          | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
+| Fan/LED controller | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | USB HID | <sup>_hn_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Commander Core XT](docs/corsair-commander-core-guide.md) | USB HID | <sup>_enp_</sup> |

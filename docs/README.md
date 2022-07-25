@@ -13,6 +13,7 @@ Device guides
 
 <!-- sort -->
 
+- [Aquacomputer D5 Next watercooling pump](aquacomputer-d5next-guide.md)
 - [Asetek 690LC liquid coolers](asetek-690lc-guide.md)
 - [Asetek Pro liquid coolers](asetek-pro-guide.md)
 - [Corsair Commander Code](corsair-commander-core-guide.md)
