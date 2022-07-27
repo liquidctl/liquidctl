@@ -65,4 +65,4 @@ Then install locally and:
 
  - [ ] Merge the release branch into the main branch (if appropriate)
  - [ ] Update the HEAD release-checklist with this checklist
- - [ ] Update ArchLinux `liquidctl-git`
+ - [ ] If necessary, update ArchLinux `liquidctl-git`
