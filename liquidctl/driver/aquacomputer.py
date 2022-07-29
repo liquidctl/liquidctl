@@ -254,5 +254,5 @@ class Aquacomputer(UsbHidDriver):
         if clear_first:
             self.device.clear_enqueued_reports()
         msg = self.device.read(self._device_info["status_report_length"])
-        self._firmware_version = tuple(msg[0xD:0xE])
+        self._firmware_version = get_unaligned_be16(msg, 0xD)
         return msg
