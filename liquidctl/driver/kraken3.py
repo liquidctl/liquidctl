@@ -19,7 +19,7 @@ import sys
 from PIL import Image, ImageSequence
 
 if sys.platform in ["win32", "cygwin"]:
-    from winusbpy import *
+    from winusbcdc import *
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -450,18 +450,9 @@ class KrakenZ3(KrakenX3):
 
         if sys.platform in ["win32", "cygwin"]:
             self.bulk_device = WinUsbPy()
-            device_list = self.bulk_device.list_usb_devices(deviceinterface=True, present=True)
-            found_device = False
-            for dev in device_list:
-                if dev.path.find("vid_1e71&pid_3008") != -1 and dev.parent_path.find(
-                    self.device.serial_number
-                ):
-                    # device found
-                    found_device = True
-                    assert self.bulk_device.init_winusb_device_with_path(
-                        dev.path
-                    ), "Cannot open bulk out device"
-                    break
+            found_device = self._find_winusb_device(
+                "vid_1e71", "pid_3008", self.device.serial_number
+            )
             assert found_device, "Cannot find bulk out device"
         else:
             self.bulk_device = next(
@@ -479,6 +470,138 @@ class KrakenZ3(KrakenX3):
 
         self.orientation = 0  # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.brightness = 50  # default 50%
+
+    def _find_winusb_device(self, vid, pid, serial):
+        if (
+            sys.platform not in ["win32", "cygwin"]
+            or not self.bulk_device
+            or not isinstance(self.bulk_device, WinUsbPy)
+            or not vid
+            or not pid
+            or not serial
+        ):
+            return False
+
+        # modified list_devices function
+        value = 0x00000000
+        try:
+            value |= DIGCF_PRESENT
+            value |= DIGCF_DEVICE_INTERFACE
+        except KeyError:
+            if value == 0x00000000:
+                value = 0x00000010
+            pass
+
+        flags = DWORD(value)
+        self.bulk_device.handle = self.bulk_device.api.exec_function_setupapi(
+            SetupDiGetClassDevs, byref(self.bulk_device.usb_winusb_guid), None, None, flags
+        )
+
+        sp_device_interface_data = SpDeviceInterfaceData()
+        sp_device_interface_data.cb_size = sizeof(sp_device_interface_data)
+        sp_device_interface_detail_data = SpDeviceInterfaceDetailData()
+        sp_device_info_data = SpDevinfoData()
+        sp_device_info_data.cb_size = sizeof(sp_device_info_data)
+
+        i = 0
+        required_size = DWORD(0)
+        member_index = DWORD(i)
+        cb_sizes = (8, 6, 5)  # different on 64 bit / 32 bit etc
+
+        device_path = None
+        while self.bulk_device.api.exec_function_setupapi(
+            SetupDiEnumDeviceInterfaces,
+            self.bulk_device.handle,
+            None,
+            byref(self.bulk_device.usb_winusb_guid),
+            member_index,
+            byref(sp_device_interface_data),
+        ):
+            self.bulk_device.api.exec_function_setupapi(
+                SetupDiGetDeviceInterfaceDetail,
+                self.bulk_device.handle,
+                byref(sp_device_interface_data),
+                None,
+                0,
+                byref(required_size),
+                None,
+            )
+            resize(sp_device_interface_detail_data, required_size.value)
+
+            path = None
+            for cb_size in cb_sizes:
+                sp_device_interface_detail_data.cb_size = cb_size
+                ret = self.bulk_device.api.exec_function_setupapi(
+                    SetupDiGetDeviceInterfaceDetail,
+                    self.bulk_device.handle,
+                    byref(sp_device_interface_data),
+                    byref(sp_device_interface_detail_data),
+                    required_size,
+                    byref(required_size),
+                    byref(sp_device_info_data),
+                )
+                if ret:
+                    cb_sizes = (cb_size,)
+                    path = wstring_at(byref(sp_device_interface_detail_data, sizeof(DWORD)))
+                    break
+            if path is None:
+                raise ctypes.WinError()
+
+            if path.find(vid + "&" + pid) != -1:
+                # get parent device info
+                dev_inst_parent = DWORD(0)
+                ret = self.bulk_device.api._setupapi.CM_Get_Parent(
+                    byref(dev_inst_parent),
+                    getattr(sp_device_info_data, "dev_inst"),
+                    0,
+                )
+                if not ret:
+                    buff_parent_path = ctypes.create_unicode_buffer(250)
+                    ret = self.bulk_device.api._setupapi.CM_Get_Device_IDW(
+                        dev_inst_parent,
+                        ctypes.byref(buff_parent_path),
+                        ctypes.sizeof(buff_parent_path) - 1,
+                        0,
+                    )
+                    if not ret:
+                        if buff_parent_path.value.find(serial) != -1:
+                            device_path = path
+                            break
+
+            i += 1
+            member_index = DWORD(i)
+            required_size = c_ulong(0)
+            resize(sp_device_interface_detail_data, sizeof(SpDeviceInterfaceDetailData))
+
+        # found device init
+        if device_path != None:
+            self.bulk_device.handle_file = self.bulk_device.api.exec_function_kernel32(
+                CreateFile,
+                device_path,
+                GENERIC_WRITE | GENERIC_READ,
+                FILE_SHARE_WRITE | FILE_SHARE_READ,
+                None,
+                OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+                None,
+            )
+
+            if self.bulk_device.handle_file == INVALID_HANDLE_VALUE:
+                return False
+            result = self.bulk_device.api.exec_function_winusb(
+                WinUsb_Initialize,
+                self.bulk_device.handle_file,
+                byref(self.bulk_device.handle_winusb[0]),
+            )
+            if result == 0:
+                err = self.bulk_device.get_last_error_code()
+                raise ctypes.WinError()
+                # return False
+            else:
+                self.bulk_device._index = 0
+                return True
+
+        return False
 
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
@@ -566,7 +689,7 @@ class KrakenZ3(KrakenX3):
         padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
         out_data = data + padding
         if sys.platform in ["win32", "cygwin"]:
-            _LOGGER.debug('writting %d bytes: %r', len(out_data), LazyHexRepr(out_data))
+            _LOGGER.debug("writting %d bytes: %r", len(out_data), LazyHexRepr(out_data))
             out_data = bytes(out_data)
         self.bulk_device.write(0x2, out_data)
 
