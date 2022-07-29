@@ -111,8 +111,8 @@ def test_d5next_set_fixed_speeds_not_supported(mockD5NextDevice):
     with pytest.raises(NotSupportedByDriver):
         mockD5NextDevice.set_fixed_speed("fan", 42)
 
-        with pytest.raises(NotSupportedByDriver):
-            mockD5NextDevice.set_fixed_speed("pump", 84)
+    with pytest.raises(NotSupportedByDriver):
+        mockD5NextDevice.set_fixed_speed("pump", 84)
 
 
 def test_kraken_speed_profiles_not_supported(mockD5NextDevice):
