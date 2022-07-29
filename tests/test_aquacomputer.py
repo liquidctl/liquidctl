@@ -67,8 +67,6 @@ def test_d5next_get_status_directly(mockD5NextDevice, has_hwmon, direct_access):
     if has_hwmon:
         mockD5NextDevice._hwmon = HwmonDevice(None, None)
 
-    mockD5NextDevice.device.preload_read(Report(1, D5NEXT_SAMPLE_STATUS_REPORT))
-
     got = mockD5NextDevice.get_status(direct_access=direct_access)
 
     expected = [
