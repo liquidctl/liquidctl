@@ -212,6 +212,10 @@ class Aquacomputer(UsbHidDriver):
                 # The driver exposes the +12V voltage of the pump (kernel v5.20+), read the value
                 plus_12v_voltage = ("+12V voltage", self._hwmon.get_int("in3_input") * 1e-3, "V")
                 sensor_readings.append(plus_12v_voltage)
+            else:
+                _LOGGER.warning(
+                    "some attributes cannot be read from %s kernel driver", self._hwmon.module
+                )
 
         return sensor_readings
 
