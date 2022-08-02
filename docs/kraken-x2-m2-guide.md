@@ -21,7 +21,7 @@ This driver also supports the NZXT Kraken M22.  However, this device has no pump
 
 _Changed in 1.9.0: the firmware version is now reported after initialization._  
 
-All device should be (re)initialized after the system boots or resumes from a
+All devices should be (re)initialized after the system boots or resumes from a
 suspended state, or if there have been hardware changes.
 
 ```
