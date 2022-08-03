@@ -101,14 +101,12 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        for label, offset in zip(
-            self._device_info["temp_sensors_label"], self._device_info["temp_sensors"]
-        ):
-            temp_sensor_value = u16be_from(msg, offset)
+        for idx, temp_sensor_offset in enumerate(self._device_info["temp_sensors"]):
+            temp_sensor_value = u16be_from(msg, temp_sensor_offset)
 
             if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
                 temp_sensor_reading = (
-                    label,
+                    self._device_info["temp_sensors_label"][idx],
                     temp_sensor_value * 1e-2,
                     "°C",
                 )
