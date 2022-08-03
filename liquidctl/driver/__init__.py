@@ -26,6 +26,7 @@ from liquidctl.driver.base import BaseBus, find_all_subclasses
 from liquidctl.driver import asetek
 from liquidctl.driver import asetek_pro
 from liquidctl.driver import aura_led
+from liquidctl.driver import aquacomputer
 from liquidctl.driver import commander_core
 from liquidctl.driver import commander_pro
 from liquidctl.driver import corsair_hid_psu
