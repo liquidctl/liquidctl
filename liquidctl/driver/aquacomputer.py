@@ -43,11 +43,11 @@ _AQC_STATUS_READ_ENDPOINT = 0x01
 class Aquacomputer(UsbHidDriver):
     # Support for hwmon: aquacomputer_d5next, sensors - 5.15+
 
-    DEVICE_D5NEXT = "D5 Next"
+    _DEVICE_D5NEXT = "D5 Next"
 
-    DEVICE_INFO = {
-        DEVICE_D5NEXT: {
-            "type": DEVICE_D5NEXT,
+    _DEVICE_INFO = {
+        _DEVICE_D5NEXT: {
+            "type": _DEVICE_D5NEXT,
             "fan_sensors": [0x6C, 0x5F],
             "temp_sensors": [0x57],
             "plus_5v_voltage": 0x39,
@@ -62,7 +62,7 @@ class Aquacomputer(UsbHidDriver):
     }
 
     SUPPORTED_DEVICES = [
-        (0x0C70, 0xF00E, None, "Aquacomputer D5 Next", {"device_info": DEVICE_INFO[DEVICE_D5NEXT]}),
+        (0x0C70, 0xF00E, None, "Aquacomputer D5 Next", {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]}),
     ]
 
     def __init__(self, device, description, device_info, **kwargs):
@@ -137,7 +137,7 @@ class Aquacomputer(UsbHidDriver):
             sensor_readings.append(fan_current)
 
         # Special-case sensor readings
-        if self._device_info["type"] == self.DEVICE_D5NEXT:
+        if self._device_info["type"] == self._DEVICE_D5NEXT:
             # Read +5V voltage rail value
             plus_5v_voltage = (
                 "+5V voltage",
@@ -199,7 +199,7 @@ class Aquacomputer(UsbHidDriver):
             sensor_readings.append(fan_current)
 
         # Special-case sensor readings
-        if self._device_info["type"] == self.DEVICE_D5NEXT:
+        if self._device_info["type"] == self._DEVICE_D5NEXT:
             # Read +5V voltage rail value
             plus_5v_voltage = ("+5V voltage", self._hwmon.get_int("in2_input") * 1e-3, "V")
             sensor_readings.append(plus_5v_voltage)

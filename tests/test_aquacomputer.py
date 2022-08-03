@@ -20,7 +20,7 @@ def mockD5NextDevice():
     dev = Aquacomputer(
         device,
         "Mock Aquacomputer D5 Next",
-        device_info=Aquacomputer.DEVICE_INFO[Aquacomputer.DEVICE_D5NEXT],
+        device_info=Aquacomputer._DEVICE_INFO[Aquacomputer._DEVICE_D5NEXT],
     )
 
     dev.connect()
