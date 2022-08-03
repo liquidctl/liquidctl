@@ -62,7 +62,13 @@ class Aquacomputer(UsbHidDriver):
     }
 
     SUPPORTED_DEVICES = [
-        (0x0C70, 0xF00E, None, "Aquacomputer D5 Next", {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]}),
+        (
+            0x0C70,
+            0xF00E,
+            None,
+            "Aquacomputer D5 Next",
+            {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]},
+        ),
     ]
 
     def __init__(self, device, description, device_info, **kwargs):
@@ -95,7 +101,9 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        for label, offset in zip(self._device_info["temp_sensors_label"], self._device_info["temp_sensors"]):
+        for label, offset in zip(
+            self._device_info["temp_sensors_label"], self._device_info["temp_sensors"]
+        ):
             temp_sensor_value = u16be_from(msg, offset)
 
             if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
