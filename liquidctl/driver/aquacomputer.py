@@ -27,6 +27,7 @@ import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver
+from liquidctl.util import u16be_from
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,10 +38,6 @@ _AQC_FAN_POWER_OFFSET = 0x06
 _AQC_FAN_SPEED_OFFSET = 0x08
 
 _AQC_STATUS_READ_ENDPOINT = 0x01
-
-
-def get_unaligned_be16(msg, offset):
-    return msg[offset] << 8 | msg[offset + 1]
 
 
 class Aquacomputer(UsbHidDriver):
@@ -100,7 +97,7 @@ class Aquacomputer(UsbHidDriver):
 
         # Read temp sensor values
         for idx, temp_sensor_offset in enumerate(self._device_info["temp_sensors"]):
-            temp_sensor_value = get_unaligned_be16(msg, temp_sensor_offset)
+            temp_sensor_value = u16be_from(msg, temp_sensor_offset)
 
             if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
                 temp_sensor_reading = (
@@ -114,28 +111,28 @@ class Aquacomputer(UsbHidDriver):
         for idx, fan_sensor_offset in enumerate(self._device_info["fan_sensors"]):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
-                get_unaligned_be16(msg, fan_sensor_offset + _AQC_FAN_SPEED_OFFSET),
+                u16be_from(msg, fan_sensor_offset + _AQC_FAN_SPEED_OFFSET),
                 "rpm",
             )
             sensor_readings.append(fan_speed)
 
             fan_power = (
                 self._device_info["fan_power_label"][idx],
-                get_unaligned_be16(msg, fan_sensor_offset + _AQC_FAN_POWER_OFFSET) * 1e-2,
+                u16be_from(msg, fan_sensor_offset + _AQC_FAN_POWER_OFFSET) * 1e-2,
                 "W",
             )
             sensor_readings.append(fan_power)
 
             fan_voltage = (
                 self._device_info["fan_voltage_label"][idx],
-                get_unaligned_be16(msg, fan_sensor_offset + _AQC_FAN_VOLTAGE_OFFSET) * 1e-2,
+                u16be_from(msg, fan_sensor_offset + _AQC_FAN_VOLTAGE_OFFSET) * 1e-2,
                 "V",
             )
             sensor_readings.append(fan_voltage)
 
             fan_current = (
                 self._device_info["fan_current_label"][idx],
-                get_unaligned_be16(msg, fan_sensor_offset + _AQC_FAN_CURRENT_OFFSET) * 1e-3,
+                u16be_from(msg, fan_sensor_offset + _AQC_FAN_CURRENT_OFFSET) * 1e-3,
                 "A",
             )
             sensor_readings.append(fan_current)
@@ -145,7 +142,7 @@ class Aquacomputer(UsbHidDriver):
             # Read +5V voltage rail value
             plus_5v_voltage = (
                 "+5V voltage",
-                get_unaligned_be16(msg, self._device_info["plus_5v_voltage"]) * 1e-2,
+                u16be_from(msg, self._device_info["plus_5v_voltage"]) * 1e-2,
                 "V",
             )
             sensor_readings.append(plus_5v_voltage)
@@ -153,7 +150,7 @@ class Aquacomputer(UsbHidDriver):
             # Read +12V voltage rail value
             plus_12v_voltage = (
                 "+12V voltage",
-                get_unaligned_be16(msg, self._device_info["plus_12v_voltage"]) * 1e-2,
+                u16be_from(msg, self._device_info["plus_12v_voltage"]) * 1e-2,
                 "V",
             )
             sensor_readings.append(plus_12v_voltage)
@@ -258,5 +255,5 @@ class Aquacomputer(UsbHidDriver):
         if clear_first:
             self.device.clear_enqueued_reports()
         msg = self.device.read(self._device_info["status_report_length"])
-        self._firmware_version = get_unaligned_be16(msg, 0xD)
+        self._firmware_version = u16be_from(msg, 0xD)
         return msg
