@@ -60,6 +60,9 @@ def test_d5next_initialize(mockD5NextDevice):
     # Verify firmware version
     assert init_result[0][1] == 1023
 
+    # Verify serial number
+    assert init_result[1][1] == "03531-22908"
+
 
 @pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
 def test_d5next_get_status_directly(mockD5NextDevice, has_hwmon, direct_access):
