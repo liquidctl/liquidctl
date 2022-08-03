@@ -86,7 +86,6 @@ class Aquacomputer(UsbHidDriver):
         """
 
         fw = self.firmware_version
-        _LOGGER.debug("raw firmware version: %r", fw)
 
         return [("Firmware version", fw, "")]
 
