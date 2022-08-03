@@ -18,8 +18,35 @@ import sys
 
 from PIL import Image, ImageSequence
 
-if sys.platform in ["win32", "cygwin"]:
-    from winusbcdc import *
+if sys.platform == "win32":
+    from winusbcdc import (
+        WinUsbPy,
+        SpDeviceInterfaceData,
+        SpDeviceInterfaceDetailData,
+        SpDevinfoData,
+        ctypes,
+        c_ulong,
+        resize,
+        wstring_at,
+        byref,
+        sizeof,
+        SetupDiGetClassDevs,
+        SetupDiEnumDeviceInterfaces,
+        SetupDiGetDeviceInterfaceDetail,
+        WinUsb_Initialize,
+        CreateFile,
+        DIGCF_PRESENT,
+        DIGCF_DEVICE_INTERFACE,
+        DWORD,
+        GENERIC_WRITE,
+        GENERIC_READ,
+        FILE_SHARE_WRITE,
+        FILE_SHARE_READ,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        FILE_FLAG_OVERLAPPED,
+        INVALID_HANDLE_VALUE,
+    )
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -215,14 +242,14 @@ class KrakenX3(UsbHidDriver):
             self._write([0x70, 0x02, 0x01, 0xB8, update_interval])
             self._write([0x70, 0x01])
 
-        self.status = []
+        self._status = []
 
         self._read_until({b"\x11\x01": self.parse_firm_info, b"\x21\x03": self.parse_led_info})
-        return sorted(self.status)
+        return sorted(self._status)
 
     def parse_firm_info(self, msg):
         fw = f"{msg[0x11]}.{msg[0x12]}.{msg[0x13]}"
-        self.status.append(("Firmware version", fw, ""))
+        self._status.append(("Firmware version", fw, ""))
 
     def parse_led_info(self, msg):
         channel_count = msg[14]
@@ -239,13 +266,13 @@ class KrakenX3(UsbHidDriver):
             accessory = find(0, i)
             if not accessory:
                 break
-            self.status.append((f"LED accessory {i + 1}", accessory, ""))
+            self._status.append((f"LED accessory {i + 1}", accessory, ""))
 
         if len(self._color_channels) > 1:
             found_ring = find(1, 0) == Hue2Accessory.KRAKENX_GEN4_RING
             found_logo = find(2, 0) == Hue2Accessory.KRAKENX_GEN4_LOGO
-            self.status.append(("Pump Ring LEDs", "detected" if found_ring else "missing", ""))
-            self.status.append(("Pump Logo LEDs", "detected" if found_logo else "missing", ""))
+            self._status.append(("Pump Ring LEDs", "detected" if found_ring else "missing", ""))
+            self._status.append(("Pump Logo LEDs", "detected" if found_logo else "missing", ""))
             assert found_ring and found_logo, "Pump ring and/or logo were not detected"
 
     def _get_status_directly(self):
@@ -448,7 +475,7 @@ class KrakenZ3(KrakenX3):
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
-        if sys.platform in ["win32", "cygwin"]:
+        if sys.platform == "win32":
             self.bulk_device = WinUsbPy()
             found_device = self._find_winusb_device(
                 "vid_1e71", "pid_3008", self.device.serial_number
@@ -472,16 +499,6 @@ class KrakenZ3(KrakenX3):
         self.brightness = 50  # default 50%
 
     def _find_winusb_device(self, vid, pid, serial):
-        if (
-            sys.platform not in ["win32", "cygwin"]
-            or not self.bulk_device
-            or not isinstance(self.bulk_device, WinUsbPy)
-            or not vid
-            or not pid
-            or not serial
-        ):
-            return False
-
         # modified list_devices function
         value = 0x00000000
         try:
@@ -635,7 +652,7 @@ class KrakenZ3(KrakenX3):
         self._write([0x70, 0x02, 0x01, 0xB8, update_interval])
         self._write([0x70, 0x01])
 
-        self.status = []
+        self._status = []
 
         self._read_until(
             {
@@ -645,13 +662,13 @@ class KrakenZ3(KrakenX3):
             }
         )
 
-        return sorted(self.status)
+        return sorted(self._status)
 
     def parse_lcd_info(self, msg):
         self.brightness = msg[0x18]
         self.orientation = msg[0x1A]
-        self.status.append(("LCD Brightness", self.brightness, "%"))
-        self.status.append(("LCD Orientation", self.orientation * 90, "°"))
+        self._status.append(("LCD Brightness", self.brightness, "%"))
+        self._status.append(("LCD Orientation", self.orientation * 90, "°"))
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -688,7 +705,7 @@ class KrakenZ3(KrakenX3):
     def _bulk_write(self, data):
         padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
         out_data = data + padding
-        if sys.platform in ["win32", "cygwin"]:
+        if sys.platform == "win32":
             _LOGGER.debug("writting %d bytes: %r", len(out_data), LazyHexRepr(out_data))
             out_data = bytes(out_data)
         self.bulk_device.write(0x2, out_data)
@@ -856,7 +873,7 @@ class KrakenZ3(KrakenX3):
         if not self._switch_bucket(bucketIndex):  # switch to newly written bucket
             _LOGGER.warning("Failed to switch active bucket")
 
-        if sys.platform in ["win32", "cygwin"]:
+        if sys.platform == "win32":
             self.bulk_device.close_winusb_device()
         else:
             self.bulk_device.release()  # release device when finished

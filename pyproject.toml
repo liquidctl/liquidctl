@@ -42,7 +42,6 @@ extend-exclude = '''
   | (^/liquidctl/driver/ddr4\.py$)
   | (^/liquidctl/driver/hydro_platinum\.py$)
   | (^/liquidctl/driver/kraken2\.py$)
-  | (^/liquidctl/driver/kraken3\.py$)
   | (^/liquidctl/driver/nvidia\.py$)
   | (^/liquidctl/driver/nzxt_epsu\.py$)
   | (^/liquidctl/driver/rgb_fusion2\.py$)
