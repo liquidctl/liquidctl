@@ -7,7 +7,8 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 Aquacomputer D5 Next
-└── Firmware version    1023
+├── Firmware version           1023
+└── Serial number       03500-24905
 ```
 
 The pump automatically sends a status HID report every second as soon as it's connected.

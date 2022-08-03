@@ -76,6 +76,7 @@ class Aquacomputer(UsbHidDriver):
 
         # Read when necessary
         self._firmware_version = None
+        self._serial_number = None
 
         self._device_info = device_info
 
@@ -92,8 +93,9 @@ class Aquacomputer(UsbHidDriver):
         """
 
         fw = self.firmware_version
+        serial_number = self.serial_number
 
-        return [("Firmware version", fw, "")]
+        return [("Firmware version", fw, ""), ("Serial number", serial_number, "")]
 
     def _get_status_directly(self):
         msg = self._read()
@@ -256,9 +258,16 @@ class Aquacomputer(UsbHidDriver):
             _ = self._read(clear_first=False)
         return self._firmware_version
 
+    @property
+    def serial_number(self):
+        if self._serial_number is None:
+            _ = self._read(clear_first=False)
+        return self._serial_number
+
     def _read(self, clear_first=True):
         if clear_first:
             self.device.clear_enqueued_reports()
         msg = self.device.read(self._device_info["status_report_length"])
         self._firmware_version = u16be_from(msg, 0xD)
+        self._serial_number = f"{u16be_from(msg, 0x3):05}-{u16be_from(msg, 0x5):05}"
         return msg
