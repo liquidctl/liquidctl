@@ -3,12 +3,18 @@ _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../li
 
 ## Initialization
 
-Initialization is not required. The pump sends a status HID report every second as soon as it's connected.
+Initialization is _currently_ not required, but is recommended. It outputs the firmware version:
+
+```
+Aquacomputer D5 Next
+└── Firmware version    1023
+```
+
+The pump automatically sends a status HID report every second as soon as it's connected.
 
 ## Monitoring
 
-The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the optionally connected fan. These groups provide RPM speed, voltage, current and power readings. The
-pump additionally exposes +5V and +12V voltage rail readings.
+The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the optionally connected fan. These groups provide RPM speed, voltage, current and power readings. The pump additionally exposes +5V and +12V voltage rail readings:
 
 ```
 # liquidctl status
