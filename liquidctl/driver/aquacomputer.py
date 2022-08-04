@@ -252,18 +252,21 @@ class Aquacomputer(UsbHidDriver):
         # Not yet reverse engineered / implemented
         raise NotSupportedByDriver()
 
+    def _read_device_statics(self):
+        if self._firmware_version is None or self._serial is None:
+            msg = self._read(clear_first=False)
+
+            self._firmware_version = u16be_from(msg, 0xD)
+            self._serial = f"{u16be_from(msg, 0x3):05}-{u16be_from(msg, 0x5):05}"
+
     @property
     def firmware_version(self):
-        if self._firmware_version is None:
-            msg = self._read(clear_first=False)
-            self._firmware_version = u16be_from(msg, 0xD)
+        self._read_device_statics()
         return self._firmware_version
 
     @property
     def _serial_number(self):
-        if self._serial is None:
-            msg = self._read(clear_first=False)
-            self._serial = f"{u16be_from(msg, 0x3):05}-{u16be_from(msg, 0x5):05}"
+        self._read_device_statics()
         return self._serial
 
     def _read(self, clear_first=True):
