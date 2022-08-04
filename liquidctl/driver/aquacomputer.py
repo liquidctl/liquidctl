@@ -255,7 +255,8 @@ class Aquacomputer(UsbHidDriver):
     @property
     def firmware_version(self):
         if self._firmware_version is None:
-            _ = self._read(clear_first=False)
+            msg = self._read(clear_first=False)
+            self._firmware_version = u16be_from(msg, 0xD)
         return self._firmware_version
 
     @property
@@ -269,5 +270,4 @@ class Aquacomputer(UsbHidDriver):
         if clear_first:
             self.device.clear_enqueued_reports()
         msg = self.device.read(self._device_info["status_report_length"])
-        self._firmware_version = u16be_from(msg, 0xD)
         return msg
