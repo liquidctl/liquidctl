@@ -13,11 +13,11 @@ Device guides
 
 <!-- sort -->
 
+- [ASUS Aura LED (USB-based) controllers](asus-aura-led-guide.md)
 - [Aquacomputer D5 Next watercooling pump](aquacomputer-d5next-guide.md)
 - [Asetek 690LC liquid coolers](asetek-690lc-guide.md)
 - [Asetek Pro liquid coolers](asetek-pro-guide.md)
-- [Corsair Commander Code](corsair-commander-core-guide.md)
-- [Corsair Commander Code](corsair-commander-core-guide.md)
+- [Corsair Commander Core and Core XT](corsair-commander-core-guide.md)
 - [Corsair Commander Pro, Obsidian 1000D and Lighting Node Pro/Core](corsair-commander-guide.md)
 - [Corsair HXi and RMi series PSUs](corsair-hxi-rmi-psu-guide.md)
 - [Corsair Hydro Platinum and Pro XT all-in-one liquidctl coolers](corsair-platinum-pro-xt-guide.md)
