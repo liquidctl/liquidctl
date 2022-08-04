@@ -1,5 +1,7 @@
-# Corsair Commander Core
+# Corsair Commander Core and Core XT
 _Driver API and source code available in [`liquidctl.driver.commander_core`](../liquidctl/driver/commander_core.py)._
+
+_Changed in 1.11.0: the Corsair Commander Core XT is now supported._  
 
 Currently, functionality implemented is listed here. More is planned to be added.
 

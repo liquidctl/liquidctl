@@ -1,6 +1,8 @@
 # Aquacomputer D5 Next watercooling pump
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
+_New in 1.11.0._  
+
 ## Initialization
 
 Initialization is _currently_ not required, but is recommended. It outputs the firmware version:

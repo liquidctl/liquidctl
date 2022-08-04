@@ -21,6 +21,8 @@ All capabilities available at the hardware level are supported, but other featur
 
 _Changed in 1.9.0: the firmware version and the connected accessories are now
 reported after initialization._  
+_Changed in 1.10.0: modern firmware versions are now reported in simplified
+form, to match CAM._  
 
 After powering on from Mechanical Off, or if there have been hardware changes,
 the device must first be initialized.  This takes a few seconds and should
