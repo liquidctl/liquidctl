@@ -234,9 +234,11 @@ Cooling channels: not yet supported.
 .PP
 Lighting channels: not yet supported.
 .SS Corsair Commander Core
-Cooling channels: \fIpump\fR, \fIfans\fR, \fIfan[1\-6]\fR.
+.SS Corsair iCUE Elite Capellix H100i, H115i, H150i
 .SS Corsair Commander Core XT
-Cooling channels: \fIfans\fR, \fIfan[1\-6]\fR.
+Cooling channels: \fIfans\fR, \fIfan[1\-6]\fR; (only non-XT/Elite Capellix:) \fIpump\fR.
+.PP
+Lighting channels: not yet supported.
 .SS Corsair Commander Pro
 .SS Corsair Lighting Node Pro
 .SS Corsair Lighting Node Core
@@ -319,7 +321,7 @@ to any write command.  However, since write\-cycles are limited, this option
 should be used sparingly.
 .
 .SS Corsair H100i Pro, H115i Pro, H150i Pro
-Fan channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro:) \fIfan3\fR.
+Cooling channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro:) \fIfan3\fR.
 .PP
 Pump mode (\fBinitialize \-\-pump\-mode \fImode\fR): \fIquiet\fR,
 \fIbalanced\fR (default), \fIperformance\fR.
@@ -339,7 +341,7 @@ Mode	#colors
 .
 .SS Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum
 .SS Corsair Hydro H60i Pro XT, H100i Pro XT, H115i Pro XT, H150i Pro XT
-Fan channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro XT:) \fIfan3\fR.
+Cooling channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro XT:) \fIfan3\fR.
 .PP
 Pump mode (\fBinitialize \-\-pump\-mode \fImode\fR): \fIquiet\fR,
 \fIbalanced\fR (default), \fIextreme\fR.
@@ -428,7 +430,7 @@ where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .
 .SS Corsair HX750i, HX850i, HX1000i, HX1200i
 .SS Corsair RM650i, RM750i, RM850i, RM1000i
-Fan channels: \fIfan\fR.
+Cooling channels: \fIfan\fR.
 .PP
 Lighting channels: none.
 .PP
@@ -441,17 +443,17 @@ Single-rail mode can be selected by passing \fB\-\-single\-12v\-ocp\fR to
 again without that flag.
 .
 .SS NZXT E500, E650, E850
-Fan channels: none (feature not supported yet).
+Cooling channels: none (feature not supported yet).
 .PP
 Lighting channels: none.
 .
 .SS NZXT Grid+ V3
-Fan channels: \fIfan[1\(en6]\fR, \fIsync\fR.
+Cooling channels: \fIfan[1\(en6]\fR, \fIsync\fR.
 .PP
 Lighting channels: none.
 .
 .SS NZXT Smart Device (V1)
-Fan channels: \fIfan[1\(en3]\fR, \fIsync\fR.
+Cooling channels: \fIfan[1\(en3]\fR, \fIsync\fR.
 .PP
 Lighting channels: \fIled\fR.
 .TS
@@ -484,7 +486,7 @@ where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .SS NZXT HUE 2
 .SS NZXT HUE 2 Ambient
 .SS NZXT H1 V2
-Fan channels (only Smart Device V2, RGB & Fan Controller and H1 V2):
+Cooling channels (only Smart Device V2, RGB & Fan Controller and H1 V2):
 \fIfan[1\(en3]\fR.
 .PP
 Lighting channels (all but H1 V2): \fIled[1\(en2]\fR, \fIsync\fR.
@@ -550,7 +552,7 @@ where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .SS ASUS Strix RTX 2080 Ti
 .SS ASUS Strix RTX 2080 Ti OC
 .SS ASUS TUF RTX 3060 Ti OC
-Fan channels: none.
+Cooling channels: none.
 .PP
 Lighting channels: \fIled\fR.
 .TS
@@ -566,7 +568,7 @@ Mode	#colors
 .TE
 .
 .SS Corsair Vengeance RGB
-Fan channels: none.
+Cooling channels: none.
 .PP
 Lighting channels: \fIled\fR.
 .TS
@@ -585,10 +587,8 @@ When applicable the animation speed can be set with
 where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
 \fIfaster\fR, \fIfastest\fR.
 .
-.SS ASUS Aura USB LED 0x19AF Controller
-.SS ASUS Aura USB LED 0x1939 Controller
-.SS ASUS Aura USB LED 0x18F3 Controller
-Fan channels: none.
+.SS ASUS Aura LED Controller
+Cooling channels: none.
 .PP
 Lighting channels: \fIled[1\(en4]\fR, \fIsync\fR.
 .TS
@@ -618,7 +618,7 @@ Mode	#colors
 .
 .SS Gigabyte RGB Fusion 2.0 5702 Controller
 .SS Gigabyte RGB Fusion 2.0 8297 Controller
-Fan channels: none.
+Cooling channels: none.
 .PP
 Lighting channels: \fIled[1\(en8]\fR, \fIsync\fR.
 .TS
@@ -643,7 +643,7 @@ where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
 .SS EVGA GTX 1070 FTW Hybrid
 .SS EVGA GTX 1070 Ti FTW2
 .SS EVGA GTX 1080 FTW
-Fan channels: none.
+Cooling channels: none.
 .PP
 Lighting channels: \fIled\fR.
 .TS
