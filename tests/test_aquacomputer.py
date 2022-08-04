@@ -32,7 +32,6 @@ class _MockD5NextDevice(MockHidapiDevice):
         super().__init__(vendor_id=0x0C70, product_id=0xF00E)
 
         self.preload_read(Report(1, D5NEXT_SAMPLE_STATUS_REPORT))
-        self.preload_read(Report(1, D5NEXT_SAMPLE_STATUS_REPORT))
 
     def read(self, length):
         pre = super().read(length)
