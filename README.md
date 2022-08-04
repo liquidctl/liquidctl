@@ -408,7 +408,7 @@ python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 ```
 For KrakenZ devices only
 ```
-python -m pip install --upgrade "winusbcdc; sys_platform == 'win32' or sys_platform == 'cygwin'"
+python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:
