@@ -1,6 +1,8 @@
 # uses the psf/black style
 
 import pytest
+import os
+
 from _testutils import MockHidapiDevice, MockPyusbDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
@@ -72,8 +74,16 @@ class MockKraken(MockHidapiDevice):
                 reply[15 + 2 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_LOGO.value
         elif data[0:2] == [0x30, 0x01]:
             reply[0:2] = [0x31, 0x01]
-            reply[0x18] = 50
-            reply[0x1A] = 3
+            reply[0x18] = 50  # lcd brightness
+            reply[0x1A] = 3  # lcd orientation -90degrees
+        elif data[0:2] == [0x32, 0x1]:  # setup bucket
+            reply[14] = 0x1
+        elif data[0:2] == [0x32, 0x2]:  # delete bucker
+            reply[0:2] = [0x33, 0x02]
+            reply[14] = 0x1
+        elif data[0:3] == [0x38, 0x1, 0x2]:  # lcd liquid mode
+            reply[14] = 0x1
+
         self.preload_read(Report(0, reply))
         return super().write(data)
 
@@ -83,6 +93,7 @@ class MockKrakenZ3(KrakenZ3):
         KrakenX3.__init__(self, device, description, speed_channels, color_channels, **kwargs)
 
         self.bulk_device = MockPyusbDevice(0x1E71, 0x3008)
+        self.bulk_device.close_winusb_device = self.bulk_device.release
 
         self.orientation = 0
         self.brightness = 50
@@ -157,3 +168,11 @@ def test_krakenz3_not_totally_broken(mock_krakenz3):
     mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
     mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
     mock_krakenz3.set_screen("lcd", "liquid", None)
+    mock_krakenz3.set_screen("lcd", "brightness", "60")
+    mock_krakenz3.set_screen("lcd", "orientation", "90")
+    mock_krakenz3.set_screen(
+        "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "test.jpg")
+    )
+    mock_krakenz3.set_screen(
+        "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "test.gif")
+    )
