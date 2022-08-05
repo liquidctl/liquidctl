@@ -111,7 +111,7 @@ def _quoted(*names):
 class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1b1c, 0x0c18, None, 'Corsair Hydro H100i Platinum',
             {'fan_count': 2, 'fan_leds': 4}),
         (0x1b1c, 0x0c19, None, 'Corsair Hydro H100i Platinum SE',
@@ -137,7 +137,7 @@ class HydroPlatinum(UsbHidDriver):
         # presence of "Hydro", for backward compatibility with 1.5.0 and
         # previous versions
 
-        for vid, pid, _, desc, devargs in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, desc, devargs in cls._MATCHES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
             if (product and product != pid) or handle.product_id != pid:

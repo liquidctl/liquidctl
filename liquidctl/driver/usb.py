@@ -81,23 +81,23 @@ _LOGGER = logging.getLogger(__name__)
 class BaseUsbDriver(BaseDriver):
     """Base driver class for generic USB devices.
 
-    Each driver should provide its own list of SUPPORTED_DEVICES, as well as
+    Each driver should provide its own list of _MATCHES, as well as
     implementations for all methods applicable to the devices is supports.
 
-    SUPPORTED_DEVICES should consist of a list of (vendor id, product
+    _MATCHES should consist of a list of (vendor id, product
     id, None (reserved), description, and extra kwargs) tuples.
 
     find_supported_devices will pass these extra kwargs, as well as any it
     receives, to the constructor.
     """
 
-    SUPPORTED_DEVICES = []
+    _MATCHES = []
 
     @classmethod
     def probe(cls, handle, vendor=None, product=None, release=None,
               serial=None, match=None, **kwargs):
         """Probe `handle` and yield corresponding driver instances."""
-        for vid, pid, _, desc, devargs in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, desc, devargs in cls._MATCHES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
             if (product and product != pid) or handle.product_id != pid:
@@ -182,7 +182,7 @@ class UsbHidDriver(BaseUsbDriver):
     def find_supported_devices(cls, **kwargs):
         """Find devices specifically compatible with this driver."""
         devs = []
-        for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, _, _ in cls._MATCHES:
             for dev in HidapiBus().find_devices(vendor=vid, product=pid, **kwargs):
                 if type(dev) == cls:
                     devs.append(dev)
@@ -216,7 +216,7 @@ class UsbDriver(BaseUsbDriver):
     def find_supported_devices(cls, **kwargs):
         """Find devices specifically compatible with this driver."""
         devs = []
-        for vid, pid, _, _, _ in cls.SUPPORTED_DEVICES:
+        for vid, pid, _, _, _ in cls._MATCHES:
             for dev in PyUsbBus().find_devices(vendor=vid, product=pid, **kwargs):
                 if type(dev) == cls:
                     devs.append(dev)

@@ -50,7 +50,7 @@ _DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1b1c, 0x0c1c, None, 'Corsair Commander Core (experimental)', {"has_pump": True}),
         (0x1b1c, 0x0c2a, None, 'Corsair Commander Core XT (experimental)', {"has_pump": False})
     ]

@@ -82,7 +82,7 @@ def _quoted(*names):
 class HydroPro(_Base690Lc):
     """liquidctl driver for Corsair-branded sixth generation Asetek coolers."""
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1b1c, 0x0c12, None, 'Corsair Hydro H150i Pro', {'fan_count': 3}),
         (0x1b1c, 0x0c13, None, 'Corsair Hydro H115i Pro', {'fan_count': 2}),
         (0x1b1c, 0x0c15, None, 'Corsair Hydro H100i Pro', {'fan_count': 2})

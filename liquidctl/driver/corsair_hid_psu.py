@@ -67,7 +67,7 @@ class CorsairHidPsu(UsbHidDriver):
 
     # support for hwmon: corsair-psu, Linux 5.11 (5.13 recommended)
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1b1c, 0x1c05, None, 'Corsair HX750i', {
             'fpowin115': (0.00013153276902318052, 1.0118732314945875, 9.783796618886313),
             'fpowin230': ( 9.268856467314546e-05, 1.0183515407387007, 8.279822175342481),

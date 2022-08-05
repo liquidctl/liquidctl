@@ -119,7 +119,7 @@ class CommanderPro(UsbHidDriver):
 
     # support for hwmon: corsair-cpro, Linux 5.9
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1b1c, 0x0c10, None, 'Corsair Commander Pro',
             {'fan_count': 6, 'temp_probs': 4, 'led_channels': 2}),
         (0x1b1c, 0x0c0b, None, 'Corsair Lighting Node Pro',

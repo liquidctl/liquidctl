@@ -77,7 +77,7 @@ No matter what, just don't forget to explicitly wrap `CommandId` it at 255, you'
 
 ## Advanced driver binding
 
-liquidctl driver don't normally need to check anything super special to know whether or not they are compatible with a particular device.  As long as `SUPPORTED_DEVICES` lists the compatible USB vendor and product IDs, besides any additional parameters required by `__init__`, the bus-specific base driver will do the rest.
+liquidctl driver don't normally need to check anything super special to know whether or not they are compatible with a particular device.  As long as `_MATCHES` lists the compatible USB vendor and product IDs, besides any additional parameters required by `__init__`, the bus-specific base driver will do the rest.
 
 This wont be the case with the H80i: it shares a common vendor and product ID with other devices, and is only differentiated by a "device ID", that has to be explicitly read.  Reading of this device ID is implemented in OCL by [`corsairlink_coolit_device_id`](https://github.com/audiohacked/OpenCorsairLink/blob/61d336a61b85705a5e128762430dc136460b110e/protocol/coolit/core.c#L32).
 

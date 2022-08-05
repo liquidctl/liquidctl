@@ -205,7 +205,7 @@ class SmartDevice(_BaseSmartDevice):
     # support for hwmon: nzxt-grid3, liquidtux
     # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-grid3.c
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1e71, 0x1714, None, 'NZXT Smart Device (V1)', {
             'speed_channel_count': 3,
             'color_channel_count': 1
@@ -391,7 +391,7 @@ class SmartDevice2(_BaseSmartDevice):
 
     # support for hwmon: nzxt-smart2, Linux 5.17
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {
             'speed_channel_count': 3,
             'color_channel_count': 2
@@ -651,7 +651,7 @@ class SmartDevice2(_BaseSmartDevice):
 
 
 class H1V2(SmartDevice2):
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1e71, 0x2015, None, 'NZXT H1 V2 (experimental)', {
             'speed_channel_count': 2,
             'color_channel_count': 0

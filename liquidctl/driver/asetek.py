@@ -297,7 +297,7 @@ class _ModernBase690Lc(_Base690Lc):
 class Modern690Lc(_ModernBase690Lc):
     """Modern fifth generation Asetek 690LC cooler."""
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
     ]
 
@@ -331,7 +331,7 @@ class Modern690Lc(_ModernBase690Lc):
 class Legacy690Lc(_Base690Lc):
     """Legacy fifth generation Asetek 690LC cooler."""
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X)', {}),
     ]
 
@@ -433,7 +433,7 @@ class Legacy690Lc(_Base690Lc):
 class Hydro690Lc(_ModernBase690Lc):
     """Corsair-branded fifth generation Asetek 690LC cooler."""
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),
         (0x1b1c, 0x0c03, None, 'Corsair Hydro H100i GTX (experimental)', {}),
         (0x1b1c, 0x0c07, None, 'Corsair Hydro H110i GTX (experimental)', {}),

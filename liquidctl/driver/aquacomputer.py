@@ -61,7 +61,7 @@ class Aquacomputer(UsbHidDriver):
         }
     }
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (
             0x0C70,
             0xF00E,

@@ -141,7 +141,7 @@ class AuraLed(UsbHidDriver):
     to experiment with this driver and provide feedback
     """
 
-    SUPPORTED_DEVICES = [
+    _MATCHES = [
         (0x0B05, 0x19AF, None, "ASUS Aura LED Controller (experimental)", {}),
         (0x0B05, 0x1939, None, "ASUS Aura LED Controller (experimental)", {}),
         (0x0B05, 0x18F3, None, "ASUS Aura LED Controller (experimental)", {}),
