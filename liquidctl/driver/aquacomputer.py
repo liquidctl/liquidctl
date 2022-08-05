@@ -65,7 +65,6 @@ class Aquacomputer(UsbHidDriver):
         (
             0x0C70,
             0xF00E,
-            None,
             "Aquacomputer D5 Next",
             {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]},
         ),

@@ -82,7 +82,7 @@ class MockPsu(MockHidapiDevice):
 
 @pytest.fixture
 def mock_psu():
-    pid, vid, _, desc, kwargs = CorsairHidPsu._MATCHES[0]
+    pid, vid, desc, kwargs = CorsairHidPsu._MATCHES[0]
     device = MockPsu(vendor_id=vid, product_id=pid, address='addr')
     return CorsairHidPsu(device, f'Mock {desc}', **kwargs)
 

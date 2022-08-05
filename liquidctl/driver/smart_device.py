@@ -206,11 +206,11 @@ class SmartDevice(_BaseSmartDevice):
     # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-grid3.c
 
     _MATCHES = [
-        (0x1e71, 0x1714, None, 'NZXT Smart Device (V1)', {
+        (0x1e71, 0x1714, 'NZXT Smart Device (V1)', {
             'speed_channel_count': 3,
             'color_channel_count': 1
         }),
-        (0x1e71, 0x1711, None, 'NZXT Grid+ V3', {
+        (0x1e71, 0x1711, 'NZXT Grid+ V3', {
             'speed_channel_count': 6,
             'color_channel_count': 0
         }),
@@ -392,35 +392,35 @@ class SmartDevice2(_BaseSmartDevice):
     # support for hwmon: nzxt-smart2, Linux 5.17
 
     _MATCHES = [
-        (0x1e71, 0x2006, None, 'NZXT Smart Device V2', {
+        (0x1e71, 0x2006, 'NZXT Smart Device V2', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x200d, None, 'NZXT Smart Device V2', {
+        (0x1e71, 0x200d, 'NZXT Smart Device V2', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x200f, None, 'NZXT Smart Device V2', {
+        (0x1e71, 0x200f, 'NZXT Smart Device V2', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x2001, None, 'NZXT HUE 2', {
+        (0x1e71, 0x2001, 'NZXT HUE 2', {
             'speed_channel_count': 0,
             'color_channel_count': 4
         }),
-        (0x1e71, 0x2002, None, 'NZXT HUE 2 Ambient', {
+        (0x1e71, 0x2002, 'NZXT HUE 2 Ambient', {
             'speed_channel_count': 0,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x2009, None, 'NZXT RGB & Fan Controller', {
+        (0x1e71, 0x2009, 'NZXT RGB & Fan Controller', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x200e, None, 'NZXT RGB & Fan Controller', {
+        (0x1e71, 0x200e, 'NZXT RGB & Fan Controller', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x2010, None, 'NZXT RGB & Fan Controller', {
+        (0x1e71, 0x2010, 'NZXT RGB & Fan Controller', {
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
@@ -652,7 +652,7 @@ class SmartDevice2(_BaseSmartDevice):
 
 class H1V2(SmartDevice2):
     _MATCHES = [
-        (0x1e71, 0x2015, None, 'NZXT H1 V2 (experimental)', {
+        (0x1e71, 0x2015, 'NZXT H1 V2 (experimental)', {
             'speed_channel_count': 2,
             'color_channel_count': 0
         }),

@@ -100,8 +100,8 @@ class RgbFusion2(UsbHidDriver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers."""
 
     _MATCHES = [
-        (0x048d, 0x5702, None, 'Gigabyte RGB Fusion 2.0 5702 Controller', {}),
-        (0x048d, 0x8297, None, 'Gigabyte RGB Fusion 2.0 8297 Controller', {}),
+        (0x048d, 0x5702, 'Gigabyte RGB Fusion 2.0 5702 Controller', {}),
+        (0x048d, 0x8297, 'Gigabyte RGB Fusion 2.0 8297 Controller', {}),
     ]
 
     @classmethod

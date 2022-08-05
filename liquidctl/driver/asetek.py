@@ -298,7 +298,7 @@ class Modern690Lc(_ModernBase690Lc):
     """Modern fifth generation Asetek 690LC cooler."""
 
     _MATCHES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (assuming EVGA CLC)', {}),
+        (0x2433, 0xb200, 'Asetek 690LC (assuming EVGA CLC)', {}),
     ]
 
     def downgrade_to_legacy(self):
@@ -332,7 +332,7 @@ class Legacy690Lc(_Base690Lc):
     """Legacy fifth generation Asetek 690LC cooler."""
 
     _MATCHES = [
-        (0x2433, 0xb200, None, 'Asetek 690LC (assuming NZXT Kraken X)', {}),
+        (0x2433, 0xb200, 'Asetek 690LC (assuming NZXT Kraken X)', {}),
     ]
 
     _LEGACY_690LC = True
@@ -434,12 +434,12 @@ class Hydro690Lc(_ModernBase690Lc):
     """Corsair-branded fifth generation Asetek 690LC cooler."""
 
     _MATCHES = [
-        (0x1b1c, 0x0c02, None, 'Corsair Hydro H80i GT (experimental)', {}),
-        (0x1b1c, 0x0c03, None, 'Corsair Hydro H100i GTX (experimental)', {}),
-        (0x1b1c, 0x0c07, None, 'Corsair Hydro H110i GTX (experimental)', {}),
-        (0x1b1c, 0x0c08, None, 'Corsair Hydro H80i v2', {}),
-        (0x1b1c, 0x0c09, None, 'Corsair Hydro H100i v2', {}),
-        (0x1b1c, 0x0c0a, None, 'Corsair Hydro H115i', {}),
+        (0x1b1c, 0x0c02, 'Corsair Hydro H80i GT (experimental)', {}),
+        (0x1b1c, 0x0c03, 'Corsair Hydro H100i GTX (experimental)', {}),
+        (0x1b1c, 0x0c07, 'Corsair Hydro H110i GTX (experimental)', {}),
+        (0x1b1c, 0x0c08, 'Corsair Hydro H80i v2', {}),
+        (0x1b1c, 0x0c09, 'Corsair Hydro H100i v2', {}),
+        (0x1b1c, 0x0c0a, 'Corsair Hydro H115i', {}),
     ]
 
     def set_color(self, channel, mode, colors, **kwargs):

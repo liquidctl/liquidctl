@@ -99,10 +99,10 @@ class Kraken2(UsbHidDriver):
     DEVICE_KRAKENX = 'Kraken X'
     DEVICE_KRAKENM = 'Kraken M'
     _MATCHES = [
-        (0x1e71, 0x170e, None, 'NZXT Kraken X (X42, X52, X62 or X72)', {
+        (0x1e71, 0x170e, 'NZXT Kraken X (X42, X52, X62 or X72)', {
             'device_type': DEVICE_KRAKENX
         }),
-        (0x1e71, 0x1715, None, 'NZXT Kraken M22', {
+        (0x1e71, 0x1715, 'NZXT Kraken M22', {
             'device_type': DEVICE_KRAKENM
         }),
     ]

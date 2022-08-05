@@ -51,8 +51,8 @@ class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
 
     _MATCHES = [
-        (0x1b1c, 0x0c1c, None, 'Corsair Commander Core (experimental)', {"has_pump": True}),
-        (0x1b1c, 0x0c2a, None, 'Corsair Commander Core XT (experimental)', {"has_pump": False})
+        (0x1b1c, 0x0c1c, 'Corsair Commander Core (experimental)', {"has_pump": True}),
+        (0x1b1c, 0x0c2a, 'Corsair Commander Core XT (experimental)', {"has_pump": False})
     ]
 
     def __init__(self, device, description, has_pump, **kwargs):

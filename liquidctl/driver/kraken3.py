@@ -156,7 +156,7 @@ class KrakenX3(UsbHidDriver):
     # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-kraken3.c
 
     _MATCHES = [
-        (0x1e71, 0x2007, None, 'NZXT Kraken X (X53, X63 or X73)', {
+        (0x1e71, 0x2007, 'NZXT Kraken X (X53, X63 or X73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENX,
             'color_channels': _COLOR_CHANNELS_KRAKENX,
         })
@@ -397,7 +397,7 @@ class KrakenZ3(KrakenX3):
     """Fourth-generation Kraken Z liquid cooler."""
 
     _MATCHES = [
-        (0x1e71, 0x3008, None, 'NZXT Kraken Z (Z53, Z63 or Z73)', {
+        (0x1e71, 0x3008, 'NZXT Kraken Z (Z53, Z63 or Z73)', {
             'speed_channels': _SPEED_CHANNELS_KRAKENZ,
             'color_channels': _COLOR_CHANNELS_KRAKENZ,
         })

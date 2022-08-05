@@ -111,7 +111,7 @@ if __name__ == '__main__':
     usb_devs = {}
 
     for driver in find_all_subclasses(BaseUsbDriver):
-        for vid, pid, _, description, _ in driver._MATCHES:
+        for vid, pid, description, _ in driver._MATCHES:
             ids = (vid, pid)
             if ids in usb_devs:
                 usb_devs[ids].append(description)
