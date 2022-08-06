@@ -1,6 +1,8 @@
 # ASUS Aura LED (USB-based) controllers
 _Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led.py)._
 
+_New in 1.10.0._  
+
 __NOTE:__
 This driver is marked `experimental` because of the need for additional testing and feedback by the community. The API is unstable and may be changed in the future.
 
@@ -26,7 +28,7 @@ ASUS Aura LED controller does not need to be initialized before use. Initializat
 
 ```
 # liquidctl -m Aura initialize
-AsusTek Aura LED Controller
+ASUS Aura LED Controller
 └── Firmware version    AULA3-AR32-0207
 ```
 
@@ -37,7 +39,7 @@ The `status` function returns the number of ARGB and RGB channels detected by th
 On ASUS ProArt Z690-Creator WiFi the following is returned:
 ```
 % liquidctl -m Aura status
-AsusTek Aura LED Controller (experimental)
+ASUS Aura LED Controller (experimental)
 ├── ARGB channels: 2      
 └──  RGB channels: 1  
 ```
@@ -46,7 +48,7 @@ To display the set of 6-byte status values, use `--debug` on the command line. T
 
 ```
 % liquidctl --debug -m Aura status
-AsusTek Aura LED Controller (experimental)
+ASUS Aura LED Controller (experimental)
 ├── ARGB channels: 2                                         
 ├──  RGB channels: 1                                         
 ├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
@@ -64,7 +66,7 @@ AsusTek Aura LED Controller (experimental)
 On ASUS ROG Strix Z690-i Gaming WiFi (mini-ITX) the following is returned:
 ```
 % liquidctl --debug -m Aura status
-AsusTek Aura LED Controller (experimental)
+ASUS Aura LED Controller (experimental)
 ├── ARGB channels: 2                                         
 ├──  RGB channels: 1  
 ├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
@@ -82,7 +84,7 @@ AsusTek Aura LED Controller (experimental)
 On some ASUS Z490 boards (controller ID 0x18F3) the following is returned:
 ```
 % liquidctl --debug -m Aura status
-AsusTek Aura LED Controller (experimental)
+ASUS Aura LED Controller (experimental)
 ├── ARGB channels: 1                                         
 ├──  RGB channels: 1  
 ├── Device Config: 1     0x1e, 0x9f, 0x01, 0x01, 0x00, 0x00 

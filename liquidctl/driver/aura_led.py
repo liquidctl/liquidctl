@@ -2,7 +2,7 @@
 
 Supported controllers:
 
-- AsusTek Aura LED Controller: idVendor=0x0b05, idProduct=0x19af
+- ASUS Aura LED Controller: idVendor=0x0b05, idProduct=0x19af
 
 This controller is found on ASUS ProArt Z690-Creator WiFi and other boards
 
@@ -141,10 +141,10 @@ class AuraLed(UsbHidDriver):
     to experiment with this driver and provide feedback
     """
 
-    SUPPORTED_DEVICES = [
-        (0x0B05, 0x19AF, None, "AsusTek Aura LED Controller (experimental)", {}),
-        (0x0B05, 0x1939, None, "AsusTek Aura LED Controller (experimental)", {}),
-        (0x0B05, 0x18F3, None, "AsusTek Aura LED Controller (experimental)", {}),
+    _MATCHES = [
+        (0x0B05, 0x19AF, "ASUS Aura LED Controller (experimental)", {}),
+        (0x0B05, 0x1939, "ASUS Aura LED Controller (experimental)", {}),
+        (0x0B05, 0x18F3, "ASUS Aura LED Controller (experimental)", {}),
     ]
 
     def initialize(self, **kwargs):

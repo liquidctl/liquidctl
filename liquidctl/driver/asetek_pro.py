@@ -82,10 +82,10 @@ def _quoted(*names):
 class HydroPro(_Base690Lc):
     """liquidctl driver for Corsair-branded sixth generation Asetek coolers."""
 
-    SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c12, None, 'Corsair Hydro H150i Pro', {'fan_count': 3}),
-        (0x1b1c, 0x0c13, None, 'Corsair Hydro H115i Pro', {'fan_count': 2}),
-        (0x1b1c, 0x0c15, None, 'Corsair Hydro H100i Pro', {'fan_count': 2})
+    _MATCHES = [
+        (0x1b1c, 0x0c12, 'Corsair Hydro H150i Pro', {'fan_count': 3}),
+        (0x1b1c, 0x0c13, 'Corsair Hydro H115i Pro', {'fan_count': 2}),
+        (0x1b1c, 0x0c15, 'Corsair Hydro H100i Pro', {'fan_count': 2})
     ]
 
     def __init__(self, device, description, fan_count, **kwargs):
@@ -183,7 +183,7 @@ class HydroPro(_Base690Lc):
             # possible to combine it with other modes, but exploring that would
             # require some experimentation
             temps = (30, 40, 50)
-            self._post([0x5f, temps[0], 0x00, temps[1], 0x00, temps[1], 0x00]
+            self._post([0x5f, temps[0], 0x00, temps[1], 0x00, temps[2], 0x00]
                        + colors[0] + colors[1] + colors[2], read_length=6)
             self._post([0x5e, 0x01], read_length=3)
             self.device.release()

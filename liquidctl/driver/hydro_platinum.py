@@ -112,20 +112,20 @@ def _quoted(*names):
 class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
-    SUPPORTED_DEVICES = [
-        (0x1b1c, 0x0c18, None, 'Corsair Hydro H100i Platinum',
+    _MATCHES = [
+        (0x1b1c, 0x0c18, 'Corsair Hydro H100i Platinum',
             {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c19, None, 'Corsair Hydro H100i Platinum SE',
+        (0x1b1c, 0x0c19, 'Corsair Hydro H100i Platinum SE',
             {'fan_count': 2, 'fan_leds': 16}),
-        (0x1b1c, 0x0c17, None, 'Corsair Hydro H115i Platinum',
+        (0x1b1c, 0x0c17, 'Corsair Hydro H115i Platinum',
             {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c29, None, 'Corsair Hydro H60i Pro XT',
+        (0x1b1c, 0x0c29, 'Corsair Hydro H60i Pro XT',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c20, None, 'Corsair Hydro H100i Pro XT',
+        (0x1b1c, 0x0c20, 'Corsair Hydro H100i Pro XT',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c21, None, 'Corsair Hydro H115i Pro XT',
+        (0x1b1c, 0x0c21, 'Corsair Hydro H115i Pro XT',
             {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c22, None, 'Corsair Hydro H150i Pro XT',
+        (0x1b1c, 0x0c22, 'Corsair Hydro H150i Pro XT',
             {'fan_count': 3, 'fan_leds': 0}),
     ]
 
@@ -138,7 +138,7 @@ class HydroPlatinum(UsbHidDriver):
         # presence of "Hydro", for backward compatibility with 1.5.0 and
         # previous versions
 
-        for vid, pid, _, desc, devargs in cls.SUPPORTED_DEVICES:
+        for vid, pid, desc, devargs in cls._MATCHES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
             if (product and product != pid) or handle.product_id != pid:

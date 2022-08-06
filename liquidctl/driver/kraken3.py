@@ -193,17 +193,11 @@ class KrakenX3(UsbHidDriver):
     # support for hwmon: nzxt-kraken3, liquidtux
     # https://github.com/liquidctl/liquidtux/blob/3b80dafead6f/nzxt-kraken3.c
 
-    SUPPORTED_DEVICES = [
-        (
-            0x1E71,
-            0x2007,
-            None,
-            "NZXT Kraken X (X53, X63 or X73)",
-            {
-                "speed_channels": _SPEED_CHANNELS_KRAKENX,
-                "color_channels": _COLOR_CHANNELS_KRAKENX,
-            },
-        )
+    _MATCHES = [
+        (0x1e71, 0x2007, 'NZXT Kraken X (X53, X63 or X73)', {
+            'speed_channels': _SPEED_CHANNELS_KRAKENX,
+            'color_channels': _COLOR_CHANNELS_KRAKENX,
+        })
     ]
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
@@ -459,17 +453,11 @@ class KrakenX3(UsbHidDriver):
 class KrakenZ3(KrakenX3):
     """Fourth-generation Kraken Z liquid cooler."""
 
-    SUPPORTED_DEVICES = [
-        (
-            0x1E71,
-            0x3008,
-            None,
-            "NZXT Kraken Z (Z53, Z63 or Z73)",
-            {
-                "speed_channels": _SPEED_CHANNELS_KRAKENZ,
-                "color_channels": _COLOR_CHANNELS_KRAKENZ,
-            },
-        )
+    _MATCHES = [
+        (0x1e71, 0x3008, 'NZXT Kraken Z (Z53, Z63 or Z73)', {
+            'speed_channels': _SPEED_CHANNELS_KRAKENZ,
+            'color_channels': _COLOR_CHANNELS_KRAKENZ,
+        })
     ]
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):

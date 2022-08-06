@@ -31,10 +31,10 @@ _RAILS = ['+12V peripherals', '+12V EPS/ATX12V', '+12V motherboard/PCI-e', '+5V 
 class NzxtEPsu(UsbHidDriver):
     """NZXT E-series power supply unit."""
 
-    SUPPORTED_DEVICES = [
-        (0x7793, 0x5911, None, 'NZXT E500', {}),
-        (0x7793, 0x5912, None, 'NZXT E650', {}),
-        (0x7793, 0x2500, None, 'NZXT E850', {}),
+    _MATCHES = [
+        (0x7793, 0x5911, 'NZXT E500', {}),
+        (0x7793, 0x5912, 'NZXT E650', {}),
+        (0x7793, 0x2500, 'NZXT E850', {}),
     ]
 
     def initialize(self, **kwargs):

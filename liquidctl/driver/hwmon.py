@@ -63,6 +63,7 @@ class HwmonDevice:
             _LOGGER.debug("cannot pick hwmon device for %s: more than one alternative", path)
             return None
 
-        module = (sys_device / "driver" / "module").readlink().name
+        # use resolve() to be compatible with Python <3.9
+        module = (sys_device / "driver" / "module").resolve().name
 
         return HwmonDevice(module, path)
