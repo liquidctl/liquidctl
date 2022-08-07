@@ -478,7 +478,8 @@ class KrakenZ3(KrakenX3):
             found_device = self._find_winusb_device(
                 "vid_1e71", "pid_3008", self.device.serial_number
             )
-            assert found_device, "Cannot find bulk out device"
+            if not found_device:
+                self.bulk_device = None
         else:
             self.bulk_device = next(
                 (
@@ -488,10 +489,8 @@ class KrakenZ3(KrakenX3):
                 ),
                 None,
             )
-
-            assert self.bulk_device, "Cannot find bulk out device"
-
-            self.bulk_device.open()
+            if self.bulk_device:
+                self.bulk_device.open()
 
         self.orientation = 0  # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.brightness = 50  # default 50%
@@ -814,6 +813,9 @@ class KrakenZ3(KrakenX3):
         data is an array of bytes to write
         bulk info contains info about the transfer
         """
+
+        assert self.bulk_device, "Cannot find bulk out device"
+
         self._write_then_read([0x36, 0x03])  # unknown
 
         buckets = self._query_buckets()  # query all buckets and store their response
