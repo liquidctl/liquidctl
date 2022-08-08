@@ -10,6 +10,13 @@ two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
 pump additionally exposes +5V and +12V voltage rail readings.
 
+Aquacomputer Farbwerk 360
+-------------------------
+Farbwerk 360 is an RGB controller and sends a status HID report every second
+with no initialization being required.
+
+The status HID report exposes four temperature sensor values.
+
 Driver
 ------
 Linux has the aquacomputer_d5next driver available since v5.15. Subsequent
@@ -41,9 +48,13 @@ _AQC_STATUS_READ_ENDPOINT = 0x01
 
 
 class Aquacomputer(UsbHidDriver):
-    # Support for hwmon: aquacomputer_d5next, sensors - 5.15+
+    """Support for hwmon: aquacomputer_d5next driver
+    - D5 Next watercooling pymp: sensors - 5.15+
+    - Farbwerk 360: sensors - 5.18+
+    """
 
     _DEVICE_D5NEXT = "D5 Next"
+    _DEVICE_FARBWERK360 = "Farbwerk 360"
 
     _DEVICE_INFO = {
         _DEVICE_D5NEXT: {
@@ -58,7 +69,13 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
             "fan_current_label": ["Pump current", "Fan current"],
             "status_report_length": 0x9E,
-        }
+        },
+        _DEVICE_FARBWERK360: {
+            "type": _DEVICE_FARBWERK360,
+            "temp_sensors": [0x32, 0x34, 0x36, 0x38],
+            "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
+            "status_report_length": 0xB6,
+        },
     }
 
     _MATCHES = [
@@ -67,6 +84,12 @@ class Aquacomputer(UsbHidDriver):
             0xF00E,
             "Aquacomputer D5 Next",
             {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]},
+        ),
+        (
+            0x0C70,
+            0xF010,
+            "Aquacomputer Farbwerk 360",
+            {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK360]},
         ),
     ]
 
