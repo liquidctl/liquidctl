@@ -15,6 +15,7 @@ Device guides
 
 - [ASUS Aura LED (USB-based) controllers](asus-aura-led-guide.md)
 - [Aquacomputer D5 Next watercooling pump](aquacomputer-d5next-guide.md)
+- [Aquacomputer Farbwerk 360 RGB controller](aquacomputer-farbwerk360-guide.md)
 - [Asetek 690LC liquid coolers](asetek-690lc-guide.md)
 - [Asetek Pro liquid coolers](asetek-pro-guide.md)
 - [Corsair Commander Core and Core XT](corsair-commander-core-guide.md)
