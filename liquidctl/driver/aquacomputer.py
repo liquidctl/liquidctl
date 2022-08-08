@@ -125,7 +125,7 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        for idx, temp_sensor_offset in enumerate(self._device_info["temp_sensors"]):
+        for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
             temp_sensor_value = u16be_from(msg, temp_sensor_offset)
 
             if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
@@ -137,7 +137,7 @@ class Aquacomputer(UsbHidDriver):
                 sensor_readings.append(temp_sensor_reading)
 
         # Read fan speed and related values
-        for idx, fan_sensor_offset in enumerate(self._device_info["fan_sensors"]):
+        for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
                 u16be_from(msg, fan_sensor_offset + _AQC_FAN_SPEED_OFFSET),
@@ -190,7 +190,7 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        for idx, temp_sensor_offset in enumerate(self._device_info["temp_sensors"]):
+        for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
             temp_sensor_reading = (
                 self._device_info["temp_sensors_label"][idx],
                 self._hwmon.get_int(f"temp{idx + 1}_input") * 1e-3,
@@ -199,7 +199,7 @@ class Aquacomputer(UsbHidDriver):
             sensor_readings.append(temp_sensor_reading)
 
         # Read fan speed and related values
-        for idx, fan_sensor_offset in enumerate(self._device_info["fan_sensors"]):
+        for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
                 self._hwmon.get_int(f"fan{idx + 1}_input"),
