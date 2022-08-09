@@ -53,9 +53,6 @@ _AQC_STATUS_READ_ENDPOINT = 0x01
 
 
 class Aquacomputer(UsbHidDriver):
-    """
-    """
-
     _DEVICE_D5NEXT = "D5 Next"
     _DEVICE_FARBWERK360 = "Farbwerk 360"
 
