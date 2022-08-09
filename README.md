@@ -123,7 +123,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
-| Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | USB HID | <sup>_ehn_</sup> |
+| Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Commander Core XT](docs/corsair-commander-core-guide.md) | USB HID | <sup>_enp_</sup> |
@@ -135,7 +135,7 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_e_</sup> |
-| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | USB HID | <sup>_ehn_</sup> |
+| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
