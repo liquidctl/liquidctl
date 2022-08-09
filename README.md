@@ -125,6 +125,7 @@ subjective "from more to less liquid control-ly" order.
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | USB HID | <sup>_ehnp_</sup> |
+| Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> |
 | Fan/LED controller | [Corsair Commander Core XT](docs/corsair-commander-core-guide.md) | USB HID | <sup>_enp_</sup> |
