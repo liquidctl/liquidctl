@@ -8,6 +8,7 @@ _New in 1.11.0._
 Initialization is _currently_ not required, but is recommended. It outputs the firmware version:
 
 ```
+# liquidctl initialize
 Aquacomputer D5 Next
 ├── Firmware version           1023
 └── Serial number       03500-24905

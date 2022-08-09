@@ -8,6 +8,7 @@ _New in 1.11.0._
 Initialization is _currently_ not required, but is recommended. It outputs the firmware version:
 
 ```
+# liquidctl initialize
 Aquacomputer Farbwerk 360
 ├── Firmware version           1022
 └── Serial number       16827-56978
