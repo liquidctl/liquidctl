@@ -10,11 +10,23 @@ two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
 pump additionally exposes +5V and +12V voltage rail readings.
 
+Aquacomputer Farbwerk 360
+-------------------------
+Farbwerk 360 is an RGB controller and sends a status HID report every second
+with no initialization being required.
+
+The status HID report exposes four temperature sensor values.
+
 Driver
 ------
 Linux has the aquacomputer_d5next driver available since v5.15. Subsequent
-releases have more functionality and support a wider range of devices. If
-present, it's used instead of reading the status reports directly.
+releases have more functionality and support a wider range of devices
+(detailed below). If present, it's used instead of reading the status
+reports directly.
+
+Hwmon support:
+    - D5 Next watercooling pump: sensors - 5.15+
+    - Farbwerk 360: sensors - 5.18+
 
 Copyright (C) 2022 - Aleksa Savic
 
@@ -26,7 +38,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.error import NotSupportedByDriver
+from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
 from liquidctl.util import u16be_from
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,9 +53,8 @@ _AQC_STATUS_READ_ENDPOINT = 0x01
 
 
 class Aquacomputer(UsbHidDriver):
-    # Support for hwmon: aquacomputer_d5next, sensors - 5.15+
-
     _DEVICE_D5NEXT = "D5 Next"
+    _DEVICE_FARBWERK360 = "Farbwerk 360"
 
     _DEVICE_INFO = {
         _DEVICE_D5NEXT: {
@@ -58,7 +69,13 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
             "fan_current_label": ["Pump current", "Fan current"],
             "status_report_length": 0x9E,
-        }
+        },
+        _DEVICE_FARBWERK360: {
+            "type": _DEVICE_FARBWERK360,
+            "temp_sensors": [0x32, 0x34, 0x36, 0x38],
+            "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
+            "status_report_length": 0xB6,
+        },
     }
 
     _MATCHES = [
@@ -67,6 +84,12 @@ class Aquacomputer(UsbHidDriver):
             0xF00E,
             "Aquacomputer D5 Next",
             {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]},
+        ),
+        (
+            0x0C70,
+            0xF010,
+            "Aquacomputer Farbwerk 360",
+            {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK360]},
         ),
     ]
 
@@ -102,7 +125,7 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        for idx, temp_sensor_offset in enumerate(self._device_info["temp_sensors"]):
+        for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
             temp_sensor_value = u16be_from(msg, temp_sensor_offset)
 
             if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
@@ -114,7 +137,7 @@ class Aquacomputer(UsbHidDriver):
                 sensor_readings.append(temp_sensor_reading)
 
         # Read fan speed and related values
-        for idx, fan_sensor_offset in enumerate(self._device_info["fan_sensors"]):
+        for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
                 u16be_from(msg, fan_sensor_offset + _AQC_FAN_SPEED_OFFSET),
@@ -167,7 +190,7 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        for idx, temp_sensor_offset in enumerate(self._device_info["temp_sensors"]):
+        for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
             temp_sensor_reading = (
                 self._device_info["temp_sensors_label"][idx],
                 self._hwmon.get_int(f"temp{idx + 1}_input") * 1e-3,
@@ -176,7 +199,7 @@ class Aquacomputer(UsbHidDriver):
             sensor_readings.append(temp_sensor_reading)
 
         # Read fan speed and related values
-        for idx, fan_sensor_offset in enumerate(self._device_info["fan_sensors"]):
+        for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
                 self._hwmon.get_int(f"fan{idx + 1}_input"),
@@ -240,12 +263,18 @@ class Aquacomputer(UsbHidDriver):
         return self._get_status_directly()
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        # Not yet reverse engineered / implemented
-        raise NotSupportedByDriver()
+        if self._device_info["type"] == self._DEVICE_D5NEXT:
+            # Not yet reverse engineered / implemented
+            raise NotSupportedByDriver()
+        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+            raise NotSupportedByDevice()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        # Not yet implemented
-        raise NotSupportedByDriver()
+        if self._device_info["type"] == self._DEVICE_D5NEXT:
+            # Not yet implemented
+            raise NotSupportedByDriver()
+        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+            raise NotSupportedByDevice()
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented

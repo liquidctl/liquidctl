@@ -49,3 +49,17 @@ Here is what it's currently known to contain:
 | Fan info substructure              | 0x67                     |
 | +5V voltage                        | 0x39                     |
 | +12V voltage                       | 0x37                     |
+
+## Farbwerk 360 RGB controller
+
+The Farbwerk 360 exposes four temperature sensors through its sensor report.
+
+### Sensor report
+
+An example sensor report of the Farbwerk 360 looks like this:
+
+```
+01 00 01 41 BB DE 92 03 E8 00 00 00 64 03 FE 00 00 00 11 00 00 00 09 D3 00 00 00 5E 00 08 A4 DD 00 00 00 24 BF E6 C0 34 A2 B4 FF D7 FF D5 FF D6 5A EC 0A 1F 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 FA 01 FB 00 07 00 00 00 03 00 00 00 0B 00 00 00 00 00 15 20 1A 00 00 00 00 00 00 00 00 27 10 27 10 27 10 27 10 27 10 03 E8 00 00 03 E8 00 00 03 E8 00 00 03 E8 00 00 00 00 00 00 00 00 00 00 00 06 00 06 00 05 00 06 01 17 00 06
+```
+
+Its ID is `0x01` and its length is `0xb6`. The four temp sensor values are located in succession at `0x32`, `0x34`, `0x36`, `0x38`.
