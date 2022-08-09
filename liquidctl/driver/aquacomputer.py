@@ -20,8 +20,13 @@ The status HID report exposes four temperature sensor values.
 Driver
 ------
 Linux has the aquacomputer_d5next driver available since v5.15. Subsequent
-releases have more functionality and support a wider range of devices. If
-present, it's used instead of reading the status reports directly.
+releases have more functionality and support a wider range of devices
+(detailed below). If present, it's used instead of reading the status
+reports directly.
+
+Hwmon support:
+    - D5 Next watercooling pump: sensors - 5.15+
+    - Farbwerk 360: sensors - 5.18+
 
 Copyright (C) 2022 - Aleksa Savic
 
@@ -48,9 +53,7 @@ _AQC_STATUS_READ_ENDPOINT = 0x01
 
 
 class Aquacomputer(UsbHidDriver):
-    """Support for hwmon: aquacomputer_d5next driver
-    - D5 Next watercooling pymp: sensors - 5.15+
-    - Farbwerk 360: sensors - 5.18+
+    """
     """
 
     _DEVICE_D5NEXT = "D5 Next"
