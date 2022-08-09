@@ -17,6 +17,14 @@ with no initialization being required.
 
 The status HID report exposes four temperature sensor values.
 
+Aquacomputer Octo
+-------------------------
+Octo is a fan controller and sends a status HID report every second with
+no initialization being required.
+
+The status HID report exposes four temperature sensor values and eight groups
+of fan sensors for optionally connected fans.
+
 Driver
 ------
 Linux has the aquacomputer_d5next driver available since v5.15. Subsequent
@@ -27,6 +35,7 @@ reports directly.
 Hwmon support:
     - D5 Next watercooling pump: sensors - 5.15+
     - Farbwerk 360: sensors - 5.18+
+    - Octo: sensors - 5.19+
 
 Copyright (C) 2022 - Aleksa Savic
 
@@ -55,6 +64,7 @@ _AQC_STATUS_READ_ENDPOINT = 0x01
 class Aquacomputer(UsbHidDriver):
     _DEVICE_D5NEXT = "D5 Next"
     _DEVICE_FARBWERK360 = "Farbwerk 360"
+    _DEVICE_OCTO = "Octo"
 
     _DEVICE_INFO = {
         _DEVICE_D5NEXT: {
@@ -76,6 +86,17 @@ class Aquacomputer(UsbHidDriver):
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "status_report_length": 0xB6,
         },
+        _DEVICE_OCTO: {
+            "type": _DEVICE_OCTO,
+            "fan_sensors": [0x7D, 0x8A, 0x97, 0xA4, 0xB1, 0xBE, 0xCB, 0xD8],
+            "temp_sensors": [0x3D, 0x3F, 0x41, 0x43],
+            "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
+            "fan_speed_label": [f"Fan {num} speed" for num in range(1, 8 + 1)],
+            "fan_power_label": [f"Fan {num} power" for num in range(1, 8 + 1)],
+            "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 8 + 1)],
+            "fan_current_label": [f"Fan {num} current" for num in range(1, 8 + 1)],
+            "status_report_length": 0x147,
+        },
     }
 
     _MATCHES = [
@@ -90,6 +111,12 @@ class Aquacomputer(UsbHidDriver):
             0xF010,
             "Aquacomputer Farbwerk 360",
             {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK360]},
+        ),
+        (
+            0x0C70,
+            0xF011,
+            "Aquacomputer Octo",
+            {"device_info": _DEVICE_INFO[_DEVICE_OCTO]},
         ),
     ]
 
@@ -263,14 +290,20 @@ class Aquacomputer(UsbHidDriver):
         return self._get_status_directly()
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        if self._device_info["type"] == self._DEVICE_D5NEXT:
+        if (
+            self._device_info["type"] == self._DEVICE_D5NEXT
+            or self._device_info["type"] == self._DEVICE_OCTO
+        ):
             # Not yet reverse engineered / implemented
             raise NotSupportedByDriver()
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        if self._device_info["type"] == self._DEVICE_D5NEXT:
+        if (
+            self._device_info["type"] == self._DEVICE_D5NEXT
+            or self._device_info["type"] == self._DEVICE_OCTO
+        ):
             # Not yet implemented
             raise NotSupportedByDriver()
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
