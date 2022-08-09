@@ -33,7 +33,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.error import NotSupportedByDriver
+from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
 from liquidctl.util import u16be_from
 
 _LOGGER = logging.getLogger(__name__)
@@ -263,12 +263,18 @@ class Aquacomputer(UsbHidDriver):
         return self._get_status_directly()
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        # Not yet reverse engineered / implemented
-        raise NotSupportedByDriver()
+        if self._device_info["type"] == self._DEVICE_D5NEXT:
+            # Not yet reverse engineered / implemented
+            raise NotSupportedByDriver()
+        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+            raise NotSupportedByDevice()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        # Not yet implemented
-        raise NotSupportedByDriver()
+        if self._device_info["type"] == self._DEVICE_D5NEXT:
+            # Not yet implemented
+            raise NotSupportedByDriver()
+        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+            raise NotSupportedByDevice()
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented
