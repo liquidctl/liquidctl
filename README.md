@@ -103,8 +103,9 @@ Newly supported devices are added with the `n` note.  If they are members of an
 already supported family, the family is temporarily split between old and new
 devices until the next release.
 
-The notes are sorted alphabetically, major (upper case) notes before minor
-(lower case) ones.
+Within a category, the notes are sorted alphabetically, major (upper case)
+notes before minor (lower case) ones.  Categories are sorted in a somewhat
+subjective "from more to less liquid control-ly" order.
 
 -->
 
@@ -135,12 +136,12 @@ The notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_e_</sup> |
-| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | SMBus | <sup>_Uax_</sup> |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | USB HID | <sup>_h_</sup> |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | USB HID | <sup>_p_</sup> |
+| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | I²C | <sup>_Ux_</sup> |
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_e_</sup> |
