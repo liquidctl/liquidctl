@@ -159,8 +159,8 @@ class CorsairHidPsu(UsbHidDriver):
         ret = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
-            ('Temperature 1', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
-            ('Temperature 2', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
+            ('Voltage regulator temperature', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
+            ('Case temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan control mode', self._get_fan_control_mode(), ''),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
             ('Input voltage', input_voltage, 'V'),
@@ -195,8 +195,8 @@ class CorsairHidPsu(UsbHidDriver):
         input_voltage = self._hwmon.get_int('in0_input') * 1e-3
 
         ret = [
-            ('Temperature 1', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
-            ('Temperature 2', self._hwmon.get_int('temp2_input') * 1e-3, '°C'),
+            ('Voltage regulator temperature', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            ('Case temperature', self._hwmon.get_int('temp2_input') * 1e-3, '°C'),
             ('Fan speed', self._hwmon.get_int('fan1_input'), 'rpm'),
             ('Input voltage', input_voltage, 'V'),
         ]

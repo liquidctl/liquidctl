@@ -128,8 +128,8 @@ def test_reads_status_directly(mock_psu, has_hwmon, direct_access):
     expected = [
         ('Current uptime', timedelta(seconds=5522), ''),
         ('Total uptime', timedelta(days=13, seconds=9122), ''),
-        ('Temperature 1', approx(33.5, rel=1e-3), '°C'),
-        ('Temperature 2', approx(26.5, rel=1e-3), '°C'),
+        ('Voltage regulator temperature', approx(33.5, rel=1e-3), '°C'),
+        ('Case temperature', approx(26.5, rel=1e-3), '°C'),
         ('Fan control mode', FanControlMode.SOFTWARE, ''),
         ('Fan speed', approx(968, rel=1e-3), 'rpm'),
         ('Input voltage', approx(230, rel=1e-3), 'V'),
@@ -173,8 +173,8 @@ def test_reads_status_from_hwmon(mock_psu, tmp_path):
     got = mock_psu.get_status()
 
     expected = [
-        ('Temperature 1', approx(33.5, rel=1e-3), '°C'),
-        ('Temperature 2', approx(26.5, rel=1e-3), '°C'),
+        ('Voltage regulator temperature', approx(33.5, rel=1e-3), '°C'),
+        ('Case temperature', approx(26.5, rel=1e-3), '°C'),
         ('Fan speed', approx(968, rel=1e-3), 'rpm'),
         ('Input voltage', approx(230, rel=1e-3), 'V'),
         ('Total power output', approx(140, rel=1e-3), 'W'),
