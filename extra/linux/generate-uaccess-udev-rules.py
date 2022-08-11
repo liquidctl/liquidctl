@@ -1,12 +1,14 @@
+# uses the psf/black style
+
 import sys
 from inspect import cleandoc
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # This script is meant to be executed from this directory or the project root.
     # We use that assumption to make Python pick the local liquidctl modules,
     # instead other versions that may be installed on the environment/system.
-    sys.path = ['../..', ''] + sys.path
+    sys.path = ["../..", ""] + sys.path
 
     # The 71-liquidctl.rules file must always be written in UTF-8.  Therefore,
     # when we detect that stdout has been redirected to a file, make sure that
@@ -19,8 +21,7 @@ if __name__ == '__main__':
     from liquidctl.driver.nvidia import _NvidiaI2CDriver
     from liquidctl.driver.usb import BaseUsbDriver
 
-
-    HEADER = '''
+    HEADER = """
     # Rules that grant unprivileged access to devices supported by liquidctl.
     #
     # Users and distros are encouraged to use these if they want liquidctl to work
@@ -64,16 +65,15 @@ if __name__ == '__main__':
     #
     # [^1]: https://github.com/systemd/systemd/issues/4288
     # [^2]: https://wiki.archlinux.org/title/Users_and_groups#Pre-systemd_groups
-    '''
+    """
 
-    MANUAL_RULES = r'''
+    MANUAL_RULES = r"""
         # Section: special cases
 
         # Host SMBus on Intel mainstream/HEDT platforms
         KERNEL=="i2c-*", DRIVERS=="i801_smbus", TAG+="uaccess", \
             RUN{builtin}="kmod load i2c-dev"
-    '''
-
+    """
 
     print(cleandoc(HEADER))
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     print()
     print()
-    print(f'# Section: NVIDIA graphics cards')
+    print(f"# Section: NVIDIA graphics cards")
 
     nvidia_devs = {}
 
@@ -96,24 +96,27 @@ if __name__ == '__main__':
             else:
                 nvidia_devs[ids] = [description]
 
-    nvidia_devs = [(svid, did, sdid, description) for (svid, did, sdid), description in nvidia_devs.items()]
+    nvidia_devs = [
+        (svid, did, sdid, description) for (svid, did, sdid), description in nvidia_devs.items()
+    ]
     nvidia_devs.sort(key=lambda x: x[3][0])
 
     for svid, did, sdid, descriptions in nvidia_devs:
         print()
         for desc in descriptions:
-            desc = desc.replace(' (experimental)', '')
-            print(f'# {desc}')
-        print(cleandoc(f'''
+            desc = desc.replace(" (experimental)", "")
+            print(f"# {desc}")
+        entry = f"""
             KERNEL=="i2c-*", ATTR{{name}}=="NVIDIA i2c adapter 1 *", ATTRS{{vendor}}=="0x10de", \\
                 ATTRS{{device}}=="{did:#06x}", ATTRS{{subsystem_vendor}}=="{svid:#06x}", \\
                 ATTRS{{subsystem_device}}=="{sdid:#06x}", DRIVERS=="nvidia", TAG+="uaccess", \\
                 RUN{{builtin}}="kmod load i2c-dev"
-        '''))
+        """
+        print(cleandoc(entry))
 
     print()
     print()
-    print(f'# Section: USB devices and USB HIDs')
+    print(f"# Section: USB devices and USB HIDs")
 
     usb_devs = {}
 
@@ -132,6 +135,8 @@ if __name__ == '__main__':
     for vid, pid, descriptions in usb_devs:
         print()
         for desc in descriptions:
-            desc = desc.replace(' (experimental)', '')
-            print(f'# {desc}')
-        print(f'SUBSYSTEMS=="usb", ATTRS{{idVendor}}=="{vid:04x}", ATTRS{{idProduct}}=="{pid:04x}", TAG+="uaccess"')
+            desc = desc.replace(" (experimental)", "")
+            print(f"# {desc}")
+        print(
+            f'SUBSYSTEMS=="usb", ATTRS{{idVendor}}=="{vid:04x}", ATTRS{{idProduct}}=="{pid:04x}", TAG+="uaccess"'
+        )
