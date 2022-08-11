@@ -19,7 +19,7 @@ The status HID report exposes four temperature sensor values.
 
 Aquacomputer Octo
 -------------------------
-Octo is a fan controller and sends a status HID report every second with
+Octo is a fan/RGB controller and sends a status HID report every second with
 no initialization being required.
 
 The status HID report exposes four temperature sensor values and eight groups
