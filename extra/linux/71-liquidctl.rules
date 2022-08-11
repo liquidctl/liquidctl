@@ -340,6 +340,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00e", TAG+="uacc
 # Aquacomputer Farbwerk 360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f010", TAG+="uaccess"
 
+# Aquacomputer Octo
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f011", TAG+="uaccess"
+
 # Asetek 690LC (assuming EVGA CLC)
 # Asetek 690LC (assuming NZXT Kraken X)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
