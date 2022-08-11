@@ -8,6 +8,13 @@ if __name__ == '__main__':
     # instead other versions that may be installed on the environment/system.
     sys.path = ['../..', ''] + sys.path
 
+    # The 71-liquidctl.rules file must always be written in UTF-8.  Therefore,
+    # when we detect that stdout has been redirected to a file, make sure that
+    # it is set to UTF-8, regardless of the current locale.
+    if not sys.stdout.isatty() and sys.stdout.encoding != "utf-8":
+        print("liquidctl udev rules files must use UTF-8, reconfiguring stdout", file=sys.stderr)
+        sys.stdout.reconfigure(encoding="utf-8")
+
     from liquidctl.driver.base import find_all_subclasses
     from liquidctl.driver.nvidia import _NvidiaI2CDriver
     from liquidctl.driver.usb import BaseUsbDriver
