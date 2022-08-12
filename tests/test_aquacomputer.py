@@ -36,6 +36,16 @@ OCTO_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "20"
 )
 
+QUADRO_SAMPLE_STATUS_REPORT = bytes.fromhex(
+    "00035B72FF4000010000006504080000000100000013C5000000910032CBB0000"
+    "0000000000000FFD5FFD69B54FFD8A6FD5B977FFF7FFF06517FFF09597FFF7FFF"
+    "7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF13887FFF7FFF7FFF0300000000000"
+    "000000000000300000004B9000000000000000000000000000000271004B90000"
+    "0000000000000805BB04B900000000016400000015E004B900000000000000000"
+    "80000000003E800000000000003E827100000000003E805BB0000000003E815E0"
+    "0000000003E82710000A0000000E000000002710FF000001"
+)
+
 
 @pytest.fixture
 def mockD5NextDevice():
@@ -448,3 +458,146 @@ def test_octo_set_fixed_speeds_not_supported(mockOctoDevice):
 def test_octo_speed_profiles_not_supported(mockOctoDevice):
     with pytest.raises(NotSupportedByDriver):
         mockOctoDevice.set_speed_profile("fan", None)
+
+@pytest.fixture
+def mockQuadroDevice():
+    device = _MockQuadroDevice()
+    dev = Aquacomputer(
+        device,
+        "Mock Aquacomputer Quadro",
+        device_info=Aquacomputer._DEVICE_INFO[Aquacomputer._DEVICE_QUADRO],
+    )
+
+    dev.connect()
+    return dev
+
+
+class _MockQuadroDevice(MockHidapiDevice):
+    def __init__(self):
+        super().__init__(vendor_id=0x0C70, product_id=0xF00D)
+
+        self.preload_read(Report(1, QUADRO_SAMPLE_STATUS_REPORT))
+
+    def read(self, length):
+        pre = super().read(length)
+        if pre:
+            return pre
+
+        return Report(1, QUADRO_SAMPLE_STATUS_REPORT)
+
+
+def test_quadro_connect(mockQuadroDevice):
+    def mock_open():
+        nonlocal opened
+        opened = True
+
+    mockQuadroDevice.device.open = mock_open
+    opened = False
+
+    with mockQuadroDevice.connect() as cm:
+        assert cm == mockQuadroDevice
+        assert opened
+
+
+def test_quadro_initialize(mockQuadroDevice):
+    init_result = mockQuadroDevice.initialize()
+
+    # Verify firmware version
+    assert init_result[0][1] == 1032
+
+    # Verify serial number
+    assert init_result[1][1] == "23410-65344"
+
+
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_quadro_get_status_directly(mockQuadroDevice, has_hwmon, direct_access):
+    if has_hwmon:
+        mockQuadroDevice._hwmon = HwmonDevice(None, None)
+
+    got = mockQuadroDevice.get_status(direct_access=direct_access)
+
+    expected = [
+        ("Sensor 3", pytest.approx(16.17, 0.1), "°C"),
+        ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
+        ("Fan 1 power", pytest.approx(0, 0.1), "W"),
+        ("Fan 1 voltage", pytest.approx(0, 0.1), "V"),
+        ("Fan 1 current", pytest.approx(0, 0.1), "A"),
+        ("Fan 2 speed", pytest.approx(0, 0.1), "rpm"),
+        ("Fan 2 power", pytest.approx(0, 0.1), "W"),
+        ("Fan 2 voltage", pytest.approx(12.07, 0.1), "V"),
+        ("Fan 2 current", pytest.approx(0, 0.1), "A"),
+        ("Fan 3 speed", pytest.approx(356, 0.1), "rpm"),
+        ("Fan 3 power", pytest.approx(0, 0.1), "W"),
+        ("Fan 3 voltage", pytest.approx(12.07, 0.1), "V"),
+        ("Fan 3 current", pytest.approx(0, 0.1), "A"),
+        ("Fan 4 speed", pytest.approx(0, 0.1), "rpm"),
+        ("Fan 4 power", pytest.approx(0, 0.1), "W"),
+        ("Fan 4 voltage", pytest.approx(12.07, 0.1), "V"),
+        ("Fan 4 current", pytest.approx(0, 0.1), "A"),
+        ("Flow sensor", pytest.approx(0, 0.1), "dL/h"),
+    ]
+
+    assert sorted(got) == sorted(expected)
+
+
+def test_quadro_get_status_from_hwmon(mockQuadroDevice, tmp_path):
+    mockQuadroDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+    (tmp_path / "temp1_input").write_text("27580\n")
+    (tmp_path / "temp2_input").write_text("27670\n")
+    (tmp_path / "temp3_input").write_text("28370\n")
+    (tmp_path / "temp4_input").write_text("34240\n")
+    (tmp_path / "fan1_input").write_text("0\n")
+    (tmp_path / "power1_input").write_text("10000\n")
+    (tmp_path / "in0_input").write_text("12090\n")
+    (tmp_path / "curr1_input").write_text("1\n")
+    (tmp_path / "fan2_input").write_text("576\n")
+    (tmp_path / "power2_input").write_text("1030000\n")
+    (tmp_path / "in1_input").write_text("12090\n")
+    (tmp_path / "curr2_input").write_text("350\n")
+    (tmp_path / "fan3_input").write_text("0\n")
+    (tmp_path / "power3_input").write_text("0\n")
+    (tmp_path / "in2_input").write_text("0\n")
+    (tmp_path / "curr3_input").write_text("0\n")
+    (tmp_path / "fan4_input").write_text("0\n")
+    (tmp_path / "power4_input").write_text("0\n")
+    (tmp_path / "in3_input").write_text("0\n")
+    (tmp_path / "curr4_input").write_text("0\n")
+    (tmp_path / "fan5_input").write_text("603\n")
+
+    got = mockQuadroDevice.get_status()
+
+    expected = [
+        ("Sensor 1", pytest.approx(27.5, 0.1), "°C"),
+        ("Sensor 2", pytest.approx(27.7, 0.1), "°C"),
+        ("Sensor 3", pytest.approx(28.4, 0.1), "°C"),
+        ("Sensor 4", pytest.approx(34.2, 0.1), "°C"),
+        ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
+        ("Fan 1 power", pytest.approx(0.01, 0.1), "W"),
+        ("Fan 1 voltage", pytest.approx(12.09, 0.1), "V"),
+        ("Fan 1 current", pytest.approx(0.001, 0.1), "A"),
+        ("Fan 2 speed", pytest.approx(576, 0.1), "rpm"),
+        ("Fan 2 power", pytest.approx(1.03, 0.1), "W"),
+        ("Fan 2 voltage", pytest.approx(12.09, 0.1), "V"),
+        ("Fan 2 current", pytest.approx(0.35, 0.1), "A"),
+        ("Fan 3 speed", pytest.approx(0, 0.1), "rpm"),
+        ("Fan 3 power", pytest.approx(0, 0.1), "W"),
+        ("Fan 3 voltage", pytest.approx(0, 0.1), "V"),
+        ("Fan 3 current", pytest.approx(0, 0.1), "A"),
+        ("Fan 4 speed", pytest.approx(0, 0.1), "rpm"),
+        ("Fan 4 power", pytest.approx(0, 0.1), "W"),
+        ("Fan 4 voltage", pytest.approx(0, 0.1), "V"),
+        ("Fan 4 current", pytest.approx(0, 0.1), "A"),
+        ("Flow sensor", pytest.approx(603, 0.1), "dL/h"),
+    ]
+
+    assert sorted(got) == sorted(expected)
+
+
+def test_quadro_set_fixed_speeds_not_supported(mockQuadroDevice):
+    with pytest.raises(NotSupportedByDriver):
+        mockQuadroDevice.set_fixed_speed("fan", 42)
+
+
+def test_quadro_speed_profiles_not_supported(mockQuadroDevice):
+    with pytest.raises(NotSupportedByDriver):
+        mockQuadroDevice.set_speed_profile("fan", None)
