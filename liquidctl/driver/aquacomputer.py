@@ -117,7 +117,7 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
             "fan_current_label": [f"Fan {num} current" for num in range(1, 4 + 1)],
             "flow_sensor_offset": 0x6E,
-            "status_report_length": 0x147,
+            "status_report_length": 0xDC,
         },
     }
 
