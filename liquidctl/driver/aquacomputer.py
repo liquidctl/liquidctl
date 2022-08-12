@@ -116,7 +116,7 @@ class Aquacomputer(UsbHidDriver):
             "fan_power_label": [f"Fan {num} power" for num in range(1, 4 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
             "fan_current_label": [f"Fan {num} current" for num in range(1, 4 + 1)],
-            "flow_sensor_offset": 0x6e,
+            "flow_sensor_offset": 0x6E,
             "status_report_length": 0x147,
         },
     }
@@ -243,7 +243,7 @@ class Aquacomputer(UsbHidDriver):
             flow_sensor_value = (
                 "Flow sensor",
                 u16be_from(msg, self._device_info["flow_sensor_offset"]),
-                "dL/h"
+                "dL/h",
             )
             sensor_readings.append(flow_sensor_value)
 
@@ -307,11 +307,7 @@ class Aquacomputer(UsbHidDriver):
                 )
         elif self._device_info["type"] == self._DEVICE_QUADRO:
             # Read flow sensor value
-            flow_sensor_value = (
-                "Flow sensor",
-                self._hwmon.get_int("fan5_input"),
-                "dL/h"
-            )
+            flow_sensor_value = ("Flow sensor", self._hwmon.get_int("fan5_input"), "dL/h")
             sensor_readings.append(flow_sensor_value)
 
         return sensor_readings
