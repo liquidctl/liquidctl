@@ -459,6 +459,7 @@ def test_octo_speed_profiles_not_supported(mockOctoDevice):
     with pytest.raises(NotSupportedByDriver):
         mockOctoDevice.set_speed_profile("fan", None)
 
+
 @pytest.fixture
 def mockQuadroDevice():
     device = _MockQuadroDevice()
