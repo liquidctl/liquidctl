@@ -709,18 +709,25 @@ class KrakenZ3(KrakenX3):
 
     def set_screen(self, channel, mode, value, **kwargs):
         """
-        Used with
+        Set the screen mode and content.
 
-        liquidctl [options] set lcd screen <mode>
-        liquidctl [options] set lcd screen brightness <value>
-        liquidctl [options] set lcd screen orientation (0|90|180|270)
-        liquidctl [options] set lcd screen (static|gif) <path>
+        Available screens: `lcd`.
+
+        Available configuration modes:
+
+        | Configuration mode | Value |
+        | --- | --- |
+        | `liquid` | (ignored) |
+        | `brightness` | 0–100 (percent) |
+        | `orientation` | 0, 90, 180 or 270 (degrees) |
+        | `static` | path to image |
+        | `gif` | path to animated gif |
         """
-        assert channel.lower() == "lcd", "Invalid Channel, valid: lcd, provided: " + channel
+
         assert mode != None, "No mode specified"
 
         if mode != "liquid":
-            assert value != None, f"Mode: {mode} needs a value"
+            assert value != None, f"Missing parameter for {mode}"
 
         # get orientation and brightness
         self._write([0x30, 0x01])
@@ -731,31 +738,31 @@ class KrakenZ3(KrakenX3):
 
         self._read_until({b"\x31\x01": parse_lcd_info})
 
-        if mode == "brightness":
-            value_int = int(value)
-            assert value_int >= 0 and value_int <= 100, "Invalid brightness value"
-            self._write([0x30, 0x02, 0x01, value_int, 0x0, 0x0, 0x1, self.orientation])
-            return
-        elif mode == "orientation":
-            value_int = int(value)
+        if mode == "liquid":
+            self._switch_bucket(0, 2)
+        elif mode == "brightness":
+            brightness = int(value)
             assert (
-                value_int == 0 or value_int == 90 or value_int == 180 or value_int == 270
-            ), "Invalid orientation value"
-            self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(value_int / 90)])
-            return
+                brightness >= 0 and brightness <= 100
+            ), "Brightness should be between 0 and 100 percent"
+            self._write([0x30, 0x02, 0x01, brightness, 0x0, 0x0, 0x1, self.orientation])
+        elif mode == "orientation":
+            orientation = int(value)
+            assert orientation in (
+                0,
+                90,
+                180,
+                270,
+            ), "Orientation should be 0, 90, 180 or 270 degrees"
+            self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(orientation / 90)])
         elif mode == "static":
             data = self._prepare_static_file(value, self.orientation)
             self._send_data(data, [0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
-            return
         elif mode == "gif":
             data = self._prepare_gif_file(value, self.orientation)
             self._send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(3, "little")))
-            return
-        elif mode == "liquid":
-            self._switch_bucket(0, 2)
-            return
-
-        raise TypeError("Invalid mode")
+        else:
+            raise ValueError(f"Unsupported mode: {mode}")
 
     def _prepare_static_file(self, path, rotation):
         """
