@@ -154,18 +154,19 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-super-rainbow` | None | ✓ |
 | `backwards-rainbow-pulse` | None | ✓ |
 
+
 ## The LCD screen (only Z models)
 
-Liquidctl supports the following functions for controlling the lcd screen
+The LCD screen can be configured in a few different modes.
 
 ```
-  liquidctl [options] set lcd screen liquid
-  liquidctl [options] set lcd screen brightness <value>
-  liquidctl [options] set lcd screen orientation (0|90|180|270)
-  liquidctl [options] set lcd screen (static|gif) <path to image>
+# liquidctl [options] set lcd screen liquid
+# liquidctl [options] set lcd screen brightness <value>
+# liquidctl [options] set lcd screen orientation (0|90|180|270)
+# liquidctl [options] set lcd screen (static|gif) <path to image>
 ```
 
-images and GiFs are automatically resized and rotated to match the device orientation so there is no need for any preprocessing
+Images and GiFs are automatically resized and rotated to match the device orientation.
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
