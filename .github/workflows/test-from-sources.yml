@@ -60,12 +60,12 @@ jobs:
           colorlog \
           docopt \
           hidapi \
+          pillow \
           pytest \
           pyusb \
-          pillow \
           "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'" \
-          "winusbcdc; sys_platform == 'win32'" \
           "smbus; sys_platform == 'linux'"
+          "winusbcdc; sys_platform == 'win32'" \
 
     - name: Run unit tests and module doctests
       run: |
