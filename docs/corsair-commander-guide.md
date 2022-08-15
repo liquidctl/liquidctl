@@ -87,7 +87,7 @@ be set to 5000 rpm at 60°C (this speed may not be appropriate for your device).
                            ^^^^^ ^^^^^ ^^^^^^
                    pairs of temperature (°C) -> duty (%)
 
-# liquidctl set fan3 speed 20 800 40 900 50 1300 --temp-probe 2
+# liquidctl set fan3 speed 20 800 40 900 50 1300 --temperature-sensor 2
 ```
 
 Valid channel values are `fanN`, where 1 <= N <= 6 is the fan number, and
