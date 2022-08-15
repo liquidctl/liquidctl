@@ -386,11 +386,6 @@ class CommanderPro(UsbHidDriver):
         Valid channel values are 'fanN', where N >= 1 is the fan number, and
         'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
-
-        Different commands for sending fixed percent (0x23) and fixed rpm (0x24)
-        Probably want to use fixed percent for this untill the rpm flag is enabled.
-        Can only send one fan command at a time, if fan mode is unset will need to send 6?
-        messages (or 1 per enabled fan)
         """
 
         if self._fan_count == 0:
@@ -406,16 +401,19 @@ class CommanderPro(UsbHidDriver):
                 self._send_command(_CMD_SET_FAN_DUTY, [fan, duty])
 
     def set_speed_profile(self, channel, profile, temperature_sensor=1, **kwargs):
-        """Set fan or fans to follow a speed duty profile.
+        """Set fan or fans to follow a speed profile _in rpm._
+
+        Unlike corresponding methods in other drivers, this function operates
+        with angular speeds in rpm, not duty values in percentage.
 
         Valid channel values are 'fanN', where N >= 1 is the fan number, and
         'fan', to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
 
-        Up to six (temperature, duty) pairs can be supplied in `profile`,
-        with temperatures in Celsius and duty values in percentage.  The last
-        point should set the fan to 100% duty cycle, or be omitted; in the
-        latter case the fan will be set to max out at 60°C.
+        Up to six (temperature, speed) pairs can be supplied in `profile`,
+        with temperatures in Celsius and speeds in rpm.  The last point should
+        set the fan to 100% duty cycle, or be omitted; in the latter case the
+        fan will be heuristically set to max out at 60°C.
         """
 
         # send fan num, temp sensor, check to make sure it is actually enabled, and do not let the user send external sensor
