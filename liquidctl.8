@@ -87,6 +87,9 @@ decimal RGB triple, R,G,B ∊ [0, 255]: \fIrgb(255,127,63)\fR;
 hue\-saturation\-value HSV triple, H ∊ [0, 360], S,V ∊ [0, 100]: \fIhsv(20,75,100)\fR;
 .IP \(bu
 hue\-saturation\-lightness HSL triple, H ∊ [0, 360], S,L ∊ [0, 100]: \fIhsl(20,100,62)\fR.
+.PP
+\fBliquidctl set \fIchannel\fB screen\fR allows the user to configure the LCD
+screen integrated into some AIO models.
 .
 .if !\n[is_macos]\{
 .PP
@@ -402,6 +405,8 @@ where the allowed values are: \fIforward\fR or \fIbackward\fR.
 Cooling channels: \fIpump\fR; (only Z53, Z63, Z73:) \fIfan\fR.
 .PP
 Lighting channels: \fIexternal\fR; (only X53, X63, X73:) \fIring\fR, \fIlogo\fR, \fIsync\fR.
+.PP
+LCD screens (only Z53, Z63, Z73): \fIlcd\fR.
 .TS
 l c
 ----
