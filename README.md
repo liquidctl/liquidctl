@@ -242,10 +242,11 @@ names are listed in parenthesis):
 
 - Python 3.7 or later _(python3, python)_
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
-- docopt _(python3-docopt, python-docopt)_
+- PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
-- PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
+- docopt _(python3-docopt, python-docopt)_
+- pillow _(python-pillow, python3-pil)_
 - smbus Python package _(python3-i2c-tools, python3-smbus, i2c-tools)_
 - LibUSB 1.0 _(libusb-1.0, libusb-1.0-0, libusbx)_
 
@@ -406,13 +407,9 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm pillow
+python -m pip install --upgrade colorlog docopt hidapi pillow pytest pyusb setuptools setuptools_scm
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
-
-```
-For KrakenZ devices only
-```
 python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
 ```
 
