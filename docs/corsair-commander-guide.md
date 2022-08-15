@@ -70,8 +70,11 @@ Each fan can be set to either a fixed duty cycle, or a profile consisting of up
 to six (temperature, rpm) pairs.  Temperatures should be given in Celsius and
 rpm values as a valid rpm for the fan that is connected.
 
-*NOTE: you must ensure that the rpm value is within the min, max range for your
-hardware.*
+_Note: unlike equivalent functionality in other drivers, this driver takes
+speed profiles using angular speeds in rpm, not duty values in percentage._
+
+_Note: you must ensure that rpm values are within the min, max range for your
+hardware._
 
 Profiles run on the device and are always based one the specified temp probe.
 If a temperature probe is not specified number 1 is used. The last point should
@@ -84,8 +87,8 @@ be set to 5000 rpm at 60°C (this speed may not be appropriate for your device).
                channel    duty
 
 # liquidctl set fan2 speed 20 800 40 900 50 1000 60 1500
-                           ^^^^^ ^^^^^ ^^^^^^
-                   pairs of temperature (°C) -> duty (%)
+                           ^^^^^^ ^^^^^^ ^^^^^^^ ^^^^^^^
+                      pairs of temperature (°C) -> speed (rpm)
 
 # liquidctl set fan3 speed 20 800 40 900 50 1300 --temperature-sensor 2
 ```
@@ -98,12 +101,10 @@ be set.
 
 Behaviour is unspecified if the specified temperature probe is not connected.
 
-_Note: pass `--verbose` to see the raw settings being sent to the cooler._
-
-After normalization of the profile and enforcement of the (60°C, 5000)
-fail-safe.  This temperature failsafe can be over-ridden by using the
-`--unsafe=high_temperature` flag.  This will use a maximum temperature of 100
-degrees.
+Passing `--verbose` can be used to see the raw settings being sent to the
+cooler, after normalization of the profile and enforcement of a (60°C, 5000
+rpm) failsafe. The `--unsafe=high_temperature` flag can be used to modify this
+failsafe to only trigger at 100°C.
 
 
 ## Controlling the LEDs
