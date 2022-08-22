@@ -17,6 +17,7 @@ Device guides
 - [Aquacomputer D5 Next watercooling pump](aquacomputer-d5next-guide.md)
 - [Aquacomputer Farbwerk 360 RGB controller](aquacomputer-farbwerk360-guide.md)
 - [Aquacomputer Octo fan controller](aquacomputer-octo-guide.md)
+- [Aquacomputer Quadro fan controller](aquacomputer-quadro-guide.md)
 - [Asetek 690LC liquid coolers](asetek-690lc-guide.md)
 - [Asetek Pro liquid coolers](asetek-pro-guide.md)
 - [Corsair Commander Core and Core XT](corsair-commander-core-guide.md)

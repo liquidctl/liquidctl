@@ -98,3 +98,35 @@ Here is what it's currently known to contain:
 | Fan 6 substructure                 | 0xBE                     |
 | Fan 7 substructure                 | 0xCB                     |
 | Fan 8 substructure                 | 0xD8                     |
+
+## Quadro
+
+The Quadro exposes four temperature sensors and four groups of fan sensor data (outlined in the preamble) through its sensor report.
+
+### Sensor report
+
+An example sensor report of the Quadro looks like this:
+
+```
+01 00 03 5B 72 FF 40 00 01 00 00 00 65 04 08 00 00 00 01 00 00 00 13 C5 00 00 00 91 00 32 CB B0 00 00 00 00 00 00 00 00 FF D5 FF D6 9B 54 FF D8 A6 FD 5B 97 7F FF 7F FF 06 51 7F FF 09 59 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 13 88 7F FF 7F FF 7F FF 03 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 04 B9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 27 10 04 B9 00 00 00 00 00 00 00 00 08 05 BB 04 B9 00 00 00 00 01 64 00 00 00 15 E0 04 B9 00 00 00 00 00 00 00 00 08 00 00 00 00 03 E8 00 00 00 00 00 00 03 E8 27 10 00 00 00 00 03 E8 05 BB 00 00 00 00 03 E8 15 E0 00 00 00 00 03 E8 27 10 00 0A 00 00 00 0E 00 00 00 00 27 10 FF 00 00 01
+```
+
+Its ID is `0x01` and its length is `0xDC`.
+
+Here is what it's currently known to contain:
+
+| What                               | Where/starts at (offset) |
+|------------------------------------|--------------------------|
+| Serial number (first part)         | 0x03                     |
+| Serial number (second part)        | 0x05                     |
+| Firmware version                   | 0xD                      |
+| Number of power cycles *[4 bytes]* | 0x18                     |
+| Temp sensor 1                      | 0x34                     |
+| Temp sensor 2                      | 0x36                     |
+| Temp sensor 3                      | 0x38                     |
+| Temp sensor 4                      | 0x3A                     |
+| Fan 1 substructure                 | 0x70                     |
+| Fan 2 substructure                 | 0x7D                     |
+| Fan 3 substructure                 | 0x8A                     |
+| Fan 4 substructure                 | 0x97                     |
+| Flow sensor                        | 0x6E                     |
