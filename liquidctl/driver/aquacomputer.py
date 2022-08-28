@@ -365,6 +365,10 @@ class Aquacomputer(UsbHidDriver):
 
         if "ctrl_report_length" in self._device_info:
             # TODO: What about hwmon?
+
+            if duty > 100:
+                _LOGGER.warning("values from 0 to 100% are accepted, clamping to 100%")
+                duty = 100
             duty *= 100
 
             # Request an up to date ctrl report
