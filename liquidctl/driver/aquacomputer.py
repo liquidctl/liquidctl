@@ -55,7 +55,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 
-from crccheck.crc import Crc16Usb
+import crcmod.predefined
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
@@ -384,8 +384,10 @@ class Aquacomputer(UsbHidDriver):
             )
 
             # Update checksum value at the end of the report
+            crc16usb_func = crcmod.predefined.mkCrcFun("crc-16-usb")
+
             checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
-            checksum_bytes = Crc16Usb.calc(checksum_part)
+            checksum_bytes = crc16usb_func(checksum_part)
             put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
 
             self.device.send_feature_report(ctrl_settings)
