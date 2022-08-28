@@ -58,6 +58,7 @@ jobs:
         export PATH=vtest/bin/:vtest/Scripts/:$PATH
         pip install \
           colorlog \
+          crcmod \
           docopt \
           hidapi \
           pillow \
