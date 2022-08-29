@@ -36,6 +36,18 @@ Aquacomputer D5 Next
 └── +12V voltage          12.06  V
 ```
 
+## Programming the fan speeds
+
+Currently, the pump and optionally connected fan can be set to a fixed duty cycle, ranging from 0-100%.
+
+```
+liquidctl set pump speed 56
+              ^^^^       ^^
+             channel    duty
+```
+
+Valid channel values on the D5 Next are `pump` and `fan`. 
+
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
