@@ -187,11 +187,11 @@ class KrakenX3(UsbHidDriver):
         # initialize
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
-                         self._hwmon.module)
+                         self._hwmon.driver)
         else:
             if self._hwmon:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
-                                self._hwmon.module)
+                                self._hwmon.driver)
             update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
             self._write([0x70, 0x02, 0x01, 0xb8, update_interval])
             self._write([0x70, 0x01])
@@ -259,13 +259,13 @@ class KrakenX3(UsbHidDriver):
         # yet issue a warning when directly accessing the device
 
         if self._hwmon and not direct_access and self._hwmon.has_attribute('pwm1'):
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             level = logging.WARNING if direct_access else logging.INFO
             _LOGGER.log(level, 'directly reading the status despite %s kernel driver',
-                        self._hwmon.module)
+                        self._hwmon.driver)
 
         return self._get_status_directly()
 

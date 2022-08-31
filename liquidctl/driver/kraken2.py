@@ -168,12 +168,12 @@ class Kraken2(UsbHidDriver):
             return []
 
         if self._hwmon and not direct_access:
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
-                            self._hwmon.module)
+                            self._hwmon.driver)
 
         return self._get_status_directly()
 

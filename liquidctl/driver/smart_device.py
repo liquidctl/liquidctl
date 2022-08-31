@@ -275,11 +275,11 @@ class SmartDevice(_BaseSmartDevice):
 
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
-                         self._hwmon.module)
+                         self._hwmon.driver)
         else:
             if self._hwmon:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
-                                self._hwmon.module)
+                                self._hwmon.driver)
             self._write([0x1, 0x5c])  # initialize/detect connected devices and their type
             self._write([0x1, 0x5d])  # start reporting
             self.device.clear_enqueued_reports()
@@ -355,12 +355,12 @@ class SmartDevice(_BaseSmartDevice):
         """
 
         if self._hwmon and not direct_access:
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
-                            self._hwmon.module)
+                            self._hwmon.driver)
 
         return self._get_status_directly()
 
@@ -506,11 +506,11 @@ class SmartDevice2(_BaseSmartDevice):
         if self._speed_channels:
             if self._hwmon and not direct_access:
                 _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
-                             self._hwmon.module)
+                             self._hwmon.driver)
             else:
                 if self._hwmon:
                     _LOGGER.warning('forcing re-initialization despite %s kernel driver',
-                                    self._hwmon.module)
+                                    self._hwmon.driver)
                 update_interval = (lambda secs: 1 + round((secs - .5) / .25))(.5)  # see issue #128
                 self._write([0x60, 0x02, 0x01, 0xe8, update_interval, 0x01, 0xe8, update_interval])
                 self._write([0x60, 0x03])
@@ -586,12 +586,12 @@ class SmartDevice2(_BaseSmartDevice):
             return []
 
         if self._hwmon and not direct_access:
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
-                            self._hwmon.module)
+                            self._hwmon.driver)
 
         return self._get_status_directly()
 

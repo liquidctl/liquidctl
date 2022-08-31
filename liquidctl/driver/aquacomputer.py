@@ -303,7 +303,7 @@ class Aquacomputer(UsbHidDriver):
                 sensor_readings.append(plus_12v_voltage)
             else:
                 _LOGGER.warning(
-                    "some attributes cannot be read from %s kernel driver", self._hwmon.module
+                    "some attributes cannot be read from %s kernel driver", self._hwmon.driver
                 )
         elif self._device_info["type"] == self._DEVICE_QUADRO:
             # Read flow sensor value
@@ -319,12 +319,12 @@ class Aquacomputer(UsbHidDriver):
         """
 
         if self._hwmon and not direct_access:
-            _LOGGER.info("bound to %s kernel driver, reading status from hwmon", self._hwmon.module)
+            _LOGGER.info("bound to %s kernel driver, reading status from hwmon", self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning(
-                "directly reading the status despite %s kernel driver", self._hwmon.module
+                "directly reading the status despite %s kernel driver", self._hwmon.driver
             )
 
         return self._get_status_directly()

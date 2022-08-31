@@ -193,7 +193,7 @@ class CommanderPro(UsbHidDriver):
     def _get_static_info_from_hwmon(self):
         # firmware and bootloader versions are not available through hwmon, but
         # we don't want to race with the kernel driver
-        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.module)
+        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.driver)
 
         status = []
 
@@ -245,12 +245,12 @@ class CommanderPro(UsbHidDriver):
 
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
-                         self._hwmon.module)
+                         self._hwmon.driver)
             return self._get_static_info_from_hwmon()
         else:
             if self._hwmon:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
-                                self._hwmon.module)
+                                self._hwmon.driver)
             return self._initialize_directly()
 
     def _get_status_directly(self):
@@ -317,12 +317,12 @@ class CommanderPro(UsbHidDriver):
             return []
 
         if self._hwmon and not direct_access:
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
-                            self._hwmon.module)
+                            self._hwmon.driver)
 
         return self._get_status_directly()
 

@@ -128,11 +128,11 @@ class CorsairHidPsu(UsbHidDriver):
         if self._hwmon:
             if not direct_access:
                 _LOGGER.warning('bound to %s kernel driver, OCP and fan modes not changed',
-                                self._hwmon.module)
+                                self._hwmon.driver)
                 return
             else:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
-                                self._hwmon.module)
+                                self._hwmon.driver)
 
         self._write([0xfe, 0x03])
         _ = self._read()
@@ -190,7 +190,7 @@ class CorsairHidPsu(UsbHidDriver):
         # on debugfs, and fan and ocp modes are not available at all); still,
         # with this particular device, it is better to ignore them than to race
         # with a kernel driver
-        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.module)
+        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.driver)
 
         input_voltage = self._hwmon.get_int('in0_input') * 1e-3
 
@@ -225,12 +225,12 @@ class CorsairHidPsu(UsbHidDriver):
         """
 
         if self._hwmon and not direct_access:
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
-                            self._hwmon.module)
+                            self._hwmon.driver)
 
         return self._get_status_directly()
 
