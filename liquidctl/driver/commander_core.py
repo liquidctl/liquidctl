@@ -237,6 +237,7 @@ class CommanderCore(UsbHidDriver):
     def _wake_device_context(self):
         try:
             self._send_command(_CMD_WAKE)
+            self._send_command(_CMD_RESET)
             yield
         finally:
             self._send_command(_CMD_SLEEP)
