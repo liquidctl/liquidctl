@@ -27,8 +27,8 @@ _FAN_COUNT = 6
 _CMD_WAKE = (0x01, 0x03, 0x00, 0x02)
 _CMD_SLEEP = (0x01, 0x03, 0x00, 0x01)
 _CMD_GET_FIRMWARE = (0x02, 0x13)
-_CMD_RESET = (0x05, 0x01, 0x00)
-_CMD_SET_MODE = (0x0d, 0x00)
+_CMD_CLOSE_ENDPOINT = (0x05, 0x01, 0x00)
+_CMD_OPEN_ENDPOINT = (0x0d, 0x00)
 _CMD_READ = (0x08, 0x00)
 _CMD_WRITE = (0x06, 0x00)
 
@@ -199,9 +199,9 @@ class CommanderCore(UsbHidDriver):
         return temps
 
     def _read_data(self, mode, data_type):
-        self._send_command(_CMD_SET_MODE, mode)
+        self._send_command(_CMD_OPEN_ENDPOINT, mode)
         raw_data = self._send_command(_CMD_READ)
-        self._send_command(_CMD_RESET)
+        self._send_command(_CMD_CLOSE_ENDPOINT)
         if tuple(raw_data[3:5]) != data_type:
             raise ExpectationNotMet('device returned incorrect data type')
 
@@ -237,7 +237,6 @@ class CommanderCore(UsbHidDriver):
     def _wake_device_context(self):
         try:
             self._send_command(_CMD_WAKE)
-            self._send_command(_CMD_RESET)
             yield
         finally:
             self._send_command(_CMD_SLEEP)
@@ -245,7 +244,7 @@ class CommanderCore(UsbHidDriver):
     def _write_data(self, mode, data_type, data):
         self._read_data(mode, data_type)  # Will ensure we are writing the correct data type to avoid breakage
 
-        self._send_command(_CMD_SET_MODE, mode)
+        self._send_command(_CMD_OPEN_ENDPOINT, mode)
 
         buf = bytearray(len(data) + len(data_type) + 4)
         buf[0: 2] = int.to_bytes(len(data) + 2, length=2, byteorder="little", signed=False)
@@ -253,7 +252,7 @@ class CommanderCore(UsbHidDriver):
         buf[4 + len(data_type):] = data
 
         self._send_command(_CMD_WRITE, buf)
-        self._send_command(_CMD_RESET)
+        self._send_command(_CMD_CLOSE_ENDPOINT)
 
     def _fan_to_channel(self, fan):
         if self._has_pump:

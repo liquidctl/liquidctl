@@ -31,7 +31,6 @@ class MockCommanderCoreDevice:
 
         self._last_write = bytes()
         self._modes = {}
-        self._is_reset = False
         self._awake = False
 
         self.response_prefix = ()
@@ -111,17 +110,14 @@ class MockCommanderCoreDevice:
         self._last_write = data
         if data[0] != 0x00 or data[1] != 0x08:
             raise ValueError('Start of packets going out should be 00:08')
-
         if data[2] == 0x0d:
             channel = data[3]
-            if  (self._is_reset or not self._awake) and self._modes.get(channel) is None:
+            if  self._modes.get(channel) is None:
                 self._modes[channel] = data[4:6]
-                self._is_reset = False
             else:
                 raise ExpectationNotMet('Previous channel was not reset')
         elif data[2] == 0x05 and data[3] == 0x01:
             self._modes[data[4]] = None
-            self._is_reset = True
         elif data[2] == 0x01 and data[3] == 0x03 and data[4] == 0x00:
             self._awake = data[5] == 0x02
         elif self._awake:
