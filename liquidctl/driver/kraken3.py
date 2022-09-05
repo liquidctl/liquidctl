@@ -754,6 +754,12 @@ class KrakenZ3(KrakenX3):
         elif mode == "liquid":
             self._switch_bucket(0, 2)
             return
+        
+        if self.bulk_device and (mode == "static" or mode == "gif"):  # release device when finished
+            if sys.platform == "win32":
+                self.bulk_device.close_winusb_device()
+            else:
+                self.bulk_device.release()
 
         raise TypeError("Invalid mode")
 
@@ -843,9 +849,11 @@ class KrakenZ3(KrakenX3):
             )
         )
 
-        self._setup_bucket(
+        if not self._setup_bucket(
             bucketIndex, bucketIndex + 1, bucketMemoryStart, packetCount
-        )  # setup bucket for transfer
+        ):  # setup bucket for transfer
+            _LOGGER.error("Failed to setup bucket for data transfer")
+
         self._write_then_read([0x36, 0x01, bucketIndex])  # start data transfer
 
         self._bulk_write(
@@ -871,12 +879,8 @@ class KrakenZ3(KrakenX3):
 
         self._write([0x36, 0x02])  # end data transfer
         if not self._switch_bucket(bucketIndex):  # switch to newly written bucket
-            _LOGGER.warning("Failed to switch active bucket")
+            _LOGGER.error("Failed to switch active bucket")
 
-        if sys.platform == "win32":
-            self.bulk_device.close_winusb_device()
-        else:
-            self.bulk_device.release()  # release device when finished
 
     def _query_buckets(self):
         """
