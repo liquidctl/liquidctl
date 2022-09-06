@@ -87,12 +87,15 @@ The coolers support two more lighting modes: 'fixed' and 'blackout'.  The latter
 # liquidctl set logo color blackout
 ```
 
+On most models, alerts are always enabled, unless suppressed by the 'blackout' mode: the default threshold and color are, respectively, 45°C and red.
 It is possible to configure the visual alert for high liquid temperatures:
 
 `--alert-threshold <number>`: set the threshold temperature in Celsius for a visual alert  
 `--alert-color <color>`: set the color used by the visual high temperature alert
 
-Note that, regardless of the use of these options, alerts are always enabled (unless suppressed by the 'blackout' mode): the default threshold and color are, respectively, 45°C and red.
+Note that alerts are reportedly not supported by the oldest models, the NZXT Kraken X40 and X60 (see [#477]).
+
+[#477]: https://github.com/liquidctl/liquidctl/issues/477
 
 ## Save settings to device
 

@@ -17,7 +17,7 @@ def mock_hwmon(tmp_path):
 
 
 def test_has_module(mock_hwmon):
-    assert mock_hwmon.module == "mock_module"
+    assert mock_hwmon.driver == "mock_module"
 
 
 def test_has_path(mock_hwmon):

@@ -12,12 +12,12 @@ class HwmonDevice:
     """Unstable API."""
 
     __slots__ = [
-        "module",
+        "driver",
         "path",
     ]
 
-    def __init__(self, module, path):
-        self.module = module
+    def __init__(self, driver, path):
+        self.driver = driver
         self.path = path
 
     @property
@@ -63,7 +63,7 @@ class HwmonDevice:
             _LOGGER.debug("cannot pick hwmon device for %s: more than one alternative", path)
             return None
 
-        # use resolve() to be compatible with Python <3.9
-        module = (sys_device / "driver" / "module").resolve().name
+        # use resolve() to be compatible with Python < 3.9
+        driver = (sys_device / "driver").resolve().name
 
-        return HwmonDevice(module, path)
+        return HwmonDevice(driver, path)

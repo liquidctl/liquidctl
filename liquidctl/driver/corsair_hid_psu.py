@@ -128,11 +128,11 @@ class CorsairHidPsu(UsbHidDriver):
         if self._hwmon:
             if not direct_access:
                 _LOGGER.warning('bound to %s kernel driver, OCP and fan modes not changed',
-                                self._hwmon.module)
+                                self._hwmon.driver)
                 return
             else:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
-                                self._hwmon.module)
+                                self._hwmon.driver)
 
         self._write([0xfe, 0x03])
         _ = self._read()
@@ -159,8 +159,8 @@ class CorsairHidPsu(UsbHidDriver):
         ret = [
             ('Current uptime', self._get_timedelta(_CORSAIR_READ_UPTIME), ''),
             ('Total uptime', self._get_timedelta(_CORSAIR_READ_TOTAL_UPTIME), ''),
-            ('Temperature 1', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
-            ('Temperature 2', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
+            ('VRM temperature', self._get_float(CMD.READ_TEMPERATURE_1), '°C'),
+            ('Case temperature', self._get_float(CMD.READ_TEMPERATURE_2), '°C'),
             ('Fan control mode', self._get_fan_control_mode(), ''),
             ('Fan speed', self._get_float(CMD.READ_FAN_SPEED_1), 'rpm'),
             ('Input voltage', input_voltage, 'V'),
@@ -190,13 +190,13 @@ class CorsairHidPsu(UsbHidDriver):
         # on debugfs, and fan and ocp modes are not available at all); still,
         # with this particular device, it is better to ignore them than to race
         # with a kernel driver
-        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.module)
+        _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.driver)
 
         input_voltage = self._hwmon.get_int('in0_input') * 1e-3
 
         ret = [
-            ('Temperature 1', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
-            ('Temperature 2', self._hwmon.get_int('temp2_input') * 1e-3, '°C'),
+            ('VRM temperature', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
+            ('Case temperature', self._hwmon.get_int('temp2_input') * 1e-3, '°C'),
             ('Fan speed', self._hwmon.get_int('fan1_input'), 'rpm'),
             ('Input voltage', input_voltage, 'V'),
         ]
@@ -225,12 +225,12 @@ class CorsairHidPsu(UsbHidDriver):
         """
 
         if self._hwmon and not direct_access:
-            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.module)
+            _LOGGER.info('bound to %s kernel driver, reading status from hwmon', self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
             _LOGGER.warning('directly reading the status despite %s kernel driver',
-                            self._hwmon.module)
+                            self._hwmon.driver)
 
         return self._get_status_directly()
 

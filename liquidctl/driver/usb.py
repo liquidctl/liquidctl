@@ -203,7 +203,7 @@ class UsbHidDriver(BaseUsbDriver):
         super().__init__(device, description, **kwargs)
         self._hwmon = HwmonDevice.from_hidraw(device.path)
         if self._hwmon:
-            _LOGGER.debug('has kernel driver: %s (%s)', self._hwmon.module, self._hwmon.path)
+            _LOGGER.debug('has kernel driver: %s (%s)', self._hwmon.driver, self._hwmon.path)
 
 
 class UsbDriver(BaseUsbDriver):

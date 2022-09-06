@@ -8,6 +8,7 @@ _New in 1.11.0._
 Initialization is _currently_ not required, but is recommended. It outputs the firmware version:
 
 ```
+# liquidctl initialize
 Aquacomputer D5 Next
 ├── Firmware version           1023
 └── Serial number       03500-24905
@@ -34,3 +35,17 @@ Aquacomputer D5 Next
 ├── +5V voltage            5.01  V
 └── +12V voltage          12.06  V
 ```
+
+## Interaction with Linux hwmon drivers
+[Linux hwmon]: #interaction-with-linux-hwmon-drivers
+
+Aquacomputer devices are supported by the mainline Linux kernel with its
+[`aquacomputer_d5next`] driver, and status data is provided through a standard
+hwmon sysfs interface.
+
+Liquidctl automatically detects when a kernel driver is bound to the device
+and, whenever possible, uses it instead of directly accessing the device.
+Alternatively, direct access to the device can be forced with
+`--direct-access`.
+
+[`aquacomputer_d5next`]: https://www.kernel.org/doc/html/latest/hwmon/aquacomputer_d5next.html
