@@ -67,6 +67,8 @@ _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
 _BULK_WRITE_LENGTH = 512
 
+_LCD_TOTAL_MEMORY = 24320
+
 _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
@@ -703,7 +705,7 @@ class KrakenZ3(KrakenX3):
         padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
         out_data = data + padding
         if sys.platform == "win32":
-            _LOGGER.debug("writting %d bytes: %r", len(out_data), LazyHexRepr(out_data))
+            _LOGGER.debug("writing %d bytes: %r", len(out_data), LazyHexRepr(out_data))
             out_data = bytes(out_data)
         self.bulk_device.write(0x2, out_data)
 
@@ -749,12 +751,15 @@ class KrakenZ3(KrakenX3):
             return
         elif mode == "gif":
             data = self._prepare_gif_file(value, self.orientation)
+            assert (
+                len(data) / 1000 < _LCD_TOTAL_MEMORY
+            ), f"Max file size after resize is 24MB, selected file is {len(data) / 1000000}MB"
             self._send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(3, "little")))
             return
         elif mode == "liquid":
             self._switch_bucket(0, 2)
             return
-        
+
         if self.bulk_device and (mode == "static" or mode == "gif"):  # release device when finished
             if sys.platform == "win32":
                 self.bulk_device.close_winusb_device()
@@ -837,21 +842,25 @@ class KrakenZ3(KrakenX3):
         bucketIndex = self._prepare_bucket(
             bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1
         )  # prepare bucket or find a more suitable one
-        bucketMemoryStart = self._get_bucket_memory_offset(
-            buckets, bucketIndex
-        )  # extracts the bucket starting address
 
-        packetCount = list(
-            math.floor(
-                (math.ceil(len(data) / _BULK_WRITE_LENGTH) + 1) / 2
-            ).to_bytes(  # calculates the number of needed packets
-                2, "little"
-            )
+        packetCount = math.floor((math.ceil(len(data) / _BULK_WRITE_LENGTH) + 1) / 2)
+        packetCountBytes = list(
+            packetCount.to_bytes(2, "little")  # calculates the number of needed packets
         )
 
+        bucketMemoryStart = self._get_bucket_memory_offset(
+            buckets, bucketIndex, packetCount
+        )  # extracts the bucket starting address
+
+        if bucketMemoryStart == -1:  # cant find a good memory start
+            self._delete_all_buckets()
+            bucketIndex = 0  # start from byte 0
+            bucketMemoryStart = [0x0, 0x0]
+
+        # setup bucket for transfer
         if not self._setup_bucket(
-            bucketIndex, bucketIndex + 1, bucketMemoryStart, packetCount
-        ):  # setup bucket for transfer
+            bucketIndex, bucketIndex + 1, bucketMemoryStart, packetCountBytes
+        ):
             _LOGGER.error("Failed to setup bucket for data transfer")
 
         self._write_then_read([0x36, 0x01, bucketIndex])  # start data transfer
@@ -881,7 +890,6 @@ class KrakenZ3(KrakenX3):
         if not self._switch_bucket(bucketIndex):  # switch to newly written bucket
             _LOGGER.error("Failed to switch active bucket")
 
-
     def _query_buckets(self):
         """
         Queries all 16 buckets and stores their response
@@ -897,7 +905,7 @@ class KrakenZ3(KrakenX3):
         - 0x0|0x1 (1 byte) - most likely used/unused but could also be something else
         """
         buckets = {}
-        for bI in range(0, 16):
+        for bI in range(16):
             response = self._write_then_read([0x30, 0x04, bI])  # query bucket
             buckets[bI] = response
         return buckets
@@ -913,22 +921,58 @@ class KrakenZ3(KrakenX3):
                 return bucketIndex
         return -1
 
-    def _get_bucket_memory_offset(self, buckets, bucketIndex):
+    def _get_bucket_memory_offset(self, buckets, bucketIndex, packetCount):
         """
-        returns the memory start address
-        memory offset is calculated as the offset of the previous bucket
-        plus its size
+        returns the memory start address for the selected bucket
+        memory offset is calculated by first checking if the bucket can already
+        accommodate the new data, this avoids any additional calculations if uploading the same or smaller image
+        otherwise, we check if we can expand the current bucket without overlapping the memory space of any other bucket
+        otherwise, we set the offset after max utilized memory if there is space left on the device
+        otherwise, we check if there is space at the beginning of the memory space
+        finally, if all else fails then we clear the device and start over
         """
-        if bucketIndex == 0:
-            bucket = buckets[len(buckets) - 1]
-        else:
-            bucket = buckets[bucketIndex - 1]
-        return list(
-            (
-                int.from_bytes([bucket[17], bucket[18]], "little")
-                + int.from_bytes([bucket[19], bucket[20]], "little")
-            ).to_bytes(2, "little")
-        )
+
+        currentBucket = buckets[bucketIndex]
+        currentBucketOffset = int.from_bytes([currentBucket[17], currentBucket[18]], "little")
+        currentBucketSize = int.from_bytes([currentBucket[19], currentBucket[20]], "little")
+
+        # check if we can fit content in existing bucket space
+        if packetCount <= currentBucketSize:
+            return [currentBucket[17], currentBucket[18]]
+
+        # find max byte number
+        minOccupiedByte = currentBucketOffset
+        maxOccupiedByte = 0
+        existingBucketWithinRange = False
+        for bI in buckets:
+            bucket = buckets[bI]
+            startByte = int.from_bytes([bucket[17], bucket[18]], "little")
+            endByte = startByte + int.from_bytes([bucket[19], bucket[20]], "little")
+            if endByte > maxOccupiedByte:
+                maxOccupiedByte = endByte
+            if startByte < minOccupiedByte:
+                minOccupiedByte = startByte
+            if (
+                (startByte > currentBucketOffset and startByte < currentBucketOffset + packetCount)
+                or (startByte < currentBucketOffset and endByte > startByte)
+                or (startByte == currentBucketOffset and bI != bucketIndex)
+            ):
+                existingBucketWithinRange = True
+
+        # check if we can use current offset without overlapping other buckets
+        if not existingBucketWithinRange:
+            return [currentBucket[17], currentBucket[18]]
+
+        # check if we would exceed available memory if we put data at the end
+        if maxOccupiedByte + packetCount < _LCD_TOTAL_MEMORY:
+            return list(maxOccupiedByte.to_bytes(2, "little"))
+
+        # if the lowest used byte is more than zero and we can fit the data then start from zero
+        if packetCount < minOccupiedByte:
+            return [0x0, 0x0]
+
+        # if all else fails return -1 to reset and start over
+        return -1
 
     def _prepare_bucket(self, bucketIndex, bucketFilled):
         """
@@ -954,6 +998,14 @@ class KrakenZ3(KrakenX3):
             return msg[14] == 0x1
 
         return self._read_until_first_match({b"\x33\x02": parse_delete_result})
+
+    def _delete_all_buckets(self):
+        """
+        Switches to liquid mode then deletes all buckets
+        """
+        self._switch_bucket(0, 2)  # switch to liquid mode
+        for bI in range(16):
+            self._delete_bucket(bI)  # delete bucket
 
     def _switch_bucket(self, bucketIndex, mode=0x4):
         """
