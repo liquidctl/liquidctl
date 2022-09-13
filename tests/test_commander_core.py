@@ -31,7 +31,6 @@ class MockCommanderCoreDevice:
 
         self._last_write = bytes()
         self._modes = {}
-
         self._awake = False
 
         self.response_prefix = ()
@@ -52,7 +51,7 @@ class MockCommanderCoreDevice:
         if self._awake:
             if self._last_write[2] == 0x08:  # Get data
                 channel = self._last_write[3]
-                mode = self._modes[channel]
+                mode = self._modes.get(channel)
                 if mode[1] == 0x00:
                     if mode[0] == 0x17:  # Get speeds
                         data.extend([0x06, 0x00])
@@ -111,11 +110,12 @@ class MockCommanderCoreDevice:
         self._last_write = data
         if data[0] != 0x00 or data[1] != 0x08:
             raise ValueError('Start of packets going out should be 00:08')
-
         if data[2] == 0x0d:
             channel = data[3]
-            if self._modes[channel] is None:
+            if  self._modes.get(channel) is None:
                 self._modes[channel] = data[4:6]
+            else:
+                raise ExpectationNotMet('Previous channel was not reset')
         elif data[2] == 0x05 and data[3] == 0x01:
             self._modes[data[4]] = None
         elif data[2] == 0x01 and data[3] == 0x03 and data[4] == 0x00:
@@ -123,7 +123,7 @@ class MockCommanderCoreDevice:
         elif self._awake:
             if data[2] == 0x06:  # Write command
                 channel = data[3]
-                mode = self._modes[channel]
+                mode = self._modes.get(channel)
                 length = u16le_from(data[4:6])
                 data_type = data[8:10]
                 written_data = data[10:8+length]

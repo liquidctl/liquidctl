@@ -83,23 +83,10 @@ Response:
 Note: the `0x01` Init/Wakeup command is exceptionally not necessary before this
 command.
 
-### `0x05` - Reset Channel
-
-Needs to be run before changing the mode on a channel if there is a chance the
-channel has already been used.
-
-Command:
-
-| Byte index | Description |
-| ---------- | ----------- |
-| 0x00 | 0x08 |
-| 0x01 | 0x05 |
-| 0x02 | 0x01 |
-| 0x03 | Channel to reset |
-
-### `0x0d` - Set Channel Mode
+### `0x0d` - Open Endpoint
 
 Sets the mode for the channel to use.
+Needs to be run **before** a read or write operation.
 
 `0x05` - Init/Wakeup will likely need to be run first.
 
@@ -111,6 +98,19 @@ Command:
 | 0x01 | 0x0d |
 | 0x02 | Channel |
 | 0x03 | New mode |
+
+### `0x05` - Close Endpoint
+
+Needs to be run **after** a read or write operation to close a previously opened endpoint.
+
+Command:
+
+| Byte index | Description |
+| ---------- | ----------- |
+| 0x00 | 0x08 |
+| 0x01 | 0x05 |
+| 0x02 | 0x01 |
+| 0x03 | Channel to close |
 
 ## Mode Commands
 
