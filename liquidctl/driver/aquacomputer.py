@@ -384,7 +384,7 @@ class Aquacomputer(UsbHidDriver):
             put_unaligned_be16(
                 duty,
                 ctrl_settings,
-                self._device_info["fan_ctrl"][channel] + _AQC_FAN_PERCENT_OFFSET,
+                fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
             )
 
             # Update checksum value at the end of the report
