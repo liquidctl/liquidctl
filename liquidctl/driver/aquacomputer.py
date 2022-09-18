@@ -358,7 +358,7 @@ class Aquacomputer(UsbHidDriver):
         hwmon_sysfs_name = self._device_info["hwmon_ctrl_mapping"][channel]
 
         # Convert duty to PWM range (0-255)
-        pwm_duty = duty * 255 / 100
+        pwm_duty = duty * 255 // (100 * 100)
 
         self._hwmon.write_int(hwmon_sysfs_name, pwm_duty)
 
