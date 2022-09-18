@@ -211,6 +211,7 @@ def test_d5next_set_fixed_speeds_hwmon(mockD5NextDevice, tmp_path):
     assert (tmp_path / "pwm1_enable").read_text() == "1"
     assert (tmp_path / "pwm1").read_text() == "214"
 
+
 def test_d5next_speed_profiles_not_supported(mockD5NextDevice):
     with pytest.raises(NotSupportedByDriver):
         mockD5NextDevice.set_speed_profile("fan", None)
