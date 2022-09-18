@@ -102,6 +102,7 @@ class Aquacomputer(UsbHidDriver):
             "status_report_length": 0x9E,
             "ctrl_report_length": 0x329,
             "fan_ctrl": {"pump": 0x96, "fan": 0x41},
+            "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"}
         },
         _DEVICE_FARBWERK360: {
             "type": _DEVICE_FARBWERK360,
@@ -354,7 +355,12 @@ class Aquacomputer(UsbHidDriver):
             raise NotSupportedByDevice()
 
     def _set_fixed_speed_hwmon(self, channel, duty):
-        pass
+        hwmon_sysfs_name = self._device_info["hwmon_ctrl_mapping"][channel]
+
+        # Convert duty to PWM range (0-255)
+        pwm_duty = duty * 255 / 100
+        
+        self._hwmon.write_int(hwmon_sysfs_name, pwm_duty)
 
     def _set_fixed_speed_directly(self, channel, duty):
         # Request an up to date ctrl report
