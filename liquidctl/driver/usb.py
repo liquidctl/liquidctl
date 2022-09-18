@@ -419,7 +419,7 @@ class HidapiDevice:
             discarded += 1
         _LOGGER.debug('discarded %d previously enqueued reports', discarded)
 
-    def read(self, length):
+    def read(self, length, timeout_ms=None):
         """Read raw report from HID.
 
         The returned data follows the semantics of the Linux HIDRAW API.
@@ -430,7 +430,13 @@ class HidapiDevice:
         > reports, the report data will begin at the first byte.
         """
         self.hiddev.set_nonblocking(False)
-        data = self.hiddev.read(length)
+        if timeout_ms is not None:
+            data = self.hiddev.read(length, timeout_ms=timeout_ms)
+            if not data:
+                _LOGGER.debug('read 0 bytes, timeout')
+                raise IOError('timeout')
+        else:
+            data = self.hiddev.read(length)
         _LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
         return data
 
