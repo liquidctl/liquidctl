@@ -355,12 +355,25 @@ class Aquacomputer(UsbHidDriver):
             raise NotSupportedByDevice()
 
     def _set_fixed_speed_hwmon(self, channel, duty):
-        hwmon_sysfs_name = self._device_info["hwmon_ctrl_mapping"][channel]
+        hwmon_pwm_name = self._device_info["hwmon_ctrl_mapping"][channel]
+        hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
 
-        # Convert duty to PWM range (0-255)
-        pwm_duty = duty * 255 // (100 * 100)
+        if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+            hwmon_pwm_enable_name
+        ):
+            # Set channel to direct percent mode
+            self._hwmon.write_str(hwmon_pwm_enable_name, "1")
 
-        self._hwmon.write_str(hwmon_sysfs_name, str(pwm_duty))
+            # Convert duty from centi-percent to PWM range (0-255)
+            pwm_duty = duty * 255 // (100 * 100)
+
+            # Write to hwmon
+            self._hwmon.write_str(hwmon_pwm_name, str(pwm_duty))
+        else:
+            _LOGGER.error(
+                "cannot write to hwmon driver, required PWM functionality is not available",
+                self._hwmon.driver,
+            )
 
     def _set_fixed_speed_directly(self, channel, duty):
         # Request an up to date ctrl report
