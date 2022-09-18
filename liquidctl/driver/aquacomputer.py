@@ -102,7 +102,7 @@ class Aquacomputer(UsbHidDriver):
             "status_report_length": 0x9E,
             "ctrl_report_length": 0x329,
             "fan_ctrl": {"pump": 0x96, "fan": 0x41},
-            "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"}
+            "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
         },
         _DEVICE_FARBWERK360: {
             "type": _DEVICE_FARBWERK360,
