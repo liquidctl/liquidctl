@@ -184,7 +184,7 @@ def test_d5next_get_status_from_hwmon(mockD5NextDevice, tmp_path):
     assert sorted(got) == sorted(expected)
 
 
-def test_d5next_set_fixed_speeds(mockD5NextDevice):
+def test_d5next_set_fixed_speeds_directly(mockD5NextDevice):
     mockD5NextDevice.set_fixed_speed("fan", 50)
     mockD5NextDevice.set_fixed_speed("pump", 84)
 
@@ -195,6 +195,21 @@ def test_d5next_set_fixed_speeds(mockD5NextDevice):
     assert pump_report.number == 3
     assert pump_report.data[0x95:0x98] == [0, 32, 208]  # 0, <8400>
 
+
+def test_d5next_set_fixed_speeds_hwmon(mockD5NextDevice, tmp_path):
+    mockD5NextDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+    (tmp_path / "pwm1").write_text("0\n")
+    (tmp_path / "pwm1_enable").write_text("0\n")
+    (tmp_path / "pwm2").write_text("0\n")
+    (tmp_path / "pwm2_enable").write_text("0\n")
+
+    mockD5NextDevice.set_fixed_speed("fan", 50)
+    assert (tmp_path / "pwm2_enable").read_text() == "1"
+    assert (tmp_path / "pwm2").read_text() == "127"
+
+    mockD5NextDevice.set_fixed_speed("pump", 84)
+    assert (tmp_path / "pwm1_enable").read_text() == "1"
+    assert (tmp_path / "pwm1").read_text() == "214"
 
 def test_d5next_speed_profiles_not_supported(mockD5NextDevice):
     with pytest.raises(NotSupportedByDriver):
