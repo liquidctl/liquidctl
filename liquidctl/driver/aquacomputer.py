@@ -353,7 +353,36 @@ class Aquacomputer(UsbHidDriver):
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+    def _set_fixed_speed_hwmon(self, channel, duty):
+        pass
+
+    def _set_fixed_speed_directly(self, channel, duty):
+        # Request an up to date ctrl report
+        report_length = self._device_info["ctrl_report_length"]
+        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+        fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
+
+        # Set fan to direct percent-value mode
+        ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
+
+        # Write down duty for channel
+        put_unaligned_be16(
+            duty,
+            ctrl_settings,
+            fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
+        )
+
+        # Update checksum value at the end of the report
+        crc16usb_func = crcmod.predefined.mkCrcFun("crc-16-usb")
+
+        checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
+        checksum_bytes = crc16usb_func(checksum_part)
+        put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
+
+        self.device.send_feature_report(ctrl_settings)
+
+    def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         if (
             self._device_info["type"] == self._DEVICE_OCTO
             or self._device_info["type"] == self._DEVICE_QUADRO
@@ -363,38 +392,23 @@ class Aquacomputer(UsbHidDriver):
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
-        if "ctrl_report_length" in self._device_info:
-            # TODO: What about hwmon?
+        if duty > 100:
+            _LOGGER.warning("values from 0 to 100% are accepted, clamping to 100%")
+            duty = 100
+        duty *= 100
 
-            if duty > 100:
-                _LOGGER.warning("values from 0 to 100% are accepted, clamping to 100%")
-                duty = 100
-            duty *= 100
+        if self._hwmon and not direct_access:
+            _LOGGER.info(
+                "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
+            )
+            return self._set_fixed_speed_hwmon(channel, duty)
 
-            # Request an up to date ctrl report
-            report_length = self._device_info["ctrl_report_length"]
-            ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
-
-            fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
-
-            # Set fan to direct percent-value mode
-            ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
-
-            # Write down duty for channel
-            put_unaligned_be16(
-                duty,
-                ctrl_settings,
-                fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
+        if self._hwmon:
+            _LOGGER.warning(
+                "directly writing fixed speed despite %s kernel driver", self._hwmon.driver
             )
 
-            # Update checksum value at the end of the report
-            crc16usb_func = crcmod.predefined.mkCrcFun("crc-16-usb")
-
-            checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
-            checksum_bytes = crc16usb_func(checksum_part)
-            put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
-
-            self.device.send_feature_report(ctrl_settings)
+        self._set_fixed_speed_directly(channel, duty)
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented
