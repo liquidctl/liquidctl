@@ -35,7 +35,7 @@ class HwmonDevice:
     def get_int(self, name):
         return int(self.get_string(name))
 
-    def write_int(self, name, value):
+    def write_str(self, name, value):
         (self.path / name).write_text(value)
 
     @classmethod

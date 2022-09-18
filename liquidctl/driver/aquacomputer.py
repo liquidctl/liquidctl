@@ -360,7 +360,7 @@ class Aquacomputer(UsbHidDriver):
         # Convert duty to PWM range (0-255)
         pwm_duty = duty * 255 // (100 * 100)
 
-        self._hwmon.write_int(hwmon_sysfs_name, pwm_duty)
+        self._hwmon.write_str(hwmon_sysfs_name, str(pwm_duty))
 
     def _set_fixed_speed_directly(self, channel, duty):
         # Request an up to date ctrl report
