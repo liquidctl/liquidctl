@@ -371,7 +371,7 @@ class Aquacomputer(UsbHidDriver):
             self._hwmon.write_str(hwmon_pwm_name, str(pwm_duty))
         else:
             _LOGGER.error(
-                "cannot write to hwmon driver, required PWM functionality is not available",
+                "cannot write to %s driver, required PWM functionality is not available",
                 self._hwmon.driver,
             )
 
