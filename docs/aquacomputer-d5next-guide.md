@@ -46,7 +46,9 @@ liquidctl set pump speed 56
              channel    duty
 ```
 
-Valid channel values on the D5 Next are `pump` and `fan`. 
+Valid channel values on the D5 Next are `pump` and `fan`. The hwmon driver is always used first, if it's available and
+exposes `pwmX` and `pwmX_enable` attributes. You can pass in `--direct-access` to bypass it and communicate with the
+device directly.
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
