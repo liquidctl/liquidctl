@@ -21,8 +21,6 @@ The most notable difference between Kraken X and Kraken Z models is the replacem
 
 In addition to this, Kraken Z coolers restore the embedded fan controller that is missing from the current Kraken X models.
 
-The LCD screen cannot yet be controlled with liquidctl, but all other hardware capabilities are supported.
-
 
 ## Initialization
 
@@ -158,8 +156,16 @@ they will be removed in a future version and are kept for now for backward compa
 
 ## The LCD screen (only Z models)
 
-To be implemented.
+Liquidctl supports the following functions for controlling the lcd screen
 
+```
+  liquidctl [options] set lcd screen liquid
+  liquidctl [options] set lcd screen brightness <value>
+  liquidctl [options] set lcd screen orientation (0|90|180|270)
+  liquidctl [options] set lcd screen (static|gif) <path to image>
+```
+
+images and GiFs are automatically resized and rotated to match the device orientation so there is no need for any preprocessing
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers

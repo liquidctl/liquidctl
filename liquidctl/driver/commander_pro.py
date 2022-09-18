@@ -561,3 +561,7 @@ class CommanderPro(UsbHidDriver):
         self.device.write(buf)
         buf = bytes(self.device.read(_RESPONSE_LENGTH))
         return buf
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()

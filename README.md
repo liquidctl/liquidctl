@@ -123,7 +123,7 @@ subjective "from more to less liquid control-ly" order.
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> |
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | <sup>_h_</sup> |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID |  |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | USB HID | <sup>_ehnp_</sup> |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | USB HID | <sup>_ehnp_</sup> |
@@ -406,9 +406,14 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade colorlog docopt hidapi pytest pyusb setuptools setuptools_scm pillow
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
+
+```
+For KrakenZ devices only
+```
+python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:

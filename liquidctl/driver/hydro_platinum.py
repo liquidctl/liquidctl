@@ -20,6 +20,7 @@ import re
 from enum import Enum, unique
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import RelaxedNamesEnum, clamp, fraction_of_byte, \
@@ -420,3 +421,7 @@ class HydroPlatinum(UsbHidDriver):
             self._send_command(_FEATURE_COOLING2, _CMD_SET_COOLING, data=data2)
 
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()

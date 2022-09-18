@@ -92,6 +92,11 @@ class BaseDriver:
 
         raise NotImplementedError()
 
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Set the screen mode and content."""
+
+        raise NotImplementedError()
+
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to follow a speed duty profile."""
 

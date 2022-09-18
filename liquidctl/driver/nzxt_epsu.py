@@ -145,6 +145,10 @@ class NzxtEPsu(UsbHidDriver):
         ascam_ver = int.from_bytes(bytes.fromhex(human_ver), byteorder='big')
         return (human_ver, ascam_ver)
 
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 # deprecated aliases
 SeasonicEDriver = NzxtEPsu

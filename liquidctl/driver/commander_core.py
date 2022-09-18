@@ -12,7 +12,7 @@ import logging
 from contextlib import contextmanager
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.error import ExpectationNotMet, NotSupportedByDriver
+from liquidctl.error import ExpectationNotMet, NotSupportedByDriver, NotSupportedByDevice
 from liquidctl.util import clamp, u16le_from
 
 _LOGGER = logging.getLogger(__name__)
@@ -274,3 +274,7 @@ class CommanderCore(UsbHidDriver):
             if self._has_pump:
                 fan_names.insert(0, "pump")
             raise ValueError(f'unknown channel, should be one of: "{fan_names_part}" or "fans"')
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice
