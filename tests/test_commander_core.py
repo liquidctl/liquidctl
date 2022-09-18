@@ -41,7 +41,7 @@ class MockCommanderCoreDevice:
         self.fixed_speeds = (0, 0, 0, 0, 0, 0, 0)
         self.temperatures = (None, None)
 
-    def read(self, length):
+    def read(self, length, timeout_ms=None):
         data = bytearray([0x00, self._last_write[2], 0x00])
         data.extend(self.response_prefix)
 

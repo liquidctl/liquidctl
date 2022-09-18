@@ -223,12 +223,18 @@ class CommanderCore(UsbHidDriver):
         buf[cmd_start:data_start] = command
         buf[data_start:data_end] = data
 
-        self.device.clear_enqueued_reports()
-        self.device.write(buf)
+        # Send the command and try to read the result repeatedly
+        while True:
+            self.device.clear_enqueued_reports()
+            self.device.write(buf)
+            try:
+                res = self.device.read(_RESPONSE_LENGTH, timeout_ms=1000)
+                while res[0] != 0x00:
+                    res = self.device.read(_RESPONSE_LENGTH, timeout_ms=1000)
+            except IOError:
+                continue
+            break
 
-        res = self.device.read(_RESPONSE_LENGTH)
-        while res[0] != 0x00:
-            res = self.device.read(_RESPONSE_LENGTH)        
         buf = bytes(res)
         assert buf[1] == command[0], 'response does not match command'
         return buf
