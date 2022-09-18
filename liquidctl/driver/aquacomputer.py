@@ -59,7 +59,7 @@ import crcmod.predefined
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
-from liquidctl.util import u16be_from
+from liquidctl.util import u16be_from, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -359,7 +359,7 @@ class Aquacomputer(UsbHidDriver):
 
         # Convert duty to PWM range (0-255)
         pwm_duty = duty * 255 / 100
-        
+
         self._hwmon.write_int(hwmon_sysfs_name, pwm_duty)
 
     def _set_fixed_speed_directly(self, channel, duty):
@@ -398,10 +398,8 @@ class Aquacomputer(UsbHidDriver):
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
-        if duty > 100:
-            _LOGGER.warning("values from 0 to 100% are accepted, clamping to 100%")
-            duty = 100
-        duty *= 100
+        # Clamp and convert to centi-percent
+        duty = clamp(duty, 0, 100) * 100
 
         if self._hwmon and not direct_access:
             _LOGGER.info(
