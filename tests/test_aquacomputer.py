@@ -195,15 +195,15 @@ def test_d5next_set_fixed_speeds_directly(mockD5NextDevice, has_hwmon, direct_ac
         (tmp_path / "pwm2").write_text("0")
         (tmp_path / "pwm2_enable").write_text("0")
 
-    mockD5NextDevice.set_fixed_speed("fan", 50, direct_access=direct_access)
     mockD5NextDevice.set_fixed_speed("pump", 84, direct_access=direct_access)
+    mockD5NextDevice.set_fixed_speed("fan", 50, direct_access=direct_access)
 
-    fan_report, pump_report = mockD5NextDevice.device.sent
+    pump_report, fan_report = mockD5NextDevice.device.sent
 
-    assert fan_report.number == 3
-    assert fan_report.data[0x40:0x43] == [0, 19, 136]  # 0, <5000>
     assert pump_report.number == 3
     assert pump_report.data[0x95:0x98] == [0, 32, 208]  # 0, <8400>
+    assert fan_report.number == 3
+    assert fan_report.data[0x40:0x43] == [0, 19, 136]  # 0, <5000>
 
     # Assert that hwmon wasn't touched
     if has_hwmon:
