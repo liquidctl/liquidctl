@@ -184,9 +184,19 @@ def test_d5next_get_status_from_hwmon(mockD5NextDevice, tmp_path):
     assert sorted(got) == sorted(expected)
 
 
-def test_d5next_set_fixed_speeds_directly(mockD5NextDevice):
-    mockD5NextDevice.set_fixed_speed("fan", 50)
-    mockD5NextDevice.set_fixed_speed("pump", 84)
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_d5next_set_fixed_speeds_directly(mockD5NextDevice, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mockD5NextDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "pwm1").write_text("0")
+        (tmp_path / "pwm1_enable").write_text("0")
+        (tmp_path / "pwm2").write_text("0")
+        (tmp_path / "pwm2_enable").write_text("0")
+
+    mockD5NextDevice.set_fixed_speed("fan", 50, direct_access=direct_access)
+    mockD5NextDevice.set_fixed_speed("pump", 84, direct_access=direct_access)
 
     fan_report, pump_report = mockD5NextDevice.device.sent
 
@@ -194,6 +204,13 @@ def test_d5next_set_fixed_speeds_directly(mockD5NextDevice):
     assert fan_report.data[0x40:0x43] == [0, 19, 136]  # 0, <5000>
     assert pump_report.number == 3
     assert pump_report.data[0x95:0x98] == [0, 32, 208]  # 0, <8400>
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "pwm1_enable").read_text() == "0"
+        assert (tmp_path / "pwm1").read_text() == "0"
+        assert (tmp_path / "pwm2_enable").read_text() == "0"
+        assert (tmp_path / "pwm2").read_text() == "0"
 
 
 def test_d5next_set_fixed_speeds_hwmon(mockD5NextDevice, tmp_path):
