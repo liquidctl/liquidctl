@@ -245,7 +245,7 @@ names are listed in parenthesis):
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
-- crcmod _(python3-crcmod, python-crcmod)_
+- crcmod 1.7 _(python3-crcmod, python-crcmod)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
 - docopt _(python3-docopt, python-docopt)_
 - pillow _(python-pillow, python3-pil)_
@@ -409,7 +409,7 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-python -m pip install --upgrade colorlog crcmod docopt hidapi pillow pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade colorlog crcmod==1.7 docopt hidapi pillow pytest pyusb setuptools setuptools_scm
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
