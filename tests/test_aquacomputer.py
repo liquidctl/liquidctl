@@ -213,20 +213,32 @@ def test_d5next_set_fixed_speeds_directly(mockD5NextDevice, has_hwmon, direct_ac
         assert (tmp_path / "pwm2").read_text() == "0"
 
 
-def test_d5next_set_fixed_speeds_hwmon(mockD5NextDevice, tmp_path):
+@pytest.mark.parametrize("has_support", [False, True])
+def test_d5next_set_fixed_speeds_hwmon(mockD5NextDevice, has_support, tmp_path):
     mockD5NextDevice._hwmon = HwmonDevice("mock_module", tmp_path)
-    (tmp_path / "pwm1").write_text("0\n")
-    (tmp_path / "pwm1_enable").write_text("0\n")
-    (tmp_path / "pwm2").write_text("0\n")
-    (tmp_path / "pwm2_enable").write_text("0\n")
 
-    mockD5NextDevice.set_fixed_speed("fan", 50)
-    assert (tmp_path / "pwm2_enable").read_text() == "1"
-    assert (tmp_path / "pwm2").read_text() == "127"
+    if has_support:
+        (tmp_path / "pwm1").write_text("0\n")
+        (tmp_path / "pwm1_enable").write_text("0\n")
+        (tmp_path / "pwm2").write_text("0\n")
+        (tmp_path / "pwm2_enable").write_text("0\n")
 
     mockD5NextDevice.set_fixed_speed("pump", 84)
-    assert (tmp_path / "pwm1_enable").read_text() == "1"
-    assert (tmp_path / "pwm1").read_text() == "214"
+    mockD5NextDevice.set_fixed_speed("fan", 50)
+
+    if has_support:
+        assert (tmp_path / "pwm1_enable").read_text() == "1"
+        assert (tmp_path / "pwm1").read_text() == "214"
+        assert (tmp_path / "pwm2_enable").read_text() == "1"
+        assert (tmp_path / "pwm2").read_text() == "127"
+    else:
+        # Assert fallback to direct access
+        pump_report, fan_report = mockD5NextDevice.device.sent
+
+        assert pump_report.number == 3
+        assert pump_report.data[0x95:0x98] == [0, 32, 208]  # 0, <8400>
+        assert fan_report.number == 3
+        assert fan_report.data[0x40:0x43] == [0, 19, 136]  # 0, <5000>
 
 
 def test_d5next_speed_profiles_not_supported(mockD5NextDevice):
