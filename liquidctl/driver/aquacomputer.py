@@ -358,22 +358,14 @@ class Aquacomputer(UsbHidDriver):
         hwmon_pwm_name = self._device_info["hwmon_ctrl_mapping"][channel]
         hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
 
-        if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
-            hwmon_pwm_enable_name
-        ):
-            # Set channel to direct percent mode
-            self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+        # Set channel to direct percent mode
+        self._hwmon.write_int(hwmon_pwm_enable_name, 1)
 
-            # Convert duty from percent to PWM range (0-255)
-            pwm_duty = duty * 255 // 100
+        # Convert duty from percent to PWM range (0-255)
+        pwm_duty = duty * 255 // 100
 
-            # Write to hwmon
-            self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
-        else:
-            _LOGGER.error(
-                "cannot write to %s driver, required PWM functionality is not available",
-                self._hwmon.driver,
-            )
+        # Write to hwmon
+        self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
 
     def _set_fixed_speed_directly(self, channel, duty):
         # Request an up to date ctrl report
@@ -414,16 +406,30 @@ class Aquacomputer(UsbHidDriver):
         # Clamp duty between 0 and 100
         duty = clamp(duty, 0, 100)
 
-        if self._hwmon and not direct_access:
-            _LOGGER.info(
-                "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
-            )
-            return self._set_fixed_speed_hwmon(channel, duty)
-
         if self._hwmon:
-            _LOGGER.warning(
-                "directly writing fixed speed despite %s kernel driver", self._hwmon.driver
-            )
+            hwmon_pwm_name = self._device_info["hwmon_ctrl_mapping"][channel]
+            hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
+
+            # Check if the required attributes are present
+            if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+                hwmon_pwm_enable_name
+            ):
+                # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing fixed speed despite %s kernel driver having support", self._hwmon.driver
+                    )
+                    return self._set_fixed_speed_directly(channel, duty)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
+                )
+                return self._set_fixed_speed_hwmon(channel, duty)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
 
         self._set_fixed_speed_directly(channel, duty)
 
