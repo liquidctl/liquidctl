@@ -35,8 +35,8 @@ class HwmonDevice:
     def get_int(self, name):
         return int(self.get_string(name))
 
-    def write_str(self, name, value):
-        (self.path / name).write_text(value)
+    def write_int(self, name, value):
+        (self.path / name).write_text(str(value))
 
     @classmethod
     def from_hidraw(cls, path):
