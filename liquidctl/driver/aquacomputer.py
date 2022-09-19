@@ -417,7 +417,8 @@ class Aquacomputer(UsbHidDriver):
                 # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
                 if direct_access:
                     _LOGGER.warning(
-                        "directly writing fixed speed despite %s kernel driver having support", self._hwmon.driver
+                        "directly writing fixed speed despite %s kernel driver having support",
+                        self._hwmon.driver,
                     )
                     return self._set_fixed_speed_directly(channel, duty)
 
