@@ -10,6 +10,8 @@ two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
 pump additionally exposes +5V and +12V voltage rail readings.
 
+The pump and fan can be set to a fixed speed (0-100%).
+
 Aquacomputer Farbwerk 360
 -------------------------
 Farbwerk 360 is an RGB controller and sends a status HID report every second
@@ -41,7 +43,7 @@ releases have more functionality and support a wider range of devices
 reports directly.
 
 Hwmon support:
-    - D5 Next watercooling pump: sensors - 5.15+
+    - D5 Next watercooling pump: sensors - 5.15+, direct PWM control - not yet in fully
     - Farbwerk 360: sensors - 5.18+
     - Octo: sensors - 5.19+
     - Quadro: sensors - 6.0+
