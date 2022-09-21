@@ -192,23 +192,23 @@ class CorsairHidPsu(UsbHidDriver):
         # with a kernel driver
         _LOGGER.warning('some attributes cannot be read from %s kernel driver', self._hwmon.driver)
 
-        input_voltage = self._hwmon.get_int('in0_input') * 1e-3
+        input_voltage = self._hwmon.read_int('in0_input') * 1e-3
 
         ret = [
-            ('VRM temperature', self._hwmon.get_int('temp1_input') * 1e-3, '°C'),
-            ('Case temperature', self._hwmon.get_int('temp2_input') * 1e-3, '°C'),
-            ('Fan speed', self._hwmon.get_int('fan1_input'), 'rpm'),
+            ('VRM temperature', self._hwmon.read_int('temp1_input') * 1e-3, '°C'),
+            ('Case temperature', self._hwmon.read_int('temp2_input') * 1e-3, '°C'),
+            ('Fan speed', self._hwmon.read_int('fan1_input'), 'rpm'),
             ('Input voltage', input_voltage, 'V'),
         ]
 
         for n, rail in zip(range(2, 5), [_RAIL_12V, _RAIL_5V, _RAIL_3P3V]):
             i = n - 1
             name = _RAIL_NAMES[rail]
-            ret.append((f'{name} output voltage', self._hwmon.get_int(f'in{i}_input') * 1e-3, 'V'))
-            ret.append((f'{name} output current', self._hwmon.get_int(f'curr{n}_input') * 1e-3, 'A'))
-            ret.append((f'{name} output power', self._hwmon.get_int(f'power{n}_input') * 1e-6, 'W'))
+            ret.append((f'{name} output voltage', self._hwmon.read_int(f'in{i}_input') * 1e-3, 'V'))
+            ret.append((f'{name} output current', self._hwmon.read_int(f'curr{n}_input') * 1e-3, 'A'))
+            ret.append((f'{name} output power', self._hwmon.read_int(f'power{n}_input') * 1e-6, 'W'))
 
-        output_power = self._hwmon.get_int('power1_input') * 1e-6
+        output_power = self._hwmon.read_int('power1_input') * 1e-6
         input_power = round(self._input_power_at(input_voltage, output_power), 0)
         efficiency = round(output_power / input_power * 100, 0)
 
