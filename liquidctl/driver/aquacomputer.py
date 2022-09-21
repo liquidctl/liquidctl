@@ -10,6 +10,8 @@ two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
 pump additionally exposes +5V and +12V voltage rail readings.
 
+The pump and fan can be set to a fixed speed (0-100%).
+
 Aquacomputer Farbwerk 360
 -------------------------
 Farbwerk 360 is an RGB controller and sends a status HID report every second
@@ -41,7 +43,7 @@ releases have more functionality and support a wider range of devices
 reports directly.
 
 Hwmon support:
-    - D5 Next watercooling pump: sensors - 5.15+
+    - D5 Next watercooling pump: sensors - 5.15+, direct PWM control - not yet in fully
     - Farbwerk 360: sensors - 5.18+
     - Octo: sensors - 5.19+
     - Quadro: sensors - 6.0+
@@ -55,9 +57,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 
+import crcmod.predefined
+
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
-from liquidctl.util import u16be_from
+from liquidctl.util import u16be_from, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,6 +72,15 @@ _AQC_FAN_POWER_OFFSET = 0x06
 _AQC_FAN_SPEED_OFFSET = 0x08
 
 _AQC_STATUS_READ_ENDPOINT = 0x01
+_AQC_CTRL_REPORT_ID = 0x03
+
+_AQC_FAN_TYPE_OFFSET = 0x00
+_AQC_FAN_PERCENT_OFFSET = 0x01
+
+
+def put_unaligned_be16(value, data, offset):
+    value_be = bytearray(value.to_bytes(2, "big"))
+    data[offset], data[offset + 1] = value_be[0], value_be[1]
 
 
 class Aquacomputer(UsbHidDriver):
@@ -89,6 +102,9 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
             "fan_current_label": ["Pump current", "Fan current"],
             "status_report_length": 0x9E,
+            "ctrl_report_length": 0x329,
+            "fan_ctrl": {"pump": 0x96, "fan": 0x41},
+            "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
         },
         _DEVICE_FARBWERK360: {
             "type": _DEVICE_FARBWERK360,
@@ -340,16 +356,85 @@ class Aquacomputer(UsbHidDriver):
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+    def _set_fixed_speed_hwmon(self, channel, duty):
+        hwmon_pwm_name = self._device_info["hwmon_ctrl_mapping"][channel]
+        hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
+
+        # Set channel to direct percent mode
+        self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+
+        # Convert duty from percent to PWM range (0-255)
+        pwm_duty = duty * 255 // 100
+
+        # Write to hwmon
+        self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
+
+    def _set_fixed_speed_directly(self, channel, duty):
+        # Request an up to date ctrl report
+        report_length = self._device_info["ctrl_report_length"]
+        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+        fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
+
+        # Set fan to direct percent-value mode
+        ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
+
+        # Write down duty for channel
+        put_unaligned_be16(
+            duty * 100,  # Centi-percent
+            ctrl_settings,
+            fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
+        )
+
+        # Update checksum value at the end of the report
+        crc16usb_func = crcmod.predefined.mkCrcFun("crc-16-usb")
+
+        checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
+        checksum_bytes = crc16usb_func(checksum_part)
+        put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
+
+        self.device.send_feature_report(ctrl_settings)
+
+    def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         if (
-            self._device_info["type"] == self._DEVICE_D5NEXT
-            or self._device_info["type"] == self._DEVICE_OCTO
+            self._device_info["type"] == self._DEVICE_OCTO
             or self._device_info["type"] == self._DEVICE_QUADRO
         ):
             # Not yet implemented
             raise NotSupportedByDriver()
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
+
+        # Clamp duty between 0 and 100
+        duty = clamp(duty, 0, 100)
+
+        if self._hwmon:
+            hwmon_pwm_name = self._device_info["hwmon_ctrl_mapping"][channel]
+            hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
+
+            # Check if the required attributes are present
+            if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+                hwmon_pwm_enable_name
+            ):
+                # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing fixed speed despite %s kernel driver having support",
+                        self._hwmon.driver,
+                    )
+                    return self._set_fixed_speed_directly(channel, duty)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
+                )
+                return self._set_fixed_speed_hwmon(channel, duty)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
+
+        self._set_fixed_speed_directly(channel, duty)
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented

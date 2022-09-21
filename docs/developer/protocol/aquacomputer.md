@@ -3,6 +3,7 @@
 Aquacomputer devices share the same HID report philosophy:
 
 * A sensor report with ID `0x01` is sent every second to the host, detailing current sensor readings
+* A HID feature report with ID `0x03` contains the device settings which can be requested, modified and written back to the device
 * A control/configuration report that can be requested and sent back to the device, controlling its settings and mode of operation. Contains a CRC-16/USB checksum in the last two bytes
 * A save report, which is always constant and is sent after a configuration report (the devices seem to work fine without it, but the official software always sends it)
 
@@ -21,6 +22,28 @@ There's one important substructure that keeps recurring in sensor reports, and i
 | Fan speed (RPM)    | 0x08                    |
 
 Temperature sensors, if not connected, will report `0x7FFF` as their value.
+
+### Control report details & substructures
+
+The control report can be requested from and sent to the device using `GET_FEATURE_REPORT` and `SET_FEATURE_REPORT`, respectively. What it contains depends on the device, but it always carries a two byte CRC-16/USB checksum in
+the last two places. The checksum is calculated from the data between the starting `0x03` report ID at the very beginning and the (existing) checksum at the end.
+
+Fan speed control subgroups can be found in the control report, and it's currently known that they look like this:
+
+| What             | Where (relative offset) |
+|------------------|-------------------------|
+| Speed curve type | 0x00                    |
+| Speed (0-100%)   | 0x01                    |
+
+The `Speed curve type` above understands these values (list may be incomplete):
+
+| Value | Meaning                                       |
+|-------|-----------------------------------------------|
+| 0     | Manual mode (directly honor percentage value) |
+| 1     | PID control mode                              |
+| 2     | Fan curve mode                                |
+
+The liquidctl driver currently supports only the manual mode.
 
 ## D5 Next pump
 
@@ -49,6 +72,23 @@ Here is what it's currently known to contain:
 | Fan info substructure              | 0x67                     |
 | +5V voltage                        | 0x39                     |
 | +12V voltage                       | 0x37                     |
+
+### Control report
+
+An example control report of the D5 Next looks like this:
+
+```
+03 00 03 1E 00 00 00 00 00 0A C0 00 7F FF 00 00 00 00 02 02 0E 10 0B B8 00 00 00 00 0A 00 01 00 0A 00 06 00 0A 00 0C 00 0A 00 00 00 00 00 00 01 01 F4 27 10 27 10 07 D0 00 00 00 27 10 27 10 13 88 02 07 D2 00 00 0C 80 01 F4 01 2C 00 00 00 64 00 1E 00 01 0A F0 0A 8C 0A FD 0B 4C 0B 9D 0B E9 0C 46 0C 9F 0C F3 0D 3C 0D A2 0D E5 0E 42 0E 8A 0E E6 0F 35 0F 70 00 00 00 00 00 00 02 D6 04 D6 06 D6 09 81 0A 01 0D AC 12 02 16 2D 17 AD 19 D8 1E AE 22 2E 23 2E 02 12 D3 00 00 0D 48 01 F4 01 2C 00 00 00 64 00 1E 00 01 0A F0 0A 8C 0A FA 0B 4C 0B A4 0C 00 0C 4F 0C A3 0D 11 0D 51 0D A6 0D FD 0E 56 0E 9E 0E EE 0F 20 10 82 00 00 00 8C 00 00 00 00 00 00 00 00 00 00 01 00 01 80 03 54 07 81 0A 81 0B 01 0C 81 0D D7 0E AC 03 E8 FF 00 00 00 00 0F 03 00 00 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 32 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 0F 0F 08 00 00 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 19 00 28 00 14 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0F 03 E7 FF FF 00 FE FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 1E 0F 0B 00 00 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 1E 00 28 00 01 00 06 00 50 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 FF 02 FF 01 FB FF FF 05 25 FF FF 00 C5 FF FF 03 F5 FF FF 05 F3 FF FF 00 2D 0F 04 00 06 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 28 00 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0F 00 00 FF FF 01 FD FF FF 03 FF FF FF 00 FA FF FF 01 CE 10 FF 00 3C 0F 04 00 06 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 28 00 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0F 00 FA FF FF 05 DC FF FF 01 C2 FF FF 00 00 FF FF 07 D0 10 FF 00 4B 0F 04 00 06 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 28 00 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0F 03 E8 FF FF 01 C2 FF FF 00 00 FF FF 00 64 FF FF 03 20 10 FF 01 00 06 03 00 00 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 FF 00 1E 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 01 00 06 00 00 00 FF FF 0F 19 00 00 03 E8 01 64 00 00 03 E8 01 64 00 1E 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF 00 00 FF FF C0 04 01 C2 0F A0 01 10 FB
+```
+
+Its ID is `0x03` and its length is `0x329`.
+
+Here is what it's currently known to contain:
+
+| What                               | Where/starts at (offset) |
+|------------------------------------|--------------------------|
+| Pump speed control subgroup        | 0x96                     |
+| Fan speed control subgroup         | 0x41                     |
 
 ## Farbwerk 360 RGB controller
 
