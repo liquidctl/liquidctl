@@ -41,4 +41,4 @@ def test_gets_string(mock_hwmon):
 
 
 def test_gets_int(mock_hwmon):
-    assert mock_hwmon.get_int("fan1_input") == 1499
+    assert mock_hwmon.read_int("fan1_input") == 1499

@@ -291,9 +291,9 @@ class KrakenX3(UsbHidDriver):
 
     def _get_status_from_hwmon(self):
         return [
-            (_STATUS_TEMPERATURE, self._hwmon.get_int("temp1_input") * 1e-3, "°C"),
-            (_STATUS_PUMP_SPEED, self._hwmon.get_int("fan1_input"), "rpm"),
-            (_STATUS_PUMP_DUTY, self._hwmon.get_int("pwm1") * 100.0 / 255, "%"),
+            (_STATUS_TEMPERATURE, self._hwmon.read_int("temp1_input") * 1e-3, "°C"),
+            (_STATUS_PUMP_SPEED, self._hwmon.read_int("fan1_input"), "rpm"),
+            (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%"),
         ]
 
     def get_status(self, direct_access=False, **kwargs):

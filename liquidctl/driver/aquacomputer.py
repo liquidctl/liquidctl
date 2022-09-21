@@ -272,7 +272,7 @@ class Aquacomputer(UsbHidDriver):
         for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
             temp_sensor_reading = (
                 self._device_info["temp_sensors_label"][idx],
-                self._hwmon.get_int(f"temp{idx + 1}_input") * 1e-3,
+                self._hwmon.read_int(f"temp{idx + 1}_input") * 1e-3,
                 "°C",
             )
             sensor_readings.append(temp_sensor_reading)
@@ -281,28 +281,28 @@ class Aquacomputer(UsbHidDriver):
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
-                self._hwmon.get_int(f"fan{idx + 1}_input"),
+                self._hwmon.read_int(f"fan{idx + 1}_input"),
                 "rpm",
             )
             sensor_readings.append(fan_speed)
 
             fan_power = (
                 self._device_info["fan_power_label"][idx],
-                self._hwmon.get_int(f"power{idx + 1}_input") * 1e-6,
+                self._hwmon.read_int(f"power{idx + 1}_input") * 1e-6,
                 "W",
             )
             sensor_readings.append(fan_power)
 
             fan_voltage = (
                 self._device_info["fan_voltage_label"][idx],
-                self._hwmon.get_int(f"in{idx}_input") * 1e-3,
+                self._hwmon.read_int(f"in{idx}_input") * 1e-3,
                 "V",
             )
             sensor_readings.append(fan_voltage)
 
             fan_current = (
                 self._device_info["fan_current_label"][idx],
-                self._hwmon.get_int(f"curr{idx + 1}_input") * 1e-3,
+                self._hwmon.read_int(f"curr{idx + 1}_input") * 1e-3,
                 "A",
             )
             sensor_readings.append(fan_current)
@@ -310,12 +310,12 @@ class Aquacomputer(UsbHidDriver):
         # Special-case sensor readings
         if self._device_info["type"] == self._DEVICE_D5NEXT:
             # Read +5V voltage rail value
-            plus_5v_voltage = ("+5V voltage", self._hwmon.get_int("in2_input") * 1e-3, "V")
+            plus_5v_voltage = ("+5V voltage", self._hwmon.read_int("in2_input") * 1e-3, "V")
             sensor_readings.append(plus_5v_voltage)
 
             if self._hwmon.has_attribute("in3_input"):
                 # The driver exposes the +12V voltage of the pump (kernel v5.20+), read the value
-                plus_12v_voltage = ("+12V voltage", self._hwmon.get_int("in3_input") * 1e-3, "V")
+                plus_12v_voltage = ("+12V voltage", self._hwmon.read_int("in3_input") * 1e-3, "V")
                 sensor_readings.append(plus_12v_voltage)
             else:
                 _LOGGER.warning(
@@ -323,7 +323,7 @@ class Aquacomputer(UsbHidDriver):
                 )
         elif self._device_info["type"] == self._DEVICE_QUADRO:
             # Read flow sensor value
-            flow_sensor_value = ("Flow sensor", self._hwmon.get_int("fan5_input"), "dL/h")
+            flow_sensor_value = ("Flow sensor", self._hwmon.read_int("fan5_input"), "dL/h")
             sensor_readings.append(flow_sensor_value)
 
         return sensor_readings

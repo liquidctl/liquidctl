@@ -343,10 +343,10 @@ class SmartDevice(_BaseSmartDevice):
 
         for i in range(len(self._speed_channels)):
             n = i + 1
-            ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
-            ret.append((f'Fan {n} voltage', self._hwmon.get_int(f'in{i}_input') * 1e-3, 'V')),
-            ret.append((f'Fan {n} current', self._hwmon.get_int(f'curr{n}_input') * 1e-3, 'A')),
-            ret.append((f'Fan {n} control mode', mode[self._hwmon.get_int(f'pwm{n}_mode')], '')),
+            ret.append((f'Fan {n} speed', self._hwmon.read_int(f'fan{n}_input'), 'rpm')),
+            ret.append((f'Fan {n} voltage', self._hwmon.read_int(f'in{i}_input') * 1e-3, 'V')),
+            ret.append((f'Fan {n} current', self._hwmon.read_int(f'curr{n}_input') * 1e-3, 'A')),
+            ret.append((f'Fan {n} control mode', mode[self._hwmon.read_int(f'pwm{n}_mode')], '')),
 
         # noise level is not available through hwmon, but also not very accurate or useful
 
@@ -572,9 +572,9 @@ class SmartDevice2(_BaseSmartDevice):
         modes = ['DC', 'PWM']
 
         for n in range(1, len(self._speed_channels) + 1):
-            ret.append((f'Fan {n} speed', self._hwmon.get_int(f'fan{n}_input'), 'rpm')),
-            ret.append((f'Fan {n} duty', self._hwmon.get_int(f'pwm{n}') * 100. / 255, '%')),
-            ret.append((f'Fan {n} control mode', modes[self._hwmon.get_int(f'pwm{n}_mode')], '')),
+            ret.append((f'Fan {n} speed', self._hwmon.read_int(f'fan{n}_input'), 'rpm')),
+            ret.append((f'Fan {n} duty', self._hwmon.read_int(f'pwm{n}') * 100. / 255, '%')),
+            ret.append((f'Fan {n} control mode', modes[self._hwmon.read_int(f'pwm{n}_mode')], '')),
 
         # noise level is not available through hwmon, but also not very accurate or useful
 
