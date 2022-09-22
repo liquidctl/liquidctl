@@ -34,7 +34,7 @@ Removed:
 
 - API: make `UsbDriver.SUPPORTED_DEVICES` private
 
-### Notes for downstream packages
+### Notes for downstream packagers
 
 New Python package dependencies have been added:
 
