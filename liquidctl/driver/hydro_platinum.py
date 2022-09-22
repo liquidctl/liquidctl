@@ -22,9 +22,8 @@ from enum import Enum, unique
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
-from liquidctl.pmbus import compute_pec
 from liquidctl.util import RelaxedNamesEnum, clamp, fraction_of_byte, \
-                           u16le_from, normalize_profile
+                           u16le_from, normalize_profile, mkCrcFun
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -375,11 +374,11 @@ class HydroPlatinum(UsbHidDriver):
             start_at = 3
         if data:
             buf[start_at: start_at + len(data)] = data
-        buf[-1] = compute_pec(buf[2:-1])
+        buf[-1] = mkCrcFun('crc-8')(buf[2:-1])
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
-        if compute_pec(buf[1:]):
+        if mkCrcFun('crc-8')(buf[1:]):
             _LOGGER.warning('response checksum does not match data')
         return buf
 
