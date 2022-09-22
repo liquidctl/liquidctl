@@ -75,9 +75,7 @@ Almost universally sent as 24-bit RGB.  However, endianess varies, and some devi
 
 ### CRC checksums (read/write)
 
-Some devices end all messages (received and sent) with a 8-bit checksum (also known as a PEC byte).  They usually follow the SMBus specification and use the `x⁸ + x² + x¹ + x⁰` polynomial ([`liquidctl.pmbus.compute_pec(bytes)`]).
-
-[`liquidctl.pmbus.compute_pec(bytes)`]: https://github.com/liquidctl/liquidctl/blob/d1b8d2424948c564e218e2f0cf5ffb86f21b1445/liquidctl/pmbus.py#L168
+Some devices end all messages (received and sent) with checksum (sometimes known as a PEC byte).  They usually, but not always, follow the SMBus specification and use the 8-bit `x⁸ + x² + x¹ + x⁰` polynomial.  The desired CRC function can be constructed with `liquidctl.util.mkCrcFun` (which efficiently wraps the crcmod package); for an example, see `liquidctl.pmbus.compute_pec`.
 
 ### Action type (read/write)
 

@@ -8,6 +8,9 @@ import colorsys
 import logging
 from ast import literal_eval
 from enum import Enum, EnumMeta, unique
+from functools import cache
+
+import crcmod.predefined
 
 from liquidctl.error import UnsafeFeaturesNotEnabled
 
@@ -399,3 +402,19 @@ def map_direction(direction, forward=None, backward=None):
         return backward
     else:
         raise ValueError(f'invalid direction: {direction!r}')
+
+
+@cache
+def mkCrcFun(crc_name):
+    """Efficiently construct a predefined CRC function.
+
+    Unstable.
+
+    For the available algorithms, see
+    <http://crcmod.sourceforge.net/crcmod.predefined.html#predefined-crc-algorithms>.
+
+    This function implements memoization, only constructing each requested CRC
+    algorithm implementation once.
+    """
+
+    return crcmod.predefined.mkCrcFun(crc_name)
