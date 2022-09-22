@@ -769,7 +769,7 @@ You are also encouraged to contribute to the documentation and to these examples
 
 liquidctl – monitor and control liquid coolers and other devices.  
 Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
-Robertson, ParkerMc and contributors
+Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
