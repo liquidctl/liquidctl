@@ -204,7 +204,16 @@ class KrakenX3(UsbHidDriver):
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
             },
-        )
+        ),
+        (
+            0x1E71,
+            0x2014,
+            "NZXT Kraken X (X53, X63 or X73)",
+            {
+                "speed_channels": _SPEED_CHANNELS_KRAKENX,
+                "color_channels": _COLOR_CHANNELS_KRAKENX,
+            },
+        ),
     ]
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
