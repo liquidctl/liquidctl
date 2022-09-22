@@ -1,5 +1,52 @@
 # Changelog
 
+## [1.11.0] – UNRELEASED
+
+### Changes since 1.10.0
+
+Added:
+
+- Commander Core: extend experimental monitoring & fan control support to the
+  Commander Core XT (PR #478)
+- Aquacomputer: add experimental D5 Next monitoring & fan control support (PR
+  #482, PR #489, PR #499)
+- Aquacomputer: add experimental Farbwerk 360 monitoring support (PR #491)
+- Aquacomputer: add experimental Octo monitoring support (PR #492)
+- Aquacomputer: add experimental Quadro monitoring support (PR #493)
+- NZXT Kraken Z53/Z63/Z73: add experimental LCD screen support (PR #479)
+- NZXT Kraken X43/X53/X63/X73: support new USB PID (#503)
+- NZXT RGB & Fan Controller: support new USB PID (#485)
+
+Changed:
+
+- ASUS Aura LED: refer to as ASUS instead of AsusTek
+- Corsair RMi/HXi: rename temperature sensors according to their location
+- NZXT Kraken X40/X60: document that alerts are not supported (#477)
+
+Fixed:
+
+- HWMON: fix Python<3.9 compatibility (PR #483)
+- Asetek Pro: fix duplicate use of second alert temperature (PR #484)
+- HWMON: support builtin drivers and log driver instead of module name (#502)
+- Commander Core: support 2.10.219 firmware (PR #501)
+
+Removed:
+
+- API: make `UsbDriver.SUPPORTED_DEVICES` private
+
+### Notes for downstream packages
+
+New Python package dependencies have been added:
+
+- crcmod,
+- pillow,
+- (Windows-only:) winusbcdc.
+
+### Known issues
+
+Please see the [issue tracker].
+
+
 ## [1.10.0] – 2022-07-03
 
 ### Changes since 1.9.1
@@ -805,3 +852,6 @@ Changelog since 1.0.0rc1:
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
+
+
+[issue tracker]: https://github.com/liquidctl/liquidctl/issues
