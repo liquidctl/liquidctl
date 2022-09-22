@@ -14,7 +14,7 @@ Added:
 - Aquacomputer: add experimental Octo monitoring support (PR #492)
 - Aquacomputer: add experimental Quadro monitoring support (PR #493)
 - NZXT Kraken Z53/Z63/Z73: add experimental LCD screen support (PR #479)
-- NZXT Kraken X43/X53/X63/X73: support new USB PID (#503)
+- NZXT Kraken X53/X63/X73: support new USB PID (#503)
 - NZXT RGB & Fan Controller: support new USB PID (#485)
 
 Changed:
