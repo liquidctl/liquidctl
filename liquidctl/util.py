@@ -8,7 +8,7 @@ import colorsys
 import logging
 from ast import literal_eval
 from enum import Enum, EnumMeta, unique
-from functools import cache
+from functools import lru_cache
 
 import crcmod.predefined
 
@@ -404,7 +404,7 @@ def map_direction(direction, forward=None, backward=None):
         raise ValueError(f'invalid direction: {direction!r}')
 
 
-@cache
+@lru_cache(maxsize=None)
 def mkCrcFun(crc_name):
     """Efficiently construct a predefined CRC function.
 
