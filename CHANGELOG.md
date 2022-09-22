@@ -13,8 +13,8 @@ Added:
 - Aquacomputer: add experimental Farbwerk 360 monitoring support (PR #491)
 - Aquacomputer: add experimental Octo monitoring support (PR #492)
 - Aquacomputer: add experimental Quadro monitoring support (PR #493)
-- NZXT Kraken Z53/Z63/Z73: add experimental LCD screen support (PR #479)
-- NZXT Kraken X53/X63/X73: support new USB PID (#503)
+- NZXT Kraken Z3: add experimental LCD screen support (PR #479)
+- NZXT Kraken X3: support new USB PID (#503)
 - NZXT RGB & Fan Controller: support new USB PID (#485)
 
 Changed:
@@ -26,7 +26,7 @@ Changed:
 Fixed:
 
 - HWMON: fix Python<3.9 compatibility (PR #483)
-- Asetek Pro: fix duplicate use of second alert temperature (PR #484)
+- Corsair Hydro Pro: fix duplicate use of second alert temperature (PR #484)
 - HWMON: support builtin drivers and log driver instead of module name (#502)
 - Commander Core: support 2.10.219 firmware (PR #501)
 
