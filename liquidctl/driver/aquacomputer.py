@@ -145,7 +145,7 @@ class Aquacomputer(UsbHidDriver):
                 name: offset
                 for (name, offset) in zip(
                     [f"fan{i}" for i in range(1, 4 + 1)],
-                    [0x36, 0x8b, 0xe0, 0x135],
+                    [0x36, 0x8B, 0xE0, 0x135],
                 )
             },
         },
