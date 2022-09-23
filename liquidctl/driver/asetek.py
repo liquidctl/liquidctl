@@ -49,9 +49,7 @@ _MIN_PUMP_SPEED_CODE = 0x32
 _MAX_PUMP_SPEED_CODE = 0x42
 _READ_ENDPOINT = 0x82
 _READ_LENGTH = 32
-_READ_TIMEOUT = 2000
 _WRITE_ENDPOINT = 0x2
-_WRITE_TIMEOUT = 2000
 
 _LEGACY_FIXED_SPEED_CHANNELS = {    # (message type, minimum duty, maximum duty)
     'fan':  (_CMD_OVERRIDE, 0, 100),
@@ -110,7 +108,7 @@ class _Base690Lc(UsbDriver):
         self.device.ctrl_transfer(_USBXPRESS, _USBXPRESS_REQUEST, _USBXPRESS_FLUSH_BUFFERS)
 
     def _write(self, data):
-        self.device.write(_WRITE_ENDPOINT, data, _WRITE_TIMEOUT)
+        self.device.write(_WRITE_ENDPOINT, data)
 
     def _end_transaction_and_read(self):
         """End the transaction by reading from the device.
@@ -122,7 +120,7 @@ class _Base690Lc(UsbDriver):
         successfully follow this approach.
         """
 
-        msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH, _READ_TIMEOUT)
+        msg = self.device.read(_READ_ENDPOINT, _READ_LENGTH)
         self.device.release()
         return msg
 

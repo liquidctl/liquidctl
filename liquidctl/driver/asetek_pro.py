@@ -16,9 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 
 _READ_ENDPOINT = 0x81
 _READ_MAX_LENGTH = 32
-_READ_TIMEOUT = 2000
 _WRITE_ENDPOINT = 0x1
-_WRITE_TIMEOUT = 2000
 
 _MAX_PROFILE_POINTS = 7
 
@@ -98,8 +96,8 @@ class HydroPro(_Base690Lc):
 
         assert read_length is not None and read_length <= _READ_MAX_LENGTH
 
-        self.device.write(_WRITE_ENDPOINT, data, _WRITE_TIMEOUT)
-        return self.device.read(_READ_ENDPOINT, read_length, _READ_TIMEOUT)[0:read_length]
+        self.device.write(_WRITE_ENDPOINT, data)
+        return self.device.read(_READ_ENDPOINT, read_length)[0:read_length]
 
     def initialize(self, pump_mode='balanced', **kwargs):
         """Initialize the device."""
