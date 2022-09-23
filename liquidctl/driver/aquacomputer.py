@@ -379,7 +379,7 @@ class Aquacomputer(UsbHidDriver):
         self._hwmon.write_int(hwmon_pwm_enable_name, 1)
 
         # Some devices (Octo, Quadro and Aquaero) can not accept reports in quick succession, so slow down a bit
-        time.sleep(0.5)
+        time.sleep(0.2)
 
         # Convert duty from percent to PWM range (0-255)
         pwm_duty = duty * 255 // 100
