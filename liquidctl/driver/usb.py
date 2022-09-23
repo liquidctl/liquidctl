@@ -59,6 +59,7 @@ import logging
 import sys
 
 import usb
+from usb.backend.openusb import USBTimeoutError
 try:
     # The hidapi package, depending on how it's compiled, exposes one or two
     # top level modules: hid and, optionally, hidraw.  When both are available,
@@ -73,7 +74,12 @@ except ModuleNotFoundError:
 
 from liquidctl.driver.base import BaseDriver, BaseBus, find_all_subclasses
 from liquidctl.driver.hwmon import HwmonDevice
+from liquidctl.error import Timeout
 from liquidctl.util import LazyHexRepr
+
+# Most devices respond in 1 second or (much) less; by default, only timeout if
+# something has almost surely gone wrong.
+_DEFAULT_TIMEOUT_MS = 10000
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -302,21 +308,33 @@ class PyUsbDevice:
             self.usbdev.attach_kernel_driver(self.bInterfaceNumber)
             self._attached = False
 
-    def read(self, endpoint, length, timeout=None):
+    def read(self, endpoint, length, *, timeout=_DEFAULT_TIMEOUT_MS):
         """Read from endpoint."""
-        data = self.usbdev.read(endpoint, length, timeout=timeout)
+        try:
+            data = self.usbdev.read(endpoint, length, timeout=timeout)
+        except USBTimeoutError:
+            _LOGGER.debug('failed to read, timed out after %d ms', timeout)
+            raise Timeout()
         _LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
         return data
 
-    def write(self, endpoint, data, timeout=None):
+    def write(self, endpoint, data, *, timeout=_DEFAULT_TIMEOUT_MS):
         """Write to endpoint."""
         _LOGGER.debug('writting %d bytes: %r', len(data), LazyHexRepr(data))
-        return self.usbdev.write(endpoint, data, timeout=timeout)
+        try:
+            return self.usbdev.write(endpoint, data, timeout=timeout)
+        except USBTimeoutError:
+            _LOGGER.debug('write failed, timed out after %d ms', timeout)
+            raise Timeout()
 
-    def ctrl_transfer(self, *args, **kwargs):
+    def ctrl_transfer(self, *args, timeout=_DEFAULT_TIMEOUT_MS, **kwargs):
         """Submit a contrl transfer."""
         _LOGGER.debug('sending control transfer with %r, %r', args, kwargs)
-        return self.usbdev.ctrl_transfer(*args, **kwargs)
+        try:
+            return self.usbdev.ctrl_transfer(*args, **kwargs)
+        except USBTimeoutError:
+            _LOGGER.debug('control transfers failed, timed out after %d ms', timeout)
+            raise Timeout()
 
     @classmethod
     def enumerate(cls, vid=None, pid=None):
@@ -419,7 +437,7 @@ class HidapiDevice:
             discarded += 1
         _LOGGER.debug('discarded %d previously enqueued reports', discarded)
 
-    def read(self, length):
+    def read(self, length, *, timeout=_DEFAULT_TIMEOUT_MS):
         """Read raw report from HID.
 
         The returned data follows the semantics of the Linux HIDRAW API.
@@ -428,9 +446,19 @@ class HidapiDevice:
         > returned data will be the report number; the report data follows,
         > beginning in the second byte. For devices which do not use numbered
         > reports, the report data will begin at the first byte.
+
+        Unlike the underlying cython-hidapi API this method wraps, pass
+        `timeout=None` to disable the default timeout.
         """
         self.hiddev.set_nonblocking(False)
-        data = self.hiddev.read(length)
+        if timeout is None:
+            timeout = 0  # cython-hidapi uses 0 for no timeout
+        elif timeout == 0:
+            timeout = 1  # smallest timeout forwarded to hid_read_timeout
+        data = self.hiddev.read(max_length=length, timeout_ms=timeout)
+        if timeout and not data:
+            _LOGGER.debug('failed to read, timed out after %d ms', timeout)
+            raise Timeout()
         _LOGGER.debug('read %d bytes: %r', len(data), LazyHexRepr(data))
         return data
 
