@@ -46,7 +46,7 @@ Hwmon support:
     - D5 Next watercooling pump: sensors - 5.15+, direct PWM control - not yet in fully
     - Farbwerk 360: sensors - 5.18+
     - Octo: sensors - 5.19+, direct PWM control - not yet in fully
-    - Quadro: sensors - 6.0+
+    - Quadro: sensors - 6.0+, direct PWM control - not yet in fully
 
 Copyright (C) 2022 - Aleksa Savic
 
@@ -140,6 +140,14 @@ class Aquacomputer(UsbHidDriver):
             "fan_current_label": [f"Fan {num} current" for num in range(1, 4 + 1)],
             "flow_sensor_offset": 0x6E,
             "status_report_length": 0xDC,
+            "ctrl_report_length": 0x3C1,
+            "fan_ctrl": {
+                name: offset
+                for (name, offset) in zip(
+                    [f"fan{i}" for i in range(1, 4 + 1)],
+                    [0x36, 0x8b, 0xe0, 0x135],
+                )
+            },
         },
     }
 
@@ -414,10 +422,7 @@ class Aquacomputer(UsbHidDriver):
         self.device.send_feature_report(ctrl_settings)
 
     def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
-        if self._device_info["type"] == self._DEVICE_QUADRO:
-            # Not yet implemented
-            raise NotSupportedByDriver()
-        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+        if self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
         # Clamp duty between 0 and 100
