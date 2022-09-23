@@ -55,7 +55,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # uses the psf/black style
 
-import logging
+import logging, time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
@@ -377,6 +377,9 @@ class Aquacomputer(UsbHidDriver):
 
         # Set channel to direct percent mode
         self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+
+        # Some devices (Octo, Quadro and Aquaero) can not accept reports in quick succession, so slow down a bit
+        time.sleep(0.5)
 
         # Convert duty from percent to PWM range (0-255)
         pwm_duty = duty * 255 // 100
