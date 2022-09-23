@@ -128,6 +128,39 @@ QUADRO_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "0000000003E82710000A0000000E000000002710FF000001"
 )
 
+QUADRO_SAMPLE_CONTROL_REPORT = bytes.fromhex(
+    "00031C000000A9000002580514FAEC05DC0001F42710271007D00001F42710271"
+    "007D00001F42710271007D00001F42710271007D0000000FFFF0DAC057804B000"
+    "000028001400010AF00A8C0AFA0B4A0BA40BF40C4E0C9D0CF80D480DA20DF20E4"
+    "C0E9C0EF50F460FA00000008C011801F4032004B0069008D40B680E4C1194152C"
+    "19281D7422102710004CD0FFFF0DAC057804B000000028001400010AF00A8C0AF"
+    "A0B4A0BA40BF40C4E0C9D0CF80D480DA20DF20E4C0E9C0EF50F460FA00000008C"
+    "011801F4032004B0069008D40B680E4C1194152C19281D74221027100005BB000"
+    "30DAC057804B000000028001400010AF00A8C0AFA0B4A0BA40BF40C4E0C9D0CF8"
+    "0D480DA20DF20E4C0E9C0EF50F460FA00000008C011801F4032004B0069008D40"
+    "B680E4C1194152C19281D74221027100015E0FFFF0DAC057804B0000000280014"
+    "00010AF00A8C0AFA0B4A0BA40BF40C4E0C9D0CF80D480DA20DF20E4C0E9C0EF50"
+    "F460FA00000008C011801F4032004B0069008D40B680E4C1194152C19281D7422"
+    "102710FF000200000F030000FFFF0F19000003E80164000003E801FF003200640"
+    "0000000000000000000000000000000000000000000FFFF0000FFFF0000FFFF00"
+    "00FFFF0000FFFF0000FFFF000F0F080000FFFF0F19000003E80164000003E801F"
+    "F0019002800140000000000000000000000000000000000000000000F03E7FFFF"
+    "00FEFFFF0000FFFF0000FFFF0000FFFF001E0F0B0000FFFF0F19000003E801640"
+    "00003E801FF001E0028000100060050000000000000000000000000000002FF02"
+    "FF01FBFFFF0525FFFF00C5FFFF03F5FFFF05F3FFFF002D0F040006FFFF0F19000"
+    "003E80164000003E801FF00280005000000000000000000000000000000000000"
+    "00000000000F0000FFFF01FDFFFF03FFFFFF00FAFFFF01CE10FF003C0F040006F"
+    "FFF0F19000003E80164000003E801FF0028000200000000000000000000000000"
+    "000000000000000000000F03FFFFFF07D0FFFF0000FFFF0000FFFF0000FFFF004"
+    "B0F040006FFFF0F19000003E80164000003E801FF002800020000000000000000"
+    "0000000000000000000000000000000F01CEFFFF03FFFFFF0000FFFF0000FFFF0"
+    "000FFFF002D0F000006FFFF0F19000003E80164000003E8016400280002000000"
+    "00000000000000000000000000000000000000000F00FAFFFF01CE10FF0000FFF"
+    "F0000FFFF0000FFFF002D0F000006FFFF0F19000003E80164000003E801640028"
+    "000500000000000000000000000000000000000000000000000F0000FFFF01FDF"
+    "FFF03FFFFFF00FAFFFF01CE10FF0100E0A8"
+)
+
 
 @pytest.fixture
 def mockD5NextDevice():
@@ -665,6 +698,8 @@ class _MockQuadroDevice(MockHidapiDevice):
         super().__init__(vendor_id=0x0C70, product_id=0xF00D)
 
         self.preload_read(Report(1, QUADRO_SAMPLE_STATUS_REPORT))
+        self.preload_read(Report(3, QUADRO_SAMPLE_CONTROL_REPORT))
+        self.preload_read(Report(3, QUADRO_SAMPLE_CONTROL_REPORT))
 
     def read(self, length):
         pre = super().read(length)
@@ -781,9 +816,61 @@ def test_quadro_get_status_from_hwmon(mockQuadroDevice, tmp_path):
     assert sorted(got) == sorted(expected)
 
 
-def test_quadro_set_fixed_speeds_not_supported(mockQuadroDevice):
-    with pytest.raises(NotSupportedByDriver):
-        mockQuadroDevice.set_fixed_speed("fan", 42)
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_quadro_set_fixed_speeds_directly(mockQuadroDevice, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mockQuadroDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "pwm1").write_text("0")
+        (tmp_path / "pwm1_enable").write_text("0")
+        (tmp_path / "pwm2").write_text("0")
+        (tmp_path / "pwm2_enable").write_text("0")
+
+    mockQuadroDevice.set_fixed_speed("fan1", 84, direct_access=direct_access)
+    mockQuadroDevice.set_fixed_speed("fan2", 50, direct_access=direct_access)
+
+    pump_report, fan_report = mockQuadroDevice.device.sent
+
+    assert pump_report.number == 3
+    assert pump_report.data[0x35:0x38] == [0, 32, 208]  # 0, <8400>
+    assert fan_report.number == 3
+    assert fan_report.data[0x8A:0x8D] == [0, 19, 136]  # 0, <5000>
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "pwm1_enable").read_text() == "0"
+        assert (tmp_path / "pwm1").read_text() == "0"
+        assert (tmp_path / "pwm2_enable").read_text() == "0"
+        assert (tmp_path / "pwm2").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_support", [False, True])
+def test_quadro_set_fixed_speeds_hwmon(mockQuadroDevice, has_support, tmp_path):
+    mockQuadroDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "pwm1").write_text("0\n")
+        (tmp_path / "pwm1_enable").write_text("0\n")
+        (tmp_path / "pwm2").write_text("0\n")
+        (tmp_path / "pwm2_enable").write_text("0\n")
+
+    mockQuadroDevice.set_fixed_speed("fan1", 84)
+    mockQuadroDevice.set_fixed_speed("fan2", 50)
+
+    if has_support:
+        assert (tmp_path / "pwm1_enable").read_text() == "1"
+        assert (tmp_path / "pwm1").read_text() == "214"
+        assert (tmp_path / "pwm2_enable").read_text() == "1"
+        assert (tmp_path / "pwm2").read_text() == "127"
+    else:
+        # Assert fallback to direct access
+        pump_report, fan_report = mockQuadroDevice.device.sent
+
+        assert pump_report.number == 3
+        assert pump_report.data[0x35:0x38] == [0, 32, 208]  # 0, <8400>
+        assert fan_report.number == 3
+        assert fan_report.data[0x8A:0x8D] == [0, 19, 136]  # 0, <5000>
 
 
 def test_quadro_speed_profiles_not_supported(mockQuadroDevice):
