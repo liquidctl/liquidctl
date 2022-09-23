@@ -45,7 +45,7 @@ reports directly.
 Hwmon support:
     - D5 Next watercooling pump: sensors - 5.15+, direct PWM control - not yet in fully
     - Farbwerk 360: sensors - 5.18+
-    - Octo: sensors - 5.19+
+    - Octo: sensors - 5.19+, direct PWM control - not yet in fully
     - Quadro: sensors - 6.0+
 
 Copyright (C) 2022 - Aleksa Savic
