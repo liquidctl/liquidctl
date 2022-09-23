@@ -43,6 +43,18 @@ Aquacomputer Quadro
 └── Flow sensor          0  dL/h
 ```
 
+## Programming the fan speeds
+
+Currently, four optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
+
+```
+liquidctl set fan1 speed 56
+              ^^^^       ^^
+             channel    duty
+```
+
+Valid channel values on the Quadro are `fan1` through `fan4`.
+
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
