@@ -252,11 +252,27 @@ def test_d5next_get_status_from_hwmon(mockD5NextDevice, tmp_path):
     (tmp_path / "curr2_input").write_text("31\n")  # Fan current
     (tmp_path / "in2_input").write_text("4990\n")  # +5V voltage
     (tmp_path / "in3_input").write_text("12040\n")  # +12V voltage
+    (tmp_path / "temp2_input").write_text("50000\n")  # Soft. Sensor 1 temperature
+    (tmp_path / "temp3_input").write_text("60000\n")  # Soft. Sensor 2 temperature
+    (tmp_path / "temp4_input").write_text("50000\n")  # Soft. Sensor 3 temperature
+    (tmp_path / "temp5_input").write_text("50000\n")  # Soft. Sensor 4 temperature
+    (tmp_path / "temp6_input").write_text("50000\n")  # Soft. Sensor 5 temperature
+    (tmp_path / "temp7_input").write_text("50000\n")  # Soft. Sensor 6 temperature
+    (tmp_path / "temp8_input").write_text("50000\n")  # Soft. Sensor 7 temperature
+    (tmp_path / "temp9_input").write_text("50000\n")  # Soft. Sensor 8 temperature
 
     got = mockD5NextDevice.get_status()
 
     expected = [
         ("Liquid temperature", pytest.approx(25.1, 0.1), "°C"),
+        ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 2", pytest.approx(60, 0.1), "°C"),
+        ("Soft. Sensor 3", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 4", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 5", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 6", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 7", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 8", pytest.approx(50, 0.1), "°C"),
         ("Pump speed", 1976, "rpm"),
         ("Pump power", pytest.approx(2.58, 0.1), "W"),
         ("Pump voltage", pytest.approx(12.02, 0.1), "V"),
