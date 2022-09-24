@@ -6,13 +6,15 @@
 
 Added:
 
-- Commander Core: extend experimental monitoring & fan control support to the
-  Commander Core XT (PR #478)
-- Aquacomputer: add experimental D5 Next monitoring & fan control support (PR
-  #482, PR #489, PR #499)
-- Aquacomputer: add experimental Farbwerk 360 monitoring support (PR #491)
-- Aquacomputer: add experimental Octo monitoring support (PR #492)
-- Aquacomputer: add experimental Quadro monitoring support (PR #493)
+- Corsair Commander Core: extend experimental monitoring and fan control
+  support to the Commander Core XT (PR #478)
+- Aquacomputer D5 Next: add experimental monitoring and pump/fan control
+  support (PR #482, PR #489, PR #499)
+- Aquacomputer Farbwerk 360: add experimental monitoring support (PR #491)
+- Aquacomputer Octo: add experimental monitoring and fan control support (PR
+  #492, PR #508)
+- Aquacomputer Quadro: add experimental monitoring and fan control support (PR
+  #493, PR #509)
 - NZXT Kraken Z3: add experimental LCD screen support (PR #479)
 - NZXT Kraken X3: support new USB PID (#503)
 - NZXT RGB & Fan Controller: support new USB PID (#485)
@@ -22,13 +24,16 @@ Changed:
 - ASUS Aura LED: refer to as ASUS instead of AsusTek
 - Corsair RMi/HXi: rename temperature sensors according to their location
 - NZXT Kraken X40/X60: document that alerts are not supported (#477)
+- Asetek and Corsair Hydro Pro: increase timeout on IO operations
 
 Fixed:
 
 - HWMON: fix Python<3.9 compatibility (PR #483)
 - Corsair Hydro Pro: fix duplicate use of second alert temperature (PR #484)
 - HWMON: support builtin drivers and log driver instead of module name (#502)
-- Commander Core: support 2.10.219 firmware (PR #501)
+- Corsair Commander Core: support 2.10.219 firmware (PR #501)
+- USB devices and USB HIDs: add default timeouts to all IO methods that support
+  them (#488)
 
 Removed:
 
