@@ -19,13 +19,15 @@ The pump automatically sends a status HID report every second as soon as it's co
 ## Monitoring
 
 The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the
-optionally connected fan. These groups provide RPM speed, voltage, current and power readings. The pump additionally
+optionally connected fan. These groups provide RPM speed, voltage, current and power readings. It also supports virtual
+temperature sensors, which are user assigned. Currently, they can only be read from the device. The pump additionally
 exposes +5V and +12V voltage rail readings:
 
 ```
 # liquidctl status
 Aquacomputer D5 Next
 ├── Liquid temperature     26.9  °C
+├── Soft. Sensor 1         50.0  °C
 ├── Pump speed             1968  rpm
 ├── Pump power             2.56  W
 ├── Pump voltage          12.04  V
