@@ -92,11 +92,11 @@ class Aquacomputer(UsbHidDriver):
             "type": _DEVICE_D5NEXT,
             "fan_sensors": [0x6C, 0x5F],
             "temp_sensors": [0x57],
-            "virt_temp_sensors": [0x3F + offset for offset in range(0, 8+1, 2)],
+            "virt_temp_sensors": [0x3F + offset for offset in range(0, 8 + 1, 2)],
             "plus_5v_voltage": 0x39,
             "plus_12v_voltage": 0x37,
             "temp_sensors_label": ["Liquid temperature"],
-            "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 8+1)],
+            "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 8 + 1)],
             "fan_speed_label": ["Pump speed", "Fan speed"],
             "fan_power_label": ["Pump power", "Fan power"],
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
@@ -336,7 +336,7 @@ class Aquacomputer(UsbHidDriver):
             sensor_readings.append(plus_5v_voltage)
 
             if self._hwmon.has_attribute("in3_input"):
-                # The driver exposes the +12V voltage of the pump (kernel v5.20+), read the value
+                # The driver exposes the +12V voltage of the pump (kernel v6.0+), read the value
                 plus_12v_voltage = ("+12V voltage", self._hwmon.read_int("in3_input") * 1e-3, "V")
                 sensor_readings.append(plus_12v_voltage)
             else:
