@@ -7,7 +7,7 @@ from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
 
 D5NEXT_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "00030DCB597C00010000006403FF00000051000004DC14000001E0007A98AF000"
-    "00000FFFF000041A803C169000001481ACAA3465CB804B401F4000000527FFF7F"
+    "00000FFFF000041A803C169000001481ACAA3465CB804B401F40000005213887F"
     "FF7FFF7FFF7FFF7FFF7FFF7FFF000000000000000009D27FFF00007FFF01F404B"
     "400200026016D006300000004B200D7010207B80000000000098D083A098A083A"
     "00060001000000000000000000000000011A24015E27101D4CFFBF"
@@ -223,6 +223,7 @@ def test_d5next_get_status_directly(mockD5NextDevice, has_hwmon, direct_access):
 
     expected = [
         ("Liquid temperature", pytest.approx(25.1, 0.1), "°C"),
+        ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
         ("Pump speed", 1976, "rpm"),
         ("Pump power", pytest.approx(2.58, 0.1), "W"),
         ("Pump voltage", pytest.approx(12.02, 0.1), "V"),
