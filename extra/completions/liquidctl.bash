@@ -105,6 +105,7 @@ _liquidctl_main() {
     --start-led
     --maximum-leds
     --temperature-sensor
+    --fan-mode
     "
 
     # generate options list and remove any flag that has already been given
