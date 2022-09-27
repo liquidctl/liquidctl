@@ -58,6 +58,18 @@ Aquacomputer Octo
 └── Fan 8 current     0.00  A
 ```
 
+## Programming the fan speeds
+
+Currently, eight optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
+
+```
+liquidctl set fan1 speed 56
+              ^^^^       ^^
+             channel    duty
+```
+
+Valid channel values on the Octo are `fan1` through `fan8`.
+
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 

@@ -109,7 +109,7 @@ def test_reads(dev, monkeypatch):
     def _read(max_length, timeout_ms=0):
         assert isinstance(max_length, int)
         assert isinstance(timeout_ms, int)
-        assert timeout_ms == 0, 'use hid_read'
+        # assert timeout_ms == 0, 'use hid_read'
         return [0xff] + [0]*(max_length - 1)  # report ID is part of max_length *if present*
 
     monkeypatch.setattr(dev.hiddev, 'set_nonblocking', _set_nonblocking, raising=False)

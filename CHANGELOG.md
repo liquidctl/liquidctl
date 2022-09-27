@@ -1,13 +1,68 @@
 # Changelog
 
+## [1.11.0] – UNRELEASED
+
+### Changes since 1.10.0
+
+Added:
+
+- Corsair Commander Core: extend experimental monitoring and fan control
+  support to the Commander Core XT (PR liquidctl#478)
+- Aquacomputer D5 Next: add experimental monitoring and pump/fan control
+  support (PR liquidctl#482, PR liquidctl#489, PR liquidctl#499)
+- Aquacomputer Farbwerk 360: add experimental monitoring support (PR
+  liquidctl#491)
+- Aquacomputer Octo: add experimental monitoring and fan control support (PR
+  liquidctl#492, PR liquidctl#508)
+- Aquacomputer Quadro: add experimental monitoring and fan control support (PR
+  liquidctl#493, PR liquidctl#509)
+- NZXT Kraken Z3: add experimental LCD screen support (PR liquidctl#479)
+- NZXT Kraken X3: support new USB PID (liquidctl#503)
+- NZXT RGB & Fan Controller: support new USB PID (liquidctl#485)
+
+Changed:
+
+- ASUS Aura LED: refer to as ASUS instead of AsusTek
+- Corsair RMi/HXi: rename temperature sensors according to their location
+- NZXT Kraken X40/X60: document that alerts are not supported (liquidctl#477)
+- Asetek and Corsair Hydro Pro: increase timeout on IO operations
+
+Fixed:
+
+- HWMON: fix Python<3.9 compatibility (PR liquidctl#483)
+- Corsair Hydro Pro: fix duplicate use of second alert temperature (PR
+  liquidctl#484)
+- HWMON: support builtin drivers and log driver instead of module name
+  (liquidctl#502)
+- Corsair Commander Core: support 2.10.219 firmware (PR liquidctl#501)
+- USB devices and USB HIDs: add default timeouts to all IO methods that support
+  them (liquidctl#488)
+
+Removed:
+
+- API: make `UsbDriver.SUPPORTED_DEVICES` private
+
+### Notes for downstream packagers
+
+New Python package dependencies have been added:
+
+- crcmod,
+- pillow,
+- (Windows-only:) winusbcdc.
+
+### Known issues
+
+Please see the [issue tracker].
+
+
 ## [1.10.0] – 2022-07-03
 
 ### Changes since 1.9.1
 
 Added:
 
-- Add experimental support for NZXT H1 V2 case Smart Device (PR #451)
-- Add experimental driver for Asus Aura LED USB controllers (PR #456)
+- Add experimental support for NZXT H1 V2 case Smart Device (PR liquidctl#451)
+- Add experimental driver for Asus Aura LED USB controllers (PR liquidctl#456)
 
 Changed:
 
@@ -20,7 +75,7 @@ Changed:
 Fixed:
 
 - Skip `keyval` unit test on Windows when lacking sufficient permissions to
-  create symlinks (#460)
+  create symlinks (liquidctl#460)
 
 Removed:
 
@@ -30,7 +85,7 @@ Removed:
 ### Know issues
 
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (#274)
+  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -46,7 +101,7 @@ acc65602e598dabca94f91b067ac7ad7f4d2920653b91d694ad421be6eaef172  dist/liquidctl
 
 Fixed:
 - Remove excess `_input` suffix when reading `pwmN` attributes from hwmon
-  (#445, PR #446)
+  (liquidctl#445, PR liquidctl#446)
 
 ### Notes for downstream packagers
 
@@ -56,7 +111,7 @@ Starting with 1.9.0, liquidctl now uses a PEP 517 build.  See the notes for the
 ### Know issues
 
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (#274)
+  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -71,12 +126,14 @@ a23312c07b1ceec850e7739a2428e9fc47c95cd0650269653a9e726d53c12057  dist/liquidctl
 ### Changes since 1.8.1
 
 Added:
-- Add support for persisting settings on modern Asetek 690LC coolers (#355)
+- Add support for persisting settings on modern Asetek 690LC coolers
+  (liquidctl#355)
 - Add support for setting fixed fan/pump speeds on the Corsair Commander Core
-  (PR #405)
-- Identify some devices with a matching Linux hwmon device (#403, PR #429)
+  (PR liquidctl#405)
+- Identify some devices with a matching Linux hwmon device (liquidctl#403, PR
+  liquidctl#429)
 - Add `--direct-access` to force it in spite of the presence of kernel drivers
-  (#403, PR #429)
+  (liquidctl#403, PR liquidctl#429)
 - Add security policy: `SECURITY.md`
 - Enable experimental support for EVGA GTX 1070 and 1070 Ti cards using the
   existing `EvgaPascal` driver:
@@ -103,19 +160,21 @@ Added:
     - ASUS Strix RTX 2080 Ti
     - ASUS TUF RTX 3060 Ti OC
 - API: add `liquidctl.__version__`
-- extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR #424,
-  PR #426)
+- extra/contrib: add script for n-color RGB Fusion 2.0 color cycling (PR
+  liquidctl#424, PR liquidctl#426)
 
 Changed:
 - Log the Python interpreter version
 - If possible, log the version of all Python requirements
 - Move reporting of Kraken X2 firmware version to initialization
 - Move reporting of Smart Device V1/Grid+ V3 firmware version and accessories
-  to initialization (PR #429)
-- Don't re-initialize devices with a Linux hwmon driver (#403, PR #429)
-- If possible, read status from Linux hwmon (#403, PR #429)
-- Switch to a PEP 517 build (#430, PR #431)
-- Replace ah-hoc version management with `setuptools_scm` (#430, PR #431)
+  to initialization (PR liquidctl#429)
+- Don't re-initialize devices with a Linux hwmon driver (liquidctl#403, PR
+  liquidctl#429)
+- If possible, read status from Linux hwmon (liquidctl#403, PR liquidctl#429)
+- Switch to a PEP 517 build (liquidctl#430, PR liquidctl#431)
+- Replace ah-hoc version management with `setuptools_scm` (liquidctl#430, PR
+  liquidctl#431)
 - Allow directly invoking the CLI with `python -m liquidctl`
 - Windows: provide libsub-1.0.dll automatically with `libusb-package`
 - API: improve and clarify the documentation of `BaseDriver` methods
@@ -137,9 +196,9 @@ Removed:
   `liquidctl.find_liquidctl_devices()` or `<device>.find_supported_devices()`)
 
 Fixed:
-- Let all unexpected SMBus exceptions bubble up (#416)
+- Let all unexpected SMBus exceptions bubble up (liquidctl#416)
 - Reset Kraken X2 fan and pump profiles during initialization (possibly related
-  to #395)
+  to liquidctl#395)
 - Remove redundant prefix from CLI error messages
 
 ### Notes for downstream packagers
@@ -173,7 +232,7 @@ python -m installer [args]
 ### Know issues
 
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (#274)
+  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -193,7 +252,7 @@ Fixed:
 ### Know issues
 
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (#274)
+  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -222,13 +281,14 @@ Changed:
   experimental
 
 Fixed:
-- Read DDR4 temperature sensor by word instead of with SMBus Block Read (#400)
+- Read DDR4 temperature sensor by word instead of with SMBus Block Read
+  (liquidctl#400)
 - Fix tolerant handling of single channel name in Corsair Lighting Node Core
 
 ### Know issues
 
 - Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (#274)
+  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -241,11 +301,11 @@ Fixed:
 
 Changelog since 1.7.1:
 ### Added
- - Enable support for new variant of the NZXT Smart Device V2 (PR #364)
+ - Enable support for new variant of the NZXT Smart Device V2 (PR liquidctl#364)
 ### Changed
- - Default `--maximum-leds` to the maximum possible number of LEDs (#367, PR #368)
+ - Default `--maximum-leds` to the maximum possible number of LEDs (liquidctl#367, PR liquidctl#368)
 ### Fixed
- - Fix moving flag in SD2/HUE2 `alternating` modes (#385)
+ - Fix moving flag in SD2/HUE2 `alternating` modes (liquidctl#385)
 ### Checksums
 ```
 b2337e0ca3bd36de1cbf581510aacfe23183d7bb176ad0dd43904be213583de3  dist/liquidctl-1.7.2.tar.gz
@@ -273,16 +333,16 @@ initialize/status output; colorize the log output._
 
 Changelog since 1.6.1:
 ### Added
- - Add initial experimental support for the Corsair Commander Core/iCUE Elite Capellix AIOs (PR #340)
- - Enable experimental support for Corsair Obsidian 1000D (#346)
- - Enable support for new variant of the NZXT Smart Device V2 (#338)
+ - Add initial experimental support for the Corsair Commander Core/iCUE Elite Capellix AIOs (PR liquidctl#340)
+ - Enable experimental support for Corsair Obsidian 1000D (liquidctl#346)
+ - Enable support for new variant of the NZXT Smart Device V2 (liquidctl#338)
  - List experimental partial support for the NZXT Kraken Z53
- - Add machine readable output with `--json` (PR #314)
+ - Add machine readable output with `--json` (PR liquidctl#314)
  - Add CONTRIBUTING.md and document our development process
 ### Changed
- - Change Grid+ V3/Smart Device (V1) status output (PR #326)
- - Change Commander Pro status/initialize output (PR #326)
- - Colorize the log output (new dependency: `colorlog`; PRs #318, #329)
+ - Change Grid+ V3/Smart Device (V1) status output (PR liquidctl#326)
+ - Change Commander Pro status/initialize output (PR liquidctl#326)
+ - Colorize the log output (new dependency: `colorlog`; PRs liquidctl#318, liquidctl#329)
  - Mark Kraken X31, X41, X61 as no longer experimental
  - Mark Vengeance RGB and DDR4 temperature sensors as no longer experimental
  - Mark Commander pro as no longer experimental
@@ -304,7 +364,7 @@ _Summary for the 1.6.1 release: one bug fix for HUE 2 controllers._
 
 Changelog since 1.6.0:
 ### Fixed
- - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+ - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (liquidctl#331)
 ### Checksums
 ```
 e3b6aa5ae55204f8d9a8813105269df7dc8f80087670e3eac88b722949b3843f  dist/liquidctl-1.6.1.tar.gz
@@ -317,7 +377,7 @@ _Summary for the 1.5.2 release: one bug fix for HUE 2 controllers._
 
 Changelog since 1.5.1:
 ### Fixed
- - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (#331)
+ - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (liquidctl#331)
 ### Checksums
 ```
 5738fda03f1d7bfb4416461a70351a5e040f1b57229674dd0f1f6f81d3750812  dist/liquidctl-1.5.2.tar.gz
@@ -376,7 +436,7 @@ data, and other bugs._
 
 Changelog since 1.5.0:
 ### Fixed
- - Handle corrupted runtime data (#278)
+ - Handle corrupted runtime data (liquidctl#278)
  - Fix item prefixes in list output when `--match` is passed
  - Remove caching of temporarily stored data
  - Append formated exception to "unknown error" messages
@@ -487,7 +547,7 @@ Changelog since 1.4.0:
  - Improve the documentation
  - Improve the test suite
 ### Fixed
- - Don't use report IDs when writing to NZXT E-series PSUs (#166)
+ - Don't use report IDs when writing to NZXT E-series PSUs (liquidctl#166)
  - Recognize and raise Hidapi write errors
  - Use a mocked device to test backward compatibility with liquidctl 1.1.0
 ### Checksums
@@ -530,9 +590,9 @@ Changelog since 1.3.3:
  - Improve the documentation
  - [extra] Refresh `krakencurve-poc` syntax and sensor names, and get CPU temperature on macOS with iStats
 ### Fixed
- - Add missing identifiers for some HUE2 accessories (#95; #109)
- - Fix CAM-like decoding of firmware version in NZXT E-series PSUs (#46, comment)
- - Use a bitmask to select the lighting channel in HUE 2 devices (#109)
+ - Add missing identifiers for some HUE2 accessories (liquidctl#95; liquidctl#109)
+ - Fix CAM-like decoding of firmware version in NZXT E-series PSUs (liquidctl#46, comment)
+ - Use a bitmask to select the lighting channel in HUE 2 devices (liquidctl#109)
  - Close the underlying cython-hidapi `device`
  - Don't allow `HidapiDevice.clear_enqueued_reports` to block
  - Don't allow `HidapiDevice.address` to fail with non-Unicode paths
@@ -555,7 +615,7 @@ Changelog since 1.3.2:
 ### Fixed
  - Add missing identifiers for HUE+ accessories on HUE 2 channels
  - Forward hid argument from `UsbHidDriver.find_supported_devices`
- - Prevent reporting stale data during long lived connections to HIDs (#87)
+ - Prevent reporting stale data during long lived connections to HIDs (liquidctl#87)
 ### Checksums
 ```
 1422a892f9c2c69f5949cd831083c6fef8f6a1f6e3215e90b696bfcd557924b4  liquidctl-1.3.3-bin-windows-x86_64.zip
@@ -686,10 +746,10 @@ Changelog since 1.2.0rc2:
  - [extra] Add experimental `liquiddump` script
 ### Changed
  - Copy documentation for EVGA and Corsair 690LC coolers into the tree
- - Use modern driver with fan profiles for Corsair H115i (#41)
- - Claim the interface proactively when starting a transaction on any Asetek 690LC (#42)
+ - Use modern driver with fan profiles for Corsair H115i (liquidctl#41)
+ - Claim the interface proactively when starting a transaction on any Asetek 690LC (liquidctl#42)
 ### Fixed
- - Rework USBXPRESS flow control in Asetek 690LC devices to allow simultaneous reads from multiple processes (#42)
+ - Rework USBXPRESS flow control in Asetek 690LC devices to allow simultaneous reads from multiple processes (liquidctl#42)
  - Fix missing argument forwarding to legacy Asetek 690LC coolers
  - Fix broken link to Mac OS example configuration
 
@@ -708,7 +768,7 @@ Changelog since 1.2.0rc1:
  - Prefer to save driver data in /run when OS is Linux
 ### Fixes
  - Force bundling of `hid` module in Windows executable
- - Change default Asetek 690LC `--time-per-color` for fading mode (#29)
+ - Change default Asetek 690LC `--time-per-color` for fading mode (liquidctl#29)
 
 
 ## [1.2.0rc1] – 2019-04-14
@@ -805,3 +865,6 @@ Changelog since 1.0.0rc1:
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
+
+
+[issue tracker]: https://github.com/liquidctl/liquidctl/issues

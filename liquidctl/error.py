@@ -6,7 +6,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 class ExpectationNotMet(Exception):
     """Unstable."""
-    pass
 
 
 class NotSupportedByDevice(Exception):
@@ -19,4 +18,10 @@ class NotSupportedByDriver(Exception):
 
 class UnsafeFeaturesNotEnabled(Exception):
     """Unstable."""
-    pass
+
+
+class Timeout(Exception):
+    """Unstable."""
+
+    def __repr__(self):
+        return "Operation timed out"

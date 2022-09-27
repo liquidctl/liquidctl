@@ -6,6 +6,7 @@ from tempfile import mkdtemp
 
 from liquidctl.driver.base import *
 from liquidctl.keyval import RuntimeStorage, _FilesystemBackend
+from liquidctl.driver.usb import _DEFAULT_TIMEOUT_MS
 
 Report = namedtuple('Report', ['number', 'data'])
 
@@ -44,7 +45,7 @@ class MockHidapiDevice:
     def preload_read(self, report):
         self._read.append(report)
 
-    def read(self, length):
+    def read(self, length, *, timeout=_DEFAULT_TIMEOUT_MS):
         if self._read:
             number, data = self._read.popleft()
             if number:
@@ -96,16 +97,16 @@ class MockPyusbDevice():
 
         self._reset_sent()
 
-    def read(self, endpoint, length, timeout=None):
+    def read(self, endpoint, length, *, timeout=_DEFAULT_TIMEOUT_MS):
         if len(self._responses):
             return self._responses.popleft()
         return [0] * length
 
-    def write(self, endpoint, data, timeout=None):
+    def write(self, endpoint, data, *, timeout=_DEFAULT_TIMEOUT_MS):
         self._sent_xfers.append(('write', endpoint, data))
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
-                      data_or_wLength=None, timeout=None):
+                      data_or_wLength=None, timeout=_DEFAULT_TIMEOUT_MS):
         self._sent_xfers.append(('ctrl_transfer', bmRequestType, bRequest,
                                  wValue, wIndex, data_or_wLength))
 

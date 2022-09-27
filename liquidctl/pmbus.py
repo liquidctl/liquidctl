@@ -37,6 +37,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import math
 from enum import IntEnum, IntFlag, unique
 
+from liquidctl.util import mkCrcFun
+
 
 @unique
 class WriteBit(IntFlag):
@@ -181,38 +183,5 @@ def compute_pec(bytes):
     >>> hex(compute_pec(bytes.fromhex('5c93')))
     '0x0'
     """
-    tbl = _gen_pec_table()
-    reg = 0
-    for octet in bytes:
-        idx = reg ^ octet
-        reg = tbl[idx]
-    return reg
 
-
-def _gen_pec_table():
-    """Generate the lookup table for compute_pec.
-
-    Once a table is generated it is reused for all subsequent calls.
-    """
-    global _PEC_TBL
-    if _PEC_TBL:
-        return _PEC_TBL
-    tbl = [0 for i in range(_PEC_TBL_LEN)]
-    for i in range(_PEC_TBL_LEN):
-        reg = i
-        for _ in range(8):
-            if reg & _PEC_MSB_MASK != 0:
-                reg = (reg << 1) ^ _PEC_POLY
-            else:
-                reg = (reg << 1)
-        tbl[i] = reg & _PEC_MASK
-    _PEC_TBL = tbl
-    return tbl
-
-
-_PEC_WIDTH = 8
-_PEC_MSB_MASK = 1 << (_PEC_WIDTH - 1)
-_PEC_MASK = (_PEC_MSB_MASK << 1) - 1
-_PEC_POLY = (0b100000111 & _PEC_MASK)
-_PEC_TBL_LEN = 256
-_PEC_TBL = None
+    return mkCrcFun('crc-8')(bytes)

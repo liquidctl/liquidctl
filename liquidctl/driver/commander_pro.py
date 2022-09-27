@@ -23,7 +23,6 @@ from enum import Enum, unique
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
-from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, \
                            normalize_profile, check_unsafe, map_direction, fan_mode_parser
 
@@ -305,19 +304,19 @@ class CommanderPro(UsbHidDriver):
         for i, probe_enabled in enumerate(temp_probes):
             if probe_enabled:
                 n = i + 1
-                temp = self._hwmon.get_int(f'temp{n}_input') * 1e-3
+                temp = self._hwmon.read_int(f'temp{n}_input') * 1e-3
                 status.append((f'Temperature {n}', temp, '°C'))
 
         # get fan RPMs of connected fans
         for i, fan_mode in enumerate(fan_modes):
             if fan_mode == _FAN_MODE_DC or fan_mode == _FAN_MODE_PWM:
                 n = i + 1
-                speed = self._hwmon.get_int(f'fan{n}_input')
+                speed = self._hwmon.read_int(f'fan{n}_input')
                 status.append((f'Fan {n} speed', speed, 'rpm'))
 
         # get the real power supply voltages
         for i, rail in enumerate(["+12V", "+5V", "+3.3V"]):
-            voltage = self._hwmon.get_int(f'in{i}_input') * 1e-3
+            voltage = self._hwmon.read_int(f'in{i}_input') * 1e-3
             status.append((f'{rail} rail', voltage, 'V'))
 
         return status

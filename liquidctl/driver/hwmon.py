@@ -32,8 +32,11 @@ class HwmonDevice:
         _LOGGER.debug("read %s: %s", name, value)
         return value
 
-    def get_int(self, name):
+    def read_int(self, name):
         return int(self.get_string(name))
+
+    def write_int(self, name, value):
+        (self.path / name).write_text(str(value))
 
     @classmethod
     def from_hidraw(cls, path):

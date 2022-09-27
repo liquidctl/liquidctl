@@ -245,6 +245,7 @@ names are listed in parenthesis):
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
+- crcmod 1.7 _(python3-crcmod, python-crcmod)_
 - cython-hidapi _(python3-hidapi, python3-hid, python-hidapi)_
 - docopt _(python3-docopt, python-docopt)_
 - pillow _(python-pillow, python3-pil)_
@@ -408,7 +409,7 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-python -m pip install --upgrade colorlog docopt hidapi pillow pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade colorlog crcmod==1.7 docopt hidapi pillow pytest pyusb setuptools setuptools_scm
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
@@ -768,7 +769,7 @@ You are also encouraged to contribute to the documentation and to these examples
 
 liquidctl – monitor and control liquid coolers and other devices.  
 Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
-Robertson, ParkerMc and contributors
+Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas

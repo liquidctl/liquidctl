@@ -204,7 +204,16 @@ class KrakenX3(UsbHidDriver):
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
             },
-        )
+        ),
+        (
+            0x1E71,
+            0x2014,
+            "NZXT Kraken X (X53, X63 or X73)",
+            {
+                "speed_channels": _SPEED_CHANNELS_KRAKENX,
+                "color_channels": _COLOR_CHANNELS_KRAKENX,
+            },
+        ),
     ]
 
     def __init__(self, device, description, speed_channels, color_channels, **kwargs):
@@ -291,9 +300,9 @@ class KrakenX3(UsbHidDriver):
 
     def _get_status_from_hwmon(self):
         return [
-            (_STATUS_TEMPERATURE, self._hwmon.get_int("temp1_input") * 1e-3, "°C"),
-            (_STATUS_PUMP_SPEED, self._hwmon.get_int("fan1_input"), "rpm"),
-            (_STATUS_PUMP_DUTY, self._hwmon.get_int("pwm1") * 100.0 / 255, "%"),
+            (_STATUS_TEMPERATURE, self._hwmon.read_int("temp1_input") * 1e-3, "°C"),
+            (_STATUS_PUMP_SPEED, self._hwmon.read_int("fan1_input"), "rpm"),
+            (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%"),
         ]
 
     def get_status(self, direct_access=False, **kwargs):

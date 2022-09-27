@@ -10,6 +10,8 @@ two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
 pump additionally exposes +5V and +12V voltage rail readings.
 
+The pump and fan can be set to a fixed speed (0-100%).
+
 Aquacomputer Farbwerk 360
 -------------------------
 Farbwerk 360 is an RGB controller and sends a status HID report every second
@@ -41,10 +43,10 @@ releases have more functionality and support a wider range of devices
 reports directly.
 
 Hwmon support:
-    - D5 Next watercooling pump: sensors - 5.15+
+    - D5 Next watercooling pump: sensors - 5.15+, direct PWM control - not yet in fully
     - Farbwerk 360: sensors - 5.18+
-    - Octo: sensors - 5.19+
-    - Quadro: sensors - 6.0+
+    - Octo: sensors - 5.19+, direct PWM control - not yet in fully
+    - Quadro: sensors - 6.0+, direct PWM control - not yet in fully
 
 Copyright (C) 2022 - Aleksa Savic
 
@@ -53,11 +55,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # uses the psf/black style
 
-import logging
+import logging, time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
-from liquidctl.util import u16be_from
+from liquidctl.util import u16be_from, clamp, mkCrcFun
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,6 +70,15 @@ _AQC_FAN_POWER_OFFSET = 0x06
 _AQC_FAN_SPEED_OFFSET = 0x08
 
 _AQC_STATUS_READ_ENDPOINT = 0x01
+_AQC_CTRL_REPORT_ID = 0x03
+
+_AQC_FAN_TYPE_OFFSET = 0x00
+_AQC_FAN_PERCENT_OFFSET = 0x01
+
+
+def put_unaligned_be16(value, data, offset):
+    value_be = bytearray(value.to_bytes(2, "big"))
+    data[offset], data[offset + 1] = value_be[0], value_be[1]
 
 
 class Aquacomputer(UsbHidDriver):
@@ -89,6 +100,9 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
             "fan_current_label": ["Pump current", "Fan current"],
             "status_report_length": 0x9E,
+            "ctrl_report_length": 0x329,
+            "fan_ctrl": {"pump": 0x96, "fan": 0x41},
+            "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
         },
         _DEVICE_FARBWERK360: {
             "type": _DEVICE_FARBWERK360,
@@ -106,6 +120,14 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 8 + 1)],
             "fan_current_label": [f"Fan {num} current" for num in range(1, 8 + 1)],
             "status_report_length": 0x147,
+            "ctrl_report_length": 0x65F,
+            "fan_ctrl": {
+                name: offset
+                for (name, offset) in zip(
+                    [f"fan{i}" for i in range(1, 8 + 1)],
+                    [0x5A, 0xAF, 0x104, 0x159, 0x1AE, 0x203, 0x258, 0x2AD],
+                )
+            },
         },
         _DEVICE_QUADRO: {
             "type": _DEVICE_QUADRO,
@@ -118,6 +140,14 @@ class Aquacomputer(UsbHidDriver):
             "fan_current_label": [f"Fan {num} current" for num in range(1, 4 + 1)],
             "flow_sensor_offset": 0x6E,
             "status_report_length": 0xDC,
+            "ctrl_report_length": 0x3C1,
+            "fan_ctrl": {
+                name: offset
+                for (name, offset) in zip(
+                    [f"fan{i}" for i in range(1, 4 + 1)],
+                    [0x36, 0x8B, 0xE0, 0x135],
+                )
+            },
         },
     }
 
@@ -256,7 +286,7 @@ class Aquacomputer(UsbHidDriver):
         for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
             temp_sensor_reading = (
                 self._device_info["temp_sensors_label"][idx],
-                self._hwmon.get_int(f"temp{idx + 1}_input") * 1e-3,
+                self._hwmon.read_int(f"temp{idx + 1}_input") * 1e-3,
                 "°C",
             )
             sensor_readings.append(temp_sensor_reading)
@@ -265,28 +295,28 @@ class Aquacomputer(UsbHidDriver):
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
             fan_speed = (
                 self._device_info["fan_speed_label"][idx],
-                self._hwmon.get_int(f"fan{idx + 1}_input"),
+                self._hwmon.read_int(f"fan{idx + 1}_input"),
                 "rpm",
             )
             sensor_readings.append(fan_speed)
 
             fan_power = (
                 self._device_info["fan_power_label"][idx],
-                self._hwmon.get_int(f"power{idx + 1}_input") * 1e-6,
+                self._hwmon.read_int(f"power{idx + 1}_input") * 1e-6,
                 "W",
             )
             sensor_readings.append(fan_power)
 
             fan_voltage = (
                 self._device_info["fan_voltage_label"][idx],
-                self._hwmon.get_int(f"in{idx}_input") * 1e-3,
+                self._hwmon.read_int(f"in{idx}_input") * 1e-3,
                 "V",
             )
             sensor_readings.append(fan_voltage)
 
             fan_current = (
                 self._device_info["fan_current_label"][idx],
-                self._hwmon.get_int(f"curr{idx + 1}_input") * 1e-3,
+                self._hwmon.read_int(f"curr{idx + 1}_input") * 1e-3,
                 "A",
             )
             sensor_readings.append(fan_current)
@@ -294,12 +324,12 @@ class Aquacomputer(UsbHidDriver):
         # Special-case sensor readings
         if self._device_info["type"] == self._DEVICE_D5NEXT:
             # Read +5V voltage rail value
-            plus_5v_voltage = ("+5V voltage", self._hwmon.get_int("in2_input") * 1e-3, "V")
+            plus_5v_voltage = ("+5V voltage", self._hwmon.read_int("in2_input") * 1e-3, "V")
             sensor_readings.append(plus_5v_voltage)
 
             if self._hwmon.has_attribute("in3_input"):
                 # The driver exposes the +12V voltage of the pump (kernel v5.20+), read the value
-                plus_12v_voltage = ("+12V voltage", self._hwmon.get_int("in3_input") * 1e-3, "V")
+                plus_12v_voltage = ("+12V voltage", self._hwmon.read_int("in3_input") * 1e-3, "V")
                 sensor_readings.append(plus_12v_voltage)
             else:
                 _LOGGER.warning(
@@ -307,7 +337,7 @@ class Aquacomputer(UsbHidDriver):
                 )
         elif self._device_info["type"] == self._DEVICE_QUADRO:
             # Read flow sensor value
-            flow_sensor_value = ("Flow sensor", self._hwmon.get_int("fan5_input"), "dL/h")
+            flow_sensor_value = ("Flow sensor", self._hwmon.read_int("fan5_input"), "dL/h")
             sensor_readings.append(flow_sensor_value)
 
         return sensor_readings
@@ -340,16 +370,90 @@ class Aquacomputer(UsbHidDriver):
         elif self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
-        if (
-            self._device_info["type"] == self._DEVICE_D5NEXT
-            or self._device_info["type"] == self._DEVICE_OCTO
-            or self._device_info["type"] == self._DEVICE_QUADRO
-        ):
-            # Not yet implemented
-            raise NotSupportedByDriver()
-        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+    def _fan_name_to_hwmon_names(self, channel):
+        if "hwmon_ctrl_mapping" in self._device_info:
+            # Custom fan name to hwmon pwmX translation
+            pwm_name = self._device_info["hwmon_ctrl_mapping"][channel]
+        else:
+            # Otherwise, assume that fanX translates to pwmX
+            pwm_name = f"pwm{channel[3]}"
+
+        return pwm_name, f"{pwm_name}_enable"
+
+    def _set_fixed_speed_hwmon(self, channel, duty):
+        hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
+
+        # Set channel to direct percent mode
+        self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+
+        # Some devices (Octo, Quadro and Aquaero) can not accept reports in quick succession, so slow down a bit
+        time.sleep(0.2)
+
+        # Convert duty from percent to PWM range (0-255)
+        pwm_duty = duty * 255 // 100
+
+        # Write to hwmon
+        self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
+
+    def _set_fixed_speed_directly(self, channel, duty):
+        # Request an up to date ctrl report
+        report_length = self._device_info["ctrl_report_length"]
+        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+        fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
+
+        # Set fan to direct percent-value mode
+        ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
+
+        # Write down duty for channel
+        put_unaligned_be16(
+            duty * 100,  # Centi-percent
+            ctrl_settings,
+            fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
+        )
+
+        # Update checksum value at the end of the report
+        crc16usb_func = mkCrcFun("crc-16-usb")
+
+        checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
+        checksum_bytes = crc16usb_func(checksum_part)
+        put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
+
+        self.device.send_feature_report(ctrl_settings)
+
+    def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
+        if self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
+
+        # Clamp duty between 0 and 100
+        duty = clamp(duty, 0, 100)
+
+        if self._hwmon:
+            hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
+
+            # Check if the required attributes are present
+            if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+                hwmon_pwm_enable_name
+            ):
+                # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing fixed speed despite %s kernel driver having support",
+                        self._hwmon.driver,
+                    )
+                    return self._set_fixed_speed_directly(channel, duty)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
+                )
+                return self._set_fixed_speed_hwmon(channel, duty)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
+
+        self._set_fixed_speed_directly(channel, duty)
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented

@@ -18,7 +18,9 @@ The pump automatically sends a status HID report every second as soon as it's co
 
 ## Monitoring
 
-The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the optionally connected fan. These groups provide RPM speed, voltage, current and power readings. The pump additionally exposes +5V and +12V voltage rail readings:
+The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the
+optionally connected fan. These groups provide RPM speed, voltage, current and power readings. The pump additionally
+exposes +5V and +12V voltage rail readings:
 
 ```
 # liquidctl status
@@ -35,6 +37,18 @@ Aquacomputer D5 Next
 ├── +5V voltage            5.01  V
 └── +12V voltage          12.06  V
 ```
+
+## Programming the fan speeds
+
+Currently, the pump and optionally connected fan can be set to a fixed duty cycle, ranging from 0-100%.
+
+```
+liquidctl set pump speed 56
+              ^^^^       ^^
+             channel    duty
+```
+
+Valid channel values on the D5 Next are `pump` and `fan`.
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers

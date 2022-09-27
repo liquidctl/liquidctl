@@ -1,3 +1,4 @@
+# fmt:off
 krakenz3_response = {
     "liquid_hid": [[48, 1], [56, 1, 2, 0]],
     "brightness_hid": [[48, 1], [48, 2, 1, 60, 0, 0, 1, 0]],

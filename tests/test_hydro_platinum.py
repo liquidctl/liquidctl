@@ -2,14 +2,17 @@ import pytest
 from _testutils import MockHidapiDevice, Report, MockRuntimeStorage
 
 from liquidctl.driver.hydro_platinum import HydroPlatinum, _sequence
-from liquidctl.pmbus import compute_pec
+from liquidctl.util import mkCrcFun
 
 _SAMPLE_PATH = (r'IOService:/AppleACPIPlatformExpert/PCI0@0/AppleACPIPCI/XHC@14/XH'
                 r'C@14000000/HS11@14a00000/USB2.0 Hub@14a00000/AppleUSB20InternalH'
                 r'ub@14a00000/AppleUSB20HubPort@14a10000/USB2.0 Hub@14a10000/Apple'
                 r'USB20Hub@14a10000/AppleUSB20HubPort@14a12000/H100i Platinum@14a1'
                 r'2000/IOUSBHostInterface@0/AppleUserUSBHostHIDDevice+Win\\#!&3142')
+
 _WIN_MAX_PATH = 260  # Windows API should be the bottleneck
+
+_crc8 = mkCrcFun('crc-8')
 
 
 @pytest.fixture
@@ -81,7 +84,7 @@ class _MockHydroPlatinumDevice(MockHidapiDevice):
         buf[29:31] = self.pump_speed.to_bytes(length=2, byteorder='little')
         buf[42] = round(.30 * 255)
         buf[43:44] = self.fan3_speed.to_bytes(length=2, byteorder='little')
-        buf[-1] = compute_pec(buf[1:-1])
+        buf[-1] = _crc8(buf[1:-1])
         return buf[:length]
 
 
@@ -125,7 +128,7 @@ def test_h115i_platinum_device_command_format(h115iPlatinumDevice):
         assert len(data) == 64
         assert data[0] == 0x3f
         assert data[1] >> 3 == i + 1
-        assert data[-1] == compute_pec(data[1:-1])
+        assert data[-1] == _crc8(bytes(data[1:-1]))
 
 
 def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
@@ -145,7 +148,7 @@ def test_h115i_platinum_device_command_format_enabled(h115iPlatinumDevice):
         assert len(data) == 64
         assert data[0] == 0x3f
         assert data[1] >> 3 == i + 1
-        assert data[-1] == compute_pec(data[1:-1])
+        assert data[-1] == _crc8(bytes(data[1:-1]))
 
 
 def test_h115i_platinum_device_get_status(h115iPlatinumDevice):

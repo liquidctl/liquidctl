@@ -10,6 +10,10 @@ from ast import literal_eval
 from enum import Enum, EnumMeta, unique
 from typing import Optional
 
+from functools import lru_cache
+
+import crcmod.predefined
+
 from liquidctl.error import UnsafeFeaturesNotEnabled
 
 _LOGGER = logging.getLogger(__name__)
@@ -510,3 +514,17 @@ def fan_mode_parser(value: Optional[str], max_fans: int) -> dict:
     return dict(sorted(opts.items(), key=lambda item: item[0]))
 
 
+@lru_cache(maxsize=None)
+def mkCrcFun(crc_name):
+    """Efficiently construct a predefined CRC function.
+
+    Unstable.
+
+    For the available algorithms, see
+    <http://crcmod.sourceforge.net/crcmod.predefined.html#predefined-crc-algorithms>.
+
+    This function implements memoization, only constructing each requested CRC
+    algorithm implementation once.
+    """
+
+    return crcmod.predefined.mkCrcFun(crc_name)
