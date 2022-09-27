@@ -164,7 +164,7 @@ def test_connect_lighting(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._data is not None
 
 
-@pytest.mark.parametrize('exp,fan_mode', [([(4, 0x01)], "4:dc"), ([(4, 0x00)], "4:off"), ([(5, 0x02)], "5:pwm"), ([(0, 0x01),(2, 0x01),(3, 0x02)], "0:dc,3:pwm,2:dc")])
+@pytest.mark.parametrize('exp,fan_mode', [([(3, 0x01)], "4:dc"), ([(3, 0x00)], "4:off"), ([(4, 0x02)], "5:pwm"), ([(0, 0x01),(1, 0x01),(2, 0x02)], "1:dc,3:pwm,2:dc")])
 def test_initialize_commander_pro_fan_mode(commanderProDevice, exp, fan_mode, tmp_path):
 
     responses = [
@@ -190,7 +190,7 @@ def test_initialize_commander_pro_fan_mode(commanderProDevice, exp, fan_mode, tm
         assert sent[3+i].data[3] == exp[i][1]
 
 
-@pytest.mark.parametrize('fan_mode', [("100:dc"), ("5:ahhhh"), ("3:auto"), ("-1:dc"), ("old frog"), ("3:3"), ("3:dc,")])
+@pytest.mark.parametrize('fan_mode', [("100:dc"), ("5:ahhhh"), ("3:auto"), ("-1:dc"), ("old frog"), ("3:3"), ("3:dc,"), ("0:dc")])
 def test_initialize_commander_pro_invalid_fan_mode(commanderProDevice, fan_mode, tmp_path):
 
     responses = [

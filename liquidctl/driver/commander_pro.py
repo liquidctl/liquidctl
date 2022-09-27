@@ -187,7 +187,7 @@ class CommanderPro(UsbHidDriver):
 
         if self._fan_count > 0:
             for i, value in fan_modes.items():
-                fan_num = int(i)
+                fan_num = int(i) - 1
                 if value not in ['dc', 'pwm', 'off']:
                     raise ValueError(f"invalid fan mode: '{value}'")
 
