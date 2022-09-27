@@ -8,6 +8,7 @@ import colorsys
 import logging
 from ast import literal_eval
 from enum import Enum, EnumMeta, unique
+from typing import Optional
 
 from liquidctl.error import UnsafeFeaturesNotEnabled
 
@@ -399,3 +400,116 @@ def map_direction(direction, forward=None, backward=None):
         return backward
     else:
         raise ValueError(f'invalid direction: {direction!r}')
+
+
+def fan_mode_parser(value: Optional[str], max_fans: int) -> dict:
+    """Convert the --fan-mode=<key>:<value>[,...] options into a {key: value, ....} dictionary.
+    The default is an empty dictionary.
+
+    Unstable.
+
+    >>> fan_mode_parser(None, 5)
+    {}
+
+    >>> fan_mode_parser('', 5)
+    {}
+
+    >>> fan_mode_parser('0:pwm', 5)
+    {'0': 'pwm'}
+
+    >>> fan_mode_parser('1:dc', 5)
+    {'1': 'dc'}
+
+    >>> fan_mode_parser('2:auto', 5)
+    {'2': 'auto'}
+
+    >>> fan_mode_parser('3:off', 5)
+    {'3': 'off'}
+
+    >>> fan_mode_parser('0:PWM', 5)
+    {'0': 'pwm'}
+
+    >>> fan_mode_parser('1:DC', 5)
+    {'1': 'dc'}
+
+    >>> fan_mode_parser('2:AUTO', 5)
+    {'2': 'auto'}
+
+    >>> fan_mode_parser('3:OFF', 5)
+    {'3': 'off'}
+
+    >>> fan_mode_parser('0:pwm,1:dc,2:auto,3:off', 5)
+    {'0': 'pwm', '1': 'dc', '2': 'auto', '3': 'off'}
+
+    >>> fan_mode_parser('0:pwm, 1:dc, 2:auto, 3:off', 5)
+    {'0': 'pwm', '1': 'dc', '2': 'auto', '3': 'off'}
+
+    >>> fan_mode_parser('0:pwm, 4:dc, 3:auto, 2:off', 5)
+    {'0': 'pwm', '2': 'off', '3': 'auto', '4': 'dc'}
+
+    >>> fan_mode_parser('0:pwm, 1 :dc, 2: auto, 3 : off,    4       :     auto   ', 5)
+    {'0': 'pwm', '1': 'dc', '2': 'auto', '3': 'off', '4': 'auto'}
+
+    >>> fan_mode_parser('1:dc:dc', 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid format, should be '<fan num>:<mode>'
+
+    >>> fan_mode_parser('-1:dc', 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid fan number: '-1'
+
+    >>> fan_mode_parser('5:dc', 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid fan number: '5'
+
+    >>> fan_mode_parser('5:dc', 4)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid fan number: '5'
+
+    >>> fan_mode_parser('a:dc', 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid fan number: 'a'
+
+
+    >>> fan_mode_parser('1:PMW', 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid fan mode: 'PMW'
+
+    """
+
+    if not value:
+        return {}
+
+    parts = value.split(',')
+
+    opts = {}
+    for p in parts:
+        p2 = p.split(':')
+        if len(p2) != 2:
+            raise ValueError("invalid format, should be '<fan num>:<mode>'")
+
+        [key, val] = [i.strip() for i in p2]
+
+        try:
+            key_val = int(key, 10)
+        except ValueError:
+            raise ValueError(f"invalid fan number: '{key}'")
+
+        if key_val < 0  or key_val >= max_fans:
+            raise ValueError(f"invalid fan number: '{key}'")
+
+        if val.lower() not in ['off', 'auto', 'dc', 'pwm']:
+            raise ValueError(f"invalid fan mode: '{val}'")
+
+        opts.update({key: val.lower()})
+
+
+    return dict(sorted(opts.items(), key=lambda item: item[0]))
+
+

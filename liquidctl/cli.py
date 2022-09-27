@@ -12,51 +12,46 @@ Usage:
   liquidctl --version
 
 Device selection options (see: list -v):
-  -m, --match <substring>        Filter devices by description substring
-  -n, --pick <number>            Pick among many results for a given filter
-  --vendor <id>                  Filter devices by hexadecimal vendor ID
-  --product <id>                 Filter devices by hexadecimal product ID
-  --release <number>             Filter devices by hexadecimal release number
-  --serial <number>              Filter devices by serial number
-  --bus <bus>                    Filter devices by bus
-  --address <address>            Filter devices by address in bus
-  --usb-port <port>              Filter devices by USB port in bus
+  -m, --match <substring>            Filter devices by description substring
+  -n, --pick <number>                Pick among many results for a given filter
+  --vendor <id>                      Filter devices by hexadecimal vendor ID
+  --product <id>                     Filter devices by hexadecimal product ID
+  --release <number>                 Filter devices by hexadecimal release number
+  --serial <number>                  Filter devices by serial number
+  --bus <bus>                        Filter devices by bus
+  --address <address>                Filter devices by address in bus
+  --usb-port <port>                  Filter devices by USB port in bus
 
 Animation options (devices/modes can support zero or more):
-  --speed <value>                Abstract animation speed (device/mode specific)
-  --time-per-color <value>       Time to wait on each color (seconds)
-  --time-off <value>             Time to wait with the LED turned off (seconds)
-  --alert-threshold <number>     Threshold temperature for a visual alert (°C)
-  --alert-color <color>          Color used by the visual high temperature alert
-  --direction <string>           If the pattern should move forward or backward.
-  --start-led <number>           The first led to start the effect at
-  --maximum-leds <number>        The number of LED's the effect should apply to
+  --speed <value>                    Abstract animation speed (device/mode specific)
+  --time-per-color <value>           Time to wait on each color (seconds)
+  --time-off <value>                 Time to wait with the LED turned off (seconds)
+  --alert-threshold <number>         Threshold temperature for a visual alert (°C)
+  --alert-color <color>              Color used by the visual high temperature alert
+  --direction <string>               If the pattern should move forward or backward.
+  --start-led <number>               The first led to start the effect at
+  --maximum-leds <number>            The number of LED's the effect should apply to
 
 Other device options:
-  --single-12v-ocp               Enable single rail +12V OCP
-  --pump-mode <mode>             Set the pump mode (certain Corsair coolers)
-  --temperature-sensor <number>  The temperature sensor number for the Commander Pro
-  --legacy-690lc                 Use Asetek 690LC in legacy mode (old Krakens)
-  --non-volatile                 Store on non-volatile controller memory
-  --direct-access                Directly access the device despite kernel drivers
-  --unsafe <features>            Comma-separated bleeding-edge features to enable
-  --fan1-mode <mode>             The fan mode to configure when initializing the device
-  --fan2-mode <mode>             The fan mode to configure when initializing the device
-  --fan3-mode <mode>             The fan mode to configure when initializing the device
-  --fan4-mode <mode>             The fan mode to configure when initializing the device
-  --fan5-mode <mode>             The fan mode to configure when initializing the device
-  --fan6-mode <mode>             The fan mode to configure when initializing the device
+  --single-12v-ocp                   Enable single rail +12V OCP
+  --pump-mode <mode>                 Set the pump mode (certain Corsair coolers)
+  --temperature-sensor <number>      The temperature sensor number for the Commander Pro
+  --legacy-690lc                     Use Asetek 690LC in legacy mode (old Krakens)
+  --non-volatile                     Store on non-volatile controller memory
+  --direct-access                    Directly access the device despite kernel drivers
+  --unsafe <features>                Comma-separated bleeding-edge features to enable
+  --fan-mode <channel>:<mode>[,...]  The fan modes to configure when initializing the device
 
 Other interface options:
-  -v, --verbose                  Output additional information
-  -g, --debug                    Show debug information on stderr
-  --json                         JSON output (list/initialization/status)
-  --version                      Display the version number
-  --help                         Show this message
+  -v, --verbose                      Output additional information
+  -g, --debug                        Show debug information on stderr
+  --json                             JSON output (list/initialization/status)
+  --version                          Display the version number
+  --help                             Show this message
 
 Deprecated:
-  -d, --device <index>           Select device by listing index
-  --hid <ignored>                Ignored
+  -d, --device <index>               Select device by listing index
+  --hid <ignored>                    Ignored
 
 Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc and contributors
@@ -123,12 +118,7 @@ _PARSE_ARG = {
     '--legacy-690lc': bool,
     '--non-volatile': bool,
     '--direct-access': bool,
-    '--fan1-mode': str.lower,
-    '--fan2-mode': str.lower,
-    '--fan3-mode': str.lower,
-    '--fan4-mode': str.lower,
-    '--fan5-mode': str.lower,
-    '--fan6-mode': str.lower,
+    '--fan-mode': str.lower,
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,

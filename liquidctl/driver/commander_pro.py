@@ -25,7 +25,7 @@ from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, \
-                           normalize_profile, check_unsafe, map_direction
+                           normalize_profile, check_unsafe, map_direction, fan_mode_parser
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ class CommanderPro(UsbHidDriver):
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
         return ret
 
-    def _initialize_directly(self, fan_modes, **kwargs):
+    def _initialize_directly(self, fan_modes: dict, **kwargs):
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[1], res[2], res[3])
 
@@ -186,13 +186,12 @@ class CommanderPro(UsbHidDriver):
             ]
 
         if self._fan_count > 0:
-            for i, value in enumerate(fan_modes):
-                if not value:
-                    continue
+            for i, value in fan_modes.items():
+                fan_num = int(i)
                 if value not in ['dc', 'pwm', 'off']:
-                    _LOGGER.warning('fan mode `%s` for fan%d is not a valid option, must be one of `dc`, `pwm`, `off`', value, (i+1))
-                    continue
-                self._send_command(_CMD_SET_FAN_MODE, [0x02, i, _FAN_MODES.get(value)])
+                    raise ValueError(f"invalid fan mode: '{value}'")
+
+                self._send_command(_CMD_SET_FAN_MODE, [0x02, fan_num, _FAN_MODES.get(value)])
 
             res = self._send_command(_CMD_GET_FAN_MODES)
             fanModes = res[1:self._fan_count+1]
@@ -245,7 +244,7 @@ class CommanderPro(UsbHidDriver):
 
         return status
 
-    def initialize(self, direct_access=False, fan1_mode=None, fan2_mode=None, fan3_mode=None, fan4_mode=None, fan5_mode=None, fan6_mode=None, **kwargs):
+    def initialize(self, direct_access=False, fan_mode=None, **kwargs):
         """Initialize the device and the driver.
 
         This method should be called every time the systems boots, resumes from
@@ -257,7 +256,8 @@ class CommanderPro(UsbHidDriver):
         to `get_status()`.
         """
 
-        fan_modes = [fan1_mode, fan2_mode, fan3_mode, fan4_mode, fan5_mode, fan6_mode]
+        fan_modes = fan_mode_parser(fan_mode, self._fan_count)
+        # fan_modes = [fan1_mode, fan2_mode, fan3_mode, fan4_mode, fan5_mode, fan6_mode]
 
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',

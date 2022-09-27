@@ -164,6 +164,50 @@ def test_connect_lighting(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._data is not None
 
 
+@pytest.mark.parametrize('exp,fan_mode', [([(4, 0x01)], "4:dc"), ([(4, 0x00)], "4:off"), ([(5, 0x02)], "5:pwm"), ([(0, 0x01),(2, 0x01),(3, 0x02)], "0:dc,3:pwm,2:dc")])
+def test_initialize_commander_pro_fan_mode(commanderProDevice, exp, fan_mode, tmp_path):
+
+    responses = [
+        '000009d4000000000000000000000000',  # firmware
+        '00000500000000000000000000000000',  # bootloader
+        '00010100010000000000000000000000',  # temp probes
+        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000'   # fan probes
+    ]
+    for d in responses:
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+
+    commanderProDevice.initialize(direct_access=True, fan_mode=fan_mode)
+
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 4+len(exp)
+
+    for i in range(len(exp)):
+        assert sent[3+i].data[0] == 0x28
+        assert sent[3+i].data[2] == exp[i][0]
+        assert sent[3+i].data[3] == exp[i][1]
+
+
+@pytest.mark.parametrize('fan_mode', [("100:dc"), ("5:ahhhh"), ("3:auto"), ("-1:dc"), ("old frog"), ("3:3"), ("3:dc,")])
+def test_initialize_commander_pro_invalid_fan_mode(commanderProDevice, fan_mode, tmp_path):
+
+    responses = [
+        '000009d4000000000000000000000000',  # firmware
+        '00000500000000000000000000000000',  # bootloader
+        '00010100010000000000000000000000',  # temp probes
+        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000'   # fan probes
+    ]
+    for d in responses:
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+
+    with pytest.raises(ValueError):
+        commanderProDevice.initialize(direct_access=True, fan_mode=fan_mode)
+
 @pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True), (True, False)])
 def test_initialize_commander_pro(commanderProDevice, has_hwmon, direct_access, tmp_path):
     if has_hwmon and not direct_access:
