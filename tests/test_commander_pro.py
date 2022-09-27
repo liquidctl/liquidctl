@@ -171,9 +171,9 @@ def test_initialize_commander_pro_fan_mode(commanderProDevice, exp, fan_mode, tm
         '000009d4000000000000000000000000',  # firmware
         '00000500000000000000000000000000',  # bootloader
         '00010100010000000000000000000000',  # temp probes
-        '00010102000000000000000000000000',   # fan set
-        '00010102000000000000000000000000',   # fan set
-        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000',  # fan set (throw away)
+        '00010102000000000000000000000000',  # fan set (throw away)
+        '00010102000000000000000000000000',  # fan set (throw away)
         '00010102000000000000000000000000'   # fan probes
     ]
     for d in responses:
@@ -197,9 +197,7 @@ def test_initialize_commander_pro_invalid_fan_mode(commanderProDevice, fan_mode,
         '000009d4000000000000000000000000',  # firmware
         '00000500000000000000000000000000',  # bootloader
         '00010100010000000000000000000000',  # temp probes
-        '00010102000000000000000000000000',   # fan set
-        '00010102000000000000000000000000',   # fan set
-        '00010102000000000000000000000000',   # fan set
+        '00010102000000000000000000000000',  # fan set (throw away)
         '00010102000000000000000000000000'   # fan probes
     ]
     for d in responses:
@@ -278,7 +276,7 @@ def test_initialize_commander_pro(commanderProDevice, has_hwmon, direct_access, 
 def test_initialize_lighting_node(lightingNodeProDevice):
     responses = [
         '000009d4000000000000000000000000',  # firmware
-        '00000500000000000000000000000000'  # bootloader
+        '00000500000000000000000000000000'   # bootloader
     ]
     for d in responses:
         lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
