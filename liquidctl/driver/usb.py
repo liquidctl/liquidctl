@@ -79,7 +79,7 @@ from liquidctl.util import LazyHexRepr
 
 # Most devices respond in 1 second or (much) less; by default, only timeout if
 # something has almost surely gone wrong.
-_DEFAULT_TIMEOUT_MS = 10000
+_DEFAULT_TIMEOUT_MS = 2000
 
 _LOGGER = logging.getLogger(__name__)
 
