@@ -21,7 +21,7 @@ sent for each command.
 
 Unless stated otherwise all multi-byte numbers used little endian.
 
-Host -> Device: 1024 bytes
+Host -> Device: 96 bytes for firmware v2.x.x | 1024 bytes for firmware v1.x.x
 
 | Byte index | Description |
 | ---------- | ----------- |
@@ -30,7 +30,7 @@ Host -> Device: 1024 bytes
 | 0x02 | Channel |
 | 0x03-... | Data |
 
-Device -> Host: 1024 bytes
+Device -> Host: 96 bytes for firmware v2.x.x | 1024 bytes for firmware v1.x.x
 
 | Byte index | Description |
 | ---------- | ----------- |

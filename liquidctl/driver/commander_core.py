@@ -17,8 +17,8 @@ from liquidctl.util import clamp, u16le_from
 
 _LOGGER = logging.getLogger(__name__)
 
-_REPORT_LENGTH = 1024
-_RESPONSE_LENGTH = 1024
+_REPORT_LENGTH = 96
+_RESPONSE_LENGTH = 96
 
 _INTERFACE_NUMBER = 0
 
