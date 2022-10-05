@@ -393,7 +393,8 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('liquidctl: %s', __version__)
+    _LOGGER.debug('script: %s', sys.argv[0])
+    _LOGGER.debug('version: %s', __version__)
     _LOGGER.debug('platform: %s', platform.platform())
     _log_requirements()
 
