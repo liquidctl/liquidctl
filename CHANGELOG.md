@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.11.0] – UNRELEASED
+## [1.11.0] – UNRELEASED/SCHEDULED
 
 ### Changes since 1.10.0
 
@@ -25,7 +25,6 @@ Changed:
 - ASUS Aura LED: refer to as ASUS instead of AsusTek
 - Corsair RMi/HXi: rename temperature sensors according to their location
 - NZXT Kraken X40/X60: document that alerts are not supported (liquidctl#477)
-- Asetek and Corsair Hydro Pro: increase timeout on IO operations
 
 Fixed:
 
@@ -34,9 +33,10 @@ Fixed:
   liquidctl#484)
 - HWMON: support builtin drivers and log driver instead of module name
   (liquidctl#502)
-- Corsair Commander Core: support 2.10.219 firmware (PR liquidctl#501)
-- USB devices and USB HIDs: add default timeouts to all IO methods that support
-  them (liquidctl#488)
+- Corsair Commander Core: support 2.10.219 firmware (PR liquidctl#501, PR
+  liquidctl#513)
+- USB devices: add default timeouts to all IO methods (liquidctl#488)
+- USB HIDs: add default timeouts to compatible IO methods (liquidctl#488)
 
 Removed:
 
@@ -44,15 +44,15 @@ Removed:
 
 ### Notes for downstream packagers
 
-New Python package dependencies have been added:
+New Python dependencies: [crcmod], [pillow] and (Windows-only:) [winusbcdc].
 
-- crcmod,
-- pillow,
-- (Windows-only:) winusbcdc.
+[crcmod]: https://pypi.org/project/crcmod/
+[pillow]: https://pypi.org/project/Pillow/
+[winusbcdc]: https://pypi.org/project/WinUsbCDC/
 
 ### Known issues
 
-Please see the [issue tracker].
+Please check the [issue tracker].
 
 
 ## [1.10.0] – 2022-07-03
