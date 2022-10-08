@@ -9,7 +9,7 @@
 
  - [ ] Update last update date in the man page
  - [ ] Update the CHANGELOG
- - [ ] Remove "N/New driver, ..." notes from the table of supported devices (and merge lines if appropriate)
+ - [ ] Review and update MRLVs in the table of supported devices (merging lines when appropriate)
  - [ ] Update version in pip install liquidctl==version examples
  - [ ] Regenerate the udev rules:
        `(cd extra/linux && python generate-uaccess-udev-rules.py > 71-liquidctl.rules)`
