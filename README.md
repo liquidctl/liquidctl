@@ -191,8 +191,8 @@ nix-env -iA nixos.liquidctl
 ```
 
 liquidctl is also available in some non-official/community-based repositories,
-as well as, at older versions, for more distributions.  The [Repology] page
-shows more information about the packaging status in various distributions.
+as well as, at older versions, for more distributions.  [Repology] shows more
+information about the packaging status in various distributions.
 
 [Repology]: https://repology.org/project/liquidctl/versions
 
