@@ -157,6 +157,8 @@ they will be removed in a future version and are kept for now for backward compa
 
 ## The LCD screen (only Z models)
 
+_New in 1.11.0._  
+
 The LCD screen can be configured in a few different modes.
 
 ```
