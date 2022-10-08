@@ -89,10 +89,8 @@ Corsair Vengeance RGB DIMM4
 [Supported devices]: #supported-devices
 
 The following devices are supported by liquidctl.  In the table, MRLV stands
-for the _minimum recommended liquidclt version._
-
-The linked documents contain specific usage instructions and other useful
-information.
+for the _minimum recommended liquidctl version._  The linked documents contain
+specific usage instructions and other useful information.
 
 <!--
 
