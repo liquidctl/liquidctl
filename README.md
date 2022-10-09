@@ -118,7 +118,7 @@ subjective "from more to less liquid control-ly" order.
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | USB | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | USB HID | | 1.8.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | 1.10.0 |
+| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | git |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | USB | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | USB HID | | 1.10.0 |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | USB | <sup>_LZe_</sup> | 1.9.1 |
@@ -131,7 +131,7 @@ subjective "from more to less liquid control-ly" order.
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | USB HID | <sup>_ehp_</sup> | git |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | USB HID | <sup>_ehp_</sup> | git |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> | 1.9.1 |
-| Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | 1.10.0 |
+| Fan/LED controller | [Corsair Commander Core](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | git |
 | Fan/LED controller | [Corsair Commander Core XT](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | git |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | | 1.9.1 |
