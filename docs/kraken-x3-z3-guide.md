@@ -175,7 +175,7 @@ Images and GiFs are automatically resized and rotated to match the device orient
 
 _New in 1.9.0._  
 
-Kraken X3 devices have incomplete support by the [liquidtux] [`nzxt-kraken3`]
+Kraken X3 devices feature incomplete support by the [liquidtux] `nzxt-kraken3`
 driver, and partial status data is provided through a standard hwmon sysfs
 interface.
 
