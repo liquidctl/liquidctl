@@ -125,8 +125,8 @@ subjective "from more to less liquid control-ly" order.
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | USB | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | USB HID | <sup>_h_</sup> | 1.10.0 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | USB HID | <sup>_h_</sup> | 1.10.0 |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | | 1.10.0 |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73 LCD screen](docs/kraken-x3-z3-guide.md) | USB & USB HID | | git |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_p_</sup> | 1.10.0 |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73 (LCD screen)](docs/kraken-x3-z3-guide.md) | USB & USB HID | <sup>_e_</sup> | git |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | USB HID | <sup>_ehp_</sup> | git |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | USB HID | <sup>_ehp_</sup> | git |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | USB HID | <sup>_ehp_</sup> | git |

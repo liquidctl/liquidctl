@@ -473,7 +473,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x3008,
-            "NZXT Kraken Z (Z53, Z63 or Z73)",
+            "NZXT Kraken Z (Z53, Z63 or Z73) (experimental)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
