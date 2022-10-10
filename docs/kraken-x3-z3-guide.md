@@ -155,7 +155,7 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-rainbow-pulse` | None | ✓ |
 
 
-## The LCD screen (only Z models)
+## The LCD screen (only Z models; experimental)
 
 _New in 1.11.0._  
 
