@@ -48,7 +48,7 @@ Aquacomputer Quadro (experimental)
 Currently, four optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
-$ liquidctl set fan1 speed 56
+# liquidctl set fan1 speed 56
                 ^^^^       ^^
                channel    duty
 ```
