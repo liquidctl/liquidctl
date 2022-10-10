@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer Octo
+Aquacomputer Octo (experimental)
 ├── Firmware version           1019
 └── Serial number       14994-51690
 ```
@@ -22,7 +22,7 @@ The Octo exposes four temperature senso and eight groups of fan sensors for opti
 
 ```
 # liquidctl status
-Aquacomputer Octo
+Aquacomputer Octo (experimental)
 ├── Sensor 1          37.0  °C 
 ├── Fan 1 speed          0  rpm
 ├── Fan 1 power       0.00  W  
@@ -63,9 +63,9 @@ Aquacomputer Octo
 Currently, eight optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
-liquidctl set fan1 speed 56
-              ^^^^       ^^
-             channel    duty
+# liquidctl set fan1 speed 56
+                ^^^^       ^^
+               channel    duty
 ```
 
 Valid channel values on the Octo are `fan1` through `fan8`.

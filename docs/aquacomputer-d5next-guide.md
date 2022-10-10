@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer D5 Next
+Aquacomputer D5 Next (experimental)
 ├── Firmware version           1023
 └── Serial number       03500-24905
 ```
@@ -24,7 +24,7 @@ exposes +5V and +12V voltage rail readings:
 
 ```
 # liquidctl status
-Aquacomputer D5 Next
+Aquacomputer D5 Next (experimental)
 ├── Liquid temperature     26.9  °C
 ├── Pump speed             1968  rpm
 ├── Pump power             2.56  W
@@ -43,9 +43,9 @@ Aquacomputer D5 Next
 Currently, the pump and optionally connected fan can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
-liquidctl set pump speed 56
-              ^^^^       ^^
-             channel    duty
+# liquidctl set pump speed 56
+                ^^^^       ^^
+               channel    duty
 ```
 
 Valid channel values on the D5 Next are `pump` and `fan`.
