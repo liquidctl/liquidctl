@@ -89,10 +89,14 @@ class MockCommanderCoreDevice:
                         raise NotImplementedError(f'Read for {mode.hex(":")}')
                 elif mode[1] == 0x6d:
                     if mode[0] == 0x60:
-                        data.extend([0x03, 0x00])
-                        data.append(len(self.speeds_mode))
-                        for i in self.speeds_mode:
-                            data.append(i)
+                        if not self.speeds_mode:
+                            # Emulate hardware speed state corruption
+                            data.extend([0x00, 0x00])
+                        else:
+                            data.extend([0x03, 0x00])
+                            data.append(len(self.speeds_mode))
+                            for i in self.speeds_mode:
+                                data.append(i)
                     elif mode[0] == 0x61:
                         data.extend([0x04, 0x00])
                         data.append(len(self.fixed_speeds))
@@ -148,11 +152,17 @@ def commander_core_device():
     return core
 
 
-def test_initialize_commander_core(commander_core_device):
+@pytest.mark.parametrize('corrupted', [False, True])
+def test_initialize_commander_core(commander_core_device, corrupted):
     commander_core_device.device.firmware_version = (0x01, 0x02, 0x21)
     commander_core_device.device.speeds = (None, 104, None, None, None, None, 918)
     commander_core_device.device.led_counts = (27, None, 1, 2, 4, 8, 16)
     commander_core_device.device.temperatures = (None, 45.6)
+
+    if corrupted:
+        # Emulate hardware speed state corruption
+        commander_core_device.device.speeds_mode = None
+
     res = commander_core_device.initialize()
 
     assert len(res) == 17

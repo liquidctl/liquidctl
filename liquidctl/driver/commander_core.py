@@ -45,6 +45,7 @@ _DATA_TYPE_TEMPS = (0x10, 0x00)
 _DATA_TYPE_CONNECTED_SPEEDS = (0x09, 0x00)
 _DATA_TYPE_HW_SPEED_MODE = (0x03, 0x00)
 _DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
+_DATA_TYPE_WRITE_ERROR = (0x00, 0x00)  # See #455, #520
 
 
 class CommanderCore(UsbHidDriver):
@@ -93,6 +94,29 @@ class CommanderCore(UsbHidDriver):
                     label = f'Fan port {i+1} connected'
 
                 status += [(label, res[i + 1] == 0x07, '')]
+
+            # Check for a corrupted hardware speed state, and reset it if necessary (see #455, #520)
+            try:
+                # Check whether we can read the current hardware speed device modes
+                _ = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
+            except ExpectationNotMet as first:
+                # Make sure that the invalid reply wasn't caused by something else
+                _ = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_WRITE_ERROR)
+
+                _LOGGER.warning('hardware speed settings are corrupt (please report if this is frequent)')
+                _LOGGER.warning('attempting to autocorrect: resetting all devices to fixed 100% duty')
+
+                # Reset hardware speed mode to fixed percent
+                data = bytearray(num_devices)
+                self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data, force=True)
+
+                # Reset speed to 100%
+                data = bytearray(num_devices * 2)
+                duty_le = int.to_bytes(100, length=2, byteorder='little', signed=False)
+                for chan in range(num_devices):
+                    i = chan * 2 + 1
+                    data[i: i + 2] = duty_le  # Update the device speed
+                self._write_data(_MODE_HW_FIXED_PERCENT, _DATA_TYPE_HW_FIXED_PERCENT, data, force=True)
 
             # Get what temp sensors are connected
             for i, temp in enumerate(self._get_temps()):
@@ -203,7 +227,7 @@ class CommanderCore(UsbHidDriver):
         raw_data = self._send_command(_CMD_READ)
         self._send_command(_CMD_CLOSE_ENDPOINT)
         if tuple(raw_data[3:5]) != data_type:
-            raise ExpectationNotMet('device returned incorrect data type')
+            raise ExpectationNotMet('returned data has incorrect type (try to re-initialize the device)')
 
         return raw_data[5:]
 
@@ -241,8 +265,10 @@ class CommanderCore(UsbHidDriver):
         finally:
             self._send_command(_CMD_SLEEP)
 
-    def _write_data(self, mode, data_type, data):
-        self._read_data(mode, data_type)  # Will ensure we are writing the correct data type to avoid breakage
+    def _write_data(self, mode, data_type, data, force=False):
+        if not force:
+            # Ensure we are writing the correct data type to avoid breakage
+            self._read_data(mode, data_type)
 
         self._send_command(_CMD_OPEN_ENDPOINT, mode)
 
