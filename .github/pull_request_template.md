@@ -31,7 +31,7 @@ New CLI flag?
 New device?
 
 - [ ] Regenerate `extra/linux/71-liquidctl.rules` (instructions in the file header)
-- [ ] Add entry to the README's supported device list with applicable notes (at least `en`)
+- [ ] Add entry to the README's supported device list with applicable notes (at least `e`) and `git` MRLV
 
 New driver?
 
