@@ -5,7 +5,7 @@ _Driver API and source code available in [`liquidctl.driver.commander_pro`](../l
 ## Initializing the device
 
 _Changed in 1.9.0: the firmware and bootloader versions are not available when
-data is read from [Linux hwmon]._  
+data is read from [Linux hwmon]._
 
 The device should be initialized every time it is powered on, including when
 the system resumes from suspending to memory.
@@ -16,26 +16,32 @@ sensors and fan types are currently connected.
 ```
 # liquidctl initialize
 Corsair Commander Pro
-├── Firmware version       0.9.212  
-├── Bootloader version         0.5  
-├── Temperature probe 1        Yes  
-├── Temperature probe 2        Yes  
-├── Temperature probe 3         No  
-├── Temperature probe 4         No  
-├── Fan 1 control mode         PWM  
-├── Fan 2 control mode         PWM  
-├── Fan 3 control mode          DC  
-├── Fan 4 control mode         N/A  
-├── Fan 5 control mode         N/A  
-└── Fan 6 control mode         N/A  
+├── Firmware version       0.9.212
+├── Bootloader version         0.5
+├── Temperature probe 1        Yes
+├── Temperature probe 2        Yes
+├── Temperature probe 3         No
+├── Temperature probe 4         No
+├── Fan 1 control mode         PWM
+├── Fan 2 control mode         PWM
+├── Fan 3 control mode          DC
+├── Fan 4 control mode         N/A
+├── Fan 5 control mode         N/A
+└── Fan 6 control mode         N/A
 ```
 
 ```
 # liquidctl initialize
 Corsair Lighting Node Pro
-├── Firmware version       0.10.4  
-└── Bootloader version        3.0  
+├── Firmware version       0.10.4
+└── Bootloader version        3.0
 ```
+
+
+Passing `--fan-mode='<fan_num>:<mode>[,...]'` can be used to change the
+fan mode from `dc` to `pwm` to `off` if the connected fan type is changed.
+The `--fan-mode` option is persistent across restarts and can only be used
+when not using the hwmon driver.
 
 
 ## Retrieving the fan speeds, temperatures and voltages
@@ -135,7 +141,7 @@ random colors will be used.
 | `rainbow2`    |          0 |
 
 
-_¹ This is not a real mode but it will remove all saved effects_  
+_¹ This is not a real mode but it will remove all saved effects_
 _² This is not a real mode but it is fixed with RGB values of 0_
 
 To specify which LED's on the channel the effect should apply to the
@@ -182,7 +188,7 @@ seconds to take effect.
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._
 
 Commander Pro controllers and the Obsidian 1000D are supported by the mainline
 Linux kernel with its [`corsair-cpro`] driver, and status data is provided
