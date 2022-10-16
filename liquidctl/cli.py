@@ -300,7 +300,7 @@ def _make_opts(args):
 
 
 def _log_requirements():
-    _LOGGER.debug('python: %s', sys.version)
+    _LOGGER.debug('python: %s', sys.version.replace('\n', ' '))
     if sys.hexversion >= 0x03080000:
         from importlib.metadata import distribution, version, PackageNotFoundError
 
