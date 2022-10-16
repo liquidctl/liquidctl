@@ -40,6 +40,8 @@ Aquacomputer D5 Next (experimental)
 └── +12V voltage          12.06  V
 ```
 
+_Changed in 1.12.0: read virtual temperature sensors as well._  
+
 ## Programming the fan speeds
 
 Currently, the pump and optionally connected fan can be set to a fixed duty cycle, ranging from 0-100%.
