@@ -3,7 +3,7 @@
 ## Prepare system
 
  - [ ] Ensure publishing dependencies are installed: twine
- - [ ] Export helper enviroment variable: `export VERSION=<version>`
+ - [ ] Export helper environment variable: `export VERSION=<version>`
 
 ## Prepare repository
 

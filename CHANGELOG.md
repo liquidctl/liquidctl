@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.11.0] – UNRELEASED/SCHEDULED
+## [1.11.0] – 2022-10-16
 
 ### Changes since 1.10.0
 
