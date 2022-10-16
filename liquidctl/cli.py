@@ -118,7 +118,7 @@ _PARSE_ARG = {
     '--legacy-690lc': bool,
     '--non-volatile': bool,
     '--direct-access': bool,
-    '--fan-mode': lambda x: fan_mode_parser(str.lower(x)),
+    '--fan-mode': lambda x: fan_mode_parser(x),
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,
