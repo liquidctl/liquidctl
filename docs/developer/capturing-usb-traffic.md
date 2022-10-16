@@ -60,7 +60,7 @@ find the target device among all others and filter the traffic to that device.
 _For this example, assume the target device has vendor and product IDs `0x1b1c`
 and `0x0c1a`, respectively._
 
-First, capture some USB traffic and apply a filter to the captured traffic (via the top bar) to filter out everything except the `GET DESCRIPTOR` response for this device. 
+First, capture some USB traffic and apply a filter to the captured traffic (via the top bar) to filter out everything except the `GET DESCRIPTOR` response for this device.
 
 ```
 usb.idVendor == 0x1b1c && usb.idProduct == 0x0c1a

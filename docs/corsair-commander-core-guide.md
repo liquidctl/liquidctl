@@ -12,23 +12,23 @@ The device should be initialized every time it is powered on.
 ```
 # liquidctl initialize
 Corsair Commander Core (experimental)
-├── Firmware version            2.6.201  
-├── AIO LED count                    29  
-├── RGB port 1 LED count              8  
-├── RGB port 2 LED count              8  
-├── RGB port 3 LED count            N/A  
-├── RGB port 4 LED count            N/A  
-├── RGB port 5 LED count            N/A  
-├── RGB port 6 LED count            N/A  
-├── AIO port connected              Yes  
-├── Fan port 1 connected            Yes  
-├── Fan port 2 connected            Yes  
-├── Fan port 3 connected             No  
-├── Fan port 4 connected             No  
-├── Fan port 5 connected             No  
-├── Fan port 6 connected             No  
-├── Water temperature sensor        Yes  
-└── Temperature sensor 1             No   
+├── Firmware version            2.6.201
+├── AIO LED count                    29
+├── RGB port 1 LED count              8
+├── RGB port 2 LED count              8
+├── RGB port 3 LED count            N/A
+├── RGB port 4 LED count            N/A
+├── RGB port 5 LED count            N/A
+├── RGB port 6 LED count            N/A
+├── AIO port connected              Yes
+├── Fan port 1 connected            Yes
+├── Fan port 2 connected            Yes
+├── Fan port 3 connected             No
+├── Fan port 4 connected             No
+├── Fan port 5 connected             No
+├── Fan port 6 connected             No
+├── Water temperature sensor        Yes
+└── Temperature sensor 1             No
 ```
 
 ## Retrieving the pump speed, fan speeds, and temperatures
@@ -67,7 +67,7 @@ Corsair Commander Core XT (experimental)
 
 _New in 1.9.0._<br>
 
-Currently, the pump and each fan can be set to a fixed duty cycle. 
+Currently, the pump and each fan can be set to a fixed duty cycle.
 
 ```
 # liquidctl set fan1 speed 70
@@ -80,7 +80,7 @@ On the Core XT, the `pump` channel is not present. The `fans` channel can be use
 configure all fans.
 
 In iCUE the pump can be set to different modes that correspond to a fixed percent that can be used in liquidctl.
-Quiet is 75%, Balanced is 85% and Extreme is 100%. 
+Quiet is 75%, Balanced is 85% and Extreme is 100%.
 
 _Note: the pump and some fans have a limit to how slow they can go and will not stop when set to zero.
 This is a hardware limitation that cannot be changed._

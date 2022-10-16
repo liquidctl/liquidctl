@@ -16,20 +16,20 @@ Device #3: NZXT Kraken X (X42, X52, X62 or X72)
 
 # liquidctl initialize all
 NZXT Smart Device (V1)
-├── Firmware version             1.7  
-├── LED accessories                2  
-├── LED accessory type    HUE+ Strip  
-└── LED count (total)             20  
+├── Firmware version             1.7
+├── LED accessories                2
+├── LED accessory type    HUE+ Strip
+└── LED count (total)             20
 
 NZXT Kraken X (X42, X52, X62 or X72)
-└── Firmware version    6.2  
+└── Firmware version    6.2
 
 # liquidctl status
 NZXT Smart Device (V1)
 ├── Fan 1 speed            1499  rpm
 ├── Fan 1 voltage         11.91  V
 ├── Fan 1 current          0.05  A
-├── Fan 1 control mode      PWM  
+├── Fan 1 control mode      PWM
 ├── Fan 2 [...]
 ├── Fan 3 [...]
 └── Noise level              61  dB

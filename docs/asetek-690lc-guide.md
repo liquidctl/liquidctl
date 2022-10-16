@@ -32,7 +32,7 @@ Asetek 690LC (assuming EVGA CLC)
 ├── Liquid temperature        28.7  °C
 ├── Fan speed                  480  rpm
 ├── Pump speed                1890  rpm
-└── Firmware version      2.10.0.0  
+└── Firmware version      2.10.0.0
 ```
 
 ## Fan and pump speed control

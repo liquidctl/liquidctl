@@ -10,7 +10,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 ```
 # liquidctl initialize
 Aquacomputer Quadro (experimental)
-├── Firmware version           1032  
+├── Firmware version           1032
 └── Serial number       23410-65344
 ```
 

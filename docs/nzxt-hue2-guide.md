@@ -47,14 +47,14 @@ After powering on from Mechanical Off, or if there have been hardware changes, t
 ```
 # liquidctl initialize
 NZXT Smart Device V2
-├── Firmware version                      1.5.0  
-├── LED 1 accessory 1    HUE 2 LED Strip 300 mm  
-├── LED 1 accessory 2    HUE 2 Underglow 200 mm  
-├── LED 1 accessory 3    HUE 2 Underglow 200 mm  
-├── LED 2 accessory 1          AER RGB 2 140 mm  
-├── LED 2 accessory 2          AER RGB 2 140 mm  
-├── LED 2 accessory 3          AER RGB 2 140 mm  
-└── LED 2 accessory 4          AER RGB 2 120 mm  
+├── Firmware version                      1.5.0
+├── LED 1 accessory 1    HUE 2 LED Strip 300 mm
+├── LED 1 accessory 2    HUE 2 Underglow 200 mm
+├── LED 1 accessory 3    HUE 2 Underglow 200 mm
+├── LED 2 accessory 1          AER RGB 2 140 mm
+├── LED 2 accessory 2          AER RGB 2 140 mm
+├── LED 2 accessory 3          AER RGB 2 140 mm
+└── LED 2 accessory 4          AER RGB 2 120 mm
 ```
 
 
@@ -69,7 +69,7 @@ the on-board sensor.
 ```
 # liquidctl status
 NZXT Smart Device V2
-├── Fan 2 control mode                     PWM  
+├── Fan 2 control mode                     PWM
 ├── Fan 2 duty                              42  %
 ├── Fan 2 speed                            934  rpm
 └── Noise level                             62  dB

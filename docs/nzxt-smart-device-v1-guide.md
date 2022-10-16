@@ -32,10 +32,10 @@ fan control and all lighting effects will be available.
 ```
 # liquidctl initialize
 NZXT Smart Device (V1)
-├── Firmware version             1.7  
-├── LED accessories                2  
-├── LED accessory type    HUE+ Strip  
-└── LED count (total)             20  
+├── Firmware version             1.7
+├── LED accessories                2
+├── LED accessory type    HUE+ Strip
+└── LED count (total)             20
 ```
 
 
@@ -55,15 +55,15 @@ NZXT Smart Device (V1)
 ├── Fan 1 speed            1492  rpm
 ├── Fan 1 voltage         11.91  V
 ├── Fan 1 current          0.02  A
-├── Fan 1 control mode      PWM  
+├── Fan 1 control mode      PWM
 ├── Fan 2 speed            1368  rpm
 ├── Fan 2 voltage         11.91  V
 ├── Fan 2 current          0.02  A
-├── Fan 2 control mode      PWM  
+├── Fan 2 control mode      PWM
 ├── Fan 3 speed            1665  rpm
 ├── Fan 3 voltage         11.91  V
 ├── Fan 3 current          0.06  A
-├── Fan 3 control mode      PWM  
+├── Fan 3 control mode      PWM
 └── Noise level              59  dB
 ```
 

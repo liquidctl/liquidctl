@@ -23,11 +23,11 @@ The Octo exposes four temperature senso and eight groups of fan sensors for opti
 ```
 # liquidctl status
 Aquacomputer Octo (experimental)
-├── Sensor 1          37.0  °C 
+├── Sensor 1          37.0  °C
 ├── Fan 1 speed          0  rpm
-├── Fan 1 power       0.00  W  
-├── Fan 1 voltage    12.09  V  
-├── Fan 1 current     0.00  A  
+├── Fan 1 power       0.00  W
+├── Fan 1 voltage    12.09  V
+├── Fan 1 current     0.00  A
 ├── Fan 2 speed          0  rpm
 ├── Fan 2 power       0.00  W
 ├── Fan 2 voltage     0.00  V

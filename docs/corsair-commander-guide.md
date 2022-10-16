@@ -16,25 +16,25 @@ sensors and fan types are currently connected.
 ```
 # liquidctl initialize
 Corsair Commander Pro
-├── Firmware version       0.9.212  
-├── Bootloader version         0.5  
-├── Temperature probe 1        Yes  
-├── Temperature probe 2        Yes  
-├── Temperature probe 3         No  
-├── Temperature probe 4         No  
-├── Fan 1 control mode         PWM  
-├── Fan 2 control mode         PWM  
-├── Fan 3 control mode          DC  
-├── Fan 4 control mode         N/A  
-├── Fan 5 control mode         N/A  
-└── Fan 6 control mode         N/A  
+├── Firmware version       0.9.212
+├── Bootloader version         0.5
+├── Temperature probe 1        Yes
+├── Temperature probe 2        Yes
+├── Temperature probe 3         No
+├── Temperature probe 4         No
+├── Fan 1 control mode         PWM
+├── Fan 2 control mode         PWM
+├── Fan 3 control mode          DC
+├── Fan 4 control mode         N/A
+├── Fan 5 control mode         N/A
+└── Fan 6 control mode         N/A
 ```
 
 ```
 # liquidctl initialize
 Corsair Lighting Node Pro
-├── Firmware version       0.10.4  
-└── Bootloader version        3.0  
+├── Firmware version       0.10.4
+└── Bootloader version        3.0
 ```
 
 
