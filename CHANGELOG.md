@@ -54,6 +54,13 @@ New Python dependencies: [crcmod], [pillow] and (Windows-only:) [winusbcdc].
 
 Please check the [issue tracker].
 
+### Checksums
+
+```
+a3b53e317ba9211e05be88d9158efdc02c51ae067ee974d3d9f0b79716cf7ba3  dist/liquidctl-1.11.0.tar.gz
+0c59dac7bdc09d7a16da410060154dca86258d989308034a919242a4739ca8f3  dist/liquidctl-1.11.0-py3-none-any.whl
+```
+
 *In memory of Lucinda Alves Silva Malaco (1924–2021) and Peter Eckersley
 (1979–2022).*
 
