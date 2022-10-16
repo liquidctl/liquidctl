@@ -50,7 +50,6 @@ Other interface options:
 
 Deprecated:
   -d, --device <index>           Select device by listing index
-  --hid <ignored>                Ignored
 
 Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
@@ -292,9 +291,6 @@ def _device_set_speed(dev, args, **opts):
 
 
 def _make_opts(args):
-    if args['--hid']:
-        _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
-                        args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
