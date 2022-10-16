@@ -45,7 +45,7 @@ Then install locally and:
  - [ ] Build the source distribution and wheel (stash any changes to this file beforehand):
        `python -m build`
  - [ ] Check that all necessary files are in the `dist/liquidctl-$VERSION.tar.gz` sdist
- - [ ] Check the contents of the `dist/liquidctl-$VERSION.whl` wheel
+ - [ ] Check the contents of the `dist/liquidctl-$VERSION-py3-none-any.whl` wheel
  - [ ] Sign both sdist and wheel:
        `gpg --detach-sign -a "dist/liquidctl-$VERSION.tar.gz"`
        `gpg --detach-sign -a "dist/liquidctl-$VERSION-py3-none-any.whl"`
