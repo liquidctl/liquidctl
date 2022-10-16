@@ -62,7 +62,7 @@ Its ID is `0x01` and its length is `0x9e`.
 Here is what it's currently known to contain:
 
 | What                               | Where/starts at (offset) |
-| ---------------------------------- | ------------------------ |
+|------------------------------------|--------------------------|
 | Serial number (first part)         | 0x03                     |
 | Serial number (second part)        | 0x05                     |
 | Firmware version                   | 0xD                      |
@@ -72,6 +72,14 @@ Here is what it's currently known to contain:
 | Fan info substructure              | 0x67                     |
 | +5V voltage                        | 0x39                     |
 | +12V voltage                       | 0x37                     |
+| Virtual temp sensor 1              | 0x3F                     |
+| Virtual temp sensor 2              | 0x41                     |
+| Virtual temp sensor 3              | 0x43                     |
+| Virtual temp sensor 4              | 0x45                     |
+| Virtual temp sensor 5              | 0x47                     |
+| Virtual temp sensor 6              | 0x49                     |
+| Virtual temp sensor 7              | 0x4B                     |
+| Virtual temp sensor 8              | 0x4D                     |
 
 ### Control report
 

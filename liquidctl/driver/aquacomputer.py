@@ -52,10 +52,9 @@ Copyright (C) 2022 - Aleksa Savic
 
 SPDX-License-Identifier: GPL-3.0-or-later
 """
-
 # uses the psf/black style
 
-import logging, time
+import logging, time, errno
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
@@ -92,9 +91,11 @@ class Aquacomputer(UsbHidDriver):
             "type": _DEVICE_D5NEXT,
             "fan_sensors": [0x6C, 0x5F],
             "temp_sensors": [0x57],
+            "virt_temp_sensors": [0x3F + offset * 2 for offset in range(0, 8)],
             "plus_5v_voltage": 0x39,
             "plus_12v_voltage": 0x37,
             "temp_sensors_label": ["Liquid temperature"],
+            "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 8 + 1)],
             "fan_speed_label": ["Pump speed", "Fan speed"],
             "fan_power_label": ["Pump power", "Fan power"],
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
@@ -205,21 +206,27 @@ class Aquacomputer(UsbHidDriver):
         return [("Firmware version", fw, ""), ("Serial number", serial_number, "")]
 
     def _get_status_directly(self):
+        def _read_temp_sensors(offsets_key, labels_key):
+            for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
+                temp_sensor_value = u16be_from(msg, temp_sensor_offset)
+
+                if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
+                    temp_sensor_reading = (
+                        self._device_info[labels_key][idx],
+                        temp_sensor_value * 1e-2,
+                        "°C",
+                    )
+                    sensor_readings.append(temp_sensor_reading)
+
         msg = self._read()
 
         sensor_readings = []
 
         # Read temp sensor values
-        for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
-            temp_sensor_value = u16be_from(msg, temp_sensor_offset)
+        _read_temp_sensors("temp_sensors", "temp_sensors_label")
 
-            if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
-                temp_sensor_reading = (
-                    self._device_info["temp_sensors_label"][idx],
-                    temp_sensor_value * 1e-2,
-                    "°C",
-                )
-                sensor_readings.append(temp_sensor_reading)
+        # Read virtual temp sensor values
+        _read_temp_sensors("virt_temp_sensors", "virt_temp_sensors_label")
 
         # Read fan speed and related values
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
@@ -280,16 +287,43 @@ class Aquacomputer(UsbHidDriver):
         return sensor_readings
 
     def _get_status_from_hwmon(self):
+        def _read_temp_sensors(offsets_key, labels_key, idx_add=0):
+            encountered_errors = False
+
+            for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
+                try:
+                    hwmon_val = self._hwmon.read_int(f"temp{idx + 1 + idx_add}_input") * 1e-3
+                except OSError as os_error:
+                    # For reference, the driver returns ENODATA when a sensor is unset/empty. ENOENT means that the
+                    # current driver version does not support virtual sensors, warn the user later
+                    if os_error.errno == errno.ENOENT:
+                        encountered_errors = True
+                    continue
+
+                temp_sensor_reading = (
+                    self._device_info[labels_key][idx],
+                    hwmon_val,
+                    "°C",
+                )
+                sensor_readings.append(temp_sensor_reading)
+
+            if encountered_errors:
+                _LOGGER.warning(
+                    f"some temp sensors cannot be read from %s kernel driver",
+                    self._hwmon.driver,
+                )
+
         sensor_readings = []
 
         # Read temp sensor values
-        for idx, temp_sensor_offset in enumerate(self._device_info.get("temp_sensors", [])):
-            temp_sensor_reading = (
-                self._device_info["temp_sensors_label"][idx],
-                self._hwmon.read_int(f"temp{idx + 1}_input") * 1e-3,
-                "°C",
-            )
-            sensor_readings.append(temp_sensor_reading)
+        _read_temp_sensors("temp_sensors", "temp_sensors_label")
+
+        # Read virtual temp sensor values
+        _read_temp_sensors(
+            "virt_temp_sensors",
+            "virt_temp_sensors_label",
+            len(self._device_info.get("temp_sensors", [])),
+        )
 
         # Read fan speed and related values
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
@@ -328,12 +362,12 @@ class Aquacomputer(UsbHidDriver):
             sensor_readings.append(plus_5v_voltage)
 
             if self._hwmon.has_attribute("in3_input"):
-                # The driver exposes the +12V voltage of the pump (kernel v5.20+), read the value
+                # The driver exposes the +12V voltage of the pump (kernel v6.0+), read the value
                 plus_12v_voltage = ("+12V voltage", self._hwmon.read_int("in3_input") * 1e-3, "V")
                 sensor_readings.append(plus_12v_voltage)
             else:
                 _LOGGER.warning(
-                    "some attributes cannot be read from %s kernel driver", self._hwmon.driver
+                    "+12V voltage cannot be read from %s kernel driver", self._hwmon.driver
                 )
         elif self._device_info["type"] == self._DEVICE_QUADRO:
             # Read flow sensor value
