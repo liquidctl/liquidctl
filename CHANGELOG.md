@@ -54,6 +54,9 @@ New Python dependencies: [crcmod], [pillow] and (Windows-only:) [winusbcdc].
 
 Please check the [issue tracker].
 
+*In memory of Lucinda Alves Silva Malaco (1924–2021) and Peter Eckersley
+(1979–2022).*
+
 
 ## [1.10.0] – 2022-07-03
 
