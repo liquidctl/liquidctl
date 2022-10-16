@@ -254,7 +254,7 @@ _liquidctl_initialize_command ()
 
 _liquidctl_set_command ()
 {
-    local i=1 subcommand_index is_fan=-1
+    local i=1 subcommand_index handled=0
 
   # find the sub command (either a fan or an led to set)
   while [[ $i -lt $COMP_CWORD ]]; do
@@ -262,12 +262,20 @@ _liquidctl_set_command ()
       case "$s" in
           fan[0-9] | fan | pump)
               subcommand_index=$i
-              is_fan=1
+              _liquidctl_set_fan
+              handled=1
               break
               ;;
           led[0-9] | led | sync | ring | logo | external)
               subcommand_index=$i
-              is_fan=0
+              _liquidctl_set_led
+              handled=1
+              break
+              ;;
+          lcd)
+              subcommand_index=$i
+              _liquidctl_set_lcd
+              handled=1
               break
               ;;
       esac
@@ -275,19 +283,13 @@ _liquidctl_set_command ()
   done
 
   # check if it is a fan or an LED that is being set
-  if [[ "$is_fan" -eq "1" ]]
+  if [[ "$handled" -eq "0" ]]
   then
-      _liquidctl_set_fan
-  elif [[ "$is_fan" -eq "0" ]]
-  then
-      _liquidctl_set_led
-  else
-
     # no trailing space here so that the fan number can be appended
     compopt -o nospace
     # possibly use some command here to get a list of all the possible channels from liquidctl
     local cur="${COMP_WORDS[COMP_CWORD]}"
-    COMPREPLY=($(compgen -W "fan fan1 fan2 fan3 fan4 fan5 fan6 led led1 led2 led3 led4 led5 led6 pump sync ring logo external" -- "$cur"))
+    COMPREPLY=($(compgen -W "fan fan1 fan2 fan3 fan4 fan5 fan6 led led1 led2 led3 led4 led5 led6 pump sync ring logo external lcd" -- "$cur"))
   fi
 }
 
@@ -337,7 +339,78 @@ _liquidctl_set_led ()
     else
         COMPREPLY="color"
     fi
+}
 
+_liquidctl_set_lcd ()
+{
+    local i=1 found=0
+
+    # find the sub command
+    while [[ $i -lt $COMP_CWORD ]]; do
+        local s="${COMP_WORDS[i]}"
+        if [[ "$s" = "screen" ]]; then
+            found=1
+            break
+        fi
+
+        (( i++ ))
+    done
+
+    # check if it is a fan or an LED that is being set
+    if [[ $found = 1 ]]; then
+        _liquidctl_set_screen
+    else
+        COMPREPLY="screen"
+    fi
+}
+
+_liquidctl_set_screen ()
+{
+  local i=1 subcommand_index handled=0
+
+  # find the sub command (either a fan or an led to set)
+  while [[ $i -lt $COMP_CWORD ]]; do
+      local s="${COMP_WORDS[i]}"
+      case "$s" in
+          liquid)
+              subcommand_index=$i
+              COMPREPLY=""
+              handled=1
+              break
+              ;;
+          brightness)
+              subcommand_index=$i
+              COMPREPLY=""
+              handled=1
+              break
+              ;;
+          orientation)
+              subcommand_index=$i
+              local cur="${COMP_WORDS[COMP_CWORD]}"
+              COMPREPLY=($(compgen -W "0 90 180 270" -- "$cur"))
+              handled=1
+              break
+              ;;
+          static | gif)
+              subcommand_index=$i
+              local cur="${COMP_WORDS[COMP_CWORD]}"
+              COMPREPLY=( $(compgen -f -- ${cur}) )
+              handled=1
+              break
+              ;;
+      esac
+      (( i++ ))
+  done
+
+  # check if it is a fan or an LED that is being set
+  if [[ "$handled" -eq "0" ]]
+  then
+    # no trailing space here so that the fan number can be appended
+    compopt -o nospace
+    # possibly use some command here to get a list of all the possible channels from liquidctl
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    COMPREPLY=($(compgen -W "liquid brightness orientation static gif" -- "$cur"))
+  fi
 }
 
 complete -F _liquidctl_main liquidctl

@@ -1,7 +1,7 @@
 # Aquacomputer Octo fan controller
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
-_New in 1.11.0._  
+_New in 1.11.0._<br>
 
 ## Initialization
 
@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer Octo
+Aquacomputer Octo (experimental)
 ├── Firmware version           1019
 └── Serial number       14994-51690
 ```
@@ -22,12 +22,12 @@ The Octo exposes four temperature senso and eight groups of fan sensors for opti
 
 ```
 # liquidctl status
-Aquacomputer Octo
-├── Sensor 1          37.0  °C 
+Aquacomputer Octo (experimental)
+├── Sensor 1          37.0  °C
 ├── Fan 1 speed          0  rpm
-├── Fan 1 power       0.00  W  
-├── Fan 1 voltage    12.09  V  
-├── Fan 1 current     0.00  A  
+├── Fan 1 power       0.00  W
+├── Fan 1 voltage    12.09  V
+├── Fan 1 current     0.00  A
 ├── Fan 2 speed          0  rpm
 ├── Fan 2 power       0.00  W
 ├── Fan 2 voltage     0.00  V
@@ -63,9 +63,9 @@ Aquacomputer Octo
 Currently, eight optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
-liquidctl set fan1 speed 56
-              ^^^^       ^^
-             channel    duty
+# liquidctl set fan1 speed 56
+                ^^^^       ^^
+               channel    duty
 ```
 
 Valid channel values on the Octo are `fan1` through `fan8`.

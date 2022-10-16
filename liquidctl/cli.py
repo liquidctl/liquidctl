@@ -50,8 +50,7 @@ Other interface options:
   --help                             Show this message
 
 Deprecated:
-  -d, --device <index>               Select device by listing index
-  --hid <ignored>                    Ignored
+  -d, --device <index>           Select device by listing index
 
 Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
@@ -294,9 +293,6 @@ def _device_set_speed(dev, args, **opts):
 
 
 def _make_opts(args):
-    if args['--hid']:
-        _LOGGER.warning('ignoring --hid %s: deprecated option, API will be selected automatically',
-                        args['--hid'])
     opts = {}
     for arg, val in args.items():
         if val is not None and arg in _PARSE_ARG:
@@ -306,7 +302,7 @@ def _make_opts(args):
 
 
 def _log_requirements():
-    _LOGGER.debug('python: %s', sys.version)
+    _LOGGER.debug('python: %s', sys.version.replace('\n', ' '))
     if sys.hexversion >= 0x03080000:
         from importlib.metadata import distribution, version, PackageNotFoundError
 
@@ -395,7 +391,8 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('liquidctl: %s', __version__)
+    _LOGGER.debug('script: %s', sys.argv[0])
+    _LOGGER.debug('version: %s', __version__)
     _LOGGER.debug('platform: %s', platform.platform())
     _log_requirements()
 

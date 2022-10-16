@@ -39,9 +39,9 @@ Corsair Hydro H100i Pro
 ├── Liquid temperature        28.7  °C
 ├── Fan 1 speed                480  rpm
 ├── Fan 2 speed                476  rpm
-├── Pump mode             balanced  
+├── Pump mode             balanced
 ├── Pump speed                1890  rpm
-└── Firmware version      2.10.0.0  
+└── Firmware version      2.10.0.0
 ```
 
 ## Fan speed control

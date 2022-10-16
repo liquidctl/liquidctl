@@ -21,7 +21,7 @@ sent for each command.
 
 Unless stated otherwise all multi-byte numbers used little endian.
 
-Host -> Device: 1024 bytes
+Host -> Device: 96 bytes for firmware v2.x.x | 1024 bytes for firmware v1.x.x
 
 | Byte index | Description |
 | ---------- | ----------- |
@@ -30,7 +30,7 @@ Host -> Device: 1024 bytes
 | 0x02 | Channel |
 | 0x03-... | Data |
 
-Device -> Host: 1024 bytes
+Device -> Host: 96 bytes for firmware v2.x.x | 1024 bytes for firmware v1.x.x
 
 | Byte index | Description |
 | ---------- | ----------- |
@@ -46,7 +46,8 @@ Global commands should work in any mode.
 ### `0x01` - Wake up/Sleep
 
 Wakeup needs to be run every time the device has not been sent any data for a
-predefined number of seconds.  
+predefined number of seconds.
+
 Sleep should be run when the device should return to hardware mode and
 no more data will be sent.
 

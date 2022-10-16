@@ -32,7 +32,7 @@ Asetek 690LC (assuming EVGA CLC)
 ├── Liquid temperature        28.7  °C
 ├── Fan speed                  480  rpm
 ├── Pump speed                1890  rpm
-└── Firmware version      2.10.0.0  
+└── Firmware version      2.10.0.0
 ```
 
 ## Fan and pump speed control
@@ -90,8 +90,8 @@ The coolers support two more lighting modes: 'fixed' and 'blackout'.  The latter
 On most models, alerts are always enabled, unless suppressed by the 'blackout' mode: the default threshold and color are, respectively, 45°C and red.
 It is possible to configure the visual alert for high liquid temperatures:
 
-`--alert-threshold <number>`: set the threshold temperature in Celsius for a visual alert  
-`--alert-color <color>`: set the color used by the visual high temperature alert
+- `--alert-threshold <number>`: set the threshold temperature in Celsius for a visual alert;
+- `--alert-color <color>`: set the color used by the visual high temperature alert.
 
 Note that alerts are reportedly not supported by the oldest models, the NZXT Kraken X40 and X60 (see [#477]).
 
@@ -99,7 +99,7 @@ Note that alerts are reportedly not supported by the oldest models, the NZXT Kra
 
 ## Save settings to device
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 Use the `--non-volatile` option on a `set` command to save the current values of _all_ settings (pump speed, fan cruve, and light mode) to the device's on-board flash memory:
 

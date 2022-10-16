@@ -3,13 +3,13 @@
 ## Prepare system
 
  - [ ] Ensure publishing dependencies are installed: twine
- - [ ] Export helper enviroment variable: `export VERSION=<version>`
+ - [ ] Export helper environment variable: `export VERSION=<version>`
 
 ## Prepare repository
 
  - [ ] Update last update date in the man page
  - [ ] Update the CHANGELOG
- - [ ] Remove "N/New driver, ..." notes from the table of supported devices (and merge lines if appropriate)
+ - [ ] Review and update MRLVs in the table of supported devices (merging lines when appropriate)
  - [ ] Update version in pip install liquidctl==version examples
  - [ ] Regenerate the udev rules:
        `(cd extra/linux && python generate-uaccess-udev-rules.py > 71-liquidctl.rules)`
@@ -45,7 +45,7 @@ Then install locally and:
  - [ ] Build the source distribution and wheel (stash any changes to this file beforehand):
        `python -m build`
  - [ ] Check that all necessary files are in the `dist/liquidctl-$VERSION.tar.gz` sdist
- - [ ] Check the contents of the `dist/liquidctl-$VERSION.whl` wheel
+ - [ ] Check the contents of the `dist/liquidctl-$VERSION-py3-none-any.whl` wheel
  - [ ] Sign both sdist and wheel:
        `gpg --detach-sign -a "dist/liquidctl-$VERSION.tar.gz"`
        `gpg --detach-sign -a "dist/liquidctl-$VERSION-py3-none-any.whl"`

@@ -77,8 +77,8 @@ In verbose mode `status` reports the current RGB lighting settings.
 ```
 # liquidctl status --verbose --unsafe=smbus
 EVGA GTX 1080 FTW
-├── Mode      Fixed  
-└── Color    2aff00  
+├── Mode      Fixed
+└── Color    2aff00
 ```
 
 ### Controlling the LED
@@ -139,8 +139,8 @@ In verbose mode `status` reports the current RGB lighting settings.
 ```
 # liquidctl status --verbose --unsafe=smbus
 ASUS Strix RTX 2080 Ti OC
-├── Mode      Fixed  
-└── Color    ff0000  
+├── Mode      Fixed
+└── Color    ff0000
 ```
 
 ### Controlling the LED

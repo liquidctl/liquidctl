@@ -1,11 +1,9 @@
 # ASUS Aura LED (USB-based) controllers
 _Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led.py)._
 
-_New in 1.10.0._  
+_New in 1.10.0._<br>
 
-__NOTE:__
-This driver is marked `experimental` because of the need for additional testing and feedback by the community. The API is unstable and may be changed in the future.
-
+_Note: this driver is marked as **experimental** because of the need for additional testing and feedback by the community._<br>
 
 This driver supports ASUS Aura USB-based lighting controllers that appear in various ASUS Z490, Z590, and Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate lighting effects on each addressable LED. The other mode is _effect_ mode in which the controller itself modulates lighting effects on each addressable LED. Effect mode requires the application to issue a single set of command codes to the controller in order to initiate the given effect. The controller continues to process that effect until the application sends a different command.
 
@@ -27,8 +25,8 @@ There are three known variants of the Aura LED USB-based controller:
 ASUS Aura LED controller does not need to be initialized before use. Initialization is optional.
 
 ```
-# liquidctl -m Aura initialize
-ASUS Aura LED Controller
+# liquidctl initialize
+ASUS Aura LED Controller (experimental)
 └── Firmware version    AULA3-AR32-0207
 ```
 
@@ -37,66 +35,69 @@ ASUS Aura LED Controller
 The `status` function returns the number of ARGB and RGB channels detected by the controller. If the command is invoked with `--debug` flag, the entire reply from the controller will be displayed in groups of 6 bytes. This information has not been fully decoded, but is provided in the event that someone is able to decipher it.
 
 On ASUS ProArt Z690-Creator WiFi the following is returned:
+
 ```
-% liquidctl -m Aura status
+# liquidctl status
 ASUS Aura LED Controller (experimental)
-├── ARGB channels: 2      
-└──  RGB channels: 1  
+├── ARGB channels: 2
+└──  RGB channels: 1
 ```
 
 To display the set of 6-byte status values, use `--debug` on the command line. The following will be returned:
 
 ```
-% liquidctl --debug -m Aura status
+# liquidctl --debug status
 ASUS Aura LED Controller (experimental)
-├── ARGB channels: 2                                         
-├──  RGB channels: 1                                         
-├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
-├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00  
-├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x03, 0x02  
-├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── ARGB channels: 2
+├──  RGB channels: 1
+├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00
+├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x03, 0x02
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 ```
 
 On ASUS ROG Strix Z690-i Gaming WiFi (mini-ITX) the following is returned:
+
 ```
-% liquidctl --debug -m Aura status
+# liquidctl --debug status
 ASUS Aura LED Controller (experimental)
-├── ARGB channels: 2                                         
-├──  RGB channels: 1  
-├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00  
-├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00  
-├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x03, 0x02  
-├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
-└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00  
+├── ARGB channels: 2
+├──  RGB channels: 1
+├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x01, 0x00, 0x00
+├── Device Config: 3     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 5     0x00, 0x00, 0x00, 0x01, 0x03, 0x02
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 ```
 
 On some ASUS Z490 boards (controller ID 0x18F3) the following is returned:
+
 ```
-% liquidctl --debug -m Aura status
+# liquidctl --debug status
 ASUS Aura LED Controller (experimental)
-├── ARGB channels: 1                                         
-├──  RGB channels: 1  
-├── Device Config: 1     0x1e, 0x9f, 0x01, 0x01, 0x00, 0x00 
-├── Device Config: 2     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00 
-├── Device Config: 3     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
-├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
-├── Device Config: 5     0x00, 0x00, 0x00, 0x06, 0x07, 0x02 
-├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00 
-├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
-├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
-├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
-└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00 
+├── ARGB channels: 1
+├──  RGB channels: 1
+├── Device Config: 1     0x1e, 0x9f, 0x01, 0x01, 0x00, 0x00
+├── Device Config: 2     0x78, 0x3c, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 3     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 4     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 5     0x00, 0x00, 0x00, 0x06, 0x07, 0x02
+├── Device Config: 6     0x01, 0xf4, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 7     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 8     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+├── Device Config: 9     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+└── Device Config: 10    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 ```
 
 ## RGB lighting
@@ -104,14 +105,14 @@ ASUS Aura LED Controller (experimental)
 The driver supports one 12V RGB channel named `led1` and three 5V Addressable RGB channels named `led2`, `led3`, and `led4`. Because the driver uses `effect` mode, all channels are synchronized. It is not possible at this time to set different color modes to different channels (`direct` mode is used for that). Nevertheless, independent channel names are provided in case a future BIOS update provides more flexibility in `effect` mode.
 
 ```
-# liquidctl -m Aura set led1 color static af5a2f
-# liquidctl -m Aura set led2 color breathing 350017
-# liquidctl -m Aura set led3 color rainbow
-# liquidctl -m Aura set led4 color spectrum-cycle
-# liquidctl -m Aura set sync color gentle-transition
+# liquidctl set led1 color static af5a2f
+# liquidctl set led2 color breathing 350017
+# liquidctl set led3 color rainbow
+# liquidctl set led4 color spectrum-cycle
+# liquidctl set sync color gentle-transition
 ```
 
-Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports zero or one color. 
+Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)), and each animation mode supports zero or one color.
 
 
 | Mode | Colors | Notes |
@@ -121,7 +122,7 @@ Colors can be specified in RGB, HSV or HSL (see [Supported color specification f
 | `breathing` | One |
 | `flashing` | One |
 | `spectrum_cycle` | None |
-| `rainbow` | None | 
+| `rainbow` | None |
 | `spectrum_cycle_breathing` | None |
 | `chase_fade` | One |
 | `spectrum_cycle_chase_fade` | None |

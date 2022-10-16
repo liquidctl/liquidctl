@@ -5,7 +5,7 @@ _Driver API and source code available in [`liquidctl.driver.commander_pro`](../l
 ## Initializing the device
 
 _Changed in 1.9.0: the firmware and bootloader versions are not available when
-data is read from [Linux hwmon]._
+data is read from [Linux hwmon]._<br>
 
 The device should be initialized every time it is powered on, including when
 the system resumes from suspending to memory.
@@ -141,8 +141,8 @@ random colors will be used.
 | `rainbow2`    |          0 |
 
 
-_¹ This is not a real mode but it will remove all saved effects_
-_² This is not a real mode but it is fixed with RGB values of 0_
+_¹ This is not a real mode but it will remove all saved effects_<br>
+_² This is not a real mode but it is fixed with RGB values of 0_<br>
 
 To specify which LED's on the channel the effect should apply to the
 `--start-led` and `--maximum-leds` flags must be given.
@@ -188,7 +188,7 @@ seconds to take effect.
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._
+_New in 1.9.0._<br>
 
 Commander Pro controllers and the Obsidian 1000D are supported by the mainline
 Linux kernel with its [`corsair-cpro`] driver, and status data is provided

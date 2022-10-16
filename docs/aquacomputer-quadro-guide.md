@@ -1,7 +1,7 @@
 # Aquacomputer Quadro fan controller
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
-_New in 1.11.0._  
+_New in 1.11.0._<br>
 
 ## Initialization
 
@@ -9,8 +9,8 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer Quadro
-├── Firmware version           1032  
+Aquacomputer Quadro (experimental)
+├── Firmware version           1032
 └── Serial number       23410-65344
 ```
 
@@ -22,7 +22,7 @@ The Quadro exposes four temperature sensors and four groups of fan sensors for o
 
 ```
 # liquidctl status
-Aquacomputer Quadro
+Aquacomputer Quadro (experimental)
 ├── Sensor 3          15.9  °C
 ├── Fan 1 speed          0  rpm
 ├── Fan 1 power       0.00  W
@@ -48,9 +48,9 @@ Aquacomputer Quadro
 Currently, four optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
-liquidctl set fan1 speed 56
-              ^^^^       ^^
-             channel    duty
+# liquidctl set fan1 speed 56
+                ^^^^       ^^
+               channel    duty
 ```
 
 Valid channel values on the Quadro are `fan1` through `fan4`.

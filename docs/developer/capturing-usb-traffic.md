@@ -60,20 +60,22 @@ find the target device among all others and filter the traffic to that device.
 _For this example, assume the target device has vendor and product IDs `0x1b1c`
 and `0x0c1a`, respectively._
 
-First, capture some USB traffic and apply a filter to the captured traffic (via the top bar) to filter out everything except the `GET DESCRIPTOR` response for this device. 
+First, capture some USB traffic and apply a filter to the captured traffic (via the top bar) to filter out everything except the `GET DESCRIPTOR` response for this device.
 
 ```
 usb.idVendor == 0x1b1c && usb.idProduct == 0x0c1a
 ```
-![Wireshark 4](./images/wireshark_2.png)  
 
+![Wireshark 4](./images/wireshark_2.png)
 
 Next step is to get the device address so that we can tell wireshark to only capture traffic to our desired device.
 Select one of the `GET DESCRIPTOR` response packets, expand the USB URB section in the packet details, and find the "Device: #" line. This is the device address.   Right click the "Device: #" entry, choose "Apply As Filter", then "Selected".  In the screenshot below the device number was 9.
-![Wireshark 5](./images/wireshark_3.png)  
+
+![Wireshark 5](./images/wireshark_3.png)
 
 This will change your packet filter to something like `usb.device_address == 9`, which is exactly what we want.  Now only traffic sent to that specific device will be displayed.
-![Wireshark 6](./images/wireshark_4.png)  
+
+![Wireshark 6](./images/wireshark_4.png)
 
 For convenience, you may want to save your filter for future captures.  Click on the bookmark icon immediately next to the filter to save it.
 

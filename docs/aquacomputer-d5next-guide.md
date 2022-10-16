@@ -1,7 +1,7 @@
 # Aquacomputer D5 Next watercooling pump
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
-_New in 1.11.0._  
+_New in 1.11.0._<br>
 
 ## Initialization
 
@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer D5 Next
+Aquacomputer D5 Next (experimental)
 ├── Firmware version           1023
 └── Serial number       03500-24905
 ```
@@ -19,13 +19,15 @@ The pump automatically sends a status HID report every second as soon as it's co
 ## Monitoring
 
 The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the
-optionally connected fan. These groups provide RPM speed, voltage, current and power readings. The pump additionally
-exposes +5V and +12V voltage rail readings:
+optionally connected fan. These groups provide RPM speed, voltage, current and power readings. It also supports eight
+virtual temperature sensors, which are user assigned. Currently, they can only be read from the device. The pump
+additionally exposes +5V and +12V voltage rail readings:
 
 ```
 # liquidctl status
-Aquacomputer D5 Next
+Aquacomputer D5 Next (experimental)
 ├── Liquid temperature     26.9  °C
+├── Soft. Sensor 1         50.0  °C
 ├── Pump speed             1968  rpm
 ├── Pump power             2.56  W
 ├── Pump voltage          12.04  V
@@ -38,14 +40,16 @@ Aquacomputer D5 Next
 └── +12V voltage          12.06  V
 ```
 
+_Changed in 1.12.0: read virtual temperature sensors as well._<br>
+
 ## Programming the fan speeds
 
 Currently, the pump and optionally connected fan can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
-liquidctl set pump speed 56
-              ^^^^       ^^
-             channel    duty
+# liquidctl set pump speed 56
+                ^^^^       ^^
+               channel    duty
 ```
 
 Valid channel values on the D5 Next are `pump` and `fan`.

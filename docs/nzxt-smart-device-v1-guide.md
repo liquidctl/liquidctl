@@ -20,9 +20,9 @@ All capabilities available at the hardware level are supported, but other featur
 [Initialization]: #initialization
 
 _Changed in 1.9.0: the firmware version and the connected accessories are now
-reported after initialization._  
+reported after initialization._<br>
 _Changed in 1.10.0: modern firmware versions are now reported in simplified
-form, to match CAM._  
+form, to match CAM._<br>
 
 After powering on from Mechanical Off, or if there have been hardware changes,
 the device must first be initialized.  This takes a few seconds and should
@@ -32,19 +32,19 @@ fan control and all lighting effects will be available.
 ```
 # liquidctl initialize
 NZXT Smart Device (V1)
-├── Firmware version             1.7  
-├── LED accessories                2  
-├── LED accessory type    HUE+ Strip  
-└── LED count (total)             20  
+├── Firmware version             1.7
+├── LED accessories                2
+├── LED accessory type    HUE+ Strip
+└── LED count (total)             20
 ```
 
 
 ## Monitoring
 
 _Changed in 1.9.0: the firmware version and the connected accessories are no
-longer reported (see [Initialization])._  
+longer reported (see [Initialization])._<br>
 _Changed in 1.9.0: the noise level is not available when data is read from
-[Linux hwmon]._  
+[Linux hwmon]._<br>
 
 The device can report fan information for each channel, the noise level at the
 onboard sensor, as well as the type of the connected LED accessories.
@@ -55,15 +55,15 @@ NZXT Smart Device (V1)
 ├── Fan 1 speed            1492  rpm
 ├── Fan 1 voltage         11.91  V
 ├── Fan 1 current          0.02  A
-├── Fan 1 control mode      PWM  
+├── Fan 1 control mode      PWM
 ├── Fan 2 speed            1368  rpm
 ├── Fan 2 voltage         11.91  V
 ├── Fan 2 current          0.02  A
-├── Fan 2 control mode      PWM  
+├── Fan 2 control mode      PWM
 ├── Fan 3 speed            1665  rpm
 ├── Fan 3 voltage         11.91  V
 ├── Fan 3 current          0.06  A
-├── Fan 3 control mode      PWM  
+├── Fan 3 control mode      PWM
 └── Noise level              59  dB
 ```
 
@@ -142,7 +142,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 These devices are supported by the [liquidtux] `nzxt-grid3` driver, and status
 data is provided through a standard hwmon sysfs interface.

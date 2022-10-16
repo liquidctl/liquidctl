@@ -1,7 +1,7 @@
 # Aquacomputer Farbwerk 360 RGB controller
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
-_New in 1.11.0._  
+_New in 1.11.0._<br>
 
 ## Initialization
 
@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer Farbwerk 360
+Aquacomputer Farbwerk 360 (experimental)
 ├── Firmware version           1022
 └── Serial number       16827-56978
 ```
@@ -22,7 +22,7 @@ The Farbwerk 360 exposes four temperature sensors.
 
 ```
 # liquidctl status
-Aquacomputer Farbwerk 360
+Aquacomputer Farbwerk 360 (experimental)
 ├── Sensor 1    24.1  °C
 ├── Sensor 2    25.7  °C
 ├── Sensor 3    25.2  °C

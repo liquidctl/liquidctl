@@ -473,7 +473,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x3008,
-            "NZXT Kraken Z (Z53, Z63 or Z73)",
+            "NZXT Kraken Z (Z53, Z63 or Z73) (experimental)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
@@ -719,14 +719,21 @@ class KrakenZ3(KrakenX3):
         self.bulk_device.write(0x2, out_data)
 
     def set_screen(self, channel, mode, value, **kwargs):
-        """
-        Used with
+        """Set the screen mode and content.
 
-        liquidctl [options] set lcd screen <mode>
-        liquidctl [options] set lcd screen brightness <value>
-        liquidctl [options] set lcd screen orientation (0|90|180|270)
-        liquidctl [options] set lcd screen (static|gif) <path>
+        Unstable.
+
+        Supported channels, modes and values:
+
+        | Channel | Mode | Value |
+        | --- | --- | --- |
+        | `lcd` | `liquid` | — |
+        | `lcd` | `brightness` | int between `0` and `100` (%) |
+        | `lcd` | `orientation` | `0`, `90`, `180` or `270` (°) |
+        | `lcd` | `static` | path to image |
+        | `lcd` | `gif` | path to animated GIF |
         """
+
         assert channel.lower() == "lcd", "Invalid Channel, valid: lcd, provided: " + channel
         assert mode != None, "No mode specified"
 
