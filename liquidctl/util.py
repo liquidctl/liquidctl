@@ -406,7 +406,7 @@ def map_direction(direction, forward=None, backward=None):
         raise ValueError(f'invalid direction: {direction!r}')
 
 
-def fan_mode_parser(value: Optional[str], max_fans: int) -> dict:
+def fan_mode_parser(value: Optional[str], max_fans: Optional[int] = None) -> dict:
     """Convert the --fan-mode=<key>:<value>[,...] options into a {key: value, ....} dictionary.
     The default is an empty dictionary.
 
@@ -437,6 +437,9 @@ def fan_mode_parser(value: Optional[str], max_fans: int) -> dict:
     {'3': 'off'}
 
     >>> fan_mode_parser('5:OFF', 5)
+    {'5': 'off'}
+
+    >>> fan_mode_parser('5:OFF')
     {'5': 'off'}
 
     >>> fan_mode_parser('1:dc,2:auto,3:off,4:pwm', 5)
@@ -502,7 +505,7 @@ def fan_mode_parser(value: Optional[str], max_fans: int) -> dict:
         except ValueError:
             raise ValueError(f"invalid fan number: '{key}'")
 
-        if key_val <= 0  or key_val > max_fans:
+        if key_val <= 0 or (max_fans is not None and key_val > max_fans):
             raise ValueError(f"invalid fan number: '{key}'")
 
         if val.lower() not in ['off', 'auto', 'dc', 'pwm']:

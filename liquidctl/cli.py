@@ -35,12 +35,12 @@ Animation options (devices/modes can support zero or more):
 Other device options:
   --single-12v-ocp                   Enable single rail +12V OCP
   --pump-mode <mode>                 Set the pump mode (certain Corsair coolers)
+  --fan-mode <channel>:<mode>[,...]  Set the mode for each fan (certain Corsair devices)
   --temperature-sensor <number>      The temperature sensor number for the Commander Pro
   --legacy-690lc                     Use Asetek 690LC in legacy mode (old Krakens)
   --non-volatile                     Store on non-volatile controller memory
   --direct-access                    Directly access the device despite kernel drivers
   --unsafe <features>                Comma-separated bleeding-edge features to enable
-  --fan-mode <channel>:<mode>[,...]  The fan modes to configure when initializing the device
 
 Other interface options:
   -v, --verbose                      Output additional information
@@ -85,7 +85,7 @@ from docopt import docopt
 from liquidctl import __version__
 from liquidctl.driver import *
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
-from liquidctl.util import color_from_str
+from liquidctl.util import color_from_str, fan_mode_parser
 
 
 # conversion from CLI arg to internal option; as options as forwarded to bused
@@ -118,7 +118,7 @@ _PARSE_ARG = {
     '--legacy-690lc': bool,
     '--non-volatile': bool,
     '--direct-access': bool,
-    '--fan-mode': str.lower,
+    '--fan-mode': lambda x: fan_mode_parser(str.lower(x)),
     '--unsafe': lambda x: x.lower().split(','),
     '--verbose': bool,
     '--debug': bool,

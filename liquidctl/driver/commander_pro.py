@@ -24,7 +24,7 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import clamp, fraction_of_byte, u16be_from, u16le_from, \
-                           normalize_profile, check_unsafe, map_direction, fan_mode_parser
+                           normalize_profile, check_unsafe, map_direction
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ class CommanderPro(UsbHidDriver):
 
         return status
 
-    def initialize(self, direct_access=False, fan_mode=None, **kwargs):
+    def initialize(self, direct_access=False, fan_mode={}, **kwargs):
         """Initialize the device and the driver.
 
         This method should be called every time the systems boots, resumes from
@@ -255,18 +255,18 @@ class CommanderPro(UsbHidDriver):
         to `get_status()`.
         """
 
-        fan_modes = fan_mode_parser(fan_mode, self._fan_count)
-        # fan_modes = [fan1_mode, fan2_mode, fan3_mode, fan4_mode, fan5_mode, fan6_mode]
-
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
                          self._hwmon.driver)
+
+            if fan_mode != {}:
+                _LOGGER.warn('kernel driver does not support the `--fan-mode` argument, ignoring')
             return self._get_static_info_from_hwmon()
         else:
             if self._hwmon:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
                                 self._hwmon.driver)
-            return self._initialize_directly(fan_modes)
+            return self._initialize_directly(fan_mode)
 
     def _get_status_directly(self):
         temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
