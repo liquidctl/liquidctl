@@ -20,9 +20,9 @@ All capabilities available at the hardware level are supported, but other featur
 [Initialization]: #initialization
 
 _Changed in 1.9.0: the firmware version and the connected accessories are now
-reported after initialization._  
+reported after initialization._<br>
 _Changed in 1.10.0: modern firmware versions are now reported in simplified
-form, to match CAM._  
+form, to match CAM._<br>
 
 After powering on from Mechanical Off, or if there have been hardware changes,
 the device must first be initialized.  This takes a few seconds and should
@@ -42,9 +42,9 @@ NZXT Smart Device (V1)
 ## Monitoring
 
 _Changed in 1.9.0: the firmware version and the connected accessories are no
-longer reported (see [Initialization])._  
+longer reported (see [Initialization])._<br>
 _Changed in 1.9.0: the noise level is not available when data is read from
-[Linux hwmon]._  
+[Linux hwmon]._<br>
 
 The device can report fan information for each channel, the noise level at the
 onboard sensor, as well as the type of the connected LED accessories.
@@ -142,7 +142,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 These devices are supported by the [liquidtux] `nzxt-grid3` driver, and status
 data is provided through a standard hwmon sysfs interface.

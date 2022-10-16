@@ -157,7 +157,7 @@ they will be removed in a future version and are kept for now for backward compa
 
 ## The LCD screen (only Z models; experimental)
 
-_New in 1.11.0._  
+_New in 1.11.0._<br>
 
 The LCD screen can be configured in a few different modes.
 
@@ -173,7 +173,7 @@ Images and GiFs are automatically resized and rotated to match the device orient
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 Kraken X3 devices feature incomplete support by the [liquidtux] `nzxt-kraken3`
 driver, and partial status data is provided through a standard hwmon sysfs

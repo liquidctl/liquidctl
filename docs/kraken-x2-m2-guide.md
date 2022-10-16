@@ -19,9 +19,9 @@ This driver also supports the NZXT Kraken M22.  However, this device has no pump
 
 ## Initialization
 
-_Changed in 1.9.0: the firmware version is now reported after initialization._  
+_Changed in 1.9.0: the firmware version is now reported after initialization._<br>
 _Changed in 1.10.0: modern firmware versions are now reported in simplified
-form, to match CAM._  
+form, to match CAM._<br>
 
 All devices should be (re)initialized after the system boots or resumes from a
 suspended state, or if there have been hardware changes.
@@ -42,7 +42,7 @@ command itself.
 
 ## Monitoring
 
-_Changed in 1.9.0: the firmware version is no longer reported on the CLI._  
+_Changed in 1.9.0: the firmware version is no longer reported on the CLI._<br>
 
 The cooler can report the fan and pump speed, as well as the liquid temperature.
 
@@ -140,7 +140,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 Kraken X2 devices are supported by the mainline Linux kernel with its
 [`nzxt-kraken2`] driver, and status data is provided through a standard hwmon

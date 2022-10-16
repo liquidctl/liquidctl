@@ -14,12 +14,12 @@ by default reset the PSU to that behavior.  Single-rail mode can be optionally
 selected by passing `--single-12v-ocp` to `initialize`.
 
 _Changed in 1.9.0: changing the OCP mode or resetting to hardware fan control
-is not available when the device was initialized by the [Linux hwmon] driver._  
+is not available when the device was initialized by the [Linux hwmon] driver._<br>
 
 ## Monitoring
 
 _Changed in 1.9.0: OCP and fan control modes, as well current and total uptime,
-are not available when data is read from [Linux hwmon]._  
+are not available when data is read from [Linux hwmon]._<br>
 
 The PSU is able to report monitoring data about its own hardware and basic
 electrical variables for the input and output sides.
@@ -53,7 +53,7 @@ Input power and efficiency are estimated from efficiency data advertised by
 Corsair in the respective HXi and RMi PSU user manuals.
 
 _Changed in 1.11.0: temperature sensors 1 and 2 have been renamed to VRM and
-case, respectively._  
+case, respectively._<br>
 
 ## Fan speed
 
@@ -87,14 +87,14 @@ and CorsairLink.
 Still, we encourage Corsair to make more of its efficiency data public, which
 would hopefully allow liquidctl to present more precise estimates.
 
-_<sup>1</sup> See comments in [issue #300](https://github.com/liquidctl/liquidctl/issues/300)._  
-_<sup>2</sup> Available at [80 PLUS® Certified Power Supplies and Manufacturers](https://www.clearesult.com/80plus/manufacturers/115V-Internal)._  
+_<sup>1</sup> See comments in [issue #300](https://github.com/liquidctl/liquidctl/issues/300)._<br>
+_<sup>2</sup> Available at [80 PLUS® Certified Power Supplies and Manufacturers](https://www.clearesult.com/80plus/manufacturers/115V-Internal)._<br>
 
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 These devices are supported by the mainline Linux kernel with its
 [`corsair-psu`] driver, and status data is provided through a standard hwmon

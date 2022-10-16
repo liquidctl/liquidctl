@@ -1,7 +1,7 @@
 # Aquacomputer D5 Next watercooling pump
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
-_New in 1.11.0._  
+_New in 1.11.0._<br>
 
 ## Initialization
 
@@ -40,7 +40,7 @@ Aquacomputer D5 Next (experimental)
 └── +12V voltage          12.06  V
 ```
 
-_Changed in 1.12.0: read virtual temperature sensors as well._  
+_Changed in 1.12.0: read virtual temperature sensors as well._<br>
 
 ## Programming the fan speeds
 

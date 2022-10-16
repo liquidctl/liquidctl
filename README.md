@@ -150,14 +150,14 @@ subjective "from more to less liquid control-ly" order.
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | USB HID | <sup>_e_</sup> | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | USB HID | | 1.5.2 |
 
-<sup>_L_</sup> _Requires the `--legacy-690lc` flag._  
-<sup>_U_</sup> _Requires `--unsafe` features._  
-<sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._  
-<sup>_a_</sup> _Architecture-specific limitations._  
-<sup>_e_</sup> _Experimental support._  
-<sup>_h_</sup> _Can leverage hwmon driver._  
-<sup>_p_</sup> _Only partially supported._  
-<sup>_x_</sup> _Only supported on Linux._  
+<sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
+<sup>_U_</sup> _Requires `--unsafe` features._<br>
+<sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
+<sup>_a_</sup> _Architecture-specific limitations._<br>
+<sup>_e_</sup> _Experimental support._<br>
+<sup>_h_</sup> _Can leverage hwmon driver._<br>
+<sup>_p_</sup> _Only partially supported._<br>
+<sup>_x_</sup> _Only supported on Linux._<br>
 
 
 ## Installation
@@ -225,7 +225,7 @@ pkg install py37-liquidctl
 _Warning: on systems that still default to Python 2, replace `python`
 with `python3`._
 
-_Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
+_Changed in 1.9.0: liquidctl now uses a PEP 517 build system._<br>
 
 liquidctl can be manually installed from the Python Package Index (PyPI), or
 directly from the source code repository.
@@ -283,11 +283,11 @@ device using [Zadig]: open Zadig, select your device from the dropdown list
 and, finally, click "Replace Driver".
 
 _Warning: replacing the driver for a device where that is not necessary will
-likely cause it to become inaccessible from liquidctl._  
+likely cause it to become inaccessible from liquidctl._<br>
 
 _Changed in 1.9.0: the LibUSB 1.0 DLL is now provided by liquidctl or one of
 its dependencies; on versions before 1.9.0, it is necessary to manually copy
-the DLL from an official [LibUSB release] into `C:\Windows\System32\`._  
+the DLL from an official [LibUSB release] into `C:\Windows\System32\`._<br>
 
 [python.org]: https://www.python.org/
 [LibUSB release]: https://github.com/libusb/libusb/releases
@@ -386,7 +386,7 @@ certain scenarios:
 ### Working locally
 [Working locally]: #working-locally
 
-_Changed in 1.9.0: liquidctl now uses a PEP 517 build system._  
+_Changed in 1.9.0: liquidctl now uses a PEP 517 build system._<br>
 
 When working on the project itself, it is sometimes useful to set up a local
 development environment, making it possible to directly run the CLI and the
@@ -766,7 +766,7 @@ You are also encouraged to contribute to the documentation and to these examples
 ## License
 [License]: #license
 
-liquidctl – monitor and control liquid coolers and other devices.  
+liquidctl – monitor and control liquid coolers and other devices.<br>
 Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
 

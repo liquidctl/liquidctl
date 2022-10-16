@@ -28,7 +28,7 @@ A microphone is still present onboard for noise level optimization through CAM a
 
 ## NZXT H1 V2
 
-_New in 1.10.0._  
+_New in 1.10.0._<br>
 
 The second revision of the NZXT H1 case, labeled H1 V2, ships with a variant of the NZXT Smart Device V2 that handles both the internal fans and the AIO pump. Two fan and one pump channels are available,
 where the formers can be controlled via PWM or DC. The pump speed is not user controllable. The device reports the state, speed and duty of each fan channel, as well as the pump speed.
@@ -61,7 +61,7 @@ NZXT Smart Device V2
 ## Monitoring
 
 _Changed in 1.9.0: the noise level is not available when data is read from
-[Linux hwmon]._  
+[Linux hwmon]._<br>
 
 The device can report fan information for each channel and the noise level at
 the on-board sensor.
@@ -153,7 +153,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 Smart Device V2 controllers are supported by the mainline Linux kernel with its
 [`nzxt-smart2`] driver, and status data is provided through a standard hwmon

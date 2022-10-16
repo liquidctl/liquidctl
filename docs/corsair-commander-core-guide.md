@@ -1,7 +1,7 @@
 # Corsair Commander Core and Core XT
 _Driver API and source code available in [`liquidctl.driver.commander_core`](../liquidctl/driver/commander_core.py)._
 
-_Changed in 1.11.0: the Corsair Commander Core XT is now supported._  
+_Changed in 1.11.0: the Corsair Commander Core XT is now supported._<br>
 
 Currently, functionality implemented is listed here. More is planned to be added.
 
@@ -65,7 +65,7 @@ Corsair Commander Core XT (experimental)
 
 ## Programming the pump and fan speeds
 
-_New in 1.9.0._  
+_New in 1.9.0._<br>
 
 Currently, the pump and each fan can be set to a fixed duty cycle. 
 

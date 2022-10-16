@@ -46,7 +46,8 @@ Global commands should work in any mode.
 ### `0x01` - Wake up/Sleep
 
 Wakeup needs to be run every time the device has not been sent any data for a
-predefined number of seconds.  
+predefined number of seconds.
+
 Sleep should be run when the device should return to hardware mode and
 no more data will be sent.
 
