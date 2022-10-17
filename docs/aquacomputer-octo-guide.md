@@ -18,12 +18,16 @@ The Octo automatically sends a status HID report every second as soon as it's co
 
 ## Monitoring
 
-The Octo exposes four temperature senso and eight groups of fan sensors for optionally connected fans. These groups provide RPM speed, voltage, current and power readings:
+The Octo exposes four temperature senso and eight groups of fan sensors for optionally connected fans. It also supports
+sixteen virtual temperature sensors, which are user assigned. Currently, they can only be read from the device. These
+groups provide RPM speed, voltage, current and power readings:
 
 ```
 # liquidctl status
 Aquacomputer Octo (experimental)
 ├── Sensor 1          37.0  °C
+├── Soft. Sensor 2     2.9  °C
+├── Soft. Sensor 8    40.7  °C
 ├── Fan 1 speed          0  rpm
 ├── Fan 1 power       0.00  W
 ├── Fan 1 voltage    12.09  V

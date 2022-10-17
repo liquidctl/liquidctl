@@ -114,7 +114,7 @@ Its ID is `0x01` and its length is `0xb6`. The four temp sensor values are locat
 
 ## Octo
 
-The Octo exposes four temperature sensors and eight groups of fan sensor data (outlined in the preamble) through its sensor report.
+The Octo exposes four physical and sixteen virtual temperature sensors and eight groups of fan sensor data (outlined in the preamble) through its sensor report.
 
 ### Sensor report
 
@@ -146,6 +146,22 @@ Here is what it's currently known to contain:
 | Fan 6 substructure                 | 0xBE                     |
 | Fan 7 substructure                 | 0xCB                     |
 | Fan 8 substructure                 | 0xD8                     |
+| Virtual temp sensor 1              | 0x45                     |
+| Virtual temp sensor 2              | 0x47                     |
+| Virtual temp sensor 3              | 0x49                     |
+| Virtual temp sensor 4              | 0x4B                     |
+| Virtual temp sensor 5              | 0x4D                     |
+| Virtual temp sensor 6              | 0x4F                     |
+| Virtual temp sensor 7              | 0x51                     |
+| Virtual temp sensor 8              | 0x53                     |
+| Virtual temp sensor 9              | 0x55                     |
+| Virtual temp sensor 10             | 0x57                     |
+| Virtual temp sensor 11             | 0x59                     |
+| Virtual temp sensor 12             | 0x5B                     |
+| Virtual temp sensor 13             | 0x5D                     |
+| Virtual temp sensor 14             | 0x5F                     |
+| Virtual temp sensor 15             | 0x61                     |
+| Virtual temp sensor 16             | 0x63                     |
 
 ### Control report
 
