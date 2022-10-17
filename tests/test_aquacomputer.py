@@ -508,8 +508,6 @@ def test_octo_get_status_directly(mockOctoDevice, has_hwmon, direct_access):
 
     got = mockOctoDevice.get_status(direct_access=direct_access)
 
-    print(f"octo: got: {got}")
-
     expected = [
         ("Sensor 1", pytest.approx(27.5, 0.1), "°C"),
         ("Sensor 2", pytest.approx(27.7, 0.1), "°C"),
