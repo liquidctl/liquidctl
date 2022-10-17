@@ -515,6 +515,7 @@ def test_octo_get_status_directly(mockOctoDevice, has_hwmon, direct_access):
         ("Sensor 2", pytest.approx(27.7, 0.1), "°C"),
         ("Sensor 3", pytest.approx(28.4, 0.1), "°C"),
         ("Sensor 4", pytest.approx(34.2, 0.1), "°C"),
+        ("Soft. Sensor 1", pytest.approx(37.84, 0.1), "°C"),
         ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
         ("Fan 1 power", pytest.approx(0.01, 0.1), "W"),
         ("Fan 1 voltage", pytest.approx(12.09, 0.1), "V"),
@@ -590,6 +591,22 @@ def test_octo_get_status_from_hwmon(mockOctoDevice, tmp_path):
     (tmp_path / "power8_input").write_text("20000\n")
     (tmp_path / "in7_input").write_text("12090\n")
     (tmp_path / "curr8_input").write_text("2\n")
+    (tmp_path / "temp5_input").write_text("50000\n")  # Soft. Sensor 1 temperature
+    (tmp_path / "temp6_input").write_text("60000\n")  # Soft. Sensor 2 temperature
+    (tmp_path / "temp7_input").write_text("50000\n")  # Soft. Sensor 3 temperature
+    (tmp_path / "temp8_input").write_text("50000\n")  # Soft. Sensor 4 temperature
+    (tmp_path / "temp9_input").write_text("50000\n")  # Soft. Sensor 5 temperature
+    (tmp_path / "temp10_input").write_text("50000\n")  # Soft. Sensor 6 temperature
+    (tmp_path / "temp11_input").write_text("50000\n")  # Soft. Sensor 7 temperature
+    (tmp_path / "temp12_input").write_text("50000\n")  # Soft. Sensor 8 temperature
+    (tmp_path / "temp13_input").write_text("50000\n")  # Soft. Sensor 9 temperature
+    (tmp_path / "temp14_input").write_text("50000\n")  # Soft. Sensor 10 temperature
+    (tmp_path / "temp15_input").write_text("50000\n")  # Soft. Sensor 11 temperature
+    (tmp_path / "temp16_input").write_text("50000\n")  # Soft. Sensor 12 temperature
+    (tmp_path / "temp17_input").write_text("50000\n")  # Soft. Sensor 13 temperature
+    (tmp_path / "temp18_input").write_text("50000\n")  # Soft. Sensor 14 temperature
+    (tmp_path / "temp19_input").write_text("50000\n")  # Soft. Sensor 15 temperature
+    (tmp_path / "temp20_input").write_text("50000\n")  # Soft. Sensor 16 temperature
 
     got = mockOctoDevice.get_status()
 
@@ -630,6 +647,22 @@ def test_octo_get_status_from_hwmon(mockOctoDevice, tmp_path):
         ("Fan 8 power", pytest.approx(0.02, 0.1), "W"),
         ("Fan 8 voltage", pytest.approx(12.09, 0.1), "V"),
         ("Fan 8 current", pytest.approx(0.002, 0.1), "A"),
+        ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 2", pytest.approx(60, 0.1), "°C"),
+        ("Soft. Sensor 3", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 4", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 5", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 6", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 7", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 8", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 9", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 10", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 11", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 12", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 13", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 14", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 15", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 16", pytest.approx(50, 0.1), "°C"),
     ]
 
     assert sorted(got) == sorted(expected)
