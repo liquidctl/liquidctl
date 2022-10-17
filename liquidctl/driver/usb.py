@@ -59,7 +59,7 @@ import logging
 import sys
 
 import usb
-from usb.backend.openusb import USBTimeoutError
+from usb.core import USBTimeoutError
 try:
     # The hidapi package, depending on how it's compiled, exposes one or two
     # top level modules: hid and, optionally, hidraw.  When both are available,
