@@ -260,7 +260,10 @@ class CommanderPro(UsbHidDriver):
                          self._hwmon.driver)
 
             if fan_modes:
-                _LOGGER.warning('kernel driver does not support the `fan mode` options, ignoring')
+                # say "with" instead of "by" because eventually the driver may start supporting fan
+                # modes, and we're not actually checking for it at runtime
+                _LOGGER.warning('fan mode options not supported with %s kernel driver, ignoring',
+                                self._hwmon.driver)
             return self._get_static_info_from_hwmon()
         else:
             if self._hwmon:
