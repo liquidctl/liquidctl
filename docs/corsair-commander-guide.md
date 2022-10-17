@@ -38,6 +38,12 @@ Corsair Lighting Node Pro
 ```
 
 
+Passing `--fan-mode='<fan_num>:<mode>[,...]'` can be used to change the
+fan mode from `dc` to `pwm` to `off` if the connected fan type is changed.
+The `--fan-mode` option is persistent across restarts and can only be used
+when not using the hwmon driver.
+
+
 ## Retrieving the fan speeds, temperatures and voltages
 
 The Lighting Node Pro and Lighting Node Core do not have a status message.

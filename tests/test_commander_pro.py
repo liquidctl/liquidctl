@@ -164,6 +164,32 @@ def test_connect_lighting(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._data is not None
 
 
+@pytest.mark.parametrize('exp,fan_modes', [([(3, 0x01)], {'4': 'dc'}), ([(3, 0x00)], {'4': 'off'}), ([(4, 0x02)], {'5': 'pwm'}), ([(0, 0x01),(2, 0x02),(1, 0x01)], {'1': 'dc', '3':'pwm', '2': 'dc'})])
+def test_initialize_commander_pro_fan_modes(commanderProDevice, exp, fan_modes, tmp_path):
+
+    responses = [
+        '000009d4000000000000000000000000',  # firmware
+        '00000500000000000000000000000000',  # bootloader
+        '00010100010000000000000000000000',  # temp probes
+        '00010102000000000000000000000000',  # fan set (throw away)
+        '00010102000000000000000000000000',  # fan set (throw away)
+        '00010102000000000000000000000000',  # fan set (throw away)
+        '00010102000000000000000000000000'   # fan probes
+    ]
+    for d in responses:
+        commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
+
+    commanderProDevice.initialize(direct_access=True, fan_modes=fan_modes)
+
+    sent = commanderProDevice.device.sent
+    assert len(sent) == 4+len(exp)
+
+    for i in range(len(exp)):
+        assert sent[3+i].data[0] == 0x28
+        assert sent[3+i].data[2] == exp[i][0]
+        assert sent[3+i].data[3] == exp[i][1]
+
+
 @pytest.mark.parametrize('has_hwmon,direct_access', [(False, False), (True, True), (True, False)])
 def test_initialize_commander_pro(commanderProDevice, has_hwmon, direct_access, tmp_path):
     if has_hwmon and not direct_access:
@@ -234,7 +260,7 @@ def test_initialize_commander_pro(commanderProDevice, has_hwmon, direct_access, 
 def test_initialize_lighting_node(lightingNodeProDevice):
     responses = [
         '000009d4000000000000000000000000',  # firmware
-        '00000500000000000000000000000000'  # bootloader
+        '00000500000000000000000000000000'   # bootloader
     ]
     for d in responses:
         lightingNodeProDevice.device.preload_read(Report(0, bytes.fromhex(d)))

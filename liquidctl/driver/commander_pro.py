@@ -41,6 +41,7 @@ _CMD_GET_FAN_MODES = 0x20
 _CMD_GET_FAN_RPM = 0x21
 _CMD_SET_FAN_DUTY = 0x23
 _CMD_SET_FAN_PROFILE = 0x25
+_CMD_SET_FAN_MODE = 0x28
 
 _CMD_RESET_LED_CHANNEL = 0x37
 _CMD_BEGIN_LED_EFFECT = 0x34
@@ -83,6 +84,11 @@ _MODES = {
     'rainbow2': 0x0a,
 }
 
+_FAN_MODES = {
+    'off': _FAN_MODE_DISCONNECTED,
+    'dc': _FAN_MODE_DC,
+    'pwm': _FAN_MODE_PWM,
+}
 
 def _prepare_profile(original, critcalTempature):
     clamped = ((temp, clamp(duty, 0, _MAX_FAN_RPM)) for temp, duty in original)
@@ -157,7 +163,7 @@ class CommanderPro(UsbHidDriver):
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
         return ret
 
-    def _initialize_directly(self, **kwargs):
+    def _initialize_directly(self, fan_modes: dict, **kwargs):
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[1], res[2], res[3])
 
@@ -179,6 +185,13 @@ class CommanderPro(UsbHidDriver):
             ]
 
         if self._fan_count > 0:
+            for i, value in fan_modes.items():
+                fan_num = int(i) - 1
+                if value not in ['dc', 'pwm', 'off']:
+                    raise ValueError(f"invalid fan mode: '{value}'")
+
+                self._send_command(_CMD_SET_FAN_MODE, [0x02, fan_num, _FAN_MODES.get(value)])
+
             res = self._send_command(_CMD_GET_FAN_MODES)
             fanModes = res[1:self._fan_count+1]
             self._data.store('fan_modes', fanModes)
@@ -230,7 +243,7 @@ class CommanderPro(UsbHidDriver):
 
         return status
 
-    def initialize(self, direct_access=False, **kwargs):
+    def initialize(self, direct_access=False, fan_modes={}, **kwargs):
         """Initialize the device and the driver.
 
         This method should be called every time the systems boots, resumes from
@@ -245,12 +258,15 @@ class CommanderPro(UsbHidDriver):
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
                          self._hwmon.driver)
+
+            if fan_modes:
+                _LOGGER.warning('kernel driver does not support the `fan mode` options, ignoring')
             return self._get_static_info_from_hwmon()
         else:
             if self._hwmon:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
                                 self._hwmon.driver)
-            return self._initialize_directly()
+            return self._initialize_directly(fan_modes)
 
     def _get_status_directly(self):
         temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)

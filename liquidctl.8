@@ -163,6 +163,9 @@ The number of LED's the effect should apply to.
 .
 .SS Other options
 .TP
+.BI \-\-fan\-mode= channel:mode[,...]
+Set the fan modes.
+.TP
 .B \-\-single\-12v\-ocp
 Enable single rail +12V OCP.
 .TP
@@ -250,6 +253,10 @@ Lighting channels: not yet supported.
 .SS Corsair Lighting Node Core
 .SS Corsair Obsidian 1000D
 Cooling channels (only Commander Pro and Obsidian 1000D): \fIsync\fR, \fIfan[1\-6]\fR.
+.PP
+Where the fan connection types can be set with
+.BI \-\-fan\-mode= channel:mode[,...] ,
+where the allowed modes are: \fIoff\fR, \fIdc\fR, \fIpwm\fR.
 .PP
 Lighting channels: (only Lighting Node Core:) \fIled\fR;
 (only Commander Pro and Lighting Node Pro:) \fIsync\fR, \fIled[1\-2]\fR.
