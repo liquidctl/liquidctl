@@ -8,7 +8,8 @@ being required.
 The status HID report exposes sensor values such as liquid temperature and
 two groups of fan sensors, for the pump and the optionally connected fan.
 These groups provide RPM speed, voltage, current and power readings. The
-pump additionally exposes +5V and +12V voltage rail readings.
+pump additionally exposes +5V and +12V voltage rail readings and eight virtual
+temperature sensors.
 
 The pump and fan can be set to a fixed speed (0-100%).
 
@@ -25,7 +26,8 @@ Octo is a fan/RGB controller and sends a status HID report every second with
 no initialization being required.
 
 The status HID report exposes four temperature sensor values and eight groups
-of fan sensors for optionally connected fans.
+of fan sensors for optionally connected fans. Octo additionaly exposes sixteen
+virtual temp sensors through this report.
 
 Aquacomputer Quadro
 -------------------------
@@ -47,6 +49,8 @@ Hwmon support:
     - Farbwerk 360: sensors - 5.18+
     - Octo: sensors - 5.19+, direct PWM control - not yet in fully
     - Quadro: sensors - 6.0+, direct PWM control - not yet in fully
+
+Virtual temp sensor reading is supported in 6.0+.
 
 Copyright (C) 2022 - Aleksa Savic
 
