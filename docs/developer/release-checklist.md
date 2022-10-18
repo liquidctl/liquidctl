@@ -10,6 +10,7 @@
  - [ ] Update last update date in the man page
  - [ ] Update the CHANGELOG
  - [ ] Review and update MRLVs in the table of supported devices (merging lines when appropriate)
+ - [ ] Set the version for "new/changed in git" notes
  - [ ] Update version in pip install liquidctl==version examples
  - [ ] Regenerate the udev rules:
        `(cd extra/linux && python generate-uaccess-udev-rules.py > 71-liquidctl.rules)`

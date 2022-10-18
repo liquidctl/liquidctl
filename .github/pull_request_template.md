@@ -19,9 +19,11 @@ Checklist:
 - [ ] Verify that the changes work as expected on real hardware
 - [ ] Add automated tests cases
 - [ ] Verify that all (other) automated tests (still) pass
-- [ ] Update the README and other applicable documentation pages
-- [ ] Update the `liquidctl.8` Linux/Unix/Mac OS man page
-- [ ] Update or add applicable `docs/*guide.md` device guides
+- [ ] Update/add documentation
+    - [ ] README, with ["new/changed in" notes]
+    - [ ] applicable `docs/*guide.md` device guides, with ["new/changed in" notes]
+    - [ ] `liquidctl.8` Linux/Unix/Mac OS man page
+    - [ ] protocol documentation in `docs/developer/protocol`
 - [ ] Submit relevant data, scripts or dissectors to https://github.com/liquidctl/collected-device-data
 
 New CLI flag?
@@ -39,3 +41,4 @@ New driver?
 
 [development process]: https://github.com/liquidctl/liquidctl/blob/main/docs/developer/process.md
 [style guide]: https://github.com/liquidctl/liquidctl/blob/main/docs/developer/style-guide.md
+["new/changed in" notes]: ../docs/developer/process.md#new-changed-in-notes

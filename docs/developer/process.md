@@ -70,6 +70,38 @@ correlated with (eventual) removal.  Feature removal depends on whether the
 feature is no longer useful and whether its removal is allowed by the stability
 guarantee.
 
+## Communicating changes to users
+
+The project communicates relevant changes to its users through the [CHANGELOG],
+the minimum recommended liquidctl versions (MRLVs, listed in the README for
+each device family), and the "new/changed in" notes in the documentation.
+
+The CHANGELOG and MRLVs are both owned by the project maintainers, and updated
+periodically. Contributors _should not_ attempt to update them as part of their
+normal patches. However, either can still be the subject of a patch if a
+correction is necessary.
+
+### New/changed in notes
+
+On the other hand, contributors _should_ add "new/changed in" notes to the
+relevant documentation, when applicable.  These should be kept in blocks, and
+look something like:
+
+```markdown
+_New in 1.8.0._<br>
+_Changed in 1.9.0: the firmware version is now reported during initialization._<br>
+_Changed in git: modern firmware versions are now reported in simplified form._<br>
+```
+
+"New in" notes are generally applicable to the corresponding subsection of a
+document, and do not usually go into more detail.  "Changed in" notes can
+appear at the top of the subsection, when the change is significant, or just
+after the corresponding feature is mentioned, when the change is minor.
+
+When adding "new/changed in" notes, contributors should use "git" as the
+placeholder version.  The project maintainers will be replace them by the
+appropriate version number as part of their release checklist.
+
 ## License and copyright
 
 Liquidctl is licensed under the GPL, either version 3 or, at the option of
@@ -92,3 +124,4 @@ maintainers if they want to ask to be included among the explicitly listed
 names.
 
 [short SPDX license identifier]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
+[CHANGELOG]: ../../CHANGELOG.md

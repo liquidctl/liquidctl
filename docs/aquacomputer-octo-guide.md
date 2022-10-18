@@ -62,7 +62,7 @@ Aquacomputer Octo (experimental)
 └── Fan 8 current     0.00  A
 ```
 
-_Changed in 1.12.0: read virtual temperature sensors as well._  
+_Changed in git: read virtual temperature sensors as well._<br>
 
 ## Programming the fan speeds
 
