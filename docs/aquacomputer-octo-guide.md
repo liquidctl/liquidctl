@@ -18,7 +18,7 @@ The Octo automatically sends a status HID report every second as soon as it's co
 
 ## Monitoring
 
-The Octo exposes four temperature senso and eight groups of fan sensors for optionally connected fans. It also supports
+The Octo exposes four temperature sensors and eight groups of fan sensors for optionally connected fans. It also supports
 sixteen virtual temperature sensors, which are user assigned. Currently, they can only be read from the device. These
 groups provide RPM speed, voltage, current and power readings:
 
