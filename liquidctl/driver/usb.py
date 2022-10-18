@@ -77,9 +77,10 @@ from liquidctl.driver.hwmon import HwmonDevice
 from liquidctl.error import Timeout
 from liquidctl.util import LazyHexRepr
 
-# Most devices respond in 1 second or (much) less; by default, only timeout if
-# something has almost surely gone wrong.
-_DEFAULT_TIMEOUT_MS = 2000
+# During initialization, SmartDevice2 devices take ~2.5 seconds to reply with
+# the lighting info (#526).  This is the slowest response time we're aware off,
+# so set the timeout to double that value.
+_DEFAULT_TIMEOUT_MS = 5000
 
 _LOGGER = logging.getLogger(__name__)
 
