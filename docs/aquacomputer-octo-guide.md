@@ -62,6 +62,8 @@ Aquacomputer Octo (experimental)
 └── Fan 8 current     0.00  A
 ```
 
+_Changed in 1.12.0: read virtual temperature sensors as well._  
+
 ## Programming the fan speeds
 
 Currently, eight optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
