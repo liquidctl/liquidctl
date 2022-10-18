@@ -41,4 +41,4 @@ New driver?
 
 [development process]: https://github.com/liquidctl/liquidctl/blob/main/docs/developer/process.md
 [style guide]: https://github.com/liquidctl/liquidctl/blob/main/docs/developer/style-guide.md
-["new/changed in" notes]: ../docs/developer/process.md#new-changed-in-notes
+["new/changed in" notes]: https://github.com/liquidctl/liquidctl/blob/main/docs/developer/process.md#newchanged-in-notes
