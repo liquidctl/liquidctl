@@ -18,7 +18,8 @@ Aquacomputer Farbwerk 360
 Farbwerk 360 is an RGB controller and sends a status HID report every second
 with no initialization being required.
 
-The status HID report exposes four temperature sensor values.
+The status HID report exposes four physical and sixteen virtual temperature
+sensor values.
 
 Aquacomputer Octo
 -------------------------
@@ -112,7 +113,9 @@ class Aquacomputer(UsbHidDriver):
         _DEVICE_FARBWERK360: {
             "type": _DEVICE_FARBWERK360,
             "temp_sensors": [0x32, 0x34, 0x36, 0x38],
+            "virt_temp_sensors": [0x3A + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
+            "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
             "status_report_length": 0xB6,
         },
         _DEVICE_OCTO: {
