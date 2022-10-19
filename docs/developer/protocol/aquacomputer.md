@@ -110,7 +110,32 @@ An example sensor report of the Farbwerk 360 looks like this:
 01 00 01 41 BB DE 92 03 E8 00 00 00 64 03 FE 00 00 00 11 00 00 00 09 D3 00 00 00 5E 00 08 A4 DD 00 00 00 24 BF E6 C0 34 A2 B4 FF D7 FF D5 FF D6 5A EC 0A 1F 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 7F FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 FA 01 FB 00 07 00 00 00 03 00 00 00 0B 00 00 00 00 00 15 20 1A 00 00 00 00 00 00 00 00 27 10 27 10 27 10 27 10 27 10 03 E8 00 00 03 E8 00 00 03 E8 00 00 03 E8 00 00 00 00 00 00 00 00 00 00 00 06 00 06 00 05 00 06 01 17 00 06
 ```
 
-Its ID is `0x01` and its length is `0xb6`. The four temp sensor values are located in succession at `0x32`, `0x34`, `0x36`, `0x38`.
+Its ID is `0x01` and its length is `0xb6`.
+
+Here is what it's currently known to contain:
+
+| What                   | Where/starts at (offset) |
+|------------------------|--------------------------|
+| Temp sensor 1          | 0x32                     |
+| Temp sensor 2          | 0x34                     |
+| Temp sensor 3          | 0x36                     |
+| Temp sensor 4          | 0x38                     |
+| Virtual temp sensor 1  | 0x3A                     |
+| Virtual temp sensor 2  | 0x3C                     |
+| Virtual temp sensor 3  | 0x3E                     |
+| Virtual temp sensor 4  | 0x40                     |
+| Virtual temp sensor 5  | 0x42                     |
+| Virtual temp sensor 6  | 0x44                     |
+| Virtual temp sensor 7  | 0x46                     |
+| Virtual temp sensor 8  | 0x48                     |
+| Virtual temp sensor 9  | 0x4A                     |
+| Virtual temp sensor 10 | 0x4C                     |
+| Virtual temp sensor 11 | 0x4E                     |
+| Virtual temp sensor 12 | 0x50                     |
+| Virtual temp sensor 13 | 0x52                     |
+| Virtual temp sensor 14 | 0x54                     |
+| Virtual temp sensor 15 | 0x56                     |
+| Virtual temp sensor 16 | 0x58                     |
 
 ## Octo
 
