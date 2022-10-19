@@ -822,6 +822,8 @@ def test_quadro_get_status_directly(mockQuadroDevice, has_hwmon, direct_access):
 
     expected = [
         ("Sensor 3", pytest.approx(16.17, 0.1), "°C"),
+        ("Soft. Sensor 1", pytest.approx(23.9, 0.1), "°C"),
+        ("Soft. Sensor 13", pytest.approx(50.0, 0.1), "°C"),
         ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
         ("Fan 1 power", pytest.approx(0, 0.1), "W"),
         ("Fan 1 voltage", pytest.approx(0, 0.1), "V"),
@@ -867,6 +869,22 @@ def test_quadro_get_status_from_hwmon(mockQuadroDevice, tmp_path):
     (tmp_path / "in3_input").write_text("0\n")
     (tmp_path / "curr4_input").write_text("0\n")
     (tmp_path / "fan5_input").write_text("603\n")
+    (tmp_path / "temp5_input").write_text("50000\n")  # Soft. Sensor 1 temperature
+    (tmp_path / "temp6_input").write_text("60000\n")  # Soft. Sensor 2 temperature
+    (tmp_path / "temp7_input").write_text("50000\n")  # Soft. Sensor 3 temperature
+    (tmp_path / "temp8_input").write_text("50000\n")  # Soft. Sensor 4 temperature
+    (tmp_path / "temp9_input").write_text("50000\n")  # Soft. Sensor 5 temperature
+    (tmp_path / "temp10_input").write_text("50000\n")  # Soft. Sensor 6 temperature
+    (tmp_path / "temp11_input").write_text("50000\n")  # Soft. Sensor 7 temperature
+    (tmp_path / "temp12_input").write_text("50000\n")  # Soft. Sensor 8 temperature
+    (tmp_path / "temp13_input").write_text("50000\n")  # Soft. Sensor 9 temperature
+    (tmp_path / "temp14_input").write_text("50000\n")  # Soft. Sensor 10 temperature
+    (tmp_path / "temp15_input").write_text("50000\n")  # Soft. Sensor 11 temperature
+    (tmp_path / "temp16_input").write_text("50000\n")  # Soft. Sensor 12 temperature
+    (tmp_path / "temp17_input").write_text("50000\n")  # Soft. Sensor 13 temperature
+    (tmp_path / "temp18_input").write_text("50000\n")  # Soft. Sensor 14 temperature
+    (tmp_path / "temp19_input").write_text("50000\n")  # Soft. Sensor 15 temperature
+    (tmp_path / "temp20_input").write_text("50000\n")  # Soft. Sensor 16 temperature
 
     got = mockQuadroDevice.get_status()
 
@@ -892,6 +910,22 @@ def test_quadro_get_status_from_hwmon(mockQuadroDevice, tmp_path):
         ("Fan 4 voltage", pytest.approx(0, 0.1), "V"),
         ("Fan 4 current", pytest.approx(0, 0.1), "A"),
         ("Flow sensor", pytest.approx(603, 0.1), "dL/h"),
+        ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 2", pytest.approx(60, 0.1), "°C"),
+        ("Soft. Sensor 3", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 4", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 5", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 6", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 7", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 8", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 9", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 10", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 11", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 12", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 13", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 14", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 15", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 16", pytest.approx(50, 0.1), "°C"),
     ]
 
     assert sorted(got) == sorted(expected)
