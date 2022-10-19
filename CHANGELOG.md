@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.11.1] – 2022-10-19
+
+### Changes since 1.11.0
+
+Fixed:
+
+- USB and HID: increase default timeout to 5s (liquidctl#526)
+
+### Notes for downstream packagers
+
+See notes for 1.11.0 release.
+
+### Known issues
+
+Please check the [issue tracker](https://github.com/liquidctl/liquidctl/issues).
+
+
 ## [1.11.0] – 2022-10-16
 
 ### Changes since 1.10.0
@@ -52,7 +69,7 @@ New Python dependencies: [crcmod], [pillow] and (Windows-only:) [winusbcdc].
 
 ### Known issues
 
-Please check the [issue tracker].
+Please check the [issue tracker](https://github.com/liquidctl/liquidctl/issues).
 
 ### Checksums
 
@@ -875,6 +892,3 @@ Changelog since 1.0.0rc1:
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) and [PEP 404](https://www.python.org/dev/peps/pep-0440/#semantic-versioning).
-
-
-[issue tracker]: https://github.com/liquidctl/liquidctl/issues
