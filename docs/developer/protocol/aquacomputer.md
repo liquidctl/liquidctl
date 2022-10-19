@@ -213,7 +213,8 @@ Here is what it's currently known to contain:
 
 ## Quadro
 
-The Quadro exposes four temperature sensors and four groups of fan sensor data (outlined in the preamble) through its sensor report.
+The Quadro exposes four physical and sixteen virtual temperature sensors, and four groups of fan sensor data
+(outlined in the preamble) through its sensor report.
 
 ### Sensor report
 
@@ -242,6 +243,22 @@ Here is what it's currently known to contain:
 | Fan 3 substructure                 | 0x8A                     |
 | Fan 4 substructure                 | 0x97                     |
 | Flow sensor                        | 0x6E                     |
+| Virtual temp sensor 1              | 0x3C                     |
+| Virtual temp sensor 2              | 0x3E                     |
+| Virtual temp sensor 3              | 0x40                     |
+| Virtual temp sensor 4              | 0x42                     |
+| Virtual temp sensor 5              | 0x44                     |
+| Virtual temp sensor 6              | 0x46                     |
+| Virtual temp sensor 7              | 0x48                     |
+| Virtual temp sensor 8              | 0x4A                     |
+| Virtual temp sensor 9              | 0x4C                     |
+| Virtual temp sensor 10             | 0x4E                     |
+| Virtual temp sensor 11             | 0x50                     |
+| Virtual temp sensor 12             | 0x52                     |
+| Virtual temp sensor 13             | 0x54                     |
+| Virtual temp sensor 14             | 0x56                     |
+| Virtual temp sensor 15             | 0x58                     |
+| Virtual temp sensor 16             | 0x5A                     |
 
 ### Control report
 

@@ -35,8 +35,8 @@ Aquacomputer Quadro
 Quadro is a fan/RGB controller and sends a status HID report every second with
 no initialization being required.
 
-The status HID report exposes four temperature sensor values and four groups
-of fan sensors for optionally connected fans.
+The status HID report exposes four physical and sixteen virtual temperature sensor
+values, and four groups of fan sensors for optionally connected fans.
 
 Driver
 ------
@@ -143,7 +143,9 @@ class Aquacomputer(UsbHidDriver):
             "type": _DEVICE_QUADRO,
             "fan_sensors": [0x70, 0x7D, 0x8A, 0x97],
             "temp_sensors": [0x34, 0x36, 0x38, 0x3A],
+            "virt_temp_sensors": [0x3C + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
+            "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
             "fan_speed_label": [f"Fan {num} speed" for num in range(1, 4 + 1)],
             "fan_power_label": [f"Fan {num} power" for num in range(1, 4 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
