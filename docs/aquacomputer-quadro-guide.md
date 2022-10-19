@@ -24,6 +24,9 @@ The Quadro exposes four temperature sensors and four groups of fan sensors for o
 # liquidctl status
 Aquacomputer Quadro (experimental)
 ├── Sensor 3          15.9  °C
+├── Soft. Sensor 2      40.3  °C 
+├── Soft. Sensor 3      50.0  °C 
+├── Soft. Sensor 13     50.0  °C 
 ├── Fan 1 speed          0  rpm
 ├── Fan 1 power       0.00  W
 ├── Fan 1 voltage     0.00  V
@@ -42,6 +45,8 @@ Aquacomputer Quadro (experimental)
 ├── Fan 4 current     0.00  A
 └── Flow sensor          0  dL/h
 ```
+
+_Changed in git: read virtual temperature sensors as well._<br>
 
 ## Programming the fan speeds
 
