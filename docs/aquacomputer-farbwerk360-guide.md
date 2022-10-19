@@ -18,16 +18,19 @@ The controller automatically sends a status HID report every second as soon as i
 
 ## Monitoring
 
-The Farbwerk 360 exposes four temperature sensors.
+The Farbwerk 360 exposes four physical and sixteen virtual temperature sensors.
 
 ```
 # liquidctl status
 Aquacomputer Farbwerk 360 (experimental)
-├── Sensor 1    24.1  °C
-├── Sensor 2    25.7  °C
-├── Sensor 3    25.2  °C
-└── Sensor 4    25.6  °C
+├── Sensor 1          24.1  °C
+├── Sensor 2          25.7  °C
+├── Sensor 3          25.2  °C
+├── Sensor 4          25.6  °C
+└── Soft. Sensor 1    52.0  °C
 ```
+
+_Changed in git: read virtual temperature sensors as well._<br>
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers

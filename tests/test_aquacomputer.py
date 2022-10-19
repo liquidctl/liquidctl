@@ -43,7 +43,7 @@ D5NEXT_SAMPLE_CONTROL_REPORT = bytes.fromhex(
 
 FARBWERK360_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "000141BBDE9203E80000006403FE000000110000001A150000005F0008AE3E000"
-    "00023BFC8C01AA20EFFD6A0E8A3915AEC0A3C0A470A6F09F87FFF7FFF7FFF7FFF"
+    "00023BFC8C01AA20EFFD6A0E8A3915AEC0A3C0A470A6F09F814507FFF7FFF7FFF"
     "7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF00000000000000000"
     "00000000000000001F901FA0006000000030000004300000000000A0324000000"
     "00000000002710271027102710271003E8000003E8000003E8000003E80000000"
@@ -415,6 +415,7 @@ def test_farbwerk360_get_status_directly(mockFarbwerk360Device, has_hwmon, direc
         ("Sensor 2", pytest.approx(26.3, 0.1), "°C"),
         ("Sensor 3", pytest.approx(26.7, 0.1), "°C"),
         ("Sensor 4", pytest.approx(25.5, 0.1), "°C"),
+        ("Soft. Sensor 1", pytest.approx(52.00, 0.1), "°C"),
     ]
 
     assert sorted(got) == sorted(expected)
@@ -426,6 +427,22 @@ def test_farbwerk360_get_status_from_hwmon(mockFarbwerk360Device, tmp_path):
     (tmp_path / "temp2_input").write_text("26310\n")
     (tmp_path / "temp3_input").write_text("26710\n")
     (tmp_path / "temp4_input").write_text("25520\n")
+    (tmp_path / "temp5_input").write_text("50000\n")  # Soft. Sensor 1 temperature
+    (tmp_path / "temp6_input").write_text("60000\n")  # Soft. Sensor 2 temperature
+    (tmp_path / "temp7_input").write_text("50000\n")  # Soft. Sensor 3 temperature
+    (tmp_path / "temp8_input").write_text("50000\n")  # Soft. Sensor 4 temperature
+    (tmp_path / "temp9_input").write_text("50000\n")  # Soft. Sensor 5 temperature
+    (tmp_path / "temp10_input").write_text("50000\n")  # Soft. Sensor 6 temperature
+    (tmp_path / "temp11_input").write_text("50000\n")  # Soft. Sensor 7 temperature
+    (tmp_path / "temp12_input").write_text("50000\n")  # Soft. Sensor 8 temperature
+    (tmp_path / "temp13_input").write_text("50000\n")  # Soft. Sensor 9 temperature
+    (tmp_path / "temp14_input").write_text("50000\n")  # Soft. Sensor 10 temperature
+    (tmp_path / "temp15_input").write_text("50000\n")  # Soft. Sensor 11 temperature
+    (tmp_path / "temp16_input").write_text("50000\n")  # Soft. Sensor 12 temperature
+    (tmp_path / "temp17_input").write_text("50000\n")  # Soft. Sensor 13 temperature
+    (tmp_path / "temp18_input").write_text("50000\n")  # Soft. Sensor 14 temperature
+    (tmp_path / "temp19_input").write_text("50000\n")  # Soft. Sensor 15 temperature
+    (tmp_path / "temp20_input").write_text("50000\n")  # Soft. Sensor 16 temperature
 
     got = mockFarbwerk360Device.get_status()
 
@@ -434,6 +451,22 @@ def test_farbwerk360_get_status_from_hwmon(mockFarbwerk360Device, tmp_path):
         ("Sensor 2", pytest.approx(26.3, 0.1), "°C"),
         ("Sensor 3", pytest.approx(26.7, 0.1), "°C"),
         ("Sensor 4", pytest.approx(25.5, 0.1), "°C"),
+        ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 2", pytest.approx(60, 0.1), "°C"),
+        ("Soft. Sensor 3", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 4", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 5", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 6", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 7", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 8", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 9", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 10", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 11", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 12", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 13", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 14", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 15", pytest.approx(50, 0.1), "°C"),
+        ("Soft. Sensor 16", pytest.approx(50, 0.1), "°C"),
     ]
 
     assert sorted(got) == sorted(expected)
