@@ -12,6 +12,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 import sys
 from collections import namedtuple
+from typing import *
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -99,7 +100,7 @@ _COLOR_MODES = {
 class RgbFusion2(UsbHidDriver):
     """liquidctl driver for Gigabyte RGB Fusion 2.0 USB controllers."""
 
-    _MATCHES = [
+    _MATCHES: List[Tuple[int, int, str, Dict[str, Any]]] = [
         (0x048d, 0x5702, 'Gigabyte RGB Fusion 2.0 5702 Controller', {}),
         (0x048d, 0x8297, 'Gigabyte RGB Fusion 2.0 8297 Controller', {}),
     ]

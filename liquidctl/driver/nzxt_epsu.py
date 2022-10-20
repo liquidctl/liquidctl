@@ -14,6 +14,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import time
+from typing import *
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -31,7 +32,7 @@ _RAILS = ['+12V peripherals', '+12V EPS/ATX12V', '+12V motherboard/PCI-e', '+5V 
 class NzxtEPsu(UsbHidDriver):
     """NZXT E-series power supply unit."""
 
-    _MATCHES = [
+    _MATCHES: List[Tuple[int, int, str, Dict[str, Any]]] = [
         (0x7793, 0x5911, 'NZXT E500', {}),
         (0x7793, 0x5912, 'NZXT E650', {}),
         (0x7793, 0x2500, 'NZXT E850', {}),

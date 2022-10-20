@@ -57,6 +57,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 import sys
+from typing import *
 
 import usb
 from usb.core import USBTimeoutError
@@ -98,7 +99,7 @@ class BaseUsbDriver(BaseDriver):
     receives, to the constructor.
     """
 
-    _MATCHES = []
+    _MATCHES: List[Tuple[int, int, str, Dict[str, Any]]] = []
 
     @classmethod
     def probe(cls, handle, vendor=None, product=None, release=None,

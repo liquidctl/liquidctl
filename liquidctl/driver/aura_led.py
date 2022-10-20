@@ -57,6 +57,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 import sys
 from collections import namedtuple
+from typing import *
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -141,7 +142,7 @@ class AuraLed(UsbHidDriver):
     to experiment with this driver and provide feedback
     """
 
-    _MATCHES = [
+    _MATCHES: List[Tuple[int, int, str, Dict[str, Any]]] = [
         (0x0B05, 0x19AF, "ASUS Aura LED Controller (experimental)", {}),
         (0x0B05, 0x1939, "ASUS Aura LED Controller (experimental)", {}),
         (0x0B05, 0x18F3, "ASUS Aura LED Controller (experimental)", {}),
@@ -217,7 +218,8 @@ class AuraLed(UsbHidDriver):
             status.append("Unexpected reply for config", "", "")
         return status
 
-    def set_color(self, channel, mode, colors, speed="normal", **kwargs):
+    def set_color(self, channel: str, mode: str, colors: Iterable[List[int]], speed: str = 'normal',
+                  **kwargs: Any) -> None:
         """Set the color mode for a specific channel.
 
         `colors` should be an iterable of zero or one `[red, green, blue]`
@@ -250,9 +252,9 @@ class AuraLed(UsbHidDriver):
         """
 
         if channel == "sync":
-            selected_channels = _COLOR_CHANNELS.values()
+            selected_channels = iter(_COLOR_CHANNELS.values())
         else:
-            selected_channels = (_COLOR_CHANNELS[channel],)
+            selected_channels = iter(_COLOR_CHANNELS[channel],)
         full_cmd_seq = []  # entire series of commands are added to this list
 
         """
