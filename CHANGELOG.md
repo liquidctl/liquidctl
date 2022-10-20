@@ -16,6 +16,13 @@ See notes for 1.11.0 release.
 
 Please check the [issue tracker](https://github.com/liquidctl/liquidctl/issues).
 
+### Checksums
+
+```
+278c1aca8d891bfe8e0c164dfe6651261a0423b29f9c24cef060c3613f2a4fd7  dist/liquidctl-1.11.1.tar.gz
+629d6e7db0eab3d6e7d0a58c23be6765d169eb2c1d29ddaef2fde60c603429e9  dist/liquidctl-1.11.1-py3-none-any.whl
+```
+
 
 ## [1.11.0] – 2022-10-16
 
