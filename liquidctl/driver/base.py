@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # uses the psf/black style
 
+from typing import *
+
 
 class BaseDriver:
     """Base driver API.
@@ -48,7 +50,7 @@ class BaseDriver:
 
         raise NotImplementedError()
 
-    def initialize(self, **kwargs):
+    def initialize(self, **kwargs: Any) -> List[Tuple[str, Any, str]]:
         """Initialize the device and the driver.
 
         This method should be called every time the systems boots, resumes from
@@ -79,7 +81,7 @@ class BaseDriver:
 
         raise NotImplementedError()
 
-    def get_status(self, **kwargs):
+    def get_status(self, **kwargs: Any) -> List[Tuple[str, Any, str]]:
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
@@ -87,12 +89,12 @@ class BaseDriver:
 
         raise NotImplementedError()
 
-    def set_color(self, channel, mode, colors, **kwargs):
+    def set_color(self, channel: str, mode: str, colors: Iterable[List[int]], **kwargs: Any) -> None:
         """Set the color mode for a specific channel."""
 
         raise NotImplementedError()
 
-    def set_screen(self, channel, mode, value, **kwargs):
+    def set_screen(self, channel: str, mode: str, value: str, **kwargs: Any) -> None:
         """Set the screen mode and content.
 
         Unstable.
@@ -100,12 +102,12 @@ class BaseDriver:
 
         raise NotImplementedError()
 
-    def set_speed_profile(self, channel, profile, **kwargs):
+    def set_speed_profile(self, channel: str, profile: List[Tuple[int, int]], **kwargs: Any) -> None:
         """Set channel to follow a speed duty profile."""
 
         raise NotImplementedError()
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+    def set_fixed_speed(self, channel: str, duty: int, **kwargs: Any) -> None:
         """Set channel to a fixed speed duty."""
 
         raise NotImplementedError()
