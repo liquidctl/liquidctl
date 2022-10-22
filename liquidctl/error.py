@@ -43,12 +43,6 @@ class UnsafeFeaturesNotEnabled(LiquidctlError):
     def __init__(self, missing_features: Iterable[str]) -> None:
         self._missing_features = missing_features
 
-        # For now keep backward compatibility with liquidctl < 1.12 and alias
-        # the missing features in `Exception.args`.  But consider if this is
-        # really necessary.
-        super().__init__(*missing_features)
-        assert self.args == tuple(self._missing_features)
-
     def __str__(self) -> str:
         features = ",".join(self._missing_features)
         return f"required unsafe features have not been enabled: {features}"
