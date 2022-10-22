@@ -284,7 +284,7 @@ class SmbusDriver(BaseDriver):
             # and allowing the device to pseudo-connect is convenient given the
             # current API structure; APIs that do access the bus should check
             # for the 'smbus' feature themselves and, if necessary, raise
-            # UnsafeFeaturesNotEnabled(*requirements)
+            # UnsafeFeaturesNotEnabled(requirements)
             # (see also: check_unsafe(..., error=True))
             _LOGGER.debug("SMBus disabled, missing unsafe feature 'smbus'")
         return self

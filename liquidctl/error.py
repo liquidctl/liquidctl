@@ -1,27 +1,64 @@
-"""Standardized liquidctl errors.
+"""liquidctl errors types.
 
 Copyright (C) 2020–2022  Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-class ExpectationNotMet(Exception):
+# uses the psf/black style
+
+from typing import *
+
+
+class LiquidctlError(Exception):
+    """Unspecified liquidctl error.
+
+    Unstable.
+    """
+
+    def __str__(self) -> str:
+        return "unspecified liquidctl error"
+
+
+class ExpectationNotMet(LiquidctlError):
     """Unstable."""
 
 
-class NotSupportedByDevice(Exception):
-    pass
+class NotSupportedByDevice(LiquidctlError):
+    """Operation not supported by the device."""
+
+    def __str__(self) -> str:
+        return "operation not supported by the device"
 
 
-class NotSupportedByDriver(Exception):
-    pass
+class NotSupportedByDriver(LiquidctlError):
+    """Operation not supported by the driver."""
+
+    def __str__(self) -> str:
+        return "operation not supported by the driver"
 
 
-class UnsafeFeaturesNotEnabled(Exception):
-    """Unstable."""
+class UnsafeFeaturesNotEnabled(LiquidctlError):
+    """Required unsafe features have not been enabled."""
+
+    def __init__(self, missing_features: Iterable[str]) -> None:
+        self._missing_features = missing_features
+
+        # For now keep backward compatibility with liquidctl < 1.12 and alias
+        # the missing features in `Exception.args`.  But consider if this is
+        # really necessary.
+        super().__init__(*missing_features)
+        assert self.args == tuple(self._missing_features)
+
+    def __str__(self) -> str:
+        features = ",".join(self._missing_features)
+        return f"required unsafe features have not been enabled: {features}"
 
 
-class Timeout(Exception):
-    """Unstable."""
+class Timeout(LiquidctlError):
+    """Operation timed out.
 
-    def __repr__(self):
-        return "Operation timed out"
+    Unstable.
+    """
+
+    def __str__(self) -> str:
+        return "operation timed out"

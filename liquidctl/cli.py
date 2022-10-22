@@ -83,7 +83,7 @@ from docopt import docopt
 
 from liquidctl import __version__
 from liquidctl.driver import *
-from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, UnsafeFeaturesNotEnabled
+from liquidctl.error import LiquidctlError
 from liquidctl.util import color_from_str, fan_mode_parser
 
 
@@ -474,27 +474,22 @@ def main():
                     _device_set_screen(dev, args, **opts)
                 else:
                     assert False, 'unreachable'
+        except LiquidctlError as err:
+            errors.log(f'{dev.description}: {err}', err=err)
         except OSError as err:
             # each backend API returns a different subtype of OSError (OSError,
             # usb.core.USBError or PermissionError) for permission issues
             if err.errno in [errno.EACCES, errno.EPERM]:
-                errors.log(f'insufficient permissions to access {dev.description}', err=err)
+                errors.log(f'{dev.description}: insufficient permissions', err=err)
             elif err.args == ('open failed', ):
                 errors.log(
-                    f'could not open {dev.description}, possibly due to insufficient permissions',
+                    f'{dev.description}: could not open, possibly due to insufficient permissions',
                     err=err
                 )
             else:
-                errors.log(f'unexpected OS error with {dev.description}', err=err, show_err=True)
-        except NotSupportedByDevice as err:
-            errors.log(f'operation not supported by {dev.description}', err=err)
-        except NotSupportedByDriver as err:
-            errors.log(f'operation not supported by driver for {dev.description}', err=err)
-        except UnsafeFeaturesNotEnabled as err:
-            features = ','.join(err.args)
-            errors.log(f'missing --unsafe features for {dev.description}: {features!r}', err=err)
+                errors.log(f'{dev.description}: unexpected OS error', err=err, show_err=True)
         except Exception as err:
-            errors.log(f'unexpected error with {dev.description}', err=err, show_err=True)
+            errors.log(f'{dev.description}: unexpected error', err=err, show_err=True)
 
     if errors.is_empty() and args['--json']:
         # use __str__ for values that cannot be directly serialized to JSON

@@ -352,7 +352,7 @@ def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
     >>> check_unsafe('foo', 'baz', unsafe='foo,bar', error=True)
     Traceback (most recent call last):
         ...
-    liquidctl.error.UnsafeFeaturesNotEnabled: baz
+    liquidctl.error.UnsafeFeaturesNotEnabled: required unsafe features have not been enabled: baz
 
     In driver code, `unsafe` is normally passed in `**kwargs`.
 
@@ -362,7 +362,7 @@ def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
     >>> check_unsafe('foo', 'baz', error=True, **kwargs)
     Traceback (most recent call last):
         ...
-    liquidctl.error.UnsafeFeaturesNotEnabled: baz
+    liquidctl.error.UnsafeFeaturesNotEnabled: required unsafe features have not been enabled: baz
     """
 
     if unsafe:
@@ -372,7 +372,7 @@ def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
         return True
 
     if error:
-        raise UnsafeFeaturesNotEnabled(*reqs)
+        raise UnsafeFeaturesNotEnabled(reqs)
     return False
 
 
