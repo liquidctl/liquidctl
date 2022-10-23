@@ -311,18 +311,13 @@ class KrakenX3(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        # no driver currently supports pwm1, so silently fallback to
-        # direct mode if it isn't available; for the same reason, also don't
-        # yet issue a warning when directly accessing the device
-
-        if self._hwmon and not direct_access and self._hwmon.has_attribute("pwm1"):
+        if self._hwmon and not direct_access:
             _LOGGER.info("bound to %s kernel driver, reading status from hwmon", self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
-            level = logging.WARNING if direct_access else logging.INFO
-            _LOGGER.log(
-                level, "directly reading the status despite %s kernel driver", self._hwmon.driver
+            _LOGGER.warning(
+                "directly reading the status despite %s kernel driver", self._hwmon.driver
             )
 
         return self._get_status_directly()
@@ -678,15 +673,13 @@ class KrakenZ3(KrakenX3):
         self._status.append(("LCD Brightness", self.brightness, "%"))
         self._status.append(("LCD Orientation", self.orientation * 90, "°"))
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _get_status_directly(self):
         self.device.clear_enqueued_reports()
         self._write([0x74, 0x01])
         msg = self._read()
+        if msg[15:17] == [0xFF, 0xFF]:
+            _LOGGER.warning("unexpected temperature reading, possible firmware fault;")
+            _LOGGER.warning("try resetting the device or updating the firmware")
         return [
             (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, "°C"),
             (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], "rpm"),
@@ -694,6 +687,32 @@ class KrakenZ3(KrakenX3):
             (_STATUS_FAN_SPEED, msg[24] << 8 | msg[23], "rpm"),
             (_STATUS_FAN_DUTY, msg[25], "%"),
         ]
+
+    def _get_status_from_hwmon(self):
+        return [
+            (_STATUS_TEMPERATURE, self._hwmon.read_int("temp1_input") * 1e-3, "°C"),
+            (_STATUS_PUMP_SPEED, self._hwmon.read_int("fan1_input"), "rpm"),
+            (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%"),
+            (_STATUS_FAN_SPEED, self._hwmon.read_int("fan2_input"), "rpm"),
+            (_STATUS_FAN_DUTY, self._hwmon.read_int("pwm2") * 100.0 / 255, "%"),
+        ]
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        if self._hwmon and not direct_access:
+            _LOGGER.info("bound to %s kernel driver, reading status from hwmon", self._hwmon.driver)
+            return self._get_status_from_hwmon()
+
+        if self._hwmon:
+            _LOGGER.warning(
+                "directly reading the status despite %s kernel driver", self._hwmon.driver
+            )
+
+        return self._get_status_directly()
 
     def _read_until_first_match(self, parsers):
         for _ in range(_MAX_READ_ATTEMPTS):
