@@ -697,23 +697,6 @@ class KrakenZ3(KrakenX3):
             (_STATUS_FAN_DUTY, self._hwmon.read_int("pwm2") * 100.0 / 255, "%"),
         ]
 
-    def get_status(self, direct_access=False, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
-        if self._hwmon and not direct_access:
-            _LOGGER.info("bound to %s kernel driver, reading status from hwmon", self._hwmon.driver)
-            return self._get_status_from_hwmon()
-
-        if self._hwmon:
-            _LOGGER.warning(
-                "directly reading the status despite %s kernel driver", self._hwmon.driver
-            )
-
-        return self._get_status_directly()
-
     def _read_until_first_match(self, parsers):
         for _ in range(_MAX_READ_ATTEMPTS):
             msg = self._read()
