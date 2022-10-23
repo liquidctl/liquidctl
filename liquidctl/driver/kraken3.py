@@ -299,11 +299,20 @@ class KrakenX3(UsbHidDriver):
         ]
 
     def _get_status_from_hwmon(self):
-        return [
+        status_readings = [
             (_STATUS_TEMPERATURE, self._hwmon.read_int("temp1_input") * 1e-3, "°C"),
             (_STATUS_PUMP_SPEED, self._hwmon.read_int("fan1_input"), "rpm"),
-            (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%"),
         ]
+
+        if self._hwmon.has_attribute("pwm1"):
+            status_readings.append(
+                (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%")
+            )
+        else:
+            # An older version of the kernel driver only exposed coolant temp and pump speed
+            _LOGGER.warning("pump duty cannot be read from %s kernel driver", self._hwmon.driver)
+
+        return status_readings
 
     def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
