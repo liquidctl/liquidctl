@@ -9,7 +9,7 @@ Usage:
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl [options] set <channel> screen <mode> [<value>]
   liquidctl --help
-  liquidctl --version [--debug]
+  liquidctl --version
 
 Device selection options (see: list -v):
   -m, --match <substring>            Filter devices by description substring
@@ -358,6 +358,10 @@ class _ErrorAcc:
 def main():
     args = docopt(__doc__)
 
+    if args['--version']:
+        print(f'liquidctl v{__version__} ({platform.platform()})')
+        sys.exit(0)
+
     if args['--debug']:
         args['--verbose'] = True
         log_fmt = '%(log_color)s[%(levelname)s] (%(module)s) (%(funcName)s): %(message)s'
@@ -398,10 +402,6 @@ def main():
 
     if __name__ == '__main__':
         _LOGGER.warning('python -m liquidctl.cli is deprecated, prefer python -m liquidctl')
-
-    if args['--version']:
-        print(f'liquidctl v{__version__} ({platform.platform()})')
-        sys.exit(0)
 
     errors = _ErrorAcc()
 
