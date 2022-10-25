@@ -75,7 +75,7 @@ jobs:
 
     - name: Run unit tests and module doctests
       run: |
-        export PATH=vtest/bin/:vtest/Scripts/:$PATH
+        export PATH=$PWD/vtest/bin/:$CD/vtest/Scripts/:$PATH
         XDG_RUNTIME_DIR=.tests_rundir python -m pytest
 
     - name: Set up a environment to install into, and install the package from sources
@@ -87,7 +87,7 @@ jobs:
 
     - name: Test that the installed executable is able to probe for devices
       run: |
-        export PATH=vinstall/bin/:vinstall/Scripts/:$PATH
+        export PATH=$PWD/vinstall/bin/:$CD/vinstall/Scripts/:$PATH
         liquidctl list --verbose --debug
 
     - name: Lint with flake8
