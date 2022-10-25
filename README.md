@@ -408,7 +408,8 @@ already installed on the environment (virtual or global), manually install
 them:
 
 ```
-python -m pip install --upgrade colorlog crcmod==1.7 docopt hidapi pillow pytest pyusb setuptools setuptools_scm
+python -m pip install --upgrade pip setuptools setuptools_scm wheel
+python -m pip install --upgrade colorlog crcmod==1.7 docopt hidapi pillow pytest pyusb
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
 python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
