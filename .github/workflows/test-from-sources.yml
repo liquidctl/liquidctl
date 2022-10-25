@@ -14,19 +14,19 @@ jobs:
       fail-fast: false
       max-parallel: 10
       matrix:
-        python-version: ['3.10', '3.9', '3.8', '3.7']
+        python-version: ['3.11', '3.10', '3.9', '3.8', '3.7']
         os: [ubuntu-latest, macos-latest, windows-latest]
         exclude:
           # mac os: exclude all but the last two python releases
           - os: macos-latest
-            python-version: 3.8
+            python-version: 3.9
           - os: macos-latest
-            python-version: 3.7
+            python-version: 3.8
           # windows: exclude all but the last two python releases
           - os: windows-latest
-            python-version: 3.8
+            python-version: 3.9
           - os: windows-latest
-            python-version: 3.7
+            python-version: 3.8
 
     steps:
 
