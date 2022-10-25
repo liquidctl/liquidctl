@@ -59,7 +59,7 @@ jobs:
     - name: Set up a test environment with pytest and the runtime dependencies
       run: |
         python -m venv vtest
-        export PATH=$PWD/vtest/bin/:$CD/vtest/Scripts/:$PATH
+        export PATH=$PWD/vtest/bin/:$PWD/vtest/Scripts/:$PATH
         python -m pip install --upgrade pip wheel
         python -m pip install \
           colorlog \
@@ -75,19 +75,19 @@ jobs:
 
     - name: Run unit tests and module doctests
       run: |
-        export PATH=$PWD/vtest/bin/:$CD/vtest/Scripts/:$PATH
+        export PATH=$PWD/vtest/bin/:$PWD/vtest/Scripts/:$PATH
         XDG_RUNTIME_DIR=.tests_rundir python -m pytest
 
     - name: Set up a environment to install into, and install the package from sources
       run: |
         python -m venv vinstall
-        export PATH=$PWD/vinstall/bin/:$CD/vinstall/Scripts/:$PATH
+        export PATH=$PWD/vinstall/bin/:$PWD/vinstall/Scripts/:$PATH
         python -m pip install --upgrade pip wheel
         python -m pip install .
 
     - name: Test that the installed executable is able to probe for devices
       run: |
-        export PATH=$PWD/vinstall/bin/:$CD/vinstall/Scripts/:$PATH
+        export PATH=$PWD/vinstall/bin/:$PWD/vinstall/Scripts/:$PATH
         liquidctl list --verbose --debug
 
     - name: Lint with flake8
