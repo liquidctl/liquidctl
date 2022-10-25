@@ -55,8 +55,9 @@ jobs:
     - name: Set up a test environment with pytest and the runtime dependencies
       run: |
         python -m venv vtest
-        export PATH=vtest/bin/:vtest/Scripts/:$PATH
-        pip install \
+        export PATH=$PWD/vtest/bin/:$CD/vtest/Scripts/:$PATH
+        python -m pip install --upgrade pip wheel
+        python -m pip install \
           colorlog \
           crcmod==1.7 \
           docopt \
