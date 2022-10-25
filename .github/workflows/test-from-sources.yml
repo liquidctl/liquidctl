@@ -76,7 +76,7 @@ jobs:
     - name: Set up a environment to install into, and install the package from sources
       run: |
         python -m venv vinstall
-        export PATH=vinstall/bin/:vinstall/Scripts/:$PATH
+        export PATH=$PWD/vinstall/bin/:$CD/vinstall/Scripts/:$PATH
         python -m pip install --upgrade pip wheel
         python -m pip install .
 
