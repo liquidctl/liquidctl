@@ -100,6 +100,10 @@ _COLOR_CHANNELS_KRAKENZ = {
     "external": 0b001,
 }
 
+_HWMON_CTRL_MAPPING_KRAKENX = {"pump": "pwm1"}
+
+_HWMON_CTRL_MAPPING_KRAKENZ = {"pump": "pwm1", "fan": "pwm2"}
+
 # Available LED channel modes/animations
 # name -> (mode, size/variant, speed scale, min colors, max colors)
 # FIXME any point in a one-color *alternating* or tai-chi animations?
@@ -203,7 +207,7 @@ class KrakenX3(UsbHidDriver):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
-                "hwmon_ctrl_mapping": {"pump": "pwm1"},
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENX,
             },
         ),
         (
@@ -213,7 +217,7 @@ class KrakenX3(UsbHidDriver):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
-                "hwmon_ctrl_mapping": {"pump": "pwm1"},
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENX,
             },
         ),
     ]
@@ -530,7 +534,7 @@ class KrakenZ3(KrakenX3):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
-                "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
             },
         )
     ]
