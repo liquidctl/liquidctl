@@ -301,8 +301,12 @@ def _make_opts(args):
     return opts
 
 
-def _log_requirements():
+def _log_env_infos():
+    _LOGGER.debug('script: %s', sys.argv[0])
+    _LOGGER.debug('version: %s', __version__)
+    _LOGGER.debug('platform: %s', platform.platform())
     _LOGGER.debug('python: %s', sys.version.replace('\n', ' '))
+
     if sys.hexversion >= 0x03080000:
         from importlib.metadata import distribution, version, PackageNotFoundError
 
@@ -315,9 +319,9 @@ def _log_requirements():
         for req in dist.requires:
             name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
             try:
-                _LOGGER.debug('%s: %s', name, version(name))
+                _LOGGER.debug('with %s: %s', name, version(name))
             except Exception as err:
-                _LOGGER.debug('%s: version n/a (%s)', name, err)
+                _LOGGER.debug('with %s: version n/a (%s)', name, err)
     else:
         _LOGGER.debug('importlib.metadata not available')
 
@@ -391,10 +395,7 @@ def main():
     log_handler.setFormatter(log_fmtter)
     logging.basicConfig(level=log_level, handlers=[log_handler])
 
-    _LOGGER.debug('script: %s', sys.argv[0])
-    _LOGGER.debug('version: %s', __version__)
-    _LOGGER.debug('platform: %s', platform.platform())
-    _log_requirements()
+    _log_env_infos()
 
     if __name__ == '__main__':
         _LOGGER.warning('python -m liquidctl.cli is deprecated, prefer python -m liquidctl')
