@@ -22,11 +22,15 @@ jobs:
             python-version: 3.9
           - os: macos-latest
             python-version: 3.8
+          - os: macos-latest
+            python-version: 3.7
           # windows: exclude all but the last two python releases
           - os: windows-latest
             python-version: 3.9
           - os: windows-latest
             python-version: 3.8
+          - os: windows-latest
+            python-version: 3.7
 
     steps:
 
