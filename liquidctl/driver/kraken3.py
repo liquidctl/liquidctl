@@ -203,6 +203,7 @@ class KrakenX3(UsbHidDriver):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
+                "hwmon_ctrl_mapping": {"pump": "pwm1"},
             },
         ),
         (
@@ -212,14 +213,18 @@ class KrakenX3(UsbHidDriver):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
+                "hwmon_ctrl_mapping": {"pump": "pwm1"},
             },
         ),
     ]
 
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+    def __init__(
+        self, device, description, speed_channels, color_channels, hwmon_ctrl_mapping, **kwargs
+    ):
         super().__init__(device, description)
         self._speed_channels = speed_channels
         self._color_channels = color_channels
+        self._hwmon_ctrl_mapping = hwmon_ctrl_mapping
 
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
@@ -355,7 +360,7 @@ class KrakenX3(UsbHidDriver):
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval, direction)
 
-    def set_speed_profile(self, channel, profile, **kwargs):
+    def set_speed_profile(self, channel, profile, direct_access=False, **kwargs):
         """Set channel to use a speed duty profile."""
 
         cid, dmin, dmax = self._speed_channels[channel]
@@ -369,10 +374,54 @@ class KrakenX3(UsbHidDriver):
             )
         self._write(header + interp)
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+        # TODO: Implement logic for hwmon and direct_access
+
+    def _set_fixed_speed_directly(self, channel, duty):
+        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
+
+    def _set_fixed_speed_hwmon(self, channel, duty):
+        hwmon_pwm_name = self._hwmon_ctrl_mapping[channel]
+        hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
+
+        # Convert duty from percent to PWM range (0-255)
+        pwm_duty = duty * 255 // 100
+
+        # Write duty to hwmon
+        self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
+
+        # Set channel to direct percent mode
+        self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+
+    def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         """Set channel to a fixed speed duty."""
 
-        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
+        if self._hwmon:
+            _, dmin, dmax = self._speed_channels[channel]
+            duty = clamp(duty, dmin, dmax)
+
+            hwmon_pwm_name = self._hwmon_ctrl_mapping[channel]
+
+            # Check if the required attribute is present
+            if self._hwmon.has_attribute(hwmon_pwm_name):
+                # It is, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing fixed speed despite %s kernel driver having support",
+                        self._hwmon.driver,
+                    )
+                    return self._set_fixed_speed_directly(channel, duty)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
+                )
+                return self._set_fixed_speed_hwmon(channel, duty)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
+
+        return self._set_fixed_speed_directly(channel, duty)
 
     def _read(self):
         data = self.device.read(_READ_LENGTH)
@@ -481,6 +530,7 @@ class KrakenZ3(KrakenX3):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
+                "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
             },
         )
     ]
