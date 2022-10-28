@@ -1,6 +1,8 @@
 # Corsair HXi and RMi series PSUs
 _Driver API and source code available in [`liquidctl.driver.corsair_hid_psu`](../liquidctl/driver/corsair_hid_psu.py)._
 
+_Changed in git: HX1500i and HX1000i 2022 re-issue are now also supported._<br>
+
 ## Initialization
 
 It is necessary to initialize the device once it has been powered on.
@@ -51,6 +53,9 @@ Corsair RM650i
 
 Input power and efficiency are estimated from efficiency data advertised by
 Corsair in the respective HXi and RMi PSU user manuals.
+
+These estimates are not accurate at load levels bellow 10%, in particular with
+the HX1500i and the 2022 re-issue of the HX1000i.
 
 _Changed in 1.11.0: temperature sensors 1 and 2 have been renamed to VRM and
 case, respectively._<br>
