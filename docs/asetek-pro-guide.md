@@ -9,7 +9,7 @@ be confused with the Platinum or Pro XT families):
 - Corsair Hydro H150i Pro
 
 **Note: a custom kernel driver is necessary on Windows (see: [Installing on
-Windows](../README.md#installing-on-windows)).**
+Windows](../README.md#windows-system-level-dependencies)).**
 
 ## Initialization
 
