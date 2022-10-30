@@ -15,6 +15,7 @@ import io
 import math
 import logging
 import sys
+import time
 
 from PIL import Image, ImageSequence
 
@@ -100,9 +101,9 @@ _COLOR_CHANNELS_KRAKENZ = {
     "external": 0b001,
 }
 
-_HWMON_CTRL_MAPPING_KRAKENX = {"pump": "pwm1"}
+_HWMON_CTRL_MAPPING_KRAKENX = {"pump": 1}
 
-_HWMON_CTRL_MAPPING_KRAKENZ = {"pump": "pwm1", "fan": "pwm2"}
+_HWMON_CTRL_MAPPING_KRAKENZ = {"pump": 1, "fan": 2}
 
 # Available LED channel modes/animations
 # name -> (mode, size/variant, speed scale, min colors, max colors)
@@ -364,6 +365,20 @@ class KrakenX3(UsbHidDriver):
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval, direction)
 
+    def _set_speed_profile_hwmon(self, channel, interp):
+        hwmon_ctrl_channel = self._hwmon_ctrl_mapping[channel]
+
+        # Write duty curve for channel
+        for idx, duty in enumerate(interp):
+            pwm_duty = duty * 255 // 100
+            self._hwmon.write_int(f"temp{hwmon_ctrl_channel}_auto_point{idx + 1}_pwm", pwm_duty)
+
+        # Wait just for a bit so the last report goes through (if it was in curve mode already)
+        time.sleep(0.2)
+
+        # Set channel to curve mode
+        self._hwmon.write_int(f"pwm{hwmon_ctrl_channel}_enable", 2)
+
     def set_speed_profile(self, channel, profile, direct_access=False, **kwargs):
         """Set channel to use a speed duty profile."""
 
@@ -376,15 +391,37 @@ class KrakenX3(UsbHidDriver):
             _LOGGER.info(
                 "setting %s PWM duty to %d%% for liquid temperature >= %d°C", channel, duty, temp
             )
-        self._write(header + interp)
 
-        # TODO: Implement logic for hwmon and direct_access
+        if self._hwmon:
+            hwmon_pwm_name = f"pwm{self._hwmon_ctrl_mapping[channel]}"
+
+            # Check if the required attribute is present
+            if self._hwmon.has_attribute(hwmon_pwm_name):
+                # It is, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing duty curve despite %s kernel driver having support",
+                        self._hwmon.driver,
+                    )
+                    return self._write(header + interp)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing duty curve to hwmon", self._hwmon.driver
+                )
+                return self._set_speed_profile_hwmon(channel, interp)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required duty curve functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
+
+        return self._write(header + interp)
 
     def _set_fixed_speed_directly(self, channel, duty):
         self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
 
     def _set_fixed_speed_hwmon(self, channel, duty):
-        hwmon_pwm_name = self._hwmon_ctrl_mapping[channel]
+        hwmon_pwm_name = f"pwm{self._hwmon_ctrl_mapping[channel]}"
         hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
 
         # Convert duty from percent to PWM range (0-255)
@@ -403,7 +440,7 @@ class KrakenX3(UsbHidDriver):
             _, dmin, dmax = self._speed_channels[channel]
             duty = clamp(duty, dmin, dmax)
 
-            hwmon_pwm_name = self._hwmon_ctrl_mapping[channel]
+            hwmon_pwm_name = f"pwm{self._hwmon_ctrl_mapping[channel]}"
 
             # Check if the required attribute is present
             if self._hwmon.has_attribute(hwmon_pwm_name):
