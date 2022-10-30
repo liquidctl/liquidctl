@@ -207,6 +207,38 @@ def test_krakenx3_not_totally_broken(mock_krakenx3):
     mock_krakenx3.set_fixed_speed(channel="pump", duty=50)
 
 
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_krakenz3_reads_status_directly(mock_krakenz3, has_hwmon, direct_access):
+    if has_hwmon:
+        mock_krakenz3._hwmon = HwmonDevice(None, None)
+
+    mock_krakenz3.device.preload_read(Report(0, SAMPLE_STATUS))
+
+    temperature, pump_speed, pump_duty, fan_speed, fan_duty = mock_krakenz3.get_status(direct_access=direct_access)
+
+    assert temperature == ("Liquid temperature", 33.1, "°C")
+    assert pump_speed == ("Pump speed", 1704, "rpm")
+    assert pump_duty == ("Pump duty", 53, "%")
+    # TODO
+
+
+def test_krakenz3_reads_status_from_hwmon(mock_krakenz3, tmp_path):
+    mock_krakenz3._hwmon = HwmonDevice("mock_module", tmp_path)
+    (tmp_path / "temp1_input").write_text("33100\n")
+    (tmp_path / "fan1_input").write_text("1704\n")
+    (tmp_path / "pwm1").write_text("135\n")
+    (tmp_path / "fan2_input").write_text("1704\n")
+    (tmp_path / "pwm2").write_text("135\n")
+
+    temperature, pump_speed, pump_duty, fan_speed, fan_duty = mock_krakenz3.get_status()
+
+    assert temperature == ("Liquid temperature", 33.1, "°C")
+    assert pump_speed == ("Pump speed", 1704, "rpm")
+    assert pump_duty == ("Pump duty", pytest.approx(53, rel=1.0 / 255), "%")
+    assert fan_speed == ("Fan speed", 1704, "rpm")
+    assert fan_duty == ("Fan duty", pytest.approx(53, rel=1.0 / 255), "%")
+
+
 def test_krakenz3_not_totally_broken(mock_krakenz3):
     """Reasonable example calls to untested APIs do not raise exceptions."""
     mock_krakenz3.initialize()
