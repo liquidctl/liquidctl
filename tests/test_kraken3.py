@@ -12,6 +12,8 @@ from liquidctl.driver.kraken3 import (
     _SPEED_CHANNELS_KRAKENX,
     _COLOR_CHANNELS_KRAKENZ,
     _SPEED_CHANNELS_KRAKENZ,
+    _HWMON_CTRL_MAPPING_KRAKENX,
+    _HWMON_CTRL_MAPPING_KRAKENZ
 )
 from test_krakenz3_response import krakenz3_response
 
@@ -39,6 +41,7 @@ def mock_krakenx3():
         "Mock Kraken X73",
         speed_channels=_SPEED_CHANNELS_KRAKENX,
         color_channels=_COLOR_CHANNELS_KRAKENX,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENX
     )
 
     dev.connect()
@@ -53,6 +56,7 @@ def mock_krakenz3():
         "Mock Kraken Z73",
         speed_channels=_SPEED_CHANNELS_KRAKENZ,
         color_channels=_COLOR_CHANNELS_KRAKENZ,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ
     )
 
     dev.connect()
