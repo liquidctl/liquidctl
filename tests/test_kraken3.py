@@ -13,7 +13,7 @@ from liquidctl.driver.kraken3 import (
     _COLOR_CHANNELS_KRAKENZ,
     _SPEED_CHANNELS_KRAKENZ,
     _HWMON_CTRL_MAPPING_KRAKENX,
-    _HWMON_CTRL_MAPPING_KRAKENZ
+    _HWMON_CTRL_MAPPING_KRAKENZ,
 )
 from test_krakenz3_response import krakenz3_response
 
@@ -22,13 +22,18 @@ from liquidctl.util import Hue2Accessory
 
 
 # https://github.com/liquidctl/liquidctl/issues/160#issuecomment-664044103
-SAMPLE_STATUS = bytes.fromhex(
+X3_SAMPLE_STATUS = bytes.fromhex(
     "7502200036000B51535834353320012101A80635350000000000000000000000"
     "0000000000000000000000000000000000000000000000000000000000000000"
 )
 # https://github.com/liquidctl/liquidctl/issues/160#issue-665781804
-FAULTY_STATUS = bytes.fromhex(
+X3_FAULTY_STATUS = bytes.fromhex(
     "7502200036000B5153583435332001FFFFCC0A64640000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+)
+
+Z3_SAMPLE_STATUS = bytes.fromhex(
+    "75012E0018001051393434363731011803690314140102000000000000000000"
     "0000000000000000000000000000000000000000000000000000000000000000"
 )
 
@@ -41,7 +46,7 @@ def mock_krakenx3():
         "Mock Kraken X73",
         speed_channels=_SPEED_CHANNELS_KRAKENX,
         color_channels=_COLOR_CHANNELS_KRAKENX,
-        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENX
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENX,
     )
 
     dev.connect()
@@ -56,7 +61,7 @@ def mock_krakenz3():
         "Mock Kraken Z73",
         speed_channels=_SPEED_CHANNELS_KRAKENZ,
         color_channels=_COLOR_CHANNELS_KRAKENZ,
-        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
     )
 
     dev.connect()
@@ -166,7 +171,7 @@ def test_krakenx3_reads_status_directly(mock_krakenx3, has_hwmon, direct_access)
     if has_hwmon:
         mock_krakenx3._hwmon = HwmonDevice(None, None)
 
-    mock_krakenx3.device.preload_read(Report(0, SAMPLE_STATUS))
+    mock_krakenx3.device.preload_read(Report(0, X3_SAMPLE_STATUS))
 
     temperature, pump_speed, pump_duty = mock_krakenx3.get_status(direct_access=direct_access)
 
@@ -193,7 +198,7 @@ def test_krakenx3_warns_on_faulty_temperature(mock_krakenx3, has_hwmon, direct_a
     if has_hwmon:
         mock_krakenx3._hwmon = HwmonDevice(None, None)
 
-    mock_krakenx3.device.preload_read(Report(0, FAULTY_STATUS))
+    mock_krakenx3.device.preload_read(Report(0, X3_FAULTY_STATUS))
 
     _ = mock_krakenx3.get_status(direct_access=direct_access)
     assert "unexpected temperature reading" in caplog.text
@@ -212,14 +217,17 @@ def test_krakenz3_reads_status_directly(mock_krakenz3, has_hwmon, direct_access)
     if has_hwmon:
         mock_krakenz3._hwmon = HwmonDevice(None, None)
 
-    mock_krakenz3.device.preload_read(Report(0, SAMPLE_STATUS))
+    mock_krakenz3.device.preload_read(Report(0, Z3_SAMPLE_STATUS))
 
-    temperature, pump_speed, pump_duty, fan_speed, fan_duty = mock_krakenz3.get_status(direct_access=direct_access)
+    temperature, pump_speed, pump_duty, fan_speed, fan_duty = mock_krakenz3.get_status(
+        direct_access=direct_access
+    )
 
-    assert temperature == ("Liquid temperature", 33.1, "°C")
-    assert pump_speed == ("Pump speed", 1704, "rpm")
-    assert pump_duty == ("Pump duty", 53, "%")
-    # TODO
+    assert temperature == ("Liquid temperature", 24.3, "°C")
+    assert pump_speed == ("Pump speed", 873, "rpm")
+    assert pump_duty == ("Pump duty", 20, "%")
+    assert fan_speed == ("Fan speed", 0, "rpm")
+    assert fan_duty == ("Fan duty", 0, "%")
 
 
 def test_krakenz3_reads_status_from_hwmon(mock_krakenz3, tmp_path):
@@ -242,7 +250,7 @@ def test_krakenz3_reads_status_from_hwmon(mock_krakenz3, tmp_path):
 def test_krakenz3_not_totally_broken(mock_krakenz3):
     """Reasonable example calls to untested APIs do not raise exceptions."""
     mock_krakenz3.initialize()
-    mock_krakenz3.device.preload_read(Report(0, SAMPLE_STATUS))
+    mock_krakenz3.device.preload_read(Report(0, Z3_SAMPLE_STATUS))
     _ = mock_krakenz3.get_status()
     mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
     mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
