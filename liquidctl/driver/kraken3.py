@@ -393,10 +393,10 @@ class KrakenX3(UsbHidDriver):
             )
 
         if self._hwmon:
-            hwmon_pwm_name = f"pwm{self._hwmon_ctrl_mapping[channel]}"
+            hwmon_pwm_enable_name = f"pwm{self._hwmon_ctrl_mapping[channel]}_enable"
 
             # Check if the required attribute is present
-            if self._hwmon.has_attribute(hwmon_pwm_name):
+            if self._hwmon.has_attribute(hwmon_pwm_enable_name):
                 # It is, and if we have to use direct access, warn that we are sidestepping the kernel driver
                 if direct_access:
                     _LOGGER.warning(
