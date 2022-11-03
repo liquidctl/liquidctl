@@ -509,10 +509,12 @@ def test_krakenz3_set_speed_profile_hwmon(mock_krakenz3, has_support, tmp_path):
             )
     else:
         # Assert fallback to direct access
-        pump_report = mock_krakenz3.device.sent[0]
+        pump_report, fan_report = mock_krakenz3.device.sent
 
         assert pump_report.number == 0x72
         assert pump_report.data[3:43] == test_curve_final_pwm
+        assert fan_report.number == 0x72
+        assert fan_report.data[3:43] == test_curve_final_pwm
 
 
 def test_krakenz3_not_totally_broken(mock_krakenz3):
