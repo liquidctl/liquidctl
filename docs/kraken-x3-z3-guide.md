@@ -74,9 +74,9 @@ Fixed speeds can be set by specifying the desired channel and duty value.
 ```
 
 | Channel | Minimum duty | Maximum duty | X models | Z models |
-| --- | --- | --- | :---: | :---: |
+| --- | -- | --- | :---: | :---: |
 | `pump` | 20% | 100% | ✓ | ✓ |
-| `fan` | 20% | 100% | | ✓ |
+| `fan` | 0% | 100% | | ✓ |
 
 For profiles, one or more temperature–duty pairs are supplied instead of single value.
 
