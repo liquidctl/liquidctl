@@ -416,6 +416,88 @@ def test_krakenz3_set_fixed_speeds_hwmon(mock_krakenz3, has_support, tmp_path):
         assert fan_report.data[3:43] == [50 for i in range(0, 39)] + [100]
 
 
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_krakenz3_set_speed_profile_directly(mock_krakenz3, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mock_krakenz3._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "pwm1").write_text("0")
+        (tmp_path / "pwm1_enable").write_text("0")
+        (tmp_path / "pwm2").write_text("0")
+        (tmp_path / "pwm2_enable").write_text("0")
+        for i in range(1, 40 + 1):
+            (tmp_path / f"temp1_auto_point{i}_pwm").write_text("0")
+            (tmp_path / f"temp2_auto_point{i}_pwm").write_text("0")
+
+    curve_response = [
+        30,
+        32,
+        34,
+        36,
+        38,
+        40,
+        42,
+        44,
+        46,
+        48,
+        50,
+        58,
+        65,
+        72,
+        80,
+        82,
+        83,
+        85,
+        87,
+        88,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+    ]
+
+    mock_krakenz3.set_speed_profile(
+        "pump", zip([20, 30, 34, 40, 50], [30, 50, 80, 90, 100]), direct_access=direct_access
+    )
+    mock_krakenz3.set_speed_profile(
+        "fan", zip([20, 30, 34, 40, 50], [30, 50, 80, 90, 100]), direct_access=direct_access
+    )
+
+    pump_report, fan_report = mock_krakenz3.device.sent
+
+    assert pump_report.number == 0x72
+    assert pump_report.data[3:43] == curve_response
+    assert fan_report.number == 0x72
+    assert fan_report.data[3:43] == curve_response
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "pwm1_enable").read_text() == "0"
+        assert (tmp_path / "pwm1").read_text() == "0"
+        assert (tmp_path / "pwm2_enable").read_text() == "0"
+        assert (tmp_path / "pwm2").read_text() == "0"
+        for i in range(1, 40):
+            assert (tmp_path / f"temp1_auto_point{i}_pwm").read_text() == "0"
+            assert (tmp_path / f"temp2_auto_point{i}_pwm").read_text() == "0"
+
+
 def test_krakenz3_not_totally_broken(mock_krakenz3):
     """Reasonable example calls to untested APIs do not raise exceptions."""
     mock_krakenz3.initialize()
