@@ -237,6 +237,75 @@ def test_krakenx3_set_fixed_speeds_hwmon(mock_krakenx3, has_support, tmp_path):
 
 
 @pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_krakenx3_set_speed_profile_directly(mock_krakenx3, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mock_krakenx3._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "pwm1").write_text("0")
+        (tmp_path / "pwm1_enable").write_text("0")
+        for i in range(1, 40 + 1):
+            (tmp_path / f"temp1_auto_point{i}_pwm").write_text("0")
+
+    curve_profile = zip([20, 30, 34, 40, 50], [30, 50, 80, 90, 100])
+
+    mock_krakenx3.set_speed_profile("pump", curve_profile, direct_access=direct_access)
+
+    pump_report = mock_krakenx3.device.sent[0]
+
+    assert pump_report.number == 0x72
+    assert pump_report.data[3:43] == [
+        30,
+        32,
+        34,
+        36,
+        38,
+        40,
+        42,
+        44,
+        46,
+        48,
+        50,
+        58,
+        65,
+        72,
+        80,
+        82,
+        83,
+        85,
+        87,
+        88,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+    ]
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "pwm1_enable").read_text() == "0"
+        assert (tmp_path / "pwm1").read_text() == "0"
+        for i in range(1, 40):
+            assert (tmp_path / f"temp1_auto_point{i}_pwm").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
 def test_krakenx3_warns_on_faulty_temperature(mock_krakenx3, has_hwmon, direct_access, caplog):
     if has_hwmon:
         mock_krakenx3._hwmon = HwmonDevice(None, None)
