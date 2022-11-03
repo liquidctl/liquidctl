@@ -174,16 +174,14 @@ Images and GiFs are automatically resized and rotated to match the device orient
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
 _New in 1.9.0._<br>
+_Changed in git: expanded support for reading and writing through hwmon._<br>
 
-Kraken X3 devices feature incomplete support by the [liquidtux] `nzxt-kraken3`
-driver, and partial status data is provided through a standard hwmon sysfs
-interface.
-
-_As of February 2022, the driver is too limited for liquidctl to use; still..._
+Kraken X3 devices feature support by the [liquidtux] `nzxt-kraken3` driver,
+and status data is provided through a standard hwmon sysfs interface.
 
 Starting with version 1.9.0, liquidctl automatically detects when a kernel
 driver is bound to the device and, whenever possible, uses it instead of
-directly accessing the device.  Alternatively, direct access to the device can
+directly accessing the device. Alternatively, direct access to the device can
 be forced with `--direct-access`.
 
 [liquidtux]: https://github.com/liquidctl/liquidtux
