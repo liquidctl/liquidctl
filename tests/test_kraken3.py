@@ -215,6 +215,27 @@ def test_krakenx3_set_fixed_speeds_directly(mock_krakenx3, has_hwmon, direct_acc
         assert (tmp_path / "pwm1").read_text() == "0"
 
 
+@pytest.mark.parametrize("has_support", [False, True])
+def test_krakenx3_set_fixed_speeds_hwmon(mock_krakenx3, has_support, tmp_path):
+    mock_krakenx3._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "pwm1").write_text("0\n")
+        (tmp_path / "pwm1_enable").write_text("0\n")
+
+    mock_krakenx3.set_fixed_speed("pump", 84)
+
+    if has_support:
+        assert (tmp_path / "pwm1_enable").read_text() == "1"
+        assert (tmp_path / "pwm1").read_text() == "214"
+    else:
+        # Assert fallback to direct access
+        pump_report = mock_krakenx3.device.sent[0]
+
+        assert pump_report.number == 0x72
+        assert pump_report.data[3:43] == [84 for i in range(0, 39)] + [100]
+
+
 @pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
 def test_krakenx3_warns_on_faulty_temperature(mock_krakenx3, has_hwmon, direct_access, caplog):
     if has_hwmon:
@@ -296,6 +317,34 @@ def test_krakenz3_set_fixed_speeds_directly(mock_krakenz3, has_hwmon, direct_acc
         assert (tmp_path / "pwm1").read_text() == "0"
         assert (tmp_path / "pwm2_enable").read_text() == "0"
         assert (tmp_path / "pwm2").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_support", [False, True])
+def test_krakenz3_set_fixed_speeds_hwmon(mock_krakenz3, has_support, tmp_path):
+    mock_krakenz3._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "pwm1").write_text("0\n")
+        (tmp_path / "pwm1_enable").write_text("0\n")
+        (tmp_path / "pwm2").write_text("0\n")
+        (tmp_path / "pwm2_enable").write_text("0\n")
+
+    mock_krakenz3.set_fixed_speed("pump", 84)
+    mock_krakenz3.set_fixed_speed("fan", 50)
+
+    if has_support:
+        assert (tmp_path / "pwm1_enable").read_text() == "1"
+        assert (tmp_path / "pwm1").read_text() == "214"
+        assert (tmp_path / "pwm2_enable").read_text() == "1"
+        assert (tmp_path / "pwm2").read_text() == "127"
+    else:
+        # Assert fallback to direct access
+        pump_report, fan_report = mock_krakenz3.device.sent
+
+        assert pump_report.number == 0x72
+        assert pump_report.data[3:43] == [84 for i in range(0, 39)] + [100]
+        assert fan_report.number == 0x72
+        assert fan_report.data[3:43] == [50 for i in range(0, 39)] + [100]
 
 
 def test_krakenz3_not_totally_broken(mock_krakenz3):
