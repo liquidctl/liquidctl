@@ -121,7 +121,7 @@ class Aquacomputer(UsbHidDriver):
             "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "status_report_length": 0xB6,
             "ctrl_report_length": 0x682,
-            "temp_offset_ctrl": [0x8 + i * 2 for i in range(0, 4)]
+            "temp_offset_ctrl": [0x8 + i * 2 for i in range(0, 4)],
         },
         _DEVICE_OCTO: {
             "type": _DEVICE_OCTO,
@@ -144,7 +144,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x5A, 0xAF, 0x104, 0x159, 0x1AE, 0x203, 0x258, 0x2AD],
                 )
             },
-            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)]
+            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)],
         },
         _DEVICE_QUADRO: {
             "type": _DEVICE_QUADRO,
@@ -168,7 +168,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x36, 0x8B, 0xE0, 0x135],
                 )
             },
-            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)]
+            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)],
         },
     }
 
