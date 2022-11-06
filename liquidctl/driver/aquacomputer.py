@@ -449,31 +449,38 @@ class Aquacomputer(UsbHidDriver):
         # Write to hwmon
         self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
 
-    def _set_fixed_speed_directly(self, channel, duty):
+    def _update_device_ctrl_report(self, processing_func):
         # Request an up to date ctrl report
         report_length = self._device_info["ctrl_report_length"]
-        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+        ctrl_report = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
 
-        fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
-
-        # Set fan to direct percent-value mode
-        ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
-
-        # Write down duty for channel
-        put_unaligned_be16(
-            duty * 100,  # Centi-percent
-            ctrl_settings,
-            fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
-        )
+        # Let the caller make changes to it
+        processing_func(ctrl_report)
 
         # Update checksum value at the end of the report
         crc16usb_func = mkCrcFun("crc-16-usb")
 
-        checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
+        checksum_part = bytes(ctrl_report[0x01 : report_length - 3 + 1])
         checksum_bytes = crc16usb_func(checksum_part)
-        put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
+        put_unaligned_be16(checksum_bytes, ctrl_report, report_length - 2)
 
-        self.device.send_feature_report(ctrl_settings)
+        self.device.send_feature_report(ctrl_report)
+
+    def _set_fixed_speed_directly(self, channel, duty):
+        def _set_fixed_speed_ctrl_report(ctrl_report):
+            fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
+
+            # Set fan to direct percent-value mode
+            ctrl_report[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
+
+            # Write down duty for channel
+            put_unaligned_be16(
+                duty * 100,  # Centi-percent
+                ctrl_report,
+                fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
+            )
+
+        self._update_device_ctrl_report(_set_fixed_speed_ctrl_report)
 
     def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         if self._device_info["type"] == self._DEVICE_FARBWERK360:
