@@ -162,15 +162,15 @@ def u16le_from(buffer, offset=0):
     return int.from_bytes(buffer[offset: offset + 2], byteorder='little')
 
 
-def u16be_from(buffer, offset=0):
-    """Read an unsigned 16-bit big-endian integer from `buffer`.
+def u16be_from(buffer, offset=0, is_signed=False):
+    """Read a 16-bit big-endian integer from `buffer`.
 
     >>> u16be_from(b'\x45\x05\x03')
     17669
     >>> u16be_from(b'\x45\x05\x03', offset=1)
     1283
     """
-    return int.from_bytes(buffer[offset: offset + 2], byteorder='big')
+    return int.from_bytes(buffer[offset: offset + 2], byteorder='big', signed=is_signed)
 
 
 def delta(profile):
