@@ -311,15 +311,15 @@ class Aquacomputer(UsbHidDriver):
         return sensor_readings
 
     def _get_status_from_hwmon(self):
-        def _read_temp_sensors(offsets_key, labels_key, idx_add=0):
+        def _read_temp_sensors(offsets_key, labels_key, idx_add=0, entry_suffix="input"):
             encountered_errors = False
 
-            for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
+            for idx, _ in enumerate(self._device_info.get(offsets_key, [])):
                 try:
-                    hwmon_val = self._hwmon.read_int(f"temp{idx + 1 + idx_add}_input") * 1e-3
+                    hwmon_val = self._hwmon.read_int(f"temp{idx + 1 + idx_add}_{entry_suffix}") * 1e-3
                 except OSError as os_error:
                     # For reference, the driver returns ENODATA when a sensor is unset/empty. ENOENT means that the
-                    # current driver version does not support virtual sensors, warn the user later
+                    # current driver version does not support the requested sensors, warn the user later
                     if os_error.errno == errno.ENOENT:
                         encountered_errors = True
                     continue
@@ -348,6 +348,9 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors_label",
             len(self._device_info.get("temp_sensors", [])),
         )
+
+        # Read temp sensor offsets
+        _read_temp_sensors("temp_sensors", "temp_offsets_label", entry_suffix="offset")
 
         # Read fan speed and related values
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
