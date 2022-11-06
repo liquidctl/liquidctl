@@ -29,9 +29,6 @@ Aquacomputer D5 Next (experimental)
 ├── Liquid temperature     26.9  °C
 ├── Soft. Sensor 1         50.0  °C
 ├── Sensor 1 offset         7.0  °C
-├── Sensor 2 offset       -13.0  °C
-├── Sensor 3 offset         0.0  °C
-├── Sensor 4 offset        12.0  °C
 ├── Pump speed             1968  rpm
 ├── Pump power             2.56  W
 ├── Pump voltage          12.04  V
