@@ -8,6 +8,7 @@ Usage:
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl [options] set <channel> screen <mode> [<value>]
+  liquidctl [options] set <channel> tempoffset [<value>]
   liquidctl --help
   liquidctl --version
 
@@ -282,6 +283,9 @@ def _device_set_color(dev, args, **opts):
     color = map(color_from_str, args['<color>'])
     dev.set_color(args['<channel>'].lower(), args['<mode>'].lower(), color, **opts)
 
+def _device_set_tempoffset(dev, args, **opts):
+    dev.set_tempoffset(args["<channel>"], float(args["<value>"]), **opts)
+
 def _device_set_screen(dev, args, **opts):
     dev.set_screen(args["<channel>"], args["<mode>"], args["<value>"], **opts)
 
@@ -476,6 +480,8 @@ def main():
                     _device_set_color(dev, args, **opts)
                 elif args['set'] and args['screen']:
                     _device_set_screen(dev, args, **opts)
+                elif args['set'] and args['tempoffset']:
+                    _device_set_tempoffset(dev, args, **opts)
                 else:
                     assert False, 'unreachable'
         except LiquidctlError as err:
