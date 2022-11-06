@@ -521,8 +521,19 @@ class Aquacomputer(UsbHidDriver):
         raise NotSupportedByDriver()
 
     def set_tempoffset(self, channel, value, **kwargs):
-        """Not yet implemented."""
-        raise NotSupportedByDriver()
+        def _set_tempoffset_ctrl_report(ctrl_report):
+            channel_idx = int(channel[-1]) - 1
+            final_value = int(round(clamp(value, -15, 15), 2) * 100)
+            temp_offset_position = self._device_info["temp_offset_ctrl"] + 2 * channel_idx
+
+            # Write down temp offset for channel
+            put_unaligned_be16(
+                final_value,
+                ctrl_report,
+                temp_offset_position,
+            )
+
+        self._update_device_ctrl_report(_set_tempoffset_ctrl_report)
 
     def _read_device_statics(self):
         if self._firmware_version is None or self._serial is None:
