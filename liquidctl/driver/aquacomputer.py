@@ -109,7 +109,7 @@ class Aquacomputer(UsbHidDriver):
             "status_report_length": 0x9E,
             "ctrl_report_length": 0x329,
             "fan_ctrl": {"pump": 0x96, "fan": 0x41},
-            "temp_offset_ctrl": 0x2D,
+            "temp_offset_ctrl": [0x2D],
             "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
         },
         _DEVICE_FARBWERK360: {
@@ -121,7 +121,7 @@ class Aquacomputer(UsbHidDriver):
             "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "status_report_length": 0xB6,
             "ctrl_report_length": 0x682,
-            "temp_offset_ctrl": 0x8
+            "temp_offset_ctrl": [0x8 + i * 2 for i in range(0, 4)]
         },
         _DEVICE_OCTO: {
             "type": _DEVICE_OCTO,
@@ -144,7 +144,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x5A, 0xAF, 0x104, 0x159, 0x1AE, 0x203, 0x258, 0x2AD],
                 )
             },
-            "temp_offset_ctrl": 0xA
+            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)]
         },
         _DEVICE_QUADRO: {
             "type": _DEVICE_QUADRO,
@@ -168,7 +168,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x36, 0x8B, 0xE0, 0x135],
                 )
             },
-            "temp_offset_ctrl": 0xA
+            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)]
         },
     }
 
@@ -226,9 +226,9 @@ class Aquacomputer(UsbHidDriver):
         return [("Firmware version", fw, ""), ("Serial number", serial_number, "")]
 
     def _get_status_directly(self):
-        def _read_temp_sensors(offsets_key, labels_key):
+        def _read_temp_sensors(offsets_key, labels_key, report, read_signed=False):
             for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
-                temp_sensor_value = u16be_from(msg, temp_sensor_offset)
+                temp_sensor_value = u16be_from(report, temp_sensor_offset, read_signed)
 
                 if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
                     temp_sensor_reading = (
@@ -243,10 +243,14 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        _read_temp_sensors("temp_sensors", "temp_sensors_label")
+        _read_temp_sensors("temp_sensors", "temp_sensors_label", msg)
 
         # Read virtual temp sensor values
-        _read_temp_sensors("virt_temp_sensors", "virt_temp_sensors_label")
+        _read_temp_sensors("virt_temp_sensors", "virt_temp_sensors_label", msg)
+
+        # Read temp sensor offets
+        _, ctrl_report = self._request_ctrl_report()
+        _read_temp_sensors("temp_offset_ctrl", "temp_offsets_label", ctrl_report, True)
 
         # Read fan speed and related values
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
@@ -527,7 +531,7 @@ class Aquacomputer(UsbHidDriver):
         def _set_tempoffset_ctrl_report(ctrl_report):
             channel_idx = int(channel[-1]) - 1
             final_value = int(round(clamp(value, -15, 15), 2) * 100)
-            temp_offset_position = self._device_info["temp_offset_ctrl"] + 2 * channel_idx
+            temp_offset_position = self._device_info["temp_offset_ctrl"][channel_idx]
 
             # Write down temp offset for channel
             put_unaligned_be16(
