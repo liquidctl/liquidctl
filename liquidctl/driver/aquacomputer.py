@@ -513,7 +513,7 @@ class Aquacomputer(UsbHidDriver):
                 return hwmon_func()
             elif not direct_access:
                 _LOGGER.warning(
-                    f"required {explanation} functionality is not available in {self._hwmon.driver} kernel driver,"
+                    f"required {explanation} functionality is not available in {self._hwmon.driver} kernel driver, "
                     f"falling back to direct access",
                 )
 
@@ -546,30 +546,33 @@ class Aquacomputer(UsbHidDriver):
 
     def _set_tempoffset_directly(self, channel, value):
         def _set_tempoffset_ctrl_report(ctrl_report):
-            channel_idx = int(channel[-1]) - 1
-            temp_offset_position = self._device_info["temp_offset_ctrl"][channel_idx]
+            temp_offset_position = self._device_info["temp_offset_ctrl"][channel]
 
             # Write down temp offset for channel
             put_unaligned_be16(
-                value,
+                value // 10,
                 ctrl_report,
                 temp_offset_position,
             )
 
         self._update_device_ctrl_report(_set_tempoffset_ctrl_report)
 
+    def _set_tempoffset_hwmon(self, channel, value):
+        self._hwmon.write_int(f"temp{channel+1}_offset", value)
+
     def set_tempoffset(self, channel, value, direct_access=False, **kwargs):
-        final_value = int(round(clamp(value, -15, 15), 2) * 100)
+        channel_idx = int(channel[-1]) - 1
+        final_value = int(round(clamp(value, -15, 15), 2) * 1000)
 
         def _hwmon_check():
-            return self._hwmon.has_attribute(f"temp{channel}_offset")
+            return self._hwmon.has_attribute(f"temp{channel_idx+1}_offset")
 
         self._perform_write(
             direct_access,
             lambda: _hwmon_check(),
-            lambda: self._hwmon.write_int(f"temp{channel}_offset", final_value),
-            lambda: self._set_tempoffset_directly(channel, final_value),
-            "temp offset"
+            lambda: self._set_tempoffset_hwmon(channel_idx, final_value),
+            lambda: self._set_tempoffset_directly(channel_idx, final_value),
+            "temp offset",
         )
 
     def _read_device_statics(self):
