@@ -247,6 +247,10 @@ class RgbFusion2(UsbHidDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 # Acknowledgments:
 #

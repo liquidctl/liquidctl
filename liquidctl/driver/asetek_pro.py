@@ -262,6 +262,10 @@ class HydroPro(_Base690Lc):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
     @classmethod
     def probe(cls, handle, **kwargs):
         return super().probe(handle, **kwargs)

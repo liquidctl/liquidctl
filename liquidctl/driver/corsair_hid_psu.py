@@ -256,6 +256,10 @@ class CorsairHidPsu(UsbHidDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()

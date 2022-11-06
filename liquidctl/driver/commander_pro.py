@@ -583,3 +583,7 @@ class CommanderPro(UsbHidDriver):
     def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()
+
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()

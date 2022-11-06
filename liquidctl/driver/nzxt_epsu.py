@@ -149,6 +149,10 @@ class NzxtEPsu(UsbHidDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 # deprecated aliases
 SeasonicEDriver = NzxtEPsu

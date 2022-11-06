@@ -504,6 +504,10 @@ class Aquacomputer(UsbHidDriver):
         # Not yet reverse engineered / implemented
         raise NotSupportedByDriver()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not yet implemented."""
+        raise NotSupportedByDriver()
+
     def _read_device_statics(self):
         if self._firmware_version is None or self._serial is None:
             msg = self._read(clear_first=False)
