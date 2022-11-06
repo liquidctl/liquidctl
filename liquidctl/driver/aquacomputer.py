@@ -449,10 +449,13 @@ class Aquacomputer(UsbHidDriver):
         # Write to hwmon
         self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
 
-    def _update_device_ctrl_report(self, processing_func):
-        # Request an up to date ctrl report
+    def _request_ctrl_report(self):
+        """Request an up to date ctrl report."""
         report_length = self._device_info["ctrl_report_length"]
-        ctrl_report = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+        return report_length, self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+    def _update_device_ctrl_report(self, processing_func):
+        report_length, ctrl_report = self._request_ctrl_report()
 
         # Let the caller make changes to it
         processing_func(ctrl_report)
