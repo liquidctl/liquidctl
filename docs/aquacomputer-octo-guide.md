@@ -18,9 +18,9 @@ The Octo automatically sends a status HID report every second as soon as it's co
 
 ## Monitoring
 
-The Octo exposes four temperature sensors and eight groups of fan sensors for optionally connected fans. It also supports
-sixteen virtual temperature sensors, which are user assigned. Currently, they can only be read from the device. These
-groups provide RPM speed, voltage, current and power readings:
+The Octo exposes four temperature sensors (with support for temp offsets) and eight groups of fan sensors for optionally
+connected fans. It also supports sixteen virtual temperature sensors, which are user assigned. Currently, they can only
+be read from the device. These groups provide RPM speed, voltage, current and power readings:
 
 ```
 # liquidctl status
@@ -28,7 +28,11 @@ Aquacomputer Octo (experimental)
 ├── Sensor 1          37.0  °C
 ├── Soft. Sensor 2     2.9  °C
 ├── Soft. Sensor 8    40.7  °C
-├── Fan 1 speed          0  rpm
+├── Sensor 1 offset    7.0  °C
+├── Sensor 2 offset  -13.0  °C
+├── Sensor 3 offset    0.0  °C
+├── Sensor 4 offset   12.0  °C
+├── Fan 1 speed        0  rpm
 ├── Fan 1 power       0.00  W
 ├── Fan 1 voltage    12.09  V
 ├── Fan 1 current     0.00  A
@@ -63,6 +67,7 @@ Aquacomputer Octo (experimental)
 ```
 
 _Changed in git: read virtual temperature sensors as well._<br>
+_Changed in git: read temperature sensor offsets as well._<br>
 
 ## Programming the fan speeds
 
@@ -75,6 +80,18 @@ Currently, eight optionally connected fans can be set to a fixed duty cycle, ran
 ```
 
 Valid channel values on the Octo are `fan1` through `fan8`.
+
+## Setting offsets for temperature sensors
+
+Temp sensor offsets can be set to a value from 0 to 15C.
+
+```
+# liquidctl set sensor1 tempoffset 7.7
+                ^^^^^^^            ^^^
+                channel           offset
+```
+
+_Changed in git: write temperature sensor offsets._<br>
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers

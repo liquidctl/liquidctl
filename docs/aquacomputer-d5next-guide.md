@@ -21,13 +21,17 @@ The pump automatically sends a status HID report every second as soon as it's co
 The D5 Next exposes sensor values such as liquid temperature and two groups of fan sensors, for the pump and the
 optionally connected fan. These groups provide RPM speed, voltage, current and power readings. It also supports eight
 virtual temperature sensors, which are user assigned. Currently, they can only be read from the device. The pump
-additionally exposes +5V and +12V voltage rail readings:
+additionally exposes +5V and +12V voltage rail readings, as well as the temp sensor offset:
 
 ```
 # liquidctl status
 Aquacomputer D5 Next (experimental)
 ├── Liquid temperature     26.9  °C
 ├── Soft. Sensor 1         50.0  °C
+├── Sensor 1 offset         7.0  °C
+├── Sensor 2 offset       -13.0  °C
+├── Sensor 3 offset         0.0  °C
+├── Sensor 4 offset        12.0  °C
 ├── Pump speed             1968  rpm
 ├── Pump power             2.56  W
 ├── Pump voltage          12.04  V
@@ -41,6 +45,7 @@ Aquacomputer D5 Next (experimental)
 ```
 
 _Changed in git: read virtual temperature sensors as well._<br>
+_Changed in git: read temperature sensor offsets as well._<br>
 
 ## Programming the fan speeds
 
@@ -53,6 +58,18 @@ Currently, the pump and optionally connected fan can be set to a fixed duty cycl
 ```
 
 Valid channel values on the D5 Next are `pump` and `fan`.
+
+## Setting offsets for temperature sensors
+
+Temp sensor offsets can be set to a value from 0 to 15C.
+
+```
+# liquidctl set sensor1 tempoffset 7.7
+                ^^^^^^^            ^^^
+                channel           offset
+```
+
+_Changed in git: write temperature sensor offsets._<br>
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
