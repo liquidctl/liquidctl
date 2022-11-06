@@ -101,6 +101,7 @@ class Aquacomputer(UsbHidDriver):
             "plus_12v_voltage": 0x37,
             "temp_sensors_label": ["Liquid temperature"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 8 + 1)],
+            "temp_offsets_label": ["Sensor 1 offset"],
             "fan_speed_label": ["Pump speed", "Fan speed"],
             "fan_power_label": ["Pump power", "Fan power"],
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
@@ -108,6 +109,7 @@ class Aquacomputer(UsbHidDriver):
             "status_report_length": 0x9E,
             "ctrl_report_length": 0x329,
             "fan_ctrl": {"pump": 0x96, "fan": 0x41},
+            "temp_offset_ctrl": 0x2D,
             "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
         },
         _DEVICE_FARBWERK360: {
@@ -116,7 +118,10 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors": [0x3A + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
+            "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "status_report_length": 0xB6,
+            "ctrl_report_length": 0x682,
+            "temp_offset_ctrl": 0x8
         },
         _DEVICE_OCTO: {
             "type": _DEVICE_OCTO,
@@ -125,6 +130,7 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors": [0x45 + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
+            "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "fan_speed_label": [f"Fan {num} speed" for num in range(1, 8 + 1)],
             "fan_power_label": [f"Fan {num} power" for num in range(1, 8 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 8 + 1)],
@@ -138,6 +144,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x5A, 0xAF, 0x104, 0x159, 0x1AE, 0x203, 0x258, 0x2AD],
                 )
             },
+            "temp_offset_ctrl": 0xA
         },
         _DEVICE_QUADRO: {
             "type": _DEVICE_QUADRO,
@@ -146,6 +153,7 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors": [0x3C + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
+            "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "fan_speed_label": [f"Fan {num} speed" for num in range(1, 4 + 1)],
             "fan_power_label": [f"Fan {num} power" for num in range(1, 4 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
@@ -160,6 +168,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x36, 0x8B, 0xE0, 0x135],
                 )
             },
+            "temp_offset_ctrl": 0xA
         },
     }
 
