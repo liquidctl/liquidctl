@@ -420,6 +420,26 @@ class Aquacomputer(UsbHidDriver):
 
         return self._get_status_directly()
 
+    def _request_ctrl_report(self):
+        """Request an up to date ctrl report."""
+        report_length = self._device_info["ctrl_report_length"]
+        return report_length, self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+    def _update_device_ctrl_report(self, processing_func):
+        report_length, ctrl_report = self._request_ctrl_report()
+
+        # Let the caller make changes to it
+        processing_func(ctrl_report)
+
+        # Update checksum value at the end of the report
+        crc16usb_func = mkCrcFun("crc-16-usb")
+
+        checksum_part = bytes(ctrl_report[0x01 : report_length - 3 + 1])
+        checksum_bytes = crc16usb_func(checksum_part)
+        put_unaligned_be16(checksum_bytes, ctrl_report, report_length - 2)
+
+        self.device.send_feature_report(ctrl_report)
+
     def set_speed_profile(self, channel, profile, **kwargs):
         if (
             self._device_info["type"] == self._DEVICE_D5NEXT
