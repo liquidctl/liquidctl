@@ -316,7 +316,9 @@ class Aquacomputer(UsbHidDriver):
 
             for idx, _ in enumerate(self._device_info.get(offsets_key, [])):
                 try:
-                    hwmon_val = self._hwmon.read_int(f"temp{idx + 1 + idx_add}_{entry_suffix}") * 1e-3
+                    hwmon_val = (
+                        self._hwmon.read_int(f"temp{idx + 1 + idx_add}_{entry_suffix}") * 1e-3
+                    )
                 except OSError as os_error:
                     # For reference, the driver returns ENODATA when a sensor is unset/empty. ENOENT means that the
                     # current driver version does not support the requested sensors, warn the user later
@@ -476,26 +478,6 @@ class Aquacomputer(UsbHidDriver):
         # Write to hwmon
         self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
 
-    def _request_ctrl_report(self):
-        """Request an up to date ctrl report."""
-        report_length = self._device_info["ctrl_report_length"]
-        return report_length, self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
-
-    def _update_device_ctrl_report(self, processing_func):
-        report_length, ctrl_report = self._request_ctrl_report()
-
-        # Let the caller make changes to it
-        processing_func(ctrl_report)
-
-        # Update checksum value at the end of the report
-        crc16usb_func = mkCrcFun("crc-16-usb")
-
-        checksum_part = bytes(ctrl_report[0x01 : report_length - 3 + 1])
-        checksum_bytes = crc16usb_func(checksum_part)
-        put_unaligned_be16(checksum_bytes, ctrl_report, report_length - 2)
-
-        self.device.send_feature_report(ctrl_report)
-
     def _set_fixed_speed_directly(self, channel, duty):
         def _set_fixed_speed_ctrl_report(ctrl_report):
             fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
@@ -512,6 +494,31 @@ class Aquacomputer(UsbHidDriver):
 
         self._update_device_ctrl_report(_set_fixed_speed_ctrl_report)
 
+    def _perform_write(
+        self, direct_access, hwmon_check_func, hwmon_func, direct_access_func, explanation
+    ):
+        """Decides whether to route the write request through hwmon or directly to the device."""
+        if self._hwmon:
+            if hwmon_check_func():
+                # Check passed - if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        f"directly writing {explanation} despite {self._hwmon.driver} kernel driver having support"
+                    )
+                    return direct_access_func()
+
+                _LOGGER.info(
+                    f"bound to {self._hwmon.driver} kernel driver, writing {explanation} to hwmon"
+                )
+                return hwmon_func()
+            elif not direct_access:
+                _LOGGER.warning(
+                    f"required {explanation} functionality is not available in {self._hwmon.driver} kernel driver,"
+                    f"falling back to direct access",
+                )
+
+        direct_access_func()
+
     def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         if self._device_info["type"] == self._DEVICE_FARBWERK360:
             raise NotSupportedByDevice()
@@ -519,51 +526,51 @@ class Aquacomputer(UsbHidDriver):
         # Clamp duty between 0 and 100
         duty = clamp(duty, 0, 100)
 
-        if self._hwmon:
+        def _hwmon_check():
             hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
-
-            # Check if the required attributes are present
-            if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+            return self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
                 hwmon_pwm_enable_name
-            ):
-                # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
-                if direct_access:
-                    _LOGGER.warning(
-                        "directly writing fixed speed despite %s kernel driver having support",
-                        self._hwmon.driver,
-                    )
-                    return self._set_fixed_speed_directly(channel, duty)
+            )
 
-                _LOGGER.info(
-                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
-                )
-                return self._set_fixed_speed_hwmon(channel, duty)
-            elif not direct_access:
-                _LOGGER.warning(
-                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
-                    self._hwmon.driver,
-                )
-
-        self._set_fixed_speed_directly(channel, duty)
+        self._perform_write(
+            direct_access,
+            lambda: _hwmon_check(),
+            lambda: self._set_fixed_speed_hwmon(channel, duty),
+            lambda: self._set_fixed_speed_directly(channel, duty),
+            "fixed speed",
+        )
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented
         raise NotSupportedByDriver()
 
-    def set_tempoffset(self, channel, value, **kwargs):
+    def _set_tempoffset_directly(self, channel, value):
         def _set_tempoffset_ctrl_report(ctrl_report):
             channel_idx = int(channel[-1]) - 1
-            final_value = int(round(clamp(value, -15, 15), 2) * 100)
             temp_offset_position = self._device_info["temp_offset_ctrl"][channel_idx]
 
             # Write down temp offset for channel
             put_unaligned_be16(
-                final_value,
+                value,
                 ctrl_report,
                 temp_offset_position,
             )
 
         self._update_device_ctrl_report(_set_tempoffset_ctrl_report)
+
+    def set_tempoffset(self, channel, value, direct_access=False, **kwargs):
+        final_value = int(round(clamp(value, -15, 15), 2) * 100)
+
+        def _hwmon_check():
+            return self._hwmon.has_attribute(f"temp{channel}_offset")
+
+        self._perform_write(
+            direct_access,
+            lambda: _hwmon_check(),
+            lambda: self._hwmon.write_int(f"temp{channel}_offset", final_value),
+            lambda: self._set_tempoffset_directly(channel, final_value),
+            "temp offset"
+        )
 
     def _read_device_statics(self):
         if self._firmware_version is None or self._serial is None:
