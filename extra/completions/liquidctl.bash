@@ -278,6 +278,11 @@ _liquidctl_set_command ()
               handled=1
               break
               ;;
+          sensor[0-9])
+              subcommand_index=$i
+              _liquidctl_set_sensor
+              handled=1
+              ;;
       esac
       (( i++ ))
   done
@@ -289,7 +294,7 @@ _liquidctl_set_command ()
     compopt -o nospace
     # possibly use some command here to get a list of all the possible channels from liquidctl
     local cur="${COMP_WORDS[COMP_CWORD]}"
-    COMPREPLY=($(compgen -W "fan fan1 fan2 fan3 fan4 fan5 fan6 led led1 led2 led3 led4 led5 led6 pump sync ring logo external lcd" -- "$cur"))
+    COMPREPLY=($(compgen -W "fan fan1 fan2 fan3 fan4 fan5 fan6 fan7 fan8 led led1 led2 led3 led4 led5 led6 pump sync ring logo external lcd sensor sensor1 sensor2 sensor3 sensor4 sensor5 sensor6 sensor7 sensor8 sensor9" -- "$cur"))
   fi
 }
 
@@ -361,6 +366,29 @@ _liquidctl_set_lcd ()
         _liquidctl_set_screen
     else
         COMPREPLY="screen"
+    fi
+}
+
+_liquidctl_set_sensor ()
+{
+    local i=1 found=0
+
+    # find the sub command (currently, only tempoffset to set)
+    while [[ $i -lt $COMP_CWORD ]]; do
+        local s="${COMP_WORDS[i]}"
+        if [[ "$s" = "tempoffset" ]]; then
+            found=1
+            break
+        fi
+
+        (( i++ ))
+    done
+
+    # check if it is found
+    if [[ $found = 1 ]]; then
+        COMPREPLY=""
+    else
+        COMPREPLY="tempoffset"
     fi
 }
 
