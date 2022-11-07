@@ -411,6 +411,45 @@ def test_d5next_speed_profiles_not_supported(mockD5NextDevice):
         mockD5NextDevice.set_speed_profile("pump", None)
 
 
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_d5next_set_tempoffset_directly(mockD5NextDevice, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mockD5NextDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "temp1_offset").write_text("0")
+
+    mockD5NextDevice.set_tempoffset("sensor1", 7, direct_access=direct_access)
+
+    ctrl_report = mockD5NextDevice.device.sent[0]
+
+    assert ctrl_report.number == 3
+    assert ctrl_report.data[0x2D - 1 : 0x2D + 1] == [2, 188]
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_support", [False, True])
+def test_d5next_set_tempoffset_hwmon(mockD5NextDevice, has_support, tmp_path):
+    mockD5NextDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "temp1_offset").write_text("0\n")
+
+    mockD5NextDevice.set_tempoffset("sensor1", 7)
+
+    if has_support:
+        assert (tmp_path / "temp1_offset").read_text() == "7000"
+    else:
+        # Assert fallback to direct access
+        ctrl_report = mockD5NextDevice.device.sent[0]
+
+        assert ctrl_report.number == 3
+        assert ctrl_report.data[0x2D - 1 : 0x2D + 1] == [2, 188]
+
+
 @pytest.fixture
 def mockFarbwerk360Device():
     device = _MockFarbwerk360Device()
@@ -552,6 +591,59 @@ def test_farbwerk360_set_fixed_speeds_not_supported(mockFarbwerk360Device):
 def test_farbwerk360_speed_profiles_not_supported(mockFarbwerk360Device):
     with pytest.raises(NotSupportedByDevice):
         mockFarbwerk360Device.set_speed_profile("fan", None)
+
+
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_farbwerk360_set_tempoffset_directly(
+    mockFarbwerk360Device, has_hwmon, direct_access, tmp_path
+):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mockFarbwerk360Device._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "temp1_offset").write_text("0")
+        (tmp_path / "temp2_offset").write_text("0")
+        (tmp_path / "temp3_offset").write_text("0")
+        (tmp_path / "temp4_offset").write_text("0")
+
+    mockFarbwerk360Device.set_tempoffset("sensor3", 7, direct_access=direct_access)
+
+    ctrl_report = mockFarbwerk360Device.device.sent[0]
+
+    assert ctrl_report.number == 3
+    assert ctrl_report.data[0xC - 1 : 0xC + 1] == [2, 188]
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+        assert (tmp_path / "temp2_offset").read_text() == "0"
+        assert (tmp_path / "temp3_offset").read_text() == "0"
+        assert (tmp_path / "temp4_offset").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_support", [False, True])
+def test_farbwerk360_set_tempoffset_hwmon(mockFarbwerk360Device, has_support, tmp_path):
+    mockFarbwerk360Device._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "temp1_offset").write_text("0")
+        (tmp_path / "temp2_offset").write_text("0")
+        (tmp_path / "temp3_offset").write_text("0")
+        (tmp_path / "temp4_offset").write_text("0")
+
+    mockFarbwerk360Device.set_tempoffset("sensor3", 7)
+
+    if has_support:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+        assert (tmp_path / "temp2_offset").read_text() == "0"
+        assert (tmp_path / "temp3_offset").read_text() == "7000"
+        assert (tmp_path / "temp4_offset").read_text() == "0"
+    else:
+        # Assert fallback to direct access
+        ctrl_report = mockFarbwerk360Device.device.sent[0]
+
+        assert ctrl_report.number == 3
+        assert ctrl_report.data[0xC - 1 : 0xC + 1] == [2, 188]
 
 
 @pytest.fixture
@@ -845,6 +937,57 @@ def test_octo_speed_profiles_not_supported(mockOctoDevice):
         mockOctoDevice.set_speed_profile("fan", None)
 
 
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_octo_set_tempoffset_directly(mockOctoDevice, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mockOctoDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "temp1_offset").write_text("0")
+        (tmp_path / "temp2_offset").write_text("0")
+        (tmp_path / "temp3_offset").write_text("0")
+        (tmp_path / "temp4_offset").write_text("0")
+
+    mockOctoDevice.set_tempoffset("sensor3", 7, direct_access=direct_access)
+
+    ctrl_report = mockOctoDevice.device.sent[0]
+
+    assert ctrl_report.number == 3
+    assert ctrl_report.data[0xE - 1 : 0xE + 1] == [2, 188]
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+        assert (tmp_path / "temp2_offset").read_text() == "0"
+        assert (tmp_path / "temp3_offset").read_text() == "0"
+        assert (tmp_path / "temp4_offset").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_support", [False, True])
+def test_octo_set_tempoffset_hwmon(mockOctoDevice, has_support, tmp_path):
+    mockOctoDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "temp1_offset").write_text("0")
+        (tmp_path / "temp2_offset").write_text("0")
+        (tmp_path / "temp3_offset").write_text("0")
+        (tmp_path / "temp4_offset").write_text("0")
+
+    mockOctoDevice.set_tempoffset("sensor3", 7)
+
+    if has_support:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+        assert (tmp_path / "temp2_offset").read_text() == "0"
+        assert (tmp_path / "temp3_offset").read_text() == "7000"
+        assert (tmp_path / "temp4_offset").read_text() == "0"
+    else:
+        # Assert fallback to direct access
+        ctrl_report = mockOctoDevice.device.sent[0]
+
+        assert ctrl_report.number == 3
+        assert ctrl_report.data[0xE - 1 : 0xE + 1] == [2, 188]
+
+
 @pytest.fixture
 def mockQuadroDevice():
     device = _MockQuadroDevice()
@@ -1087,3 +1230,54 @@ def test_quadro_set_fixed_speeds_hwmon(mockQuadroDevice, has_support, tmp_path):
 def test_quadro_speed_profiles_not_supported(mockQuadroDevice):
     with pytest.raises(NotSupportedByDriver):
         mockQuadroDevice.set_speed_profile("fan", None)
+
+
+@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
+def test_quadro_set_tempoffset_directly(mockQuadroDevice, has_hwmon, direct_access, tmp_path):
+    """For both test cases only direct access should be used"""
+
+    if has_hwmon:
+        mockQuadroDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+        (tmp_path / "temp1_offset").write_text("0")
+        (tmp_path / "temp2_offset").write_text("0")
+        (tmp_path / "temp3_offset").write_text("0")
+        (tmp_path / "temp4_offset").write_text("0")
+
+    mockQuadroDevice.set_tempoffset("sensor3", 7, direct_access=direct_access)
+
+    ctrl_report = mockQuadroDevice.device.sent[0]
+
+    assert ctrl_report.number == 3
+    assert ctrl_report.data[0xE - 1 : 0xE + 1] == [2, 188]
+
+    # Assert that hwmon wasn't touched
+    if has_hwmon:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+        assert (tmp_path / "temp2_offset").read_text() == "0"
+        assert (tmp_path / "temp3_offset").read_text() == "0"
+        assert (tmp_path / "temp4_offset").read_text() == "0"
+
+
+@pytest.mark.parametrize("has_support", [False, True])
+def test_quadro_set_tempoffset_hwmon(mockQuadroDevice, has_support, tmp_path):
+    mockQuadroDevice._hwmon = HwmonDevice("mock_module", tmp_path)
+
+    if has_support:
+        (tmp_path / "temp1_offset").write_text("0")
+        (tmp_path / "temp2_offset").write_text("0")
+        (tmp_path / "temp3_offset").write_text("0")
+        (tmp_path / "temp4_offset").write_text("0")
+
+    mockQuadroDevice.set_tempoffset("sensor3", 7)
+
+    if has_support:
+        assert (tmp_path / "temp1_offset").read_text() == "0"
+        assert (tmp_path / "temp2_offset").read_text() == "0"
+        assert (tmp_path / "temp3_offset").read_text() == "7000"
+        assert (tmp_path / "temp4_offset").read_text() == "0"
+    else:
+        # Assert fallback to direct access
+        ctrl_report = mockQuadroDevice.device.sent[0]
+
+        assert ctrl_report.number == 3
+        assert ctrl_report.data[0xE - 1 : 0xE + 1] == [2, 188]
