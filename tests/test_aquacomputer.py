@@ -50,6 +50,61 @@ FARBWERK360_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "0000000000000000000010002000101040006"
 )
 
+FARBWERK360_SAMPLE_CONTROL_REPORT = bytes.fromhex(
+    "00010000A90000025802BC00000000FF00025A03F0000000000B0F19001400460"
+    "1640014004601FF002D00640064000000000000000000000000000000000000FF"
+    "00550000000000000000000000000000000000000000000000F0000000FFFF0A0"
+    "F0000006400640000006400640000000000000000000000000000000000000000"
+    "00000000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF005A03F0000"
+    "000FFFF0F19000003E80164000003E801FF002D00640064000000000000000000"
+    "000000000000000000FF005500000000000000000000000000000000000000000"
+    "05A08F0000088FFFF0F19000003E80164000003E801FF00280019001E00000000"
+    "000000000000000000000000000000000000FFFFFFFFFFF1FF000000000000000"
+    "000000000005A03F0000000FFFF0F19000003E80164000003E801FF002D006400"
+    "64000000000000000000000000000000000000FF0055000000000000000000000"
+    "0000000000000000000005A08F0000088FFFF0F19000003E80164000003E801FF"
+    "00280019001E00000000000000000000000000000000000000000000FFFFFFFFF"
+    "FF1FF000000000000000000000000005A03F0000000FFFF0F19000003E8016400"
+    "0003E801FF002D00640064000000000000000000000000000000000000FF00550"
+    "000000000000000000000000000000000000000005A08F0000088FFFF0F190000"
+    "03E80164000003E801FF00280019001E000000000000000000000000000000000"
+    "00000000000FFFFFFFFFFF1FF0000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000010000030100040100050200"
+    "06020007030008030000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000FFFF00000000FFFF00000000FFFF00000000FFFF00000000"
+    "FFFF00000000FFFF00000000FFFF00000000FFFF00000000FFFF00000000FFFF0"
+    "000007800012EA8"
+)
+
 OCTO_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "00023A92C9EA03E80001006503FB000000010000010DB4000000C5003C3EA4010"
     "00200000000000000000000000000059EDCFFDCFFDDFFDDA7A65BF80AC60ACF0B"
@@ -224,6 +279,7 @@ def test_d5next_get_status_directly(mockD5NextDevice, has_hwmon, direct_access):
     expected = [
         ("Liquid temperature", pytest.approx(25.1, 0.1), "°C"),
         ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
+        ('Sensor 1 offset', 0.0, '°C'),
         ("Pump speed", 1976, "rpm"),
         ("Pump power", pytest.approx(2.58, 0.1), "W"),
         ("Pump voltage", pytest.approx(12.02, 0.1), "V"),
@@ -242,6 +298,7 @@ def test_d5next_get_status_directly(mockD5NextDevice, has_hwmon, direct_access):
 def test_d5next_get_status_from_hwmon(mockD5NextDevice, tmp_path):
     mockD5NextDevice._hwmon = HwmonDevice("mock_module", tmp_path)
     (tmp_path / "temp1_input").write_text("25100\n")  # Liquid temperature
+    (tmp_path / "temp1_offset").write_text("0\n")  # Liquid temperature temp offset
     (tmp_path / "fan1_input").write_text("1976\n")  # Pump speed
     (tmp_path / "power1_input").write_text("2580000\n")  # Pump power
     (tmp_path / "in0_input").write_text("12020\n")  # Pump voltage
@@ -273,6 +330,7 @@ def test_d5next_get_status_from_hwmon(mockD5NextDevice, tmp_path):
         ("Soft. Sensor 6", pytest.approx(50, 0.1), "°C"),
         ("Soft. Sensor 7", pytest.approx(50, 0.1), "°C"),
         ("Soft. Sensor 8", pytest.approx(50, 0.1), "°C"),
+        ('Sensor 1 offset', 0.0, '°C'),
         ("Pump speed", 1976, "rpm"),
         ("Pump power", pytest.approx(2.58, 0.1), "W"),
         ("Pump voltage", pytest.approx(12.02, 0.1), "V"),
@@ -371,6 +429,8 @@ class _MockFarbwerk360Device(MockHidapiDevice):
         super().__init__(vendor_id=0x0C70, product_id=0xF010)
 
         self.preload_read(Report(1, FARBWERK360_SAMPLE_STATUS_REPORT))
+        self.preload_read(Report(3, FARBWERK360_SAMPLE_CONTROL_REPORT))
+        self.preload_read(Report(3, FARBWERK360_SAMPLE_CONTROL_REPORT))
 
     def read(self, length):
         pre = super().read(length)
@@ -416,6 +476,10 @@ def test_farbwerk360_get_status_directly(mockFarbwerk360Device, has_hwmon, direc
         ("Sensor 3", pytest.approx(26.7, 0.1), "°C"),
         ("Sensor 4", pytest.approx(25.5, 0.1), "°C"),
         ("Soft. Sensor 1", pytest.approx(52.00, 0.1), "°C"),
+        ('Sensor 1 offset', pytest.approx(6.0, 0.1), '°C'),
+        ('Sensor 2 offset', pytest.approx(7.0, 0.1), '°C'),
+        ('Sensor 3 offset', 0.0, '°C'),
+        ('Sensor 4 offset', 0.0, '°C'),
     ]
 
     assert sorted(got) == sorted(expected)
@@ -427,6 +491,10 @@ def test_farbwerk360_get_status_from_hwmon(mockFarbwerk360Device, tmp_path):
     (tmp_path / "temp2_input").write_text("26310\n")
     (tmp_path / "temp3_input").write_text("26710\n")
     (tmp_path / "temp4_input").write_text("25520\n")
+    (tmp_path / "temp1_offset").write_text("6000\n")
+    (tmp_path / "temp2_offset").write_text("7000\n")
+    (tmp_path / "temp3_offset").write_text("0\n")
+    (tmp_path / "temp4_offset").write_text("0\n")
     (tmp_path / "temp5_input").write_text("50000\n")  # Soft. Sensor 1 temperature
     (tmp_path / "temp6_input").write_text("60000\n")  # Soft. Sensor 2 temperature
     (tmp_path / "temp7_input").write_text("50000\n")  # Soft. Sensor 3 temperature
@@ -467,6 +535,10 @@ def test_farbwerk360_get_status_from_hwmon(mockFarbwerk360Device, tmp_path):
         ("Soft. Sensor 14", pytest.approx(50, 0.1), "°C"),
         ("Soft. Sensor 15", pytest.approx(50, 0.1), "°C"),
         ("Soft. Sensor 16", pytest.approx(50, 0.1), "°C"),
+        ("Sensor 1 offset", pytest.approx(6.0, 0.1), "°C"),
+        ("Sensor 2 offset", pytest.approx(7.0, 0.1), "°C"),
+        ("Sensor 3 offset", 0, "°C"),
+        ("Sensor 4 offset", 0, "°C"),
     ]
 
     assert sorted(got) == sorted(expected)
@@ -547,6 +619,10 @@ def test_octo_get_status_directly(mockOctoDevice, has_hwmon, direct_access):
         ("Sensor 3", pytest.approx(28.4, 0.1), "°C"),
         ("Sensor 4", pytest.approx(34.2, 0.1), "°C"),
         ("Soft. Sensor 1", pytest.approx(37.84, 0.1), "°C"),
+        ('Sensor 1 offset', pytest.approx(13.0, 0.1), '°C'),
+        ('Sensor 2 offset', pytest.approx(7.0, 0.1), '°C'),
+        ('Sensor 3 offset', 0.0, '°C'),
+        ('Sensor 4 offset', 0.0, '°C'),
         ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
         ("Fan 1 power", pytest.approx(0.01, 0.1), "W"),
         ("Fan 1 voltage", pytest.approx(12.09, 0.1), "V"),
@@ -590,6 +666,10 @@ def test_octo_get_status_from_hwmon(mockOctoDevice, tmp_path):
     (tmp_path / "temp2_input").write_text("27670\n")
     (tmp_path / "temp3_input").write_text("28370\n")
     (tmp_path / "temp4_input").write_text("34240\n")
+    (tmp_path / "temp1_offset").write_text("6000\n")
+    (tmp_path / "temp2_offset").write_text("7000\n")
+    (tmp_path / "temp3_offset").write_text("0\n")
+    (tmp_path / "temp4_offset").write_text("0\n")
     (tmp_path / "fan1_input").write_text("0\n")
     (tmp_path / "power1_input").write_text("10000\n")
     (tmp_path / "in0_input").write_text("12090\n")
@@ -646,6 +726,10 @@ def test_octo_get_status_from_hwmon(mockOctoDevice, tmp_path):
         ("Sensor 2", pytest.approx(27.7, 0.1), "°C"),
         ("Sensor 3", pytest.approx(28.4, 0.1), "°C"),
         ("Sensor 4", pytest.approx(34.2, 0.1), "°C"),
+        ("Sensor 1 offset", pytest.approx(6.0, 0.1), "°C"),
+        ("Sensor 2 offset", pytest.approx(7.0, 0.1), "°C"),
+        ("Sensor 3 offset", 0, "°C"),
+        ("Sensor 4 offset", 0, "°C"),
         ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
         ("Fan 1 power", pytest.approx(0.01, 0.1), "W"),
         ("Fan 1 voltage", pytest.approx(12.09, 0.1), "V"),
@@ -824,6 +908,10 @@ def test_quadro_get_status_directly(mockQuadroDevice, has_hwmon, direct_access):
         ("Sensor 3", pytest.approx(16.17, 0.1), "°C"),
         ("Soft. Sensor 1", pytest.approx(23.9, 0.1), "°C"),
         ("Soft. Sensor 13", pytest.approx(50.0, 0.1), "°C"),
+        ('Sensor 1 offset', pytest.approx(6.0, 0.1), '°C'),
+        ('Sensor 2 offset', pytest.approx(13.0, 0.1), '°C'),
+        ('Sensor 3 offset', pytest.approx(-13.0, 0.1), '°C'),
+        ('Sensor 4 offset', pytest.approx(15.0, 0.1), '°C'),
         ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
         ("Fan 1 power", pytest.approx(0, 0.1), "W"),
         ("Fan 1 voltage", pytest.approx(0, 0.1), "V"),
@@ -852,6 +940,10 @@ def test_quadro_get_status_from_hwmon(mockQuadroDevice, tmp_path):
     (tmp_path / "temp2_input").write_text("27670\n")
     (tmp_path / "temp3_input").write_text("28370\n")
     (tmp_path / "temp4_input").write_text("34240\n")
+    (tmp_path / "temp1_offset").write_text("6000\n")
+    (tmp_path / "temp2_offset").write_text("7000\n")
+    (tmp_path / "temp3_offset").write_text("0\n")
+    (tmp_path / "temp4_offset").write_text("0\n")
     (tmp_path / "fan1_input").write_text("0\n")
     (tmp_path / "power1_input").write_text("10000\n")
     (tmp_path / "in0_input").write_text("12090\n")
@@ -893,6 +985,10 @@ def test_quadro_get_status_from_hwmon(mockQuadroDevice, tmp_path):
         ("Sensor 2", pytest.approx(27.7, 0.1), "°C"),
         ("Sensor 3", pytest.approx(28.4, 0.1), "°C"),
         ("Sensor 4", pytest.approx(34.2, 0.1), "°C"),
+        ("Sensor 1 offset", pytest.approx(6.0, 0.1), "°C"),
+        ("Sensor 2 offset", pytest.approx(7.0, 0.1), "°C"),
+        ("Sensor 3 offset", 0, "°C"),
+        ("Sensor 4 offset", 0, "°C"),
         ("Fan 1 speed", pytest.approx(0, 0.1), "rpm"),
         ("Fan 1 power", pytest.approx(0.01, 0.1), "W"),
         ("Fan 1 voltage", pytest.approx(12.09, 0.1), "V"),
