@@ -102,6 +102,8 @@ def test_can_clear_enqueued_reports_without_nonblocking(dev, monkeypatch):
 
 
 def test_reads(dev, monkeypatch):
+    CANARY_TIMEOUT_MS = 1234
+
     def _set_nonblocking(v):
         assert isinstance(v, int)
         return 0
@@ -109,12 +111,12 @@ def test_reads(dev, monkeypatch):
     def _read(max_length, timeout_ms=0):
         assert isinstance(max_length, int)
         assert isinstance(timeout_ms, int)
-        # assert timeout_ms == 0, 'use hid_read'
+        assert timeout_ms == CANARY_TIMEOUT_MS, 'use hid_read'
         return [0xff] + [0]*(max_length - 1)  # report ID is part of max_length *if present*
 
     monkeypatch.setattr(dev.hiddev, 'set_nonblocking', _set_nonblocking, raising=False)
     monkeypatch.setattr(dev.hiddev, 'read', _read, raising=False)
-    assert dev.read(5) == [0xff, 0, 0, 0, 0]
+    assert dev.read(5, timeout=CANARY_TIMEOUT_MS) == [0xff, 0, 0, 0, 0]
 
 
 def test_can_write(dev, monkeypatch):
