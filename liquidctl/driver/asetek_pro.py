@@ -119,7 +119,7 @@ class HydroPro(_Base690Lc):
         msg = self._post([_CMD_READ_AIO_TEMP], read_length=6)
         aio_temp = msg[3] + msg[4]/10
 
-        speeds = self._get_fan_speeds()
+        fan_speeds = self._get_fan_speeds()
 
         msg = self._post([_CMD_READ_PUMP_MODE], read_length=4)
         pump_mode = _PUMP_MODES[msg[3]]
@@ -134,9 +134,8 @@ class HydroPro(_Base690Lc):
 
         status = [('Liquid temperature', aio_temp, '°C')]
 
-        for i, speed in enumerate(speeds):
-            if speed is not None:
-                status.append((f'Fan {i + 1} speed', speed, 'rpm'))
+        for fan, speed in fan_speeds:
+            status.append((f'Fan {fan} speed', speed, 'rpm'))
 
         return status + [
             ('Pump mode', pump_mode, ""),
@@ -154,10 +153,10 @@ class HydroPro(_Base690Lc):
 
             if msg[0] != 0x41 or msg[3] != i:
                 _LOGGER.warning('failed to get current speed of fan %d', i)
-                speeds.append(None)
                 continue
 
-            speeds.append((msg[4] << 8) + msg[5])
+            speeds.append((i + 1, (msg[4] << 8) + msg[5]))
+
         return speeds
 
     def set_color(self, channel, mode, colors, speed='normal', **kwargs):
