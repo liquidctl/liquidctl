@@ -152,7 +152,7 @@ class HydroPro(_Base690Lc):
         for i in range(self._fan_count):
             msg = self._post([_CMD_READ_FAN_SPEED, i], read_length=6)
 
-            if msg[0] != 0x41 or msg[1] != 0x12 or msg[2] != 0x34 or msg[3] != i:
+            if msg[0] != 0x41 or msg[3] != i:
                 _LOGGER.warning('failed to get current speed of fan %d', i)
                 speeds.append(None)
                 continue
