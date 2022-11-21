@@ -18,8 +18,10 @@ This driver also supports the NZXT Kraken M22.  However, this device has no pump
 
 
 ## Initialization
+[Initialization]: #initialization
 
-_Changed in 1.9.0: the firmware version is now reported after initialization._<br>
+_Changed in 1.9.0: the firmware version is now reported after
+initialization._<br>
 _Changed in 1.10.0: modern firmware versions are now reported in simplified
 form, to match CAM._<br>
 
@@ -42,7 +44,8 @@ command itself.
 
 ## Monitoring
 
-_Changed in 1.9.0: the firmware version is no longer reported on the CLI._<br>
+_Changed in 1.9.0: the firmware version is no longer reported (see
+[Initialization])._<br>
 
 The cooler can report the fan and pump speed, as well as the liquid temperature.
 
