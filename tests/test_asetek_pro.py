@@ -38,7 +38,7 @@ def test_initialize_with_pump_mode(emulate):
     with cooler.connect():
         cooler.initialize(pump_mode='balanced')
 
-        _begin, set_pump = usb_dev._sent_xfers
+        _begin, set_pump, _fw_version = usb_dev._sent_xfers
         assert set_pump == ('write', 1, [0x32, 0x01])
 
 
@@ -55,7 +55,7 @@ def test_set_profile_of_all_fans(emulate):
 
         cooler.set_speed_profile(channel='fan', profile=[(0, 10), (25, 50), (40, 100)])
 
-        _begin, _pump, fan1, fan2 = usb_dev._sent_xfers
+        _begin, _pump, _fw_version, fan1, fan2 = usb_dev._sent_xfers
         assert fan1 == ('write', 1, [0x40, 0x00, 0x00, 0x19, 0x28, 0x3c, 0x3c, 0x3c,
                                           0x3c, 0x0a, 0x32, 0x64, 0x64, 0x64, 0x64, 0x64])
         assert fan2 == ('write', 1, [0x40, 0x01, 0x00, 0x19, 0x28, 0x3c, 0x3c, 0x3c,
@@ -70,7 +70,7 @@ def test_setting_speed_on_single_fan_2(emulate):
 
         cooler.set_fixed_speed('fan2', 100)
 
-        _begin, _pump, fan2 = usb_dev._sent_xfers
+        _begin, _pump, _fw_version, fan2 = usb_dev._sent_xfers
         assert fan2 == ('write', 1, [0x42, 0x01, 0x64])
 
 
@@ -82,7 +82,7 @@ def test_set_pump_to_fixed_color(emulate):
 
         cooler.set_color(channel='logo', mode='fixed', colors=iter([[0xff, 0x88, 0x44]]))
 
-        _begin, _pump, color_change, color_end = usb_dev._sent_xfers
+        _begin, _pump, _fw_version, color_change, color_end = usb_dev._sent_xfers
         assert color_change == ('write', 1, [0x56, 0x02, 0xff, 0x88,
                                              0x44, 0xff, 0x88, 0x44])
         assert color_end == ('write', 1, [0x55, 0x01])
@@ -97,7 +97,7 @@ def test_set_pump_to_blinking_mode(emulate):
         cooler.set_color(channel='logo', mode='blinking', speed='normal',
             colors=iter([[0xff, 0x88, 0x44], [0xff, 0xff, 0xff], [0x00, 0x00, 0x00]]))
 
-        _begin, _pump, color_change, color_mode, color_end = usb_dev._sent_xfers
+        _begin, _pump, _fw_version, color_change, color_mode, color_end = usb_dev._sent_xfers
         assert color_change == ('write', 1, [0x56, 0x03, 0xff, 0x88, 0x44, 0xff,
                                              0xff, 0xff, 0x00, 0x00, 0x00])
         assert color_mode == ('write', 1, [0x53, 0x0A])

@@ -108,7 +108,15 @@ class HydroPro(_Base690Lc):
             raise ValueError(f'unknown pump mode, should be one of: {_quoted(*_PUMP_MODES)}')
 
         self._post([_CMD_WRITE_PUMP_MODE, _PUMP_MODES.index(pump_mode)], read_length=5)
+
+        msg = self._post([_CMD_READ_FIRMWARE], read_length=7)
+        firmware = '{}.{}.{}.{}'.format(*tuple(msg[3:7]))
+
         self.device.release()
+
+        return [
+            ('Firmware version', firmware, ''),
+        ]
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -127,9 +135,6 @@ class HydroPro(_Base690Lc):
         msg = self._post([_CMD_READ_PUMP_SPEED], read_length=5)
         pump_speed = (msg[3] << 8) + msg[4]
 
-        msg = self._post([_CMD_READ_FIRMWARE], read_length=7)
-        firmware = '{}.{}.{}.{}'.format(*tuple(msg[3:7]))
-
         self.device.release()
 
         status = [('Liquid temperature', aio_temp, '°C')]
@@ -140,7 +145,6 @@ class HydroPro(_Base690Lc):
         return status + [
             ('Pump mode', pump_mode, ""),
             ('Pump speed', pump_speed, 'rpm'),
-            ('Firmware version', firmware, '')
         ]
 
     def _get_fan_speeds(self):

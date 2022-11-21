@@ -12,23 +12,34 @@ be confused with the Platinum or Pro XT families):
 Windows](../README.md#windows-system-level-dependencies)).**
 
 ## Initialization
+[Initialization]: #initialization
+
+_Changed in git: the firmware version is now reported after
+initialization._<br>
 
 The coolers must be initialized sometime after the system boots.  Only then it
 will be possible to query the device status and perform other operations.
 
 ```
 # liquidctl initialize
+Corsair Hydro H100i Pro
+└── Firmware version      2.10.0.0
 ```
 
 When (re)initializing the device it is possible to select the pump mode:
 
 ```
 # liquidctl initialize --pump-mode=performance
+Corsair Hydro H100i Pro
+└── Firmware version      2.10.0.0
 ```
 
 Allowed pump modes are: `quiet`, `balanced` and `performance`.
 
 ## Device monitoring
+
+_Changed in git: the firmware version is no longer reported (see
+[Initialization])._<br>
 
 Similarly to other AIOs, the cooler can report fan and pump speeds as well as
 the liquid temperature.
@@ -40,8 +51,7 @@ Corsair Hydro H100i Pro
 ├── Fan 1 speed                480  rpm
 ├── Fan 2 speed                476  rpm
 ├── Pump mode             balanced
-├── Pump speed                1890  rpm
-└── Firmware version      2.10.0.0
+└── Pump speed                1890  rpm
 ```
 
 ## Fan speed control
