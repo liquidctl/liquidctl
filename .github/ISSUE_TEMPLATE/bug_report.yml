@@ -1,0 +1,61 @@
+name: Bug Report
+description: Report an issue with existing supported devices.
+labels: ["bug"]
+body:
+  - type: input
+    id: info-device
+    attributes:
+      label: Affected Device
+      description: What is the name of the device you are using that is not functioning as expected? If more than one devices are experiencing issues list them here separated by a comma.
+      placeholder: e.g. Corsair Hydro H100i Pro XT
+    validations:
+      required: true
+  - type: input
+    id: info-distro
+    attributes:
+      label: Linux Distribution
+      description: Which Linux distribution are you using?
+      placeholder: ex. Arch
+    validations:
+      required: true
+  - type: input
+    id: install-method
+    attributes:
+      label: Installation Method
+      description: How did you install Liquidctl?
+      placeholder: e.g. Official Arch Linux repository 
+    validations:
+      required: true
+  - type: input
+    id: info-version
+    attributes:
+      label: Liquidctl Version
+      description: Output of `liquidctl --version`
+      placeholder: e.g. liquidctl v1.9.0 (Linux-5.16.16-arch1-1-x86_64-with-glibc2.35) 
+    validations:
+      required: true
+  - type: textarea
+    id: observed-behavior
+    attributes:
+      label: Describe the bug
+      description: Please start by describing the bug in as much detail as possible.
+      placeholder: ex. "liquidctl fails to read the fan speed of the two attached fans"
+    validations:
+      required: true
+  - type: textarea
+    id: user-solutions
+    attributes:
+      label: Command output with debug flag
+      description: Re-run all commands attempted with the `--debug` flag, and include the complete output.
+      placeholder: |
+        <!-- An example code block:
+        ```
+        $ liquidctl list
+        Device #0: Corsair Vengeance RGB DIMM2
+        Device #1: Corsair Vengeance RGB DIMM4
+        Device #2: NZXT Smart Device (V1)
+        Device #3: NZXT Kraken X (X42, X52, X62 or X72)
+        ```
+        -->
+    validations:
+      required: true
