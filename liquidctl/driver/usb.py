@@ -321,7 +321,7 @@ class PyUsbDevice:
 
     def write(self, endpoint, data, *, timeout=_DEFAULT_TIMEOUT_MS):
         """Write to endpoint."""
-        _LOGGER.debug('writting %d bytes: %r', len(data), LazyHexRepr(data))
+        _LOGGER.debug('writing %d bytes: %r', len(data), LazyHexRepr(data))
         try:
             return self.usbdev.write(endpoint, data, timeout=timeout)
         except USBTimeoutError:
@@ -473,7 +473,7 @@ class HidapiDevice:
         > first byte should be set to 0. The report data itself should begin
         > at the second byte.
         """
-        _LOGGER.debug('writting report 0x%02x with %d bytes: %r', data[0],
+        _LOGGER.debug('writing report 0x%02x with %d bytes: %r', data[0],
                       len(data) - 1, LazyHexRepr(data, start=1))
         res = self.hiddev.write(data)
         if res < 0:
