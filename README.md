@@ -413,7 +413,7 @@ python -m pip install --upgrade pip setuptools setuptools_scm wheel
 python -m pip install --upgrade colorlog crcmod==1.7 docopt hidapi pillow pytest pyusb
 python -m pip install --upgrade "libusb-package; sys_platform == 'win32' or sys_platform == 'cygwin'"
 python -m pip install --upgrade "smbus; sys_platform == 'linux'"
-python -m pip install --upgrade "winusbcdc; sys_platform == 'win32'"
+python -m pip install --upgrade "winusbcdc>=1.5; sys_platform == 'win32'"
 ```
 
 At this point, the environment is set up.  To run the test suite, execute:

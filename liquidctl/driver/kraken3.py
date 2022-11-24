@@ -19,34 +19,7 @@ import sys
 from PIL import Image, ImageSequence
 
 if sys.platform == "win32":
-    from winusbcdc import (
-        WinUsbPy,
-        SpDeviceInterfaceData,
-        SpDeviceInterfaceDetailData,
-        SpDevinfoData,
-        ctypes,
-        c_ulong,
-        resize,
-        wstring_at,
-        byref,
-        sizeof,
-        SetupDiGetClassDevs,
-        SetupDiEnumDeviceInterfaces,
-        SetupDiGetDeviceInterfaceDetail,
-        WinUsb_Initialize,
-        CreateFile,
-        DIGCF_PRESENT,
-        DIGCF_DEVICE_INTERFACE,
-        DWORD,
-        GENERIC_WRITE,
-        GENERIC_READ,
-        FILE_SHARE_WRITE,
-        FILE_SHARE_READ,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        FILE_FLAG_OVERLAPPED,
-        INVALID_HANDLE_VALUE,
-    )
+    from winusbcdc import WinUsbPy
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
@@ -507,125 +480,17 @@ class KrakenZ3(KrakenX3):
         self.brightness = 50  # default 50%
 
     def _find_winusb_device(self, vid, pid, serial):
-        # modified list_devices function
-        value = 0x00000000
-        try:
-            value |= DIGCF_PRESENT
-            value |= DIGCF_DEVICE_INTERFACE
-        except KeyError:
-            if value == 0x00000000:
-                value = 0x00000010
-            pass
-
-        flags = DWORD(value)
-        self.bulk_device.handle = self.bulk_device.api.exec_function_setupapi(
-            SetupDiGetClassDevs, byref(self.bulk_device.usb_winusb_guid), None, None, flags
+        winusb_devices = self.bulk_device.list_usb_devices(
+            deviceinterface=True, present=True, findparent=True
         )
-
-        sp_device_interface_data = SpDeviceInterfaceData()
-        sp_device_interface_data.cb_size = sizeof(sp_device_interface_data)
-        sp_device_interface_detail_data = SpDeviceInterfaceDetailData()
-        sp_device_info_data = SpDevinfoData()
-        sp_device_info_data.cb_size = sizeof(sp_device_info_data)
-
-        i = 0
-        required_size = DWORD(0)
-        member_index = DWORD(i)
-        cb_sizes = (8, 6, 5)  # different on 64 bit / 32 bit etc
-
-        device_path = None
-        while self.bulk_device.api.exec_function_setupapi(
-            SetupDiEnumDeviceInterfaces,
-            self.bulk_device.handle,
-            None,
-            byref(self.bulk_device.usb_winusb_guid),
-            member_index,
-            byref(sp_device_interface_data),
-        ):
-            self.bulk_device.api.exec_function_setupapi(
-                SetupDiGetDeviceInterfaceDetail,
-                self.bulk_device.handle,
-                byref(sp_device_interface_data),
-                None,
-                0,
-                byref(required_size),
-                None,
-            )
-            resize(sp_device_interface_detail_data, required_size.value)
-
-            path = None
-            for cb_size in cb_sizes:
-                sp_device_interface_detail_data.cb_size = cb_size
-                ret = self.bulk_device.api.exec_function_setupapi(
-                    SetupDiGetDeviceInterfaceDetail,
-                    self.bulk_device.handle,
-                    byref(sp_device_interface_data),
-                    byref(sp_device_interface_detail_data),
-                    required_size,
-                    byref(required_size),
-                    byref(sp_device_info_data),
-                )
-                if ret:
-                    cb_sizes = (cb_size,)
-                    path = wstring_at(byref(sp_device_interface_detail_data, sizeof(DWORD)))
-                    break
-            if path is None:
-                raise ctypes.WinError()
-
-            if path.find(vid + "&" + pid) != -1:
-                # get parent device info
-                dev_inst_parent = DWORD(0)
-                ret = self.bulk_device.api._setupapi.CM_Get_Parent(
-                    byref(dev_inst_parent),
-                    getattr(sp_device_info_data, "dev_inst"),
-                    0,
-                )
-                if not ret:
-                    buff_parent_path = ctypes.create_unicode_buffer(250)
-                    ret = self.bulk_device.api._setupapi.CM_Get_Device_IDW(
-                        dev_inst_parent,
-                        ctypes.byref(buff_parent_path),
-                        ctypes.sizeof(buff_parent_path) - 1,
-                        0,
-                    )
-                    if not ret:
-                        if buff_parent_path.value.find(serial) != -1:
-                            device_path = path
-                            break
-
-            i += 1
-            member_index = DWORD(i)
-            required_size = c_ulong(0)
-            resize(sp_device_interface_detail_data, sizeof(SpDeviceInterfaceDetailData))
-
-        # found device init
-        if device_path != None:
-            self.bulk_device.handle_file = self.bulk_device.api.exec_function_kernel32(
-                CreateFile,
-                device_path,
-                GENERIC_WRITE | GENERIC_READ,
-                FILE_SHARE_WRITE | FILE_SHARE_READ,
-                None,
-                OPEN_EXISTING,
-                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
-                None,
-            )
-
-            if self.bulk_device.handle_file == INVALID_HANDLE_VALUE:
-                return False
-            result = self.bulk_device.api.exec_function_winusb(
-                WinUsb_Initialize,
-                self.bulk_device.handle_file,
-                byref(self.bulk_device.handle_winusb[0]),
-            )
-            if result == 0:
-                err = self.bulk_device.get_last_error_code()
-                raise ctypes.WinError()
-                # return False
-            else:
-                self.bulk_device._index = 0
+        for device in winusb_devices:
+            if (
+                device.path.find(vid + "&" + pid) != -1
+                and device.parent
+                and device.parent.find(serial) != -1
+            ):
+                self.bulk_device.init_winusb_device_with_path(device.path)
                 return True
-
         return False
 
     def initialize(self, direct_access=False, **kwargs):
