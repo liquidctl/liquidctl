@@ -373,7 +373,12 @@ class KrakenX3(UsbHidDriver):
             pwm_duty = duty * 255 // 100
             self._hwmon.write_int(f"temp{hwmon_ctrl_channel}_auto_point{idx + 1}_pwm", pwm_duty)
 
-        # Wait just for a bit so the last report goes through (if it was in curve mode already)
+        # The device can get confused when hammered with HID reports, which can happen when
+        # we set all curve points (done above) through the kernel driver, when the device
+        # is in curve mode. In that case, the driver sends a report for each point value change
+        # to update it. We send the whole curve to the device again by setting pwmX_enable to 2,
+        # regardless of what it was, to ensure that the curve is properly applied. Wait just for
+        # a bit to ensure that goes through
         time.sleep(0.2)
 
         # Set channel to curve mode
