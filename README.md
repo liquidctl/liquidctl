@@ -131,6 +131,7 @@ subjective "from more to less liquid control-ly" order.
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | USB HID | <sup>_ehp_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | USB HID | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | 1.11.1 |
+| Fan/LED controller | [Corsair Commander ST](docs/corsair-commander-core-guide.md) | USB HID | <sup>_ep_</sup> | git |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | USB HID | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | USB HID | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> | 1.11.1 |

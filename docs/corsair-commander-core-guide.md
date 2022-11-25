@@ -1,7 +1,8 @@
-# Corsair Commander Core and Core XT
+# Corsair Commander Core, Core XT and ST
 _Driver API and source code available in [`liquidctl.driver.commander_core`](../liquidctl/driver/commander_core.py)._
 
 _Changed in 1.11.0: the Corsair Commander Core XT is now supported._<br>
+_Changed in git: the Corsair Commander ST is now supported._<br>
 
 Currently, functionality implemented is listed here. More is planned to be added.
 
@@ -33,7 +34,7 @@ Corsair Commander Core (experimental)
 
 ## Retrieving the pump speed, fan speeds, and temperatures
 
-The Commander Core currently can retrieve the pump speed, fan speeds, temperature of the water, and
+The Commander Core and ST currently can retrieve the pump speed, fan speeds, temperature of the water, and
 the temperature measured by the probe.
 
 ```
@@ -75,7 +76,7 @@ Currently, the pump and each fan can be set to a fixed duty cycle.
                channel    duty
 ```
 
-Valid channel values on the Core (non-XT) are `pump`, `fanN`, where 1 <= N <= 6 is the fan number.
+Valid channel values on the Core (non-XT) and ST are `pump`, `fanN`, where 1 <= N <= 6 is the fan number.
 On the Core XT, the `pump` channel is not present. The `fans` channel can be used to simultaneously
 configure all fans.
 

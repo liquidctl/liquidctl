@@ -6,10 +6,12 @@
 |:-----------:|:------:|:------------:|:------------:|:--------------------:|:---:|
 | Commander Core | `1b1c:0c1c` | 7 | 6 | 2 | Yes |
 | Commander Core XT | `1b1c:0c2a` | 7 | 6 | 2 | No |
+| Commander ST | `1b1c:0c32` | 7 | 6 | 2 | No |
 
 The Commander Core is typically shipped with the Corsair iCUE Elite Capellix
 AIOs.  The first two LED and temperature channels go to the EXT port, typically
-in use by the AIO.
+in use by the AIO. Newer releases of these AIOs may instead come with the
+Commander ST.
 
 The Commander Core XT is a standalone product that shares the same protocol, but
 does not include support for an AIO, and as a result channel numbers are offset down by 1.
