@@ -50,16 +50,19 @@ def test_kraken3_backwards_modes_are_deprecated(caplog):
     from liquidctl.driver.kraken3 import KrakenX3
     from liquidctl.driver.kraken3 import _COLOR_CHANNELS_KRAKENX
     from liquidctl.driver.kraken3 import _SPEED_CHANNELS_KRAKENX
+    from liquidctl.driver.kraken3 import _HWMON_CTRL_MAPPING_KRAKENX
 
     for mode in modes:
         base_mode = mode.replace('backwards-', '')
 
         old = KrakenX3(MockHidapiDevice(), 'Mock X63',
                        speed_channels=_SPEED_CHANNELS_KRAKENX,
-                       color_channels=_COLOR_CHANNELS_KRAKENX)
+                       color_channels=_COLOR_CHANNELS_KRAKENX,
+                       hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENX)
         new = KrakenX3(MockHidapiDevice(), 'Mock X63',
                        speed_channels=_SPEED_CHANNELS_KRAKENX,
-                       color_channels=_COLOR_CHANNELS_KRAKENX)
+                       color_channels=_COLOR_CHANNELS_KRAKENX,
+                       hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENX)
 
         colors = [RADICAL_RED, MOUNTAIN_MEADOW]
 

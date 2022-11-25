@@ -15,6 +15,7 @@ import io
 import math
 import logging
 import sys
+import time
 
 from PIL import Image, ImageSequence
 
@@ -72,6 +73,10 @@ _COLOR_CHANNELS_KRAKENX = {"external": 0b001, "ring": 0b010, "logo": 0b100, "syn
 _COLOR_CHANNELS_KRAKENZ = {
     "external": 0b001,
 }
+
+_HWMON_CTRL_MAPPING_KRAKENX = {"pump": 1}
+
+_HWMON_CTRL_MAPPING_KRAKENZ = {"pump": 1, "fan": 2}
 
 # Available LED channel modes/animations
 # name -> (mode, size/variant, speed scale, min colors, max colors)
@@ -176,6 +181,7 @@ class KrakenX3(UsbHidDriver):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENX,
             },
         ),
         (
@@ -185,14 +191,18 @@ class KrakenX3(UsbHidDriver):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENX,
                 "color_channels": _COLOR_CHANNELS_KRAKENX,
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENX,
             },
         ),
     ]
 
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+    def __init__(
+        self, device, description, speed_channels, color_channels, hwmon_ctrl_mapping, **kwargs
+    ):
         super().__init__(device, description)
         self._speed_channels = speed_channels
         self._color_channels = color_channels
+        self._hwmon_ctrl_mapping = hwmon_ctrl_mapping
 
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
@@ -272,11 +282,20 @@ class KrakenX3(UsbHidDriver):
         ]
 
     def _get_status_from_hwmon(self):
-        return [
+        status_readings = [
             (_STATUS_TEMPERATURE, self._hwmon.read_int("temp1_input") * 1e-3, "°C"),
             (_STATUS_PUMP_SPEED, self._hwmon.read_int("fan1_input"), "rpm"),
-            (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%"),
         ]
+
+        if self._hwmon.has_attribute("pwm1"):
+            status_readings.append(
+                (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%")
+            )
+        else:
+            # An older version of the kernel driver only exposed coolant temp and pump speed
+            _LOGGER.warning("pump duty cannot be read from %s kernel driver", self._hwmon.driver)
+
+        return status_readings
 
     def get_status(self, direct_access=False, **kwargs):
         """Get a status report.
@@ -284,18 +303,13 @@ class KrakenX3(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
 
-        # no driver currently supports pwm1, so silently fallback to
-        # direct mode if it isn't available; for the same reason, also don't
-        # yet issue a warning when directly accessing the device
-
-        if self._hwmon and not direct_access and self._hwmon.has_attribute("pwm1"):
+        if self._hwmon and not direct_access:
             _LOGGER.info("bound to %s kernel driver, reading status from hwmon", self._hwmon.driver)
             return self._get_status_from_hwmon()
 
         if self._hwmon:
-            level = logging.WARNING if direct_access else logging.INFO
-            _LOGGER.log(
-                level, "directly reading the status despite %s kernel driver", self._hwmon.driver
+            _LOGGER.warning(
+                "directly reading the status despite %s kernel driver", self._hwmon.driver
             )
 
         return self._get_status_directly()
@@ -324,7 +338,26 @@ class KrakenX3(UsbHidDriver):
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval, direction)
 
-    def set_speed_profile(self, channel, profile, **kwargs):
+    def _set_speed_profile_hwmon(self, channel, interp):
+        hwmon_ctrl_channel = self._hwmon_ctrl_mapping[channel]
+
+        # Write duty curve for channel
+        for idx, duty in enumerate(interp):
+            pwm_duty = duty * 255 // 100
+            self._hwmon.write_int(f"temp{hwmon_ctrl_channel}_auto_point{idx + 1}_pwm", pwm_duty)
+
+        # The device can get confused when hammered with HID reports, which can happen when
+        # we set all curve points (done above) through the kernel driver, when the device
+        # is in curve mode. In that case, the driver sends a report for each point value change
+        # to update it. We send the whole curve to the device again by setting pwmX_enable to 2,
+        # regardless of what it was, to ensure that the curve is properly applied. Wait just for
+        # a bit to ensure that goes through
+        time.sleep(0.2)
+
+        # Set channel to curve mode
+        self._hwmon.write_int(f"pwm{hwmon_ctrl_channel}_enable", 2)
+
+    def set_speed_profile(self, channel, profile, direct_access=False, **kwargs):
         """Set channel to use a speed duty profile."""
 
         cid, dmin, dmax = self._speed_channels[channel]
@@ -336,12 +369,78 @@ class KrakenX3(UsbHidDriver):
             _LOGGER.info(
                 "setting %s PWM duty to %d%% for liquid temperature >= %d°C", channel, duty, temp
             )
-        self._write(header + interp)
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+        if self._hwmon:
+            hwmon_pwm_enable_name = f"pwm{self._hwmon_ctrl_mapping[channel]}_enable"
+
+            # Check if the required attribute is present
+            if self._hwmon.has_attribute(hwmon_pwm_enable_name):
+                # It is, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing duty curve despite %s kernel driver having support",
+                        self._hwmon.driver,
+                    )
+                    return self._write(header + interp)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing duty curve to hwmon", self._hwmon.driver
+                )
+                return self._set_speed_profile_hwmon(channel, interp)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required duty curve functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
+
+        return self._write(header + interp)
+
+    def _set_fixed_speed_directly(self, channel, duty):
+        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
+
+    def _set_fixed_speed_hwmon(self, channel, duty):
+        hwmon_pwm_name = f"pwm{self._hwmon_ctrl_mapping[channel]}"
+        hwmon_pwm_enable_name = f"{hwmon_pwm_name}_enable"
+
+        # Convert duty from percent to PWM range (0-255)
+        pwm_duty = duty * 255 // 100
+
+        # Write duty to hwmon
+        self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
+
+        # Set channel to direct percent mode
+        self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+
+    def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         """Set channel to a fixed speed duty."""
 
-        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)])
+        if self._hwmon:
+            _, dmin, dmax = self._speed_channels[channel]
+            duty = clamp(duty, dmin, dmax)
+
+            hwmon_pwm_name = f"pwm{self._hwmon_ctrl_mapping[channel]}"
+
+            # Check if the required attribute is present
+            if self._hwmon.has_attribute(hwmon_pwm_name):
+                # It is, and if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        "directly writing fixed speed despite %s kernel driver having support",
+                        self._hwmon.driver,
+                    )
+                    return self._set_fixed_speed_directly(channel, duty)
+
+                _LOGGER.info(
+                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
+                )
+                return self._set_fixed_speed_hwmon(channel, duty)
+            elif not direct_access:
+                _LOGGER.warning(
+                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
+                    self._hwmon.driver,
+                )
+
+        return self._set_fixed_speed_directly(channel, duty)
 
     def _read(self):
         data = self.device.read(_READ_LENGTH)
@@ -450,6 +549,7 @@ class KrakenZ3(KrakenX3):
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
             },
         )
     ]
@@ -543,21 +643,28 @@ class KrakenZ3(KrakenX3):
         self._status.append(("LCD Brightness", self.brightness, "%"))
         self._status.append(("LCD Orientation", self.orientation * 90, "°"))
 
-    def get_status(self, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-
+    def _get_status_directly(self):
         self.device.clear_enqueued_reports()
         self._write([0x74, 0x01])
         msg = self._read()
+        if msg[15:17] == [0xFF, 0xFF]:
+            _LOGGER.warning("unexpected temperature reading, possible firmware fault;")
+            _LOGGER.warning("try resetting the device or updating the firmware")
         return [
             (_STATUS_TEMPERATURE, msg[15] + msg[16] / 10, "°C"),
             (_STATUS_PUMP_SPEED, msg[18] << 8 | msg[17], "rpm"),
             (_STATUS_PUMP_DUTY, msg[19], "%"),
             (_STATUS_FAN_SPEED, msg[24] << 8 | msg[23], "rpm"),
             (_STATUS_FAN_DUTY, msg[25], "%"),
+        ]
+
+    def _get_status_from_hwmon(self):
+        return [
+            (_STATUS_TEMPERATURE, self._hwmon.read_int("temp1_input") * 1e-3, "°C"),
+            (_STATUS_PUMP_SPEED, self._hwmon.read_int("fan1_input"), "rpm"),
+            (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1") * 100.0 / 255, "%"),
+            (_STATUS_FAN_SPEED, self._hwmon.read_int("fan2_input"), "rpm"),
+            (_STATUS_FAN_DUTY, self._hwmon.read_int("pwm2") * 100.0 / 255, "%"),
         ]
 
     def _read_until_first_match(self, parsers):
