@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Discord
-    url: https://discord.gg/GyCBjQhqCd
-    about: "Ask for support in our Discord Server!."
+  - name: Start a Discussion
+    url: https://github.com/liquidctl/liquidctl/discussions
+    about: "Ask the community and contibuters questions by posting in the repository discussions."
