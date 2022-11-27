@@ -13,7 +13,7 @@ body:
   - type: input
     id: info-product-page
     attributes:
-      label: Product Page
+      label: Product page
       description: Please provide a link to the manufacture's product page for your exact device. 
       placeholder:  e.g. https://www.corsair.com/[...]
     validations:
@@ -21,7 +21,7 @@ body:
   - type: input
     id: software
     attributes:
-      label: First-party Software
+      label: First-party software
       description: What software is provided by the manufacture to control the device?
       placeholder: e.g. Corsair iCue  
     validations:
@@ -62,7 +62,7 @@ body:
   - type: input
     id: control-method
     attributes:
-      label: System Protocol
+      label: System protocol
       description: The device uses which protocols to communicate with the host system?
       placeholder: e.g. HID, USB, I²C, SMBus 
     validations:
