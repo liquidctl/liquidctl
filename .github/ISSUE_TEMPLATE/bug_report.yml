@@ -1,9 +1,9 @@
-name: Bug Report
-description: Report an issue with existing supported devices.
+name: Bug report
+description: Report a possible bug in liquidctl.
 labels: ["bug"]
 body:
   - type: textarea
-    id: observed-behavior
+    id: description
     attributes:
       label: Describe the bug
       description: Please start by describing the bug in as much detail as possible.
@@ -11,41 +11,33 @@ body:
     validations:
       required: true
   - type: textarea
-    id: user-attempted-commands
+    id: commands-executed
     attributes:
-      label: Output of commands you ran
+      label: Commands executed
       description: Now list which commands were executed, what was the expected behavior, and what was observed instead.
       placeholder: |
-        <!-- An example code block:
+        <!-- An example code block: -->
         ```
-        $ liquidctl list
-        Device #0: Corsair Vengeance RGB DIMM2
-        Device #1: Corsair Vengeance RGB DIMM4
-        Device #2: NZXT Smart Device (V1)
-        Device #3: NZXT Kraken X (X42, X52, X62 or X72)
+        $ liquidctl status
+        [ ... ]
         ```
-        -->
     validations:
       required: true
   - type: textarea
-    id: user-attempted-commands-with-debug
+    id: commands-executed-with-debug
     attributes:
-      label: Output of all relevant commands (with `--debug` flag)
-      description: Re-run all commands attempted with the `--debug` flag, and include the complete output.
+      label: Output of all relevant commands with `--debug` flag
+      description: Re-run all liquidctl commands with the `--debug` flag, and include the complete output.
       placeholder: |
-        <!-- An example code block:
+        <!-- An example code block: -->
         ```
-        $ liquidctl list
-        Device #0: Corsair Vengeance RGB DIMM2
-        Device #1: Corsair Vengeance RGB DIMM4
-        Device #2: NZXT Smart Device (V1)
-        Device #3: NZXT Kraken X (X42, X52, X62 or X72)
+        $ liquidctl status --debug
+        [ ... ]
         ```
-        -->
     validations:
       required: true
   - type: input
-    id: info-device
+    id: affected-device
     attributes:
       label: Affected device
       description: Which device isn't functioning as expected?
@@ -53,27 +45,27 @@ body:
     validations:
       required: false
   - type: input
-    id: info-os
+    id: operating-system
     attributes:
-      label: Operating system
-      description: Which OS are you using?
-      placeholder: e.g. Arch, macOS, Windows 10
+      label: Operating system and version
+      description: Which operating system are you using?
+      placeholder: e.g. Arch Linux, mac OS, Windows 10
     validations:
       required: true
   - type: input
-    id: install-method
+    id: installation-method
     attributes:
       label: Installation method
-      description: How did you install liquidctl? If the install failed please indicate what methods you tried.
-      placeholder: e.g. Official Arch Linux repository 
+      description: How did you install liquidctl? If the installation failed, please indicate what methods you tried.
+      placeholder: e.g. Official Arch Linux repository
     validations:
       required: true
   - type: input
-    id: info-version
+    id: liquidctl-version
     attributes:
       label: Version of liquidctl
-      description: Output of `liquidctl --version` If the install failed, indicate the version you tried to install.
-      placeholder: e.g. liquidctl v1.9.0 (Linux-5.16.16-arch1-1-x86_64-with-glibc2.35) 
+      description: Output of `liquidctl --version`. If the installation failed, indicate the version you tried to install.
+      placeholder: e.g. liquidctl v1.12.0.dev44+g12c1469909fd (Linux-6.0.10-arch2-1-x86_64-with-glibc2.36)
     validations:
       required: true
 

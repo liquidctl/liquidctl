@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Start a Discussion
+  - name: Ask a question or start a discussion
     url: https://github.com/liquidctl/liquidctl/discussions
-    about: "Ask the community and contibuters questions by posting in the repository discussions."
+    about: "Ask the maintainers and the community questions or start a discussion."
