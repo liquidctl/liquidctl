@@ -432,9 +432,9 @@ class SmartDevice2(_BaseSmartDevice):
             'speed_channel_count': 3,
             'color_channel_count': 6
         }),
-        (0x1e71, 0x2019, 'NZXT RGB & Fan Controller', {
+        (0x1e71, 0x2019, 'NZXT RGB & Fan Controller (3+6 channels)', {
             'speed_channel_count': 3,
-            'color_channel_count': 2
+            'color_channel_count': 6
         }),
     ]
 
