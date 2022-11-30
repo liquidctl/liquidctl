@@ -137,6 +137,7 @@ subjective "from more to less liquid control-ly" order.
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | USB HID | | 1.7.2 |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> | 1.11.1 |
+| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> | git |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | USB HID | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | USB HID | <sup>_e_</sup> | 1.10.0 |
