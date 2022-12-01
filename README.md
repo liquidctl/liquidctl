@@ -275,8 +275,14 @@ brew install python libusb
 
 On Windows, Python (3.7 or later) must be installed beforehand, which can be
 done from the [official website][python.org].  It is recommended to select the
-option to add `python` and other tools to the `PATH`.  A LibUSB 1.0 DLL is
-technically also necessary, but one will already be provided by liquidctl.
+option to add `python` and other tools to the `PATH`.
+
+A LibUSB 1.0 DLL is also necessary, but it will generally be provided
+automatically by liquidctl. In case that's not possible, and a USB "No backend
+available" error is shown, the suitable DLL from an official [LibUSB release]
+should be copied into `C:\Windows\System32\`. The DLL must match your Python
+installation: in most cases it will be latest VS build for x64 in the archive
+from LibUSB (e.g. `VS2015-x64/dll/libusb-1.0.dll`).
 
 Additionally, products that are not Human Interface Devices (HIDs), or that do
 not use the Microsoft HID Driver, require a libusb-compatible driver; these are
@@ -288,9 +294,8 @@ and, finally, click "Replace Driver".
 _Warning: replacing the driver for a device where that is not necessary will
 likely cause it to become inaccessible from liquidctl._<br>
 
-_Changed in 1.9.0: the LibUSB 1.0 DLL is now provided by liquidctl or one of
-its dependencies; on versions before 1.9.0, it is necessary to manually copy
-the DLL from an official [LibUSB release] into `C:\Windows\System32\`._<br>
+_Changed in 1.9.0: a LibUSB 1.0 DLL is now provided by libusb-package, provided
+there are suitable wheels available at the time of installation._<br>
 
 [python.org]: https://www.python.org/
 [LibUSB release]: https://github.com/libusb/libusb/releases
