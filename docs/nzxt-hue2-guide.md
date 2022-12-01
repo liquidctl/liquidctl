@@ -45,6 +45,8 @@ _New in git._<br>
 
 In 2022 NZXT released a new version of the RGB & Fan Controller with 3 fan speed channels and 6 lighting channels.
 
+For now, this new version is only partially (and experimentally) supported by liquidctl: only monitoring and fan control are available.
+
 
 ## Initialization
 
@@ -104,7 +106,7 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
-LED channels are numbered sequentially: `led1`, `led2`, etc., up to `led6` in the 2022 3+6-channel RGB & Fan Controller.  Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.  There is also a `sync` channel.
+LED channels are numbered sequentially: `led1`, `led2`, etc., up to the number of channels supported by the device.  Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.  There is also a `sync` channel.
 
 ```
 # liquidctl set led1 color fixed af5a2f
