@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.12.0] – 2023-01-08
+
+### Changes since 1.11.1
+
+Added:
+
+- Aquacomputer D5 Next: add support for reading virtual temp sensors (PR liquidctl#510)
+- Aquacomputer Octo: add support for reading virtual temp sensors (PR liquidctl#525)
+- Aquacomputer Farbwerk 360: add support for reading virtual temp sensors (PR liquidctl#527)
+- Aquacomputer Quadro: add support for reading virtual temp sensors (PR liquidctl#528)
+- Commander Pro: add support for changing fan modes during initialization (liquidctl#472, PR liquidctl#474)
+- Corsair HXi and RMi: add support for HX1500i and 2022's re-issue HX1000i PSUs
+- Corsair Commander ST: extend experimental Commander Core monitoring and fan control support to the Commander ST (liquidctl#511)
+- NZXT Kraken X3/Z3: add support for expanded HWMON driver capabilities (PR liquidctl#529)
+- NZXT RGB & Fan Controller: add experimental support for 2022's 3+6-channel `1e71:2011` variant (liquidctl#541)
+- NZXT HUE2: add accessory IDs for F120/F140 RGB fans
+
+Changed:
+
+- Corsair Hydro Pro: move firmware version to initialize output
+- NZXT Kraken Z3: use updated winusbcdc (PR liquidctl#535)
+- NZXT RGB & Fan Controller: downgrade 3+6-channel `1e71:2019` variant to experimental (liquidctl#541)
+- NZXT RGB & Fan Controller: disable broken lighting support on 3+6-channel controllers (liquidctl#541)
+
+Fixed:
+
+- CLI: remove occasional newline when logging `sys.version`
+- Corsair Hydro Pro: reduce expectations on `_CMD_READ_FAN_SPEED` responses (liquidctl#536)
+
+Removed:
+
+- CLI: remove long deprecated --hid option
+
+
 ## [1.11.1] – 2022-10-19
 
 ### Changes since 1.11.0
@@ -11,10 +45,6 @@ Fixed:
 ### Notes for downstream packagers
 
 See notes for 1.11.0 release.
-
-### Known issues
-
-Please check the [issue tracker](https://github.com/liquidctl/liquidctl/issues).
 
 ### Checksums
 
@@ -74,10 +104,6 @@ New Python dependencies: [crcmod], [pillow] and (Windows-only:) [winusbcdc].
 [pillow]: https://pypi.org/project/Pillow/
 [winusbcdc]: https://pypi.org/project/WinUsbCDC/
 
-### Known issues
-
-Please check the [issue tracker](https://github.com/liquidctl/liquidctl/issues).
-
 ### Checksums
 
 ```
@@ -116,11 +142,6 @@ Removed:
 - API: remove deprecated firmware version from the output of
   `KrakenX2.get_status()`
 
-### Know issues
-
-- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (liquidctl#274)
-
 ### Checksums
 
 ```
@@ -141,11 +162,6 @@ Fixed:
 
 Starting with 1.9.0, liquidctl now uses a PEP 517 build.  See the notes for the
 1.9.0 release for more information.
-
-### Know issues
-
-- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -263,11 +279,6 @@ python -m installer [args]
 [PyPA/installer]: https://github.com/pypa/installer
 [setuptools_scm]: https://github.com/pypa/setuptools_scm
 
-### Know issues
-
-- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (liquidctl#274)
-
 ### Checksums
 
 ```
@@ -282,11 +293,6 @@ python -m installer [args]
 
 Fixed:
 - Strip non-determinism from sdist/egg SOURCES.txt metadata
-
-### Know issues
-
-- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 
@@ -318,11 +324,6 @@ Fixed:
 - Read DDR4 temperature sensor by word instead of with SMBus Block Read
   (liquidctl#400)
 - Fix tolerant handling of single channel name in Corsair Lighting Node Core
-
-### Know issues
-
-- Corsair Hydro Platinum and Pro XT coolers lock up if simultaneously accessed
-  from more than one program and driver instance (liquidctl#274)
 
 ### Checksums
 

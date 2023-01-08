@@ -1,7 +1,7 @@
 # Corsair HXi and RMi series PSUs
 _Driver API and source code available in [`liquidctl.driver.corsair_hid_psu`](../liquidctl/driver/corsair_hid_psu.py)._
 
-_Changed in git: HX1500i and HX1000i 2022 re-issue are now also supported._<br>
+_Changed in 1.12.0: HX1500i and HX1000i 2022 re-issue are now also supported._<br>
 
 ## Initialization
 

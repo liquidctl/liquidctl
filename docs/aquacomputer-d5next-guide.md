@@ -40,7 +40,7 @@ Aquacomputer D5 Next (experimental)
 └── +12V voltage          12.06  V
 ```
 
-_Changed in git: read virtual temperature sensors as well._<br>
+_Changed in 1.12.0: read virtual temperature sensors as well._<br>
 
 ## Programming the fan speeds
 

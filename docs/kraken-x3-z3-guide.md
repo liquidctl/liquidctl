@@ -174,7 +174,7 @@ Images and GiFs are automatically resized and rotated to match the device orient
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
 
 _New in 1.9.0._<br>
-_Changed in git: expanded support for reading and writing through hwmon._<br>
+_Changed in 1.12.0: expanded support for reading and writing through hwmon._<br>
 
 Kraken X3 and Z3 devices feature support by the [liquidtux] `nzxt-kraken3` driver,
 and status data is provided through a standard hwmon sysfs interface.

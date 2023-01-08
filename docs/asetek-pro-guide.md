@@ -14,7 +14,7 @@ Windows](../README.md#windows-system-level-dependencies)).**
 ## Initialization
 [Initialization]: #initialization
 
-_Changed in git: the firmware version is now reported after
+_Changed in 1.12.0: the firmware version is now reported after
 initialization._<br>
 
 The coolers must be initialized sometime after the system boots.  Only then it
@@ -38,7 +38,7 @@ Allowed pump modes are: `quiet`, `balanced` and `performance`.
 
 ## Device monitoring
 
-_Changed in git: the firmware version is no longer reported (see
+_Changed in 1.12.0: the firmware version is no longer reported (see
 [Initialization])._<br>
 
 Similarly to other AIOs, the cooler can report fan and pump speeds as well as

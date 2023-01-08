@@ -46,7 +46,7 @@ Aquacomputer Quadro (experimental)
 └── Flow sensor          0  dL/h
 ```
 
-_Changed in git: read virtual temperature sensors as well._<br>
+_Changed in 1.12.0: read virtual temperature sensors as well._<br>
 
 ## Programming the fan speeds
 

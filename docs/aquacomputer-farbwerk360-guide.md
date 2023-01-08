@@ -30,7 +30,7 @@ Aquacomputer Farbwerk 360 (experimental)
 └── Soft. Sensor 1    52.0  °C
 ```
 
-_Changed in git: read virtual temperature sensors as well._<br>
+_Changed in 1.12.0: read virtual temperature sensors as well._<br>
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
