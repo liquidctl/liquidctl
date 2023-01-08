@@ -1,4 +1,4 @@
-"""Drivers and buses package for liquidctl.
+"""liquidctl buses and drivers.
 
 The typical use case of generic scripts and interfaces – including the
 liquidctl CLI – is to instantiate drivers for all known devices found on the
