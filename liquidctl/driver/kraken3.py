@@ -537,6 +537,10 @@ class KrakenX3(UsbHidDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class KrakenZ3(KrakenX3):
     """Fourth-generation Kraken Z liquid cooler."""

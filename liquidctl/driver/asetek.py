@@ -188,6 +188,10 @@ class _Base690Lc(UsbDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class _ModernBase690Lc(_Base690Lc):
 

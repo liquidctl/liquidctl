@@ -202,6 +202,10 @@ class _BaseSmartDevice(UsbHidDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class SmartDevice(_BaseSmartDevice):
     """NZXT Smart Device (V1) or Grid+ V3."""

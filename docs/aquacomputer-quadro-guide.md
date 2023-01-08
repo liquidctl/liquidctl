@@ -18,35 +18,41 @@ The Quadro automatically sends a status HID report every second as soon as it's 
 
 ## Monitoring
 
-The Quadro exposes four temperature sensors and four groups of fan sensors for optionally connected fans. These groups provide RPM speed, voltage, current and power readings:
+The Quadro exposes four temperature sensors (with support for temp offsets) and four groups of fan sensors for
+optionally connected fans. These groups provide RPM speed, voltage, current and power readings:
 
 ```
 # liquidctl status
 Aquacomputer Quadro (experimental)
-├── Sensor 3          15.9  °C
-├── Soft. Sensor 2      40.3  °C 
-├── Soft. Sensor 3      50.0  °C 
-├── Soft. Sensor 13     50.0  °C 
-├── Fan 1 speed          0  rpm
-├── Fan 1 power       0.00  W
-├── Fan 1 voltage     0.00  V
-├── Fan 1 current     0.00  A
-├── Fan 2 speed          0  rpm
-├── Fan 2 power       0.00  W
-├── Fan 2 voltage    12.07  V
-├── Fan 2 current     0.00  A
-├── Fan 3 speed        360  rpm
-├── Fan 3 power       0.00  W
-├── Fan 3 voltage    12.07  V
-├── Fan 3 current     0.00  A
-├── Fan 4 speed          0  rpm
-├── Fan 4 power       0.00  W
-├── Fan 4 voltage    12.07  V
-├── Fan 4 current     0.00  A
-└── Flow sensor          0  dL/h
+├── Sensor 3            24.5  °C
+├── Soft. Sensor 2      41.2  °C
+├── Soft. Sensor 3      50.0  °C
+├── Soft. Sensor 13     50.0  °C
+├── Sensor 1 offset      7.0  °C
+├── Sensor 2 offset    -13.0  °C
+├── Sensor 3 offset      0.0  °C
+├── Sensor 4 offset     12.0  °C
+├── Fan 1 speed            0  rpm
+├── Fan 1 power         0.00  W
+├── Fan 1 voltage      12.06  V
+├── Fan 1 current       0.00  A
+├── Fan 2 speed            0  rpm
+├── Fan 2 power         0.00  W
+├── Fan 2 voltage      12.06  V
+├── Fan 2 current       0.00  A
+├── Fan 3 speed          249  rpm
+├── Fan 3 power         0.00  W
+├── Fan 3 voltage      12.06  V
+├── Fan 3 current       0.00  A
+├── Fan 4 speed            0  rpm
+├── Fan 4 power         0.00  W
+├── Fan 4 voltage      12.06  V
+├── Fan 4 current       0.00  A
+└── Flow sensor            0  dL/h
 ```
 
 _Changed in git: read virtual temperature sensors as well._<br>
+_Changed in git: read temperature sensor offsets as well._<br>
 
 ## Programming the fan speeds
 
@@ -59,6 +65,18 @@ Currently, four optionally connected fans can be set to a fixed duty cycle, rang
 ```
 
 Valid channel values on the Quadro are `fan1` through `fan4`.
+
+## Setting offsets for temperature sensors
+
+Temp sensor offsets can be set to a value from 0 to 15C.
+
+```
+# liquidctl set sensor1 tempoffset 7.7
+                ^^^^^^^            ^^^
+                channel           offset
+```
+
+_Changed in git: write temperature sensor offsets._<br>
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers

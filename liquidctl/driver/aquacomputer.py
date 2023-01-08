@@ -100,6 +100,7 @@ class Aquacomputer(UsbHidDriver):
             "plus_12v_voltage": 0x37,
             "temp_sensors_label": ["Liquid temperature"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 8 + 1)],
+            "temp_offsets_label": ["Sensor 1 offset"],
             "fan_speed_label": ["Pump speed", "Fan speed"],
             "fan_power_label": ["Pump power", "Fan power"],
             "fan_voltage_label": ["Pump voltage", "Fan voltage"],
@@ -107,6 +108,7 @@ class Aquacomputer(UsbHidDriver):
             "status_report_length": 0x9E,
             "ctrl_report_length": 0x329,
             "fan_ctrl": {"pump": 0x96, "fan": 0x41},
+            "temp_offset_ctrl": [0x2D],
             "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
         },
         _DEVICE_FARBWERK360: {
@@ -115,7 +117,10 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors": [0x3A + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
+            "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "status_report_length": 0xB6,
+            "ctrl_report_length": 0x682,
+            "temp_offset_ctrl": [0x8 + i * 2 for i in range(0, 4)],
         },
         _DEVICE_OCTO: {
             "type": _DEVICE_OCTO,
@@ -124,6 +129,7 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors": [0x45 + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
+            "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "fan_speed_label": [f"Fan {num} speed" for num in range(1, 8 + 1)],
             "fan_power_label": [f"Fan {num} power" for num in range(1, 8 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 8 + 1)],
@@ -137,6 +143,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x5A, 0xAF, 0x104, 0x159, 0x1AE, 0x203, 0x258, 0x2AD],
                 )
             },
+            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)],
         },
         _DEVICE_QUADRO: {
             "type": _DEVICE_QUADRO,
@@ -145,6 +152,7 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors": [0x3C + offset * 2 for offset in range(0, 16)],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 16 + 1)],
+            "temp_offsets_label": [f"Sensor {num} offset" for num in range(1, 4 + 1)],
             "fan_speed_label": [f"Fan {num} speed" for num in range(1, 4 + 1)],
             "fan_power_label": [f"Fan {num} power" for num in range(1, 4 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
@@ -159,6 +167,7 @@ class Aquacomputer(UsbHidDriver):
                     [0x36, 0x8B, 0xE0, 0x135],
                 )
             },
+            "temp_offset_ctrl": [0xA + i * 2 for i in range(0, 4)],
         },
     }
 
@@ -216,9 +225,9 @@ class Aquacomputer(UsbHidDriver):
         return [("Firmware version", fw, ""), ("Serial number", serial_number, "")]
 
     def _get_status_directly(self):
-        def _read_temp_sensors(offsets_key, labels_key):
+        def _read_temp_sensors(offsets_key, labels_key, report, read_signed=False):
             for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
-                temp_sensor_value = u16be_from(msg, temp_sensor_offset)
+                temp_sensor_value = u16be_from(report, temp_sensor_offset, read_signed)
 
                 if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
                     temp_sensor_reading = (
@@ -233,10 +242,14 @@ class Aquacomputer(UsbHidDriver):
         sensor_readings = []
 
         # Read temp sensor values
-        _read_temp_sensors("temp_sensors", "temp_sensors_label")
+        _read_temp_sensors("temp_sensors", "temp_sensors_label", msg)
 
         # Read virtual temp sensor values
-        _read_temp_sensors("virt_temp_sensors", "virt_temp_sensors_label")
+        _read_temp_sensors("virt_temp_sensors", "virt_temp_sensors_label", msg)
+
+        # Read temp sensor offets
+        _, ctrl_report = self._request_ctrl_report()
+        _read_temp_sensors("temp_offset_ctrl", "temp_offsets_label", ctrl_report, True)
 
         # Read fan speed and related values
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
@@ -297,15 +310,17 @@ class Aquacomputer(UsbHidDriver):
         return sensor_readings
 
     def _get_status_from_hwmon(self):
-        def _read_temp_sensors(offsets_key, labels_key, idx_add=0):
+        def _read_temp_sensors(offsets_key, labels_key, idx_add=0, entry_suffix="input"):
             encountered_errors = False
 
-            for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
+            for idx, _ in enumerate(self._device_info.get(offsets_key, [])):
                 try:
-                    hwmon_val = self._hwmon.read_int(f"temp{idx + 1 + idx_add}_input") * 1e-3
+                    hwmon_val = (
+                        self._hwmon.read_int(f"temp{idx + 1 + idx_add}_{entry_suffix}") * 1e-3
+                    )
                 except OSError as os_error:
                     # For reference, the driver returns ENODATA when a sensor is unset/empty. ENOENT means that the
-                    # current driver version does not support virtual sensors, warn the user later
+                    # current driver version does not support the requested sensors, warn the user later
                     if os_error.errno == errno.ENOENT:
                         encountered_errors = True
                     continue
@@ -334,6 +349,9 @@ class Aquacomputer(UsbHidDriver):
             "virt_temp_sensors_label",
             len(self._device_info.get("temp_sensors", [])),
         )
+
+        # Read temp sensor offsets
+        _read_temp_sensors("temp_sensors", "temp_offsets_label", entry_suffix="offset")
 
         # Read fan speed and related values
         for idx, fan_sensor_offset in enumerate(self._device_info.get("fan_sensors", [])):
@@ -403,6 +421,26 @@ class Aquacomputer(UsbHidDriver):
 
         return self._get_status_directly()
 
+    def _request_ctrl_report(self):
+        """Request an up to date ctrl report."""
+        report_length = self._device_info["ctrl_report_length"]
+        return report_length, self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+    def _update_device_ctrl_report(self, processing_func):
+        report_length, ctrl_report = self._request_ctrl_report()
+
+        # Let the caller make changes to it
+        processing_func(ctrl_report)
+
+        # Update checksum value at the end of the report
+        crc16usb_func = mkCrcFun("crc-16-usb")
+
+        checksum_part = bytes(ctrl_report[0x01 : report_length - 3 + 1])
+        checksum_bytes = crc16usb_func(checksum_part)
+        put_unaligned_be16(checksum_bytes, ctrl_report, report_length - 2)
+
+        self.device.send_feature_report(ctrl_report)
+
     def set_speed_profile(self, channel, profile, **kwargs):
         if (
             self._device_info["type"] == self._DEVICE_D5NEXT
@@ -440,30 +478,45 @@ class Aquacomputer(UsbHidDriver):
         self._hwmon.write_int(hwmon_pwm_name, pwm_duty)
 
     def _set_fixed_speed_directly(self, channel, duty):
-        # Request an up to date ctrl report
-        report_length = self._device_info["ctrl_report_length"]
-        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+        def _set_fixed_speed_ctrl_report(ctrl_report):
+            fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
 
-        fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
+            # Set fan to direct percent-value mode
+            ctrl_report[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
 
-        # Set fan to direct percent-value mode
-        ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = 0
+            # Write down duty for channel
+            put_unaligned_be16(
+                duty * 100,  # Centi-percent
+                ctrl_report,
+                fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
+            )
 
-        # Write down duty for channel
-        put_unaligned_be16(
-            duty * 100,  # Centi-percent
-            ctrl_settings,
-            fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
-        )
+        self._update_device_ctrl_report(_set_fixed_speed_ctrl_report)
 
-        # Update checksum value at the end of the report
-        crc16usb_func = mkCrcFun("crc-16-usb")
+    def _perform_write(
+        self, direct_access, hwmon_check_func, hwmon_func, direct_access_func, explanation
+    ):
+        """Decides whether to route the write request through hwmon or directly to the device."""
+        if self._hwmon:
+            if hwmon_check_func():
+                # Check passed - if we have to use direct access, warn that we are sidestepping the kernel driver
+                if direct_access:
+                    _LOGGER.warning(
+                        f"directly writing {explanation} despite {self._hwmon.driver} kernel driver having support"
+                    )
+                    return direct_access_func()
 
-        checksum_part = bytes(ctrl_settings[0x01 : report_length - 3 + 1])
-        checksum_bytes = crc16usb_func(checksum_part)
-        put_unaligned_be16(checksum_bytes, ctrl_settings, report_length - 2)
+                _LOGGER.info(
+                    f"bound to {self._hwmon.driver} kernel driver, writing {explanation} to hwmon"
+                )
+                return hwmon_func()
+            elif not direct_access:
+                _LOGGER.warning(
+                    f"required {explanation} functionality is not available in {self._hwmon.driver} kernel driver, "
+                    f"falling back to direct access",
+                )
 
-        self.device.send_feature_report(ctrl_settings)
+        direct_access_func()
 
     def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         if self._device_info["type"] == self._DEVICE_FARBWERK360:
@@ -472,36 +525,54 @@ class Aquacomputer(UsbHidDriver):
         # Clamp duty between 0 and 100
         duty = clamp(duty, 0, 100)
 
-        if self._hwmon:
+        def _hwmon_check():
             hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
-
-            # Check if the required attributes are present
-            if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+            return self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
                 hwmon_pwm_enable_name
-            ):
-                # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
-                if direct_access:
-                    _LOGGER.warning(
-                        "directly writing fixed speed despite %s kernel driver having support",
-                        self._hwmon.driver,
-                    )
-                    return self._set_fixed_speed_directly(channel, duty)
+            )
 
-                _LOGGER.info(
-                    "bound to %s kernel driver, writing fixed speed to hwmon", self._hwmon.driver
-                )
-                return self._set_fixed_speed_hwmon(channel, duty)
-            elif not direct_access:
-                _LOGGER.warning(
-                    "required PWM functionality is not available in %s kernel driver, falling back to direct access",
-                    self._hwmon.driver,
-                )
-
-        self._set_fixed_speed_directly(channel, duty)
+        self._perform_write(
+            direct_access,
+            lambda: _hwmon_check(),
+            lambda: self._set_fixed_speed_hwmon(channel, duty),
+            lambda: self._set_fixed_speed_directly(channel, duty),
+            "fixed speed",
+        )
 
     def set_color(self, channel, mode, colors, **kwargs):
         # Not yet reverse engineered / implemented
         raise NotSupportedByDriver()
+
+    def _set_tempoffset_directly(self, channel, value):
+        def _set_tempoffset_ctrl_report(ctrl_report):
+            temp_offset_position = self._device_info["temp_offset_ctrl"][channel]
+
+            # Write down temp offset for channel
+            put_unaligned_be16(
+                value // 10,
+                ctrl_report,
+                temp_offset_position,
+            )
+
+        self._update_device_ctrl_report(_set_tempoffset_ctrl_report)
+
+    def _set_tempoffset_hwmon(self, channel, value):
+        self._hwmon.write_int(f"temp{channel+1}_offset", value)
+
+    def set_tempoffset(self, channel, value, direct_access=False, **kwargs):
+        channel_idx = int(channel[-1]) - 1
+        final_value = int(round(clamp(value, -15, 15), 2) * 1000)
+
+        def _hwmon_check():
+            return self._hwmon.has_attribute(f"temp{channel_idx+1}_offset")
+
+        self._perform_write(
+            direct_access,
+            lambda: _hwmon_check(),
+            lambda: self._set_tempoffset_hwmon(channel_idx, final_value),
+            lambda: self._set_tempoffset_directly(channel_idx, final_value),
+            "temp offset",
+        )
 
     def _read_device_statics(self):
         if self._firmware_version is None or self._serial is None:

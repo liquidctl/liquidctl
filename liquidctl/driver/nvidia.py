@@ -308,6 +308,10 @@ class EvgaPascal(SmbusDriver, _NvidiaI2CDriver):
         """Not supported by this device."""
         raise NotSupportedByDevice()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
 
 class RogTuring(SmbusDriver, _NvidiaI2CDriver):
     """NVIDIA series 10 (Pascal) or 20 (Turing) graphics card from ASUS."""
@@ -539,5 +543,9 @@ class RogTuring(SmbusDriver, _NvidiaI2CDriver):
         raise NotSupportedByDevice()
 
     def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
+
+    def set_tempoffset(self, channel, value, **kwargs):
         """Not supported by this device."""
         raise NotSupportedByDevice()

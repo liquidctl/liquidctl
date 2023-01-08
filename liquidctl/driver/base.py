@@ -100,6 +100,14 @@ class BaseDriver:
 
         raise NotImplementedError()
 
+    def set_tempoffset(self, channel, value, **kwargs):
+        """Set the offset of a temperature sensor.
+
+        Unstable.
+        """
+
+        raise NotImplementedError()
+
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set channel to follow a speed duty profile."""
 
