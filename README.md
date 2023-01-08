@@ -771,15 +771,12 @@ You are also encouraged to contribute to the documentation and to these examples
 [License]: #license
 
 liquidctl – monitor and control liquid coolers and other devices.<br>
-Copyright (C) 2018–2022  Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
+Copyright 2018–2023 Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
 
 liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
 Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
 Pircher.
-
-Depending on how it is packaged, it might also bundle copies of python, hidapi,
-libusb, cython-hidapi, pyusb, docopt, colorlog and colorama.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -797,7 +794,7 @@ This project uses [short SPDX License List identifiers][SPDX-Short-Identifiers]
 to concisely and unambiguously indicate the applicable license in each source
 file.
 
-[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/using-SPDX-short-identifiers-in-source-files/
+[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/v2.3/using-SPDX-short-identifiers-in-source-files/
 
 
 ## Related projects

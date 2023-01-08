@@ -1,7 +1,6 @@
 """liquidctl drivers for sixth generation Asetek liquid coolers.
 
-Copyright (C) 2020–2022  Andrew Robertson, Jonas Malaco and contributors
-
+Copyright Andrew Robertson, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

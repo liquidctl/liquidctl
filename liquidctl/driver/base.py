@@ -1,6 +1,6 @@
 """Base bus and driver API.
 
-Copyright (C) 2018–2022  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

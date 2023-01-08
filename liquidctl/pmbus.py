@@ -26,7 +26,7 @@ Additional references:
 - White, Robert V.  Using the PMBus Protocol.  2005.
   http://pmbus.org/Assets/Present/Using_The_PMBus_20051012.pdf
 
-Copyright (C) 2019–2022  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 
 Includes a CRC-8 implementation adapted from pycrc by Thomas Pircher.
 Copyright (c) 2006-2017  Thomas Pircher  <tehpeh-web@tty1.net>

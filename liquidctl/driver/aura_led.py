@@ -50,7 +50,7 @@ Aura LED control codes were independently obtained from USB traffic captured usi
 Wireshark on Windows. This Aura LED controller uses very different control codes
 from previous Aura LED controllers.
 
-Copyright (C) 2022  CaseySJ
+Copyright CaseySJ and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

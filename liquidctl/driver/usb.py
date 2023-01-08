@@ -51,7 +51,7 @@ The subclass constructor can generally be kept unaware of the implementation
 details of the device parameter, and find_supported_devices already accepts
 keyword arguments and forwards them to the driver constructor.
 
-Copyright (C) 2019–2022  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

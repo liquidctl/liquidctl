@@ -5,7 +5,7 @@ Supported devices:
 - NZXT Kraken X (X53, X63 and X73)
 - NZXT Kraken Z (Z53, Z63 and Z73)
 
-Copyright (C) 2020–2022  Tom Frey, Jonas Malaco, Shady Nawara and contributors
+Copyright Tom Frey, Jonas Malaco, Shady Nawara and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 # uses the psf/black style

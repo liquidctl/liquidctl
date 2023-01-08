@@ -2,7 +2,7 @@
 
 For now, these are unstable APIs, and only Linux is supported.
 
-Copyright (C) 2020–2022  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

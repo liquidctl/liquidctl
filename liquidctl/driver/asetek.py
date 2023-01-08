@@ -8,7 +8,7 @@ Supported devices:
 - Corsair Hydro H80i GT, H100i GTX or H110i GTX
 - Corsair Hydro H80i v2, H100i v2 or H115i
 
-Copyright (C) 2018–2022  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 
 Incorporates or uses as reference work by Kristóf Jakab, Sean Nelson
 and Chris Griffith.

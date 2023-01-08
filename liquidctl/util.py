@@ -1,6 +1,6 @@
 """Assorted utilities used by drivers and the CLI.
 
-Copyright (C) 2018–2022  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

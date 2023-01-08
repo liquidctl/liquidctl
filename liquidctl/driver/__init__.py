@@ -14,7 +14,7 @@ Is also possible to find devices compatible with a specific driver.
     for dev in KrakenTwoDriver.find_supported_devices():
         print(dev.description)
 
-Copyright (C) 2018–2021  Jonas Malaco and contributors
+Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

@@ -33,7 +33,7 @@ Changelog:
   0.0.2  Fix cleanup of registry keys when exiting.
   0.0.1  First proof-of-concept.
 
-Copyright (C) 2019–2022  Jonas Malaco
+Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

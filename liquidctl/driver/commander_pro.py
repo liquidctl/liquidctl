@@ -5,13 +5,12 @@ Supported devices:
 - Corsair Commander Pro
 - Corsair Lighting Node Pro
 
+Important notes:
+- This device currently only has hardware control implemented but it also
+  supports a software control mode.
+- Software control will be enabled at a future time.
 
-NOTE:
-    This device currently only has hardware control implemented but it also supports a software control mode.
-    Software control will be enabled at a future time.
-
-
-Copyright (C) 2020–2022  Marshall Asch and contributors
+Copyright Marshall Asch and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 

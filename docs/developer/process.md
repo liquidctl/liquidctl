@@ -123,5 +123,5 @@ update the project's copyright notice; contributors should contact the
 maintainers if they want to ask to be included among the explicitly listed
 names.
 
-[short SPDX license identifier]: https://spdx.github.io/spdx-spec/appendix-V-using-SPDX-short-identifiers-in-source-files/
+[short SPDX license identifier]: https://spdx.github.io/spdx-spec/v2.3/using-SPDX-short-identifiers-in-source-files/
 [CHANGELOG]: ../../CHANGELOG.md

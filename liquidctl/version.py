@@ -1,4 +1,8 @@
-"""Interfaces to read the liquidctl version."""
+"""Interfaces to read the liquidctl version.
+
+Copyright Jonas Malaco and contributors
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
 
 # uses the psf/black style
 
