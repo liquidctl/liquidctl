@@ -55,9 +55,10 @@ Deprecated:
 Copyright 2018–2023 Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
 
-liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
-Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
-Pircher.
+Some modules also incorporate or use as reference work by leaty, Ksenija
+Stanojevic, Alexander Tong, Jens Neumaier, Kristóf Jakab, Sean Nelson, Chris
+Griffith, notaz, realies and Thomas Pircher. This is mentioned in the module
+docstring, along with appropriate additional copyright notices.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 

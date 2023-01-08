@@ -770,13 +770,13 @@ You are also encouraged to contribute to the documentation and to these examples
 ## License
 [License]: #license
 
-liquidctl – monitor and control liquid coolers and other devices.<br>
 Copyright 2018–2023 Jonas Malaco, Marshall Asch, CaseySJ, Tom Frey, Andrew
 Robertson, ParkerMc, Aleksa Savic, Shady Nawara and contributors
 
-liquidctl incorporates work by leaty, Ksenija Stanojevic, Alexander Tong, Jens
-Neumaier, Kristóf Jakab, Sean Nelson, Chris Griffith, notaz, realies and Thomas
-Pircher.
+Some modules also incorporate or use as reference work by leaty, Ksenija
+Stanojevic, Alexander Tong, Jens Neumaier, Kristóf Jakab, Sean Nelson, Chris
+Griffith, notaz, realies and Thomas Pircher. This is mentioned in the module
+docstring, along with appropriate additional copyright notices.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -789,12 +789,6 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
-
-This project uses [short SPDX License List identifiers][SPDX-Short-Identifiers]
-to concisely and unambiguously indicate the applicable license in each source
-file.
-
-[SPDX-Short-Identifiers]: https://spdx.github.io/spdx-spec/v2.3/using-SPDX-short-identifiers-in-source-files/
 
 
 ## Related projects

@@ -110,10 +110,16 @@ the same license, but their authors retain the copyright of their individual
 changes.
 
 Each module contains the copyright notice and a [short SPDX license identifier]
-to unambiguously yet concisely indicate the applicable license.  The
-copyright notice should explicitly list the most important contributors to the
-module, and then end with "and contributors".  Contributors are encouraged to
-update these notices when submitting major changes to modules.
+to unambiguously yet concisely indicate the applicable license.  For example:
+
+```
+Copyright Jonas Malaco and contributors
+SPDX-License-Identifier: GPL-3.0-or-later
+```
+
+The copyright notice should explicitly list the most important contributors to
+the module, and then end with "and contributors".  Contributors are encouraged
+to update these notices when submitting major changes to modules.
 
 The project's copyright notice explicitly lists the major contributors the
 project – in this context, a major contributor is someone who has authored at
