@@ -33,6 +33,13 @@ Removed:
 
 - CLI: remove long deprecated --hid option
 
+### Checksums
+
+```
+639e62d8845cd8d3718941e7894865f9c06abfc2826546606335e30f607d6fc3  dist/liquidctl-1.12.0.tar.gz
+748e7c9d49f06f885cc191278c0aa3b5da5f7623edd7f4c12a99f52b72b1cad6  dist/liquidctl-1.12.0-py3-none-any.whl
+```
+
 
 ## [1.11.1] – 2022-10-19
 
