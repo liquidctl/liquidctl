@@ -500,7 +500,7 @@ Most devices provide some status information, like fan speeds and liquid tempera
 # liquidctl [options] status
 ```
 
-Fan and pump speeds can be set to fixed values or, if the device supports them, custom profiles.
+Fan and pump speeds can be set to fixed values or, if the device supports them, custom profiles.  The specific documentation for each device will list the available modes, as well as which sensor is used for custom profiles.  In general, liquid coolers only support custom profiles that are based on the internal liquid temperature probe.
 
 ```
 # liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
