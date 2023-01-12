@@ -76,7 +76,8 @@ class MockPsu(MockHidapiDevice):
                 samples = [x for x in SAMPLE_RESPONSES if x[2:4] == cmd]
             if not samples:
                 raise KeyError(cmd)
-            reply[0:len(data)] = bytes.fromhex(samples[0])
+            reply[0] = data[0]
+            reply[1:len(data)] = bytes.fromhex(samples[0][2:])
             self.preload_read(Report(0, reply))
 
 

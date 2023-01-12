@@ -282,8 +282,11 @@ class CorsairHidPsu(UsbHidDriver):
         return self.device.read(_REPORT_LENGTH)
 
     def _exec(self, writebit, command, data=None):
-        self._write([_SLAVE_ADDRESS | WriteBit(writebit), CMD(command)] + (data or []))
-        return self._read()
+        out = [_SLAVE_ADDRESS | WriteBit(writebit), CMD(command)] + (data or [])
+        self._write(out)
+        ret = self._read()
+        assert ret[0:2] == out[0:2], f'invalid response (possible conflict with another program)'
+        return ret
 
     def _get_12v_ocp_mode(self):
         """Get +12V single/multi-rail OCP mode."""
