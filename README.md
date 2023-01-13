@@ -441,7 +441,6 @@ And to install `liquidctl` into the environment:
 ```
 python -m pip install .
 ```
-_OPTIONAL: When installing from source, you might want to try prepending sudo to this last command, in case your .service file returns driver error_
 
 ## Introducing the command-line interface
 [The command-line interface]: #introducing-the-command-line-interface
