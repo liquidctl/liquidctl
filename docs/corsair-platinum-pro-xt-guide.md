@@ -1,5 +1,7 @@
-# Corsair Hydro Platinum and Pro XT all-in-one liquid coolers
+# Corsair Hydro Platinum, Pro XT and Elite RGB all-in-one liquid coolers
 _Driver API and source code available in [`liquidctl.driver.hydro_platinum`](../liquidctl/driver/hydro_platinum.py)._
+
+_Changed in git: the H100i Elite RGB is now supported._<br>
 
 ## Initializing the device and setting the pump mode
 
@@ -78,11 +80,11 @@ modes, but liquidctl provides a few for convenience.
 The table bellow summarizes the available channels, modes, and their associated
 maximum number of colors for each device family.
 
-| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT | Platinum SE |
-| -------- | ----------- | ------------ | ------------ | -------- | ------ | ----------- |
-| led      | off         | synchronized | all off      |        0 |      0 |           0 |
-| led      | fixed       | synchronized | independent  |        1 |      1 |           1 |
-| led      | super-fixed | independent  | independent  |       24 |     16 |          48 |
+| Channel  | Mode        | LEDs         | Components   | Platinum | Pro XT/Elite RGB | Platinum SE |
+| -------- | ----------- | ------------ | ------------ | -------- | ---------------- | ----------- |
+| led      | off         | synchronized | all off      |        0 |                0 |           0 |
+| led      | fixed       | synchronized | independent  |        1 |                1 |           1 |
+| led      | super-fixed | independent  | independent  |       24 |               16 |          48 |
 
 The `led` channel can be used to address individual LEDs, and supports the
 `super-fixed`, `fixed` and `off` modes.

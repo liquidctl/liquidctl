@@ -23,7 +23,7 @@ Device guides
 - [Corsair Commander Core and Core XT](corsair-commander-core-guide.md)
 - [Corsair Commander Pro, Obsidian 1000D and Lighting Node Pro/Core](corsair-commander-guide.md)
 - [Corsair HXi and RMi series PSUs](corsair-hxi-rmi-psu-guide.md)
-- [Corsair Hydro Platinum and Pro XT all-in-one liquidctl coolers](corsair-platinum-pro-xt-guide.md)
+- [Corsair Hydro Platinum, Pro XT and Elite RGB all-in-one liquidctl coolers](corsair-platinum-pro-xt-guide.md)
 - [DDR4 DIMMs](ddr4-guide.md)
 - [Fourth-generation (X3/Z3) NZXT liquid coolers](kraken-x3-z3-guide.md)
 - [Gigabyte RGB Fusion 2.0 lighting controllers](gigabyte-rgb-fusion2-guide.md)

@@ -362,9 +362,6 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="uacc
 # Corsair Commander ST
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c32", TAG+="uaccess"
 
-# Corsair iCUE H100i RGB
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c35", TAG+="uaccess"
-
 # Corsair HX1000i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c07", TAG+="uaccess"
 
@@ -451,6 +448,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0b", TAG+="uacc
 
 # Corsair RM850i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uaccess"
+
+# Corsair iCUE H100i Elite RGB
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c35", TAG+="uaccess"
 
 # Gigabyte RGB Fusion 2.0 5702 Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uaccess"
