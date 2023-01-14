@@ -8,6 +8,13 @@ Fixed:
 
 - Corsair HXi and RMi: check that the response matches the command that was sent (liquidctl#463)
 
+### Checksums
+
+```
+3f98b8400c9cd3e47925cafbe34b9d7a51705bf85ce1ec8d95d107a360f6f29e  dist/liquidctl-1.12.1.tar.gz
+9e13d36bd9fa439ec244ea89f52ad080776406129d35db940a8343352e42dea7  dist/liquidctl-1.12.1-py3-none-any.whl
+```
+
 
 ## [1.12.0] – 2023-01-08
 
