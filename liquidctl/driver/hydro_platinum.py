@@ -9,7 +9,7 @@ Supported devices:
 - Corsair Hydro H100i Pro XT
 - Corsair Hydro H115i Pro XT
 - Corsair Hydro H150i Pro XT
-- Corsair iCUE H100i RGB ELITE
+- Corsair iCUE H100i Elite RGB
 
 Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
