@@ -18,22 +18,124 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 import re
+import subprocess as sb
+
+# Product Table (Dict)
+# Format -> Key: Properties
+#
+# When parse_product_matches() finds Key as a device in lsusb -v output,
+# it will append a new match to the return list, after prepending
+# the vendor_id and product_id
+
+_CORSAIR_AIO_PRODUCT_MATCHES = {
+    "Corsair iCue H100i RGB ELITE": {"fan_count": 2, "fan_leds": 0, "has_pump": True},
+    "Corsair iCue H150i RGB ELITE": {"fan_count": 3, "fan_leds": 0, "has_pump": True},
+    "Corsair Hydro H100i Platinum": {"fan_count": 2, "fan_leds": 4, "has_pump": True},
+    "Corsair Hydro H100i Platinum SE": {"fan_count": 2, "fan_leds": 16, "has_pump": True},
+    "Corsair Hydro H115i Platinum": {"fan_count": 2, "fan_leds": 4, "has_pump": True},
+    "Cozrsair Hydro H60i Pro XT": {"fan_count": 2, "fan_leds": 0, "has_pump": True},
+    "Corsair Hydro H100i Pro XT": {"fan_count": 2, "fan_leds": 0, "has_pump": True},
+    "Corsair Hydro H115i Pro XT": {"fan_count": 2, "fan_leds": 0, "has_pump": True},
+    "Corsair Hydro H150i Pro XT": {"fan_count": 3, "fan_leds": 0, "has_pump": True},
+}
+
+_LSBUSB_INPUT = None
+
+
+@staticmethod
+def _get_lsusb_output() -> None | str:
+    try:
+        global _LSBUSB_INPUT
+        if _LSBUSB_INPUT != None:
+            return _LSBUSB_INPUT
+
+        p = sb.Popen(["lsusb", "-v"], shell=True, stdout=sb.PIPE)
+        p.wait()
+        p.kill()
+        _LSBUSB_INPUT = map(lambda x: x.decode("utf-8"), p.stdout)
+        return _LSBUSB_INPUT
+    except Exception as e:
+        raise e
+
+
+@staticmethod
+def _match_score(key: list[str], text: str) -> int:
+    i = 0
+    for k in key.split():
+        if text.find(k) != -1:
+            i += 1
+    return i
+
+
+@staticmethod
+def init_matches_from_lsusb() -> list[tuple]:
+    """Automatically init HydroPlatinum driver using
+    the active AIO Corsair cooler found from `lsusb -v`"""
+
+    try:
+        _t = _get_lsusb_output()
+    except Exception as e:
+        raise e
+    else:
+        if _t == None:
+            return None
+
+        _r = ""
+        _max_score = 0
+        _key = None
+        for l in _t:
+            if not l or len(l.rstrip()) == 0:
+                continue
+
+            for k in _CORSAIR_AIO_PRODUCT_MATCHES.keys():
+                _mx = _match_score(k, l.rstrip())
+                if _mx >= _max_score:
+                    _max_score = _mx
+                    _r = l.rstrip()
+                    _key = k
+
+        if _max_score > 0 and _r != None and _key != None:
+            s = _r.split("ID")
+            t = None if len(s) == 0 else s[1].split()
+            if not t or len(t) == 0:
+                return None
+
+            if len(t[0].split(":")) == 2:
+                p = t[0].split(":")[:2]
+                return [
+                    (
+                        int(p[0], 16),  # VID
+                        int(p[1], 16),  # PID
+                        _key,
+                        _CORSAIR_AIO_PRODUCT_MATCHES[_key],
+                    )
+                ]
+
+        return []
+
+
 from enum import Enum, unique
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
-from liquidctl.util import RelaxedNamesEnum, clamp, fraction_of_byte, \
-                           u16le_from, normalize_profile, mkCrcFun
+from liquidctl.util import (
+    RelaxedNamesEnum,
+    clamp,
+    fraction_of_byte,
+    u16le_from,
+    normalize_profile,
+    mkCrcFun,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
-_WRITE_PREFIX = 0x3f
+_WRITE_PREFIX = 0x3F
 
 _FEATURE_COOLING = 0b000
 _FEATURE_COOLING2 = 0b011
-_CMD_GET_STATUS = 0xff
+_CMD_GET_STATUS = 0xFF
 _CMD_SET_COOLING = 0x14
 
 _FEATURE_LIGHTING = None
@@ -43,13 +145,13 @@ _CMD_SET_LIGHTING3 = 0b110
 
 # cooling data starts at offset 3 and ends just before the PEC byte
 _SET_COOLING_DATA_LENGTH = _REPORT_LENGTH - 4
-_SET_COOLING_DATA_PREFIX = [0x0, 0xff, 0x5, 0xff, 0xff, 0xff, 0xff, 0xff]
-_FAN_MODE_OFFSETS = [0x0b - 3, 0x11 - 3]
+_SET_COOLING_DATA_PREFIX = [0x0, 0xFF, 0x5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
+_FAN_MODE_OFFSETS = [0x0B - 3, 0x11 - 3]
 _FAN_DUTY_OFFSETS = [offset + 5 for offset in _FAN_MODE_OFFSETS]
-_FAN_PROFILE_OFFSETS = [0x1e - 3, 0x2c - 3]
+_FAN_PROFILE_OFFSETS = [0x1E - 3, 0x2C - 3]
 _FAN_OFFSETS = list(zip(_FAN_MODE_OFFSETS, _FAN_DUTY_OFFSETS, _FAN_PROFILE_OFFSETS))
 _PUMP_MODE_OFFSET = 0x17 - 3
-_PROFILE_LENGTH_OFFSET = 0x1d - 3
+_PROFILE_LENGTH_OFFSET = 0x1D - 3
 _PROFILE_LENGTH = 7
 _CRITICAL_TEMPERATURE = 60
 
@@ -63,7 +165,7 @@ class _FanMode(Enum):
 
     @classmethod
     def _missing_(cls, value):
-        _LOGGER.debug('falling back to FIXED_DUTY for _FanMode(%s)', value)
+        _LOGGER.debug("falling back to FIXED_DUTY for _FanMode(%s)", value)
         return _FanMode.FIXED_DUTY
 
 
@@ -75,7 +177,7 @@ class _PumpMode(RelaxedNamesEnum):
 
     @classmethod
     def _missing_(cls, value):
-        _LOGGER.debug('falling back to BALANCED for _PumpMode(%s)', value)
+        _LOGGER.debug("falling back to BALANCED for _PumpMode(%s)", value)
         return _PumpMode.BALANCED
 
 
@@ -90,7 +192,7 @@ def _sequence(storage):
     """
 
     while True:
-        seq = storage.load_store('sequence', lambda x : x % 31 + 1, of_type=int, default=0)
+        seq = storage.load_store("sequence", lambda x: x % 31 + 1, of_type=int, default=0)
         yield seq[1]
 
 
@@ -99,47 +201,30 @@ def _prepare_profile(original):
     normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
-        raise ValueError(f'too many points in profile (remove {-missing})')
+        raise ValueError(f"too many points in profile (remove {-missing})")
     if missing > 0:
         normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
     return normal
 
 
 def _quoted(*names):
-    return ', '.join(map(repr, names))
+    return ", ".join(map(repr, names))
 
 
 class HydroPlatinum(UsbHidDriver):
     """Corsair Hydro Platinum or Pro XT liquid cooler."""
 
-    _MATCHES = [
-        (0x1b1c, 0x0c18, 'Corsair Hydro H100i Platinum',
-            {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c19, 'Corsair Hydro H100i Platinum SE',
-            {'fan_count': 2, 'fan_leds': 16}),
-        (0x1b1c, 0x0c17, 'Corsair Hydro H115i Platinum',
-            {'fan_count': 2, 'fan_leds': 4}),
-        (0x1b1c, 0x0c29, 'Corsair Hydro H60i Pro XT',
-            {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c20, 'Corsair Hydro H100i Pro XT',
-            {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c21, 'Corsair Hydro H115i Pro XT',
-            {'fan_count': 2, 'fan_leds': 0}),
-        (0x1b1c, 0x0c22, 'Corsair Hydro H150i Pro XT',
-            {'fan_count': 3, 'fan_leds': 0}),
-        (0x1b1c, 0x0c35, 'Corsair iCUE H100i RGB ELITE',
-            {'fan_count': 2, 'fan_leds': 0, 'has_pump':True}),
-    ]
+    _MATCHES = init_matches_from_lsusb()
 
     @classmethod
-    def probe(cls, handle, vendor=None, product=None, release=None,
-              serial=None, match=None, **kwargs):
+    def probe(
+        cls, handle, vendor=None, product=None, release=None, serial=None, match=None, **kwargs
+    ):
         """Probe `handle` and yield corresponding driver instances."""
 
         # this is modified from BaseUsbDriver.probe to match regardless of
         # presence of "Hydro", for backward compatibility with 1.5.0 and
         # previous versions
-
         for vid, pid, desc, devargs in cls._MATCHES:
             if (vendor and vendor != vid) or handle.vendor_id != vid:
                 continue
@@ -152,27 +237,27 @@ class HydroPlatinum(UsbHidDriver):
             if match:
                 match = match.lower()
                 descr = desc.lower()
-                if not (match in descr or match in descr.replace('hydro ', '')):
+                if not (match in descr or match in descr.replace("hydro ", "")):
                     continue
             consargs = devargs.copy()
             consargs.update(kwargs)
             dev = cls(handle, desc, **consargs)
-            _LOGGER.debug('%s identified: %s', cls.__name__, desc)
+            _LOGGER.debug("%s identified: %s", cls.__name__, desc)
             yield dev
 
     def __init__(self, device, description, fan_count, fan_leds, **kwargs):
         super().__init__(device, description, **kwargs)
         self._led_count = 16 + fan_count * fan_leds
-        self._fan_names = [f'fan{i + 1}' for i in range(fan_count)]
+        self._fan_names = [f"fan{i + 1}" for i in range(fan_count)]
         self._mincolors = {
-            ('led', 'super-fixed'): 1,
-            ('led', 'fixed'): 1,
-            ('led', 'off'): 0,
+            ("led", "super-fixed"): 1,
+            ("led", "fixed"): 1,
+            ("led", "off"): 0,
         }
         self._maxcolors = {
-            ('led', 'super-fixed'): self._led_count,
-            ('led', 'fixed'): 1,
-            ('led', 'off'): 0,
+            ("led", "super-fixed"): self._led_count,
+            ("led", "fixed"): 1,
+            ("led", "off"): 0,
         }
 
         # the following fields are only initialized in connect()
@@ -186,18 +271,18 @@ class HydroPlatinum(UsbHidDriver):
         if runtime_storage:
             self._data = runtime_storage
         else:
-            ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+            ids = f"vid{self.vendor_id:04x}_pid{self.product_id:04x}"
             # must use the HID path because there is no serial number; however,
             # these can be quite long on Windows and macOS, so only take the
             # numbers, since they are likely the only parts that vary between two
             # devices of the same model
-            loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
+            loc = "loc" + "_".join(re.findall(r"\d+", self.address))
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
 
         self._sequence = _sequence(self._data)
         return ret
 
-    def initialize(self, pump_mode='balanced', **kwargs):
+    def initialize(self, pump_mode="balanced", **kwargs):
         """Initialize the device and set the pump mode.
 
         The device should be initialized every time it is powered on, including when
@@ -211,15 +296,15 @@ class HydroPlatinum(UsbHidDriver):
         """
 
         # set the flag so the LED command will need to be set again
-        self._data.store('leds_enabled', 0)
+        self._data.store("leds_enabled", 0)
 
-        self._data.store('pump_mode', _PumpMode[pump_mode].value)
+        self._data.store("pump_mode", _PumpMode[pump_mode].value)
         res = self._send_set_cooling()
-        fw_version = (res[2] >> 4, res[2] & 0xf, res[3])
+        fw_version = (res[2] >> 4, res[2] & 0xF, res[3])
         if fw_version < (1, 1, 0):
             # see: #201 ("Fan settings affects Fan 1 only and disables fan2")
-            _LOGGER.warning('outdated and possibly unsupported firmware version')
-        return [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
+            _LOGGER.warning("outdated and possibly unsupported firmware version")
+        return [("Firmware version", "{}.{}.{}".format(*fw_version), "")]
 
     def get_status(self, **kwargs):
         """Get a status report.
@@ -230,15 +315,15 @@ class HydroPlatinum(UsbHidDriver):
         res = self._send_command(_FEATURE_COOLING, _CMD_GET_STATUS)
 
         info = [
-            ('Liquid temperature', res[8] + res[7] / 255, '°C'),
+            ("Liquid temperature", res[8] + res[7] / 255, "°C"),
         ]
 
-        channels = [('Fan 1', 14), ('Fan 2', 21), ('Fan 3', 42)][:len(self._fan_names)]
-        channels.append(('Pump', 28))
+        channels = [("Fan 1", 14), ("Fan 2", 21), ("Fan 3", 42)][: len(self._fan_names)]
+        channels.append(("Pump", 28))
 
         for name, base in channels:
-            info.append((f'{name} speed', u16le_from(res, offset=base + 1), 'rpm'))
-            info.append((f'{name} duty', round(res[base] / 255 * 100), '%'))
+            info.append((f"{name} speed", u16le_from(res, offset=base + 1), "rpm"))
+            info.append((f"{name} duty", round(res[base] / 255 * 100), "%"))
 
         return info
 
@@ -251,8 +336,8 @@ class HydroPlatinum(UsbHidDriver):
         """
 
         for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
-            self._data.store(f'{hw_channel}_duty', duty)
+            self._data.store(f"{hw_channel}_mode", _FanMode.FIXED_DUTY.value)
+            self._data.store(f"{hw_channel}_duty", duty)
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -270,8 +355,8 @@ class HydroPlatinum(UsbHidDriver):
 
         profile = list(profile)
         for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store(f'{hw_channel}_mode', _FanMode.CUSTOM_PROFILE.value)
-            self._data.store(f'{hw_channel}_profile', profile)
+            self._data.store(f"{hw_channel}_mode", _FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f"{hw_channel}_profile", profile)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -309,26 +394,32 @@ class HydroPlatinum(UsbHidDriver):
 
         colors = list(colors)
         self._check_color_args(channel, mode, colors)
-        if mode == 'off':
+        if mode == "off":
             expanded = []
-        elif (channel, mode) == ('led', 'super-fixed'):
-            expanded = colors[:self._led_count]
-        elif (channel, mode) == ('led', 'fixed'):
+        elif (channel, mode) == ("led", "super-fixed"):
+            expanded = colors[: self._led_count]
+        elif (channel, mode) == ("led", "fixed"):
             expanded = list(itertools.chain(*([color] * self._led_count for color in colors[:1])))
         else:
-            assert False, 'assumed unreacheable'
+            assert False, "assumed unreacheable"
 
-        if self._data.load('leds_enabled', of_type=int, default=0) == 0:
+        if self._data.load("leds_enabled", of_type=int, default=0) == 0:
             # These hex strings are currently magic values that work but Im not quite sure why.
-            d1 = bytes.fromhex("0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff")
-            d2 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff")
-            d3 = bytes.fromhex("28292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4fffffffffffffffffffffffffffffffffffffffffff")
+            d1 = bytes.fromhex(
+                "0101ffffffffffffffffffffffffff7f7f7f7fff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffff00ffffffffffffffffffffffffffffff"
+            )
+            d2 = bytes.fromhex(
+                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324252627ffffffffffffffffffffffffffffffffffffffffff"
+            )
+            d3 = bytes.fromhex(
+                "28292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4fffffffffffffffffffffffffffffffffffffffffff"
+            )
 
             # Send the magic messages to enable setting the LEDs to statuC values
             self._send_command(None, 0b001, data=d1)
             self._send_command(None, 0b010, data=d2)
             self._send_command(None, 0b011, data=d3)
-            self._data.store('leds_enabled', 1)
+            self._data.store("leds_enabled", 1)
 
         data1 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[0:20])))
         data2 = bytes(itertools.chain(*((b, g, r) for r, g, b in expanded[20:40])))
@@ -347,17 +438,19 @@ class HydroPlatinum(UsbHidDriver):
             mincolors = self._mincolors[(channel, mode)]
             maxcolors = self._maxcolors[(channel, mode)]
         except KeyError:
-            raise ValueError(f'unsupported (channel, mode) pair, '
-                             f'should be one of: {_quoted(*self._mincolors)}') from None
+            raise ValueError(
+                f"unsupported (channel, mode) pair, "
+                f"should be one of: {_quoted(*self._mincolors)}"
+            ) from None
         if len(colors) < mincolors:
-            raise ValueError(f'at least {mincolors} required for {_quoted(channel, mode)}')
+            raise ValueError(f"at least {mincolors} required for {_quoted(channel, mode)}")
         if len(colors) > maxcolors:
-            _LOGGER.warning('too many colors, dropping to %d', maxcolors)
+            _LOGGER.warning("too many colors, dropping to %d", maxcolors)
             return maxcolors
         return len(colors)
 
     def _get_hw_fan_channels(self, channel):
-        if channel == 'fan':
+        if channel == "fan":
             return self._fan_names
         if channel in self._fan_names:
             return [channel]
@@ -376,50 +469,50 @@ class HydroPlatinum(UsbHidDriver):
             buf[2] |= command
             start_at = 3
         if data:
-            buf[start_at: start_at + len(data)] = data
-        buf[-1] = mkCrcFun('crc-8')(buf[2:-1])
+            buf[start_at : start_at + len(data)] = data
+        buf[-1] = mkCrcFun("crc-8")(buf[2:-1])
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
-        if mkCrcFun('crc-8')(buf[1:]):
-            _LOGGER.warning('response checksum does not match data')
+        if mkCrcFun("crc-8")(buf[1:]):
+            _LOGGER.warning("response checksum does not match data")
         return buf
 
     def _generate_cooling_payload(self, fan_names):
 
         data = bytearray(_SET_COOLING_DATA_LENGTH)
-        data[0: len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
+        data[0 : len(_SET_COOLING_DATA_PREFIX)] = _SET_COOLING_DATA_PREFIX
         data[_PROFILE_LENGTH_OFFSET] = _PROFILE_LENGTH
 
         for fan, (imode, iduty, iprofile) in zip(fan_names, _FAN_OFFSETS):
-            mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
+            mode = _FanMode(self._data.load(f"{fan}_mode", of_type=int))
             if mode is _FanMode.FIXED_DUTY:
-                stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
+                stored = self._data.load(f"{fan}_duty", of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
                 data[iduty] = fraction_of_byte(percentage=duty)
-                _LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
+                _LOGGER.info("setting %s to %d%% duty cycle", fan, duty)
             elif mode is _FanMode.CUSTOM_PROFILE:
-                stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
+                stored = self._data.load(f"{fan}_profile", of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
-                data[iprofile: iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
-                _LOGGER.info('setting %s to follow profile %r', fan, profile)
+                data[iprofile : iprofile + _PROFILE_LENGTH * 2] = itertools.chain(*pairs)
+                _LOGGER.info("setting %s to follow profile %r", fan, profile)
             else:
-                raise ValueError(f'unsupported fan {mode}')
+                raise ValueError(f"unsupported fan {mode}")
             data[imode] = mode.value
 
         return data
 
     def _send_set_cooling(self):
-        pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
+        pump_mode = _PumpMode(self._data.load("pump_mode", of_type=int))
 
         data = self._generate_cooling_payload(self._fan_names[0:2])
         data[_PUMP_MODE_OFFSET] = pump_mode.value
-        _LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
+        _LOGGER.info("setting pump mode to %s", pump_mode.name.lower())
 
         if len(self._fan_names) == 3:
             data2 = self._generate_cooling_payload(self._fan_names[2:])
-            data2[_PUMP_MODE_OFFSET] = 0xff
+            data2[_PUMP_MODE_OFFSET] = 0xFF
             self._send_command(_FEATURE_COOLING2, _CMD_SET_COOLING, data=data2)
 
         return self._send_command(_FEATURE_COOLING, _CMD_SET_COOLING, data=data)
