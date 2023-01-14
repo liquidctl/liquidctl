@@ -9,6 +9,7 @@ Supported devices:
 - Corsair Hydro H100i Pro XT
 - Corsair Hydro H115i Pro XT
 - Corsair Hydro H150i Pro XT
+- Corsair iCUE H100i Elite RGB
 
 Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -126,6 +127,8 @@ class HydroPlatinum(UsbHidDriver):
             {'fan_count': 2, 'fan_leds': 0}),
         (0x1b1c, 0x0c22, 'Corsair Hydro H150i Pro XT',
             {'fan_count': 3, 'fan_leds': 0}),
+        (0x1b1c, 0x0c35, 'Corsair iCUE H100i Elite RGB (experimental)',
+            {'fan_count': 2, 'fan_leds': 0}),
     ]
 
     @classmethod
@@ -297,11 +300,11 @@ class HydroPlatinum(UsbHidDriver):
         The table bellow summarizes the available channels, modes, and their
         associated maximum number of colors for each device family.
 
-        | Channel  | Mode        | LEDs         | Platinum | Pro XT | Platinum SE |
-        | -------- | ----------- | ------------ | -------- | ------ | ----------- |
-        | led      | off         | synchronized |        0 |      0 |           0 |
-        | led      | fixed       | synchronized |        1 |      1 |           1 |
-        | led      | super-fixed | independent  |       24 |     16 |          48 |
+        | Channel  | Mode        | LEDs         | Platinum | Pro XT/Elite RGB | Platinum SE |
+        | -------- | ----------- | ------------ | -------- | ---------------- | ----------- |
+        | led      | off         | synchronized |        0 |                0 |           0 |
+        | led      | fixed       | synchronized |        1 |                1 |           1 |
+        | led      | super-fixed | independent  |       24 |               16 |          48 |
         """
 
         colors = list(colors)
