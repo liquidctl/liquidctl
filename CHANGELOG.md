@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.12.1] – 2023-01-14
+
+### Changes since 1.12.0
+
+Fixed:
+
+- Corsair HXi and RMi: check that the response matches the command that was sent (liquidctl#463)
+
+
 ## [1.12.0] – 2023-01-08
 
 ### Changes since 1.11.1
