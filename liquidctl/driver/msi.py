@@ -200,12 +200,12 @@ class _UploadType(Enum):
 
 
 class MpgCooler(UsbHidDriver):
-    SUPPORTED_DEVICES = [
-        (0x0db0, 0xb130, None, 'MSI MPG Coreliquid K360', {
+    _MATCHES = [
+        (0x0db0, 0xb130, 'MSI MPG Coreliquid K360', {
             'fan_count': 5
         }),
-        (0x0db0, 0xca00, None, 'Unknown', {}),
-        (0x0db0, 0xca02, None, 'Unknown', {}),
+        (0x0db0, 0xca00, 'Unknown', {}),
+        (0x0db0, 0xca02, 'Unknown', {}),
     ]
 
     def __init__(self, device, description, **kwargs):
