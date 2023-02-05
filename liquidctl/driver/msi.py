@@ -221,6 +221,28 @@ class MpgCooler(UsbHidDriver):
         self._data = None
         self._feature_data = None
 
+    @classmethod
+    def probe(cls, handle, vendor=None, product=None, release=None,
+              serial=None, match=None, **kwargs):
+        for vid, pid, desc, devargs in cls._MATCHES:
+            if (vendor and vendor != vid) or handle.vendor_id != vid:
+                continue
+            if (product and product != pid) or handle.product_id != pid:
+                continue
+            if release and handle.release_number != release:
+                continue
+            if serial and handle.serial_number != serial:
+                continue
+            if match and match.lower() not in desc.lower():
+                continuei
+            if handle.hidinfo['usage_page'] != 0xff00:
+                continue
+            consargs = devargs.copy()
+            consargs.update(kwargs)
+            dev = cls(handle, desc, **consargs)
+            _LOGGER.debug('%s identified: %s', cls.__name__, desc)
+            yield dev
+
     def connect(self, **kwargs):
         ret = super().connect(**kwargs)
         self._data = kwargs.pop(
