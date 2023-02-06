@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 from collections import namedtuple
+from collections.abc import Sequence
 from copy import copy
 from enum import Enum, unique
 from time import sleep
@@ -20,11 +21,14 @@ from liquidctl.util import RelaxedNamesEnum, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
+USAGE_PAGE = 0xFF00 
 _MAX_DATA_LENGTH = 185
 _PER_LED_LENGTH = 720
 _REPORT_LENGTH = 64
+_MAX_DUTIES = 7
+_RAD_FAN_COUNT = 3
 _CYCLE_NUMBER_STRIPE_TYPE_MAPPING = {0: 41, 1: 52, 2: 63, 3: 20, 4: 30}
-_DEFAULT_FEATURE_DATA = (
+_DEFAULT_FEATURE_DATA = [
     82, 1, 255, 0, 0, 40, 0, 255, 0, 128, 0, 1, 255, 0, 0, 40, 0, 255, 0,
     128, 0, 1, 255, 0, 0, 40, 0, 255, 0, 128, 0, 1, 255, 0, 0, 40, 0, 255, 0,
     128, 0, 20, 1, 255, 0, 0, 40, 0, 255, 0, 128, 0, 20, 1, 255, 0, 0, 40,
@@ -34,7 +38,7 @@ _DEFAULT_FEATURE_DATA = (
     255, 0, 0, 40, 0, 255, 0, 128, 0, 32, 255, 0, 0, 40, 0, 255, 0, 128, 0, 32,
     255, 0, 0, 40, 0, 255, 0, 128, 0, 32, 255, 0, 0, 40, 0, 255, 0, 128, 0, 32,
     255, 0, 0, 40, 0, 255, 0, 128, 0, 32, 255, 0, 0, 40, 0, 255, 0, 128, 0, 32,
-    255, 0, 0, 40, 0, 255, 0, 128, 0, 0)
+    255, 0, 0, 40, 0, 255, 0, 128, 0, 0]
 
 _DeviceSettings = namedtuple('DeviceSettings', [
     'stripe_or_fan', 'fan_type', 'corsair_device_quantity',
@@ -216,32 +220,16 @@ class MpgCooler(UsbHidDriver):
         self._per_led_rgb_jrainbow1 = bytearray(_PER_LED_LENGTH)
         self._per_led_rgb_jrainbow2 = bytearray(_PER_LED_LENGTH)
         self._per_led_rgb_jcorsair = bytearray(_PER_LED_LENGTH)
-        self._fan_count = kwargs.pop('fan_count', 0)
+        self._fan_count = kwargs.pop('fan_count', 5)
         # the following fields are only initialized in connect()
         self._data = None
         self._feature_data = None
 
     @classmethod
-    def probe(cls, handle, vendor=None, product=None, release=None,
-              serial=None, match=None, **kwargs):
-        for vid, pid, desc, devargs in cls._MATCHES:
-            if (vendor and vendor != vid) or handle.vendor_id != vid:
-                continue
-            if (product and product != pid) or handle.product_id != pid:
-                continue
-            if release and handle.release_number != release:
-                continue
-            if serial and handle.serial_number != serial:
-                continue
-            if match and match.lower() not in desc.lower():
-                continuei
-            if handle.hidinfo['usage_page'] != 0xff00:
-                continue
-            consargs = devargs.copy()
-            consargs.update(kwargs)
-            dev = cls(handle, desc, **consargs)
-            _LOGGER.debug('%s identified: %s', cls.__name__, desc)
-            yield dev
+    def probe(cls, handle, **kwargs):
+        if (handle.hidinfo['usage_page'] != USAGE_PAGE):
+            return
+        yield from super().probe(handle, **kwargs)        
 
     def connect(self, **kwargs):
         ret = super().connect(**kwargs)
@@ -253,6 +241,9 @@ class MpgCooler(UsbHidDriver):
             ]))
         self._feature_data = self.device.get_feature_report(
             0x52, _MAX_DATA_LENGTH)
+        self._fan_cfg      = self.get_fan_config()
+        self._fan_temp_cfg = self.get_fan_temp_config()
+
         return ret
 
     def initialize(self, **kwargs):
@@ -353,6 +344,47 @@ class MpgCooler(UsbHidDriver):
             buf[offset + 6] = config.temp5
             buf[offset + 7] = config.temp6
         return self._write(buf)
+
+    def parse_channel(self, channel):
+        if channel == "pump":
+            return [4]
+        elif channel == "fans":
+            return range(_RAD_FAN_COUNT)
+        elif channel == "waterblock fan":
+            return [3]
+        elif channel[:3] == "fan" and (int(channel[3:]) in range(_RAD_FAN_COUNT)):
+            return [int(channel[3:])]
+        else:
+            raise ValueError('unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock fan" or "pump".')
+
+    def set_speed_profile(self, channel, profile, **opts):
+        def clamp_and_pad(values):
+            return ([clamp(v, 0, 100) for v in values] + [0]*_MAX_DUTIES)[:_MAX_DUTIES]
+
+        duties_temps = list(zip(*profile))
+        duties, temps = tuple(clamp_and_pad(v) for v in duties_temps)
+
+        for i in self.parse_channel(channel):
+            self._fan_cfg[i]     = _FanConfig(    _FanMode.CUSTOMIZE.value, *duties)
+            self._fan_temp_cfg[i] = _FanTempConfig(_FanMode.CUSTOMIZE.value, *temps)
+
+        self.set_fan_config(self._fan_cfg)
+        self.set_fan_temp_config(self._fan_temp_cfg)
+
+
+
+    def set_fixed_speed(self, channel, duty, **opts):
+        channel_nums = self.parse_channel(channel)
+
+        for i in channel_nums:
+            self._fan_cfg[i]      = _FanConfig(    _FanMode.CUSTOMIZE.value, *([duty]*_MAX_DUTIES))
+            self._fan_temp_cfg[i] = _FanTempConfig(_FanMode.CUSTOMIZE.value, 0,0,0,0,0,0,0)
+
+        self.set_fan_config(self._fan_cfg)
+        self.set_fan_temp_config(self._fan_temp_cfg)
+
+
+        
 
     def get_current_model_index(self):
         self._write((0xb1, ), 0xcc, prefix=1)
@@ -603,16 +635,17 @@ class MpgCooler(UsbHidDriver):
         --color1
         --color2
         """
-        self._feature_data[led_area + 1] = clamp(led_area, 0, 174)
-        self._feature_data[led_area + 2] = clamp(color1_r, 0, 255)
-        self._feature_data[led_area + 3] = clamp(color1_g, 0, 255)
-        self._feature_data[led_area + 4] = clamp(color1_b, 0, 255)
+
+        self._feature_data[led_area + 1] = clamp(color1_r, 0, 255)
+        self._feature_data[led_area + 2] = clamp(color1_g, 0, 255)
+        self._feature_data[led_area + 3] = clamp(color1_b, 0, 255)
+        self._feature_data[led_area + 4] = clamp(led_area, 0, 174)
         self._feature_data[led_area + 5] = clamp(color2_r, 0, 255)
         self._feature_data[led_area + 6] = clamp(color2_g, 0, 255)
         self._feature_data[led_area + 7] = clamp(color2_b, 0, 255)
 
     def set_send_led_setting(self, save):
-        """--persist-to-device ?"""
+        """ applies changes, persists to device with save option"""
         self._feature_data[184] = int(bool(save))
         return self._set_all_board(self._feature_data)
 
@@ -801,8 +834,13 @@ class MpgCooler(UsbHidDriver):
         --maximum-leds INT
         """
         array = bytearray(1)
+        def rank_check(array):
+            return isinstance(array, Sequence) \
+                   and all(isinstance(x, Sequence) for x in array) \
+                   and all(not isinstance(xa, Sequence) for x in array for xa in x)
+
         if (len(index_and_rgb[1]) < 4 or len(index_and_rgb[0]) < 1
-                or len(index_and_rgb) != 2):
+                or not rank_check(index_and_rgb)):
             raise ValueError('index_and_rgb should be a 2-dimensional list')
         if jtype == _JType.JONBOARD.value:
             array = self._per_led_rgb_jonboard
@@ -812,7 +850,7 @@ class MpgCooler(UsbHidDriver):
                      if area == 1 else self._per_led_rgb_jrainbow1)
         elif jtype == _JType.JCORSAIR.value:
             array = self._per_led_rgb_jcorsair
-        end_index = led_count if led_count > 0 else len(index_and_rgb[0])
+        end_index = led_count if led_count > 0 else len(index_and_rgb)
         for i in range(end_index):
             if index_and_rgb[i][0] * 3 + 2 < len(array):
                 array[index_and_rgb[i][0] * 3] = index_and_rgb[i][1]
@@ -879,8 +917,8 @@ class MpgCooler(UsbHidDriver):
 
     def _set_all(self, which, r=0, g=0, b=0):
         self.set_board_sync_setting(True, True, True, True, True, True, True)
-        self.set_style_setting(_LEDArea.ONBOARD_LED_0, which, 1, 10, 1)
-        self.set_color_setting(_LEDArea.ONBOARD_LED_0, r, g, b, r, g, b)
+        self.set_style_setting(_LEDArea.ONBOARD_LED_0.value, which, 1, 10, 1)
+        self.set_color_setting(_LEDArea.ONBOARD_LED_0.value, r, g, b, r, g, b)
         self.set_send_led_setting(False)
 
     def set_all_disable(self):
