@@ -155,7 +155,7 @@ class _LightingMode(RelaxedNamesEnum):
     JAZZ = 12
     JRAINBOW = 28
     LAVA = 39
-    LIGHTING = 5
+    LIGHTNING = 5
     MARQUEE = 24
     METEOR = 7
     MOVIE = 14
@@ -167,7 +167,7 @@ class _LightingMode(RelaxedNamesEnum):
     POP = 10
     RAINBOW = 25
     RAINBOW_DOUBLE_FLASHING = 30
-    RAINBOW_FLAHING = 29
+    RAINBOW_FLASHING = 29
     RAINBOW_WAVE = 26
     RANDOM = 31
     RAP = 11
@@ -175,7 +175,6 @@ class _LightingMode(RelaxedNamesEnum):
     VISOR = 27
     WATER_DROP = 8
     END = 40
-
 
 @unique
 class _Speed(RelaxedNamesEnum):
@@ -204,6 +203,51 @@ class _UploadType(Enum):
 
 
 class MpgCooler(UsbHidDriver):
+
+    _COLOR_MODES = {
+    "blink":                        _LightingMode.BLINK,
+    "breathing":                    _LightingMode.BREATHING,
+    "clock":                        _LightingMode.CLOCK,
+    "color pulse":                  _LightingMode.COLOR_PULSE,
+    "color ring":                   _LightingMode.COLOR_RING,
+    "color ring double flashing":   _LightingMode.COLOR_RING_DOUBLE_FLASHING,
+    "color ring flashing":          _LightingMode.COLOR_RING_FLASHING,
+    "color shift":                  _LightingMode.COLOR_SHIFT,
+    "color wave":                   _LightingMode.COLOR_WAVE,
+    "corsair ique":                 _LightingMode.CORSAIR_IQUE,
+    "disable":                      _LightingMode.DISABLE,
+    "disable2":                     _LightingMode.DISABLE2,
+    "double flashing":              _LightingMode.DOUBLE_FLASHING,
+    "double meteor":                _LightingMode.DOUBLE_METEOR,
+    "energy":                       _LightingMode.ENERGY,
+    "fan control":                  _LightingMode.FAN_CONTROL,
+    "fire":                         _LightingMode.FIRE,
+    "flashing":                     _LightingMode.FLASHING,
+    "jazz":                         _LightingMode.JAZZ,
+    "jrainbow":                     _LightingMode.JRAINBOW,
+    "lava":                         _LightingMode.LAVA,
+    "lightning":                    _LightingMode.LIGHTNING,
+    "marquee":                      _LightingMode.MARQUEE,
+    "meteor":                       _LightingMode.METEOR,
+    "movie":                        _LightingMode.MOVIE,
+    "msi marquee":                  _LightingMode.MSI_MARQUEE,
+    "msi rainbow":                  _LightingMode.MSI_RAINBOW,
+    "steady":                       _LightingMode.NO_ANIMATION,
+    "planetary":                    _LightingMode.PLANETARY,
+    "play":                         _LightingMode.PLAY,
+    "pop":                          _LightingMode.POP,
+    "rainbow":                      _LightingMode.RAINBOW,
+    "rainbow double flashing":      _LightingMode.RAINBOW_DOUBLE_FLASHING,
+    "rainbow flashing":             _LightingMode.RAINBOW_FLASHING,
+    "rainbow wave":                 _LightingMode.RAINBOW_WAVE,
+    "random":                       _LightingMode.RANDOM,
+    "rap":                          _LightingMode.RAP,
+    "stack":                        _LightingMode.STACK,
+    "visor":                        _LightingMode.VISOR,
+    "water drop":                   _LightingMode.WATER_DROP,
+    "end":                          _LightingMode.END,
+    }
+
     _MATCHES = [
         (0x0db0, 0xb130, 'MSI MPG Coreliquid K360', {
             'fan_count': 5
@@ -383,8 +427,18 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
 
+    def set_color(self,_, mode, colors, speed=1, brightness=10, color_selection=1, **opts):
+        if not colors:
+            color_selection = 0
+        else:
+            colors = list(colors)
+            if len(colors) == 1:
+                colors.append((0,0,0))
+            self.set_color_setting(_LEDArea.JRAINBOW1.value, *colors[0], *colors[1])
 
-        
+        mode = self._COLOR_MODES[mode].value
+        self.set_style_setting(_LEDArea.JRAINBOW1.value, mode, int(speed), brightness, color_selection)
+        self.set_send_led_setting(1)
 
     def get_current_model_index(self):
         self._write((0xb1, ), 0xcc, prefix=1)
@@ -626,7 +680,7 @@ class MpgCooler(UsbHidDriver):
                            4] = ((self._feature_data[led_area + 4] & 0x80) |
                                  (brightness << 2) | speed)
         self._feature_data[led_area +
-                           8] |= 0b10000000 if color_selection else 0
+                           8] = 0b10000000 if color_selection else 0
 
     def set_color_setting(self, led_area, color1_r, color1_g, color1_b,
                           color2_r, color2_g, color2_b):
