@@ -428,10 +428,10 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(self._fan_temp_cfg)
 
     def set_color(self,_, mode, colors, speed=1, brightness=10, color_selection=1, **opts):
+        colors = list(colors) 
         if not colors:
             color_selection = 0
         else:
-            colors = list(colors)
             if len(colors) == 1:
                 colors.append((0,0,0))
             self.set_color_setting(_LEDArea.JRAINBOW1.value, *colors[0], *colors[1])
