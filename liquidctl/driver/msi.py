@@ -337,10 +337,10 @@ class MpgCooler(UsbHidDriver):
             ('Water block duty', array[0x1C] + (array[0x1D] << 8), '%'),
             ('Pump speed', array[0xA] + (array[0xB] << 8), 'rpm'),
             ('Pump duty', array[0x1E] + (array[0x1F] << 8), '%'),
-            ('Temperature inlet', array[12] + (array[13] << 8), '°C'),
-            ('Temperature outlet', array[14] + (array[15] << 8), '°C'),
-            ('Temperature sensor 1', array[16] + (array[17] << 8), '°C'),
-            ('Temperature sensor 2', array[18] + (array[19] << 8), '°C'),
+        ##    ('Temperature inlet', array[12] + (array[13] << 8), '°C'),
+        ##    ('Temperature outlet', array[14] + (array[15] << 8), '°C'),
+        ##    ('Temperature sensor 1', array[16] + (array[17] << 8), '°C'),
+        ##    ('Temperature sensor 2', array[18] + (array[19] << 8), '°C'),
         ]
 
     def get_fan_config(self):
@@ -401,12 +401,20 @@ class MpgCooler(UsbHidDriver):
         else:
             raise ValueError('unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock fan" or "pump".')
 
+    @staticmethod
+    def clamp_and_pad(values):
+        return ([clamp(v, 0, 100) for v in values] + [0]*_MAX_DUTIES)[:_MAX_DUTIES]
+
     def set_speed_profile(self, channel, profile, **opts):
-        def clamp_and_pad(values):
-            return ([clamp(v, 0, 100) for v in values] + [0]*_MAX_DUTIES)[:_MAX_DUTIES]
+        """
+        NOTE: The device will not keep updating its duty cycles
+        automatically after this function is called. The device
+        manages duties according to the previous temperature
+        sent to it via device.set_oled_show_cpu_status()
+        """
 
         duties_temps = list(zip(*profile))
-        duties, temps = tuple(clamp_and_pad(v) for v in duties_temps)
+        duties, temps = tuple(self.clamp_and_pad(v) for v in duties_temps)
 
         for i in self.parse_channel(channel):
             self._fan_cfg[i]     = _FanConfig(    _FanMode.CUSTOMIZE.value, *duties)
@@ -414,7 +422,12 @@ class MpgCooler(UsbHidDriver):
 
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
-
+        _LOGGER.warning(
+            'Duty profiles on this device require continuous communication! '
+            'To keep automatically updating duties according to this profile, '
+            'you can use the extra/coreliquid_ctl script that was created '
+            'specifically for that purpose.'
+        )
 
 
     def set_fixed_speed(self, channel, duty, **opts):
