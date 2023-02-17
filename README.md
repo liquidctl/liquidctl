@@ -800,7 +800,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 Sibling project of Linux kernel _hwmon_ drivers for devices supported by
 liquidctl.
 
-### [codifryed/coolero](https://gitlab.com/codifryed/coolero)
+### [coolercontrol/coolercontrol](https://gitlab.com/coolercontrol/coolercontrol)
 
 Graphical interface to monitor and control cooling devices supported by
 liquidctl.
