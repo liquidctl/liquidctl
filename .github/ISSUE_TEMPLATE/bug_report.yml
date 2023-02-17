@@ -64,7 +64,7 @@ body:
     id: liquidctl-version
     attributes:
       label: Version of liquidctl
-      description: Output of `liquidctl --version`. If the installation failed, indicate the version you tried to install.
+      description: What is the output from `liquidctl --version`? If the installation failed, use the version you tried to install. If you are reporting an issue for any liquidctl version other than the latest, please first check if the problem has not already been solved.
       placeholder: e.g. liquidctl v1.12.0.dev44+g12c1469909fd (Linux-6.0.10-arch2-1-x86_64-with-glibc2.36)
     validations:
       required: true
