@@ -14,12 +14,24 @@ Usage:
   prometheus-liquidctl-exporter [options]
 
 Options:
-  --legacy-690lc          Use Asetek 690LC in legacy mode (old Krakens)
-  --server-port <number>  Port for the HTTP /metrics endpoint
-  -v, --verbose           Output additional information
-  -g, --debug             Show debug information on stderr
-  --version               Display the version number
-  --help                  Show this message
+  --legacy-690lc                     Use Asetek 690LC in legacy mode (old Krakens)
+  --server-port <number>             Port for the HTTP /metrics endpoint
+  -v, --verbose                      Output additional information
+  -g, --debug                        Show debug information on stderr
+  --version                          Display the version number
+  --help                             Show this message
+
+Device selection options (see: list -v):
+  -m, --match <substring>            Filter devices by description substring
+  -n, --pick <number>                Pick among many results for a given filter
+  --vendor <id>                      Filter devices by hexadecimal vendor ID
+  --product <id>                     Filter devices by hexadecimal product ID
+  --release <number>                 Filter devices by hexadecimal release number
+  --serial <number>                  Filter devices by serial number
+  --bus <bus>                        Filter devices by bus
+  --address <address>                Filter devices by address in bus
+  --usb-port <port>                  Filter devices by USB port in bus
+
 
 Copyright Alex Berryman, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -93,7 +105,16 @@ def _make_opts(arguments):
 
 
 _PARSE_ARG = {
-    '--legacy-690lc': bool
+    '--legacy-690lc': bool,
+    '--vendor': lambda x: int(x, 16),
+    '--product': lambda x: int(x, 16),
+    '--release': lambda x: int(x, 16),
+    '--serial': str,
+    '--bus': str,
+    '--address': str,
+    '--usb-port': lambda x: tuple(map(int, x.split('.'))),
+    '--match': str,
+    '--pick': int,
 }
 
 if __name__ == '__main__':
