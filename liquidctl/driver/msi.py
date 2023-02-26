@@ -23,7 +23,7 @@ from liquidctl.util import RelaxedNamesEnum, clamp
 
 _LOGGER = logging.getLogger(__name__)
 
-USAGE_PAGE = 0xFF00 
+EXTRA_USAGE_PAGE = 0x0001 
 _MAX_DATA_LENGTH = 185
 _PER_LED_LENGTH = 720
 _REPORT_LENGTH = 64
@@ -294,7 +294,7 @@ class MpgCooler(UsbHidDriver):
         # have the desired usage page, or that on that system a 
         # single handle is returned for that device interface (see: 259) 
 
-        if (handle.hidinfo['usage_page'] != USAGE_PAGE):
+        if (handle.hidinfo['usage_page'] == EXTRA_USAGE_PAGE):
             return
         yield from super().probe(handle, **kwargs)        
 
