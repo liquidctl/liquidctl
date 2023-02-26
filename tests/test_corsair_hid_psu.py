@@ -45,8 +45,10 @@ SAMPLE_RESPONSES = [
     'fe03524d3130303069',
 
     # https://github.com/liquidctl/liquidctl/pull/54#issuecomment-543760522
-    '03d29215',
     '03d1224711',
+
+    # https://github.com/liquidctl/liquidctl/issues/575#issue-1600123046
+    '03d213c60000414952204858313530306920505355', # with extra non-nil bytes
 
     # artificial
     '0390c803',
@@ -127,7 +129,7 @@ def test_reads_status_directly(mock_psu, has_hwmon, direct_access):
     got = mock_psu.get_status(direct_access=direct_access)
 
     expected = [
-        ('Current uptime', timedelta(seconds=5522), ''),
+        ('Current uptime', timedelta(seconds=50707), ''),
         ('Total uptime', timedelta(days=13, seconds=9122), ''),
         ('VRM temperature', approx(33.5, rel=1e-3), '°C'),
         ('Case temperature', approx(26.5, rel=1e-3), '°C'),

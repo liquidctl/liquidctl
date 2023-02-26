@@ -306,7 +306,7 @@ class CorsairHidPsu(UsbHidDriver):
 
     def _get_timedelta(self, command):
         """Get timedelta with `command`."""
-        secs = int.from_bytes(self._exec(WriteBit.READ, command)[2:], byteorder='little')
+        secs = int.from_bytes(self._exec(WriteBit.READ, command)[2:6], byteorder='little')
         return timedelta(seconds=secs)
 
     def set_screen(self, channel, mode, value, **kwargs):
