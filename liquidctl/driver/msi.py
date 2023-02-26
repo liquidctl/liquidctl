@@ -14,6 +14,8 @@ from copy import copy
 from enum import Enum, unique
 from time import sleep
 import logging
+import io
+from PIL import Image
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
@@ -247,6 +249,14 @@ class MpgCooler(UsbHidDriver):
     "water drop":                   _LightingMode.WATER_DROP,
     "end":                          _LightingMode.END,
     }
+    BUILTIN_MODES = {
+        "silent":   _FanMode.SILENT.value,
+        "balanced": _FanMode.BALANCE.value,
+        "game":     _FanMode.GAME.value,
+        "default":  _FanMode.DEFAULT.value,
+        "smart":    _FanMode.SMART.value,
+    }
+
 
     _MATCHES = [
         (0x0db0, 0xb130, 'MSI MPG Coreliquid K360', {
@@ -271,6 +281,19 @@ class MpgCooler(UsbHidDriver):
 
     @classmethod
     def probe(cls, handle, **kwargs):
+        """Probe `handle` and yield corresponding driver instances. 
+ 
+        These devices have multiple top-level HID usages, and HidapiDevice 
+        handles matching other usages have to be ignored. 
+        """ 
+ 
+        # if usage_page/usage are not available due to hidapi limitations 
+        # (version, platform or backend), they are unfortunately left 
+        # uninitialized; because of this, we explicitly exclude the undesired 
+        # usage_page, and assume in all other cases that we either 
+        # have the desired usage page, or that on that system a 
+        # single handle is returned for that device interface (see: 259) 
+
         if (handle.hidinfo['usage_page'] != USAGE_PAGE):
             return
         yield from super().probe(handle, **kwargs)        
@@ -389,6 +412,26 @@ class MpgCooler(UsbHidDriver):
             buf[offset + 7] = config.temp6
         return self._write(buf)
 
+    def set_profile(self, channels, profiles):
+        fan_cfg      = self.get_fan_config()
+        fan_temp_cfg = self.get_fan_temp_config()
+        channel_idx = [self.parse_channel(ch) for ch in channels]
+        
+        for idx, prof in zip(channel_idx, profiles):
+            if type(prof) == str:
+                fanmode  = _FanConfig(    self.BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
+                tempmode = _FanTempConfig(self.BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
+            else:
+                duties, temps = map(device.clamp_and_pad, zip(*prof))
+                fanmode  = _FanConfig(    _FanMode.CUSTOMIZE.value, *duties)
+                tempmode = _FanTempConfig(_FanMode.CUSTOMIZE.value, *temps ) 
+            for i in idx:
+                fan_cfg[i]      = fanmode
+                fan_temp_cfg[i] = tempmode
+    
+        self.set_fan_config(     fan_cfg      )
+        self.set_fan_temp_config(fan_temp_cfg )
+
     def parse_channel(self, channel):
         if channel == "pump":
             return [4]
@@ -456,6 +499,38 @@ class MpgCooler(UsbHidDriver):
     def get_current_model_index(self):
         self._write((0xb1, ), 0xcc, prefix=1)
         return self._read()[2]
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        assert channel.lower() == "oled"
+        assert mode != None, "Mode needs a value"
+
+        if mode == "preloaded":
+            assert len(value) == 2, "Please provide two numbers as the indices of the image to show, example: '10'"
+            type, num = map(int, value)
+            self.set_oled_show_profile(type, num)
+        if mode == "upload":
+            idx, file = value.split()
+            idx  = int(idx)
+            bmp_img = self._prepare_bmp(file)
+            self.set_oled_upload_gif(bmp_img,idx)
+            # self.set_oled_show_profile(1,idx)
+            
+    def _prepare_bmp(self, path):
+        end_w, end_h = 240, 320
+        img = Image.open(path)
+        w, h = img.size
+        wrat = end_w/w; hrat = end_h/h
+        ratio = wrat if wrat > hrat else hrat
+        img = img.resize((int(ratio*w), int(ratio*h)))
+        w, h = img.size
+        x_start = int((w - end_w) / 2)
+        y_start = int((h - end_h) / 2)
+        img = img.crop((x_start, y_start, x_start + end_w, y_start + end_h))
+        
+        img = img.convert("RGB")
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format = 'BMP')
+        return img_bytes 
 
     def get_firmware_version_aprom(self):
         self._write((0xb0, ), 0xcc, prefix=1)
@@ -745,31 +820,28 @@ class MpgCooler(UsbHidDriver):
         --gif-number
         """
         data = [0x70, 0, gif_no]
-        ret = self._write(data)
+        self._write(data)
         data[1] = clamp(profile_type, 0, 1)
-        return ret + self._write(data)
+        return self._write(data)
 
     def set_oled_show_banner(self, banner_type=0, bmp_no=0):
         """
         --banner-type
         --bmp-number
         """
-        data = [0x79, 0, bmp_no]
-        ret = self._write(data)
-        data[1] = banner_type
-        return ret + self._write(data)
+        data = [0x79, banner_type, bmp_no]
+        return self._write(data)
 
     def set_oled_show_disable(self):
         """--disable-oled"""
         return self._write((0x7f, ))
 
-    def _set_oled_upload(self, type, filename, type_num=0):
+    def _set_oled_upload(self, type, bytes, type_num=0):
         start_cmd = 0xc0 if type == _UploadType.GIF else 0xd0
-        with open(filename, 'rb') as f:
-            content = f.read()
-            l = len(content)
-            if l > (2**20):
-                raise ValueError('Too big')
+        content = bytes.getbuffer()
+        l = len(content)
+        if l > (2**20):
+            raise ValueError('Too big')
         self._write(
             (start_cmd, l & 0xFF, (l >> 8) & 0xFF, (l >> 16) & 0xFF, (l >> 24)
              & 0xFF, type_num))
@@ -779,23 +851,20 @@ class MpgCooler(UsbHidDriver):
         while n < l:
             array = [start_cmd + 1]
             o = clamp(l - n, 0, 60)
-            for k in range(1, o):
-                array[k] = content[n + k - 2]
+            for k in range(0, o):
+                array.append(content[n + k])
             n += o
             self._write(array)
-            sleep(0.15)
-        sleep(1)
         high, low = self.get_oled_gif_checksum()
         if low != (l & 0xFF) or high != ((l >> 8) & 0xFF):
-            raise RuntimeError('Upload probably failed')
+            _LOGGER.debug(f'image checksums: high {high} vs {l & 0xFF}, low {low} vs {(l >> 8) & 0xFF}.')
 
-    def set_oled_upload_gif(self, filename, gif_no=6):
-        """Default is 6 to not overwrite the default images.
-
+    def set_oled_upload_gif(self, bytes, gif_no=0):
+        """
         --upload-gif-file
         --upload-gif-number
         """
-        self._set_oled_upload(_UploadType.GIF, filename, gif_no)
+        self._set_oled_upload(_UploadType.GIF, bytes, gif_no)
 
     def set_oled_upload_banner(self, filename, banner_no=4):
         """Default is 4 to not overwrite the default banners.
