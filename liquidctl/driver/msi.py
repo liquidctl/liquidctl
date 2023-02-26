@@ -422,7 +422,7 @@ class MpgCooler(UsbHidDriver):
                 fanmode  = _FanConfig(    self.BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
                 tempmode = _FanTempConfig(self.BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
             else:
-                duties, temps = map(device.clamp_and_pad, zip(*prof))
+                duties, temps = map(self.clamp_and_pad, zip(*prof))
                 fanmode  = _FanConfig(    _FanMode.CUSTOMIZE.value, *duties)
                 tempmode = _FanTempConfig(_FanMode.CUSTOMIZE.value, *temps ) 
             for i in idx:
