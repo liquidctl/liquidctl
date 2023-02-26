@@ -25,7 +25,7 @@ Examples:
 
 Usage:
   coreliquid_ctl [options] show-sensors
-  coreliquid_ctl [options] control (<channel> with <profile> on <sensor> [and])...
+  coreliquid_ctl [options] using <sensor> control (<channel> with <profile> [and])...
   coreliquid_ctl --help
   coreliquid_ctl --version
 
@@ -83,15 +83,6 @@ INTERNAL_CHIP_NAME = '_internal'
 
 MAX_FAILURES = 3
 
-BUILTIN_MODES = {
-    "silent":   msi._FanMode.SILENT.value,
-    "balanced": msi._FanMode.BALANCE.value,
-    "game":     msi._FanMode.GAME.value,
-    "default":  msi._FanMode.DEFAULT.value,
-    "smart":    msi._FanMode.SMART.value,
-}
-
-
 def read_sensors(device):
 
     #TODO: implement cpu frequency sensor for all OS
@@ -123,26 +114,6 @@ def show_sensors(device):
     sensors = read_sensors(device)
     for k, v in sensors.items():
         print('{:<70}  {:>6}{}'.format(k, v, '°C'))
-
-def set_device_profile(device, channels, profiles):
-    fan_cfg      = device.get_fan_config()
-    fan_temp_cfg = device.get_fan_temp_config()
-    channel_idx = [device.parse_channel(ch) for ch in channels]
-    
-    for idx, prof in zip(channel_idx, profiles):
-        if type(prof) == str:
-            fanmode  = msi._FanConfig(    BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
-            tempmode = msi._FanTempConfig(BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
-        else:
-            duties, temps = map(device.clamp_and_pad, zip(*prof))
-            fanmode  = msi._FanConfig(    msi._FanMode.CUSTOMIZE.value, *duties)
-            tempmode = msi._FanTempConfig(msi._FanMode.CUSTOMIZE.value, *temps ) 
-        for i in idx:
-            fan_cfg[i]      = fanmode
-            fan_temp_cfg[i] = tempmode
-
-    device.set_fan_config(     fan_cfg      )
-    device.set_fan_temp_config(fan_temp_cfg )
 
 def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100):
     """Parse, validate and normalize a temperature–duty profile.
@@ -182,7 +153,7 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100):
 
     """
     try:
-        if arg in BUILTIN_MODES.keys():
+        if arg in msi.MpgCooler.BUILTIN_MODES.keys():
             return arg
         else:
             val = ast.literal_eval('[' + arg + ']')
@@ -204,24 +175,23 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100):
     return normalize_profile(val, critx=maxtemp)
 
 
-def control(device, channels, profiles, sensors, update_interval):
+def control(device, channels, profiles, sensor, update_interval):
     LOGGER.info('device: %s on bus %s and address %s', device.description, device.bus, device.address)
-    for channel, profile, sensor in zip(channels, profiles, sensors):
+    for channel, profile in zip(channels, profiles):
         LOGGER.info('channel: %s following profile %s on %s', channel, str(profile), sensor)
     
-    set_device_profile(device, channels, profiles)
+    device.set_profile(channels, profiles)
 
     LOGGER.info('starting...')
     failures = 0
     while True:
         try:
             sensor_data = read_sensors(device)
-            for i, (channel, profile, sensor) in enumerate(zip(channels, profiles, sensors)):
-                temp = sensor_data[sensor]
-                freq = sensor_data.get('cpu_freq', 0)
+            temp = sensor_data[sensor]
+            freq = sensor_data.get('cpu_freq', 0)
 
-                device.set_oled_clock(datetime.now())
-                device.set_oled_show_cpu_status(freq, temp)
+            device.set_oled_clock(datetime.now())
+            device.set_oled_show_cpu_status(freq, temp)
             failures = 0
         except Exception as err:
             failures += 1

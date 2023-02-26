@@ -48,8 +48,7 @@ class _MockCoreLiquidK360DeviceInvalid(MockHidapiDevice):
 
 def test_mpg_core_liquid_k360_get_status(mpgCoreLiquidK360Device):
     dev = mpgCoreLiquidK360Device
-    (fan1, fan1d, fan2, fan2d, fan3, fan3d, wbfan, wbfand, pump, pumpd,
-     temp_in, temp_out, temp1, temp2) = dev.get_status()
+    (fan1, fan1d, fan2, fan2d, fan3, fan3d, wbfan, wbfand, pump, pumpd,) = dev.get_status()
     assert fan1[1] == 496
     assert fan1d[1] == 20
     assert fan2[1] == 517
