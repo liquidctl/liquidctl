@@ -181,26 +181,29 @@ def _list_devices_objs(devices):
 
 def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **opts):
     for i, dev in enumerate(devices):
-        warnings = []
+        warning = None
 
-        if not using_filters:
-            print(f'Device #{i}: {dev.description}')
-        elif device_id is not None:
-            print(f'Device #{device_id}: {dev.description}')
-        else:
-            print(f'Result #{i}: {dev.description}')
+        if device_id is not None:
+            assert i == 0, 'only one device expected for a device id'
+            i = device_id
+
+        heading = f'Result {i}: {dev.description}'
+
         if not verbose:
+            print(heading)
             continue
 
+        tmp = []
+
         if dev.vendor_id:
-            print(f'├── Vendor ID: {dev.vendor_id:#06x}')
+            tmp.append(('Vendor ID:', f'{dev.vendor_id:#06x}'))
         if dev.product_id:
-            print(f'├── Product ID: {dev.product_id:#06x}')
+            tmp.append(('Product ID:', f'{dev.product_id:#06x}'))
         if dev.release_number:
-            print(f'├── Release number: {dev.release_number:#06x}')
+            tmp.append(('Release number:', f'{dev.release_number:#06x}'))
         try:
             if dev.serial_number:
-                print(f'├── Serial number: {dev.serial_number}')
+                tmp.append(('Serial number:', str(dev.serial_number)))
         except:
             msg = 'could not read the serial number'
             if sys.platform.startswith('linux') and os.geteuid:
@@ -210,22 +213,23 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
             if debug:
                 _LOGGER.exception(msg.capitalize())
             else:
-                warnings.append(msg)
+                warning = msg
 
-        print(f'├── Bus: {dev.bus}')
-        print(f'├── Address: {dev.address}')
+        tmp.append(('Bus:', str(dev.bus)))
+        tmp.append(('Address:', str(dev.address)))
         if dev.port:
             port = '.'.join(map(str, dev.port))
-            print(f'├── Port: {port}')
+            tmp.append(('Port:', str(port)))
 
-        print(f'└── Driver: {type(dev).__name__}')
+        tmp.append(('Driver:', str(type(dev).__name__)))
         if debug:
             driver_hier = (i.__name__ for i in inspect.getmro(type(dev)))
             _LOGGER.debug('MRO: %s', ', '.join(driver_hier))
 
-        for msg in warnings:
-            _LOGGER.warning(msg)
-        print('')
+        if warning:
+            _LOGGER.warning(warning)
+
+        _print_table(heading, tmp)
 
     assert 'device' not in opts or len(devices) <= 1, 'too many results listed with --device'
 
