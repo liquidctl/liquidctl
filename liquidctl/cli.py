@@ -256,27 +256,45 @@ def _dev_status_obj(dev, status):
 def _print_dev_status(dev, status):
     if not status:
         return
-    print(dev.description)
+
+    kcols, vcols, ucols = 0, 0, 0
+
     tmp = []
-    kcols, vcols = 0, 0
+
     for k, v, u in status:
+        k = f'{k}:'
+
         if isinstance(v, datetime.timedelta):
             v = str(v)
         elif isinstance(v, bool):
             v = 'Yes' if v else 'No'
         elif v is None:
-            v = 'N/A'
+            v = 'Not available'
         else:
             valfmt = _VALUE_FORMATS.get(u, '')
             v = f'{v:{valfmt}}'
+
         kcols = max(kcols, len(k))
         vcols = max(vcols, len(v))
+        ucols = max(ucols, len(u))
+
         tmp.append((k, v, u))
-    for k, v, u in tmp[:-1]:
-        print(f'├── {k:<{kcols}}    {v:>{vcols}}  {u}')
-    k, v, u = tmp[-1]
-    print(f'└── {k:<{kcols}}    {v:>{vcols}}  {u}')
-    print('')
+
+    heading = f'{dev.description}:'
+    sep = '    '
+
+    total_columns = kcols + vcols + ucols + 2 * len(sep)
+    if total_columns < len(heading):
+        kcols += len(heading) - total_columns
+        total_columns = len(heading)
+
+    print(heading)
+    print('-' * total_columns)
+
+    for k, v, u in tmp:
+        print(f'{k:<{kcols}}{sep}{v:>{vcols}}{sep}{u:>{ucols}}')
+
+    print()
 
 
 def _device_set_color(dev, args, **opts):
