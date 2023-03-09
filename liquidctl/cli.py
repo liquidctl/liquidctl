@@ -257,13 +257,9 @@ def _print_dev_status(dev, status):
     if not status:
         return
 
-    kcols, vcols, ucols = 0, 0, 0
-
     tmp = []
 
     for k, v, u in status:
-        k = f'{k}:'
-
         if isinstance(v, datetime.timedelta):
             v = str(v)
         elif isinstance(v, bool):
@@ -274,25 +270,33 @@ def _print_dev_status(dev, status):
             valfmt = _VALUE_FORMATS.get(u, '')
             v = f'{v:{valfmt}}'
 
-        kcols = max(kcols, len(k))
-        vcols = max(vcols, len(v))
-        ucols = max(ucols, len(u))
+        tmp.append((f'{k}:', v, u))
 
-        tmp.append((k, v, u))
+    _print_table(dev.description, tmp)
 
-    heading = f'{dev.description}:'
-    sep = '    '
 
-    total_columns = kcols + vcols + ucols + 2 * len(sep)
-    if total_columns < len(heading):
-        kcols += len(heading) - total_columns
-        total_columns = len(heading)
+def _print_table(heading, rows):
+    SEP = '    '
+
+    widths = [0, 0, 0, 0]
+
+    for row in rows:
+        for i, col in enumerate(row):
+            widths[i] = max(widths[i], len(col))
+
+    total_width = sum(widths) + (widths.index(0) - 1) * len(SEP)
+    if total_width < len(heading):
+        widths[0] += len(heading) - total_width
+        total_width = len(heading)
 
     print(heading)
-    print('-' * total_columns)
+    print('-' * total_width)
 
-    for k, v, u in tmp:
-        print(f'{k:<{kcols}}{sep}{v:>{vcols}}{sep}{u:>{ucols}}')
+    for row in rows:
+        print(f'{row[0]:<{widths[0]}}', end='')
+        for col, width in zip(row[1:], widths[1:]):
+            print(f'{SEP}{col:>{width}}', end='')
+        print()
 
     print()
 
