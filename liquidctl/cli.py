@@ -283,8 +283,9 @@ def _print_dev_status(dev, status):
 
 def _print_table(blocks):
     # Parsing the output produced by this function is discouraged, use `--json` instead.
+    # TODO: handle (ignore?) unreasonably long columns (e.g. USB device addresses on Windows/Mac).
 
-    TAB = '   '
+    TAB = '    '
     COLON = ':'
 
     widths = [0, 0, 0, 0]
