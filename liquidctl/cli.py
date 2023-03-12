@@ -189,10 +189,8 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
             assert i == 0, 'only one device expected for a device id'
             i = device_id
 
-        heading = f'Result {i}: {dev.description}'
-
         if not verbose:
-            print(heading)
+            print(f'Result {i}: {dev.description}')
             continue
 
         rows = []
@@ -231,7 +229,7 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
         if warning:
             _LOGGER.warning(warning)
 
-        blocks.append((heading, rows))
+        blocks.append((dev.description, rows))
 
     _print_table(blocks)
 
