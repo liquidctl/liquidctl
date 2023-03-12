@@ -303,6 +303,7 @@ def _print_table(blocks):
             widths[0] += len(heading) - total_width
             total_width = len(heading)
 
+    a, b, c, _ = widths
     ruler = '-' * total_width
 
     for heading, rows in blocks:
@@ -310,11 +311,12 @@ def _print_table(blocks):
         print(ruler)
 
         for row in rows:
-            print(f'{row[0]}{COLON:<{widths[0] - len(row[0])}}', end='')
-            for col, width in zip(row[1:], widths[1:]):
-                if col:
-                    print(f'{TAB}{col:>{width}}', end='')
-            print()
+            if len(row) == 3 and row[2]:
+                k, v, u = row
+                print(f'{k}{COLON:<{a - len(k)}}{TAB}{v:>{b}}{TAB}{u:>{c}}')
+            else:
+                k, v = row[:2]
+                print(f'{k}{COLON:<{a - len(k)}}{TAB}{v:>{b}}')
 
         print()
 
