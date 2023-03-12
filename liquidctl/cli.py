@@ -271,7 +271,7 @@ def _print_dev_status(dev, status):
         elif isinstance(v, bool):
             v = 'Yes' if v else 'No'
         elif v is None:
-            v = 'Not available'
+            v = 'N/A'
         else:
             valfmt = _VALUE_FORMATS.get(u, '')
             v = f'{v:{valfmt}}'
