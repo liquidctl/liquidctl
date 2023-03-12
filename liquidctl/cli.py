@@ -215,13 +215,14 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
             else:
                 warning = msg
 
-        rows.append(('Bus', str(dev.bus)))
-        rows.append(('Address', str(dev.address)))
+        rows.append(('Driver', str(type(dev).__name__)))
+
         if dev.port:
             port = '.'.join(map(str, dev.port))
             rows.append(('Port', str(port)))
+        rows.append(('Bus', str(dev.bus)))
+        rows.append(('Address', str(dev.address)))
 
-        rows.append(('Driver', str(type(dev).__name__)))
         if debug:
             driver_hier = (i.__name__ for i in inspect.getmro(type(dev)))
             _LOGGER.debug('MRO: %s', ', '.join(driver_hier))
