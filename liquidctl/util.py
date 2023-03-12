@@ -368,6 +368,12 @@ def check_unsafe(*reqs, unsafe=None, error=False, **kwargs):
     """
 
     if unsafe:
+        # UNSTABLE: magic enable-all unsafe feature. Besides being unstable, It's also probably not
+        # a good to use this: for example, it might result in a many non-obvius accesses to delicate
+        # I²C/SMBus devices.
+        if '_all' in unsafe:
+            return True
+
         reqs = tuple(filter(lambda x: x not in unsafe, reqs))
 
     if not reqs:
