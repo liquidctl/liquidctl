@@ -292,7 +292,8 @@ def _print_table(blocks):
     for _, rows in blocks:
         for row in rows:
             for i, col in enumerate(row):
-                widths[i] = max(widths[i], len(col))
+                if col:
+                    widths[i] = max(widths[i], len(col))
 
     widths[0] += len(COLON)
     total_width = sum(widths) + (widths.index(0) - 1) * len(TAB)
@@ -311,7 +312,8 @@ def _print_table(blocks):
         for row in rows:
             print(f'{row[0]}{COLON:<{widths[0] - len(row[0])}}', end='')
             for col, width in zip(row[1:], widths[1:]):
-                print(f'{TAB}{col:>{width}}', end='')
+                if col:
+                    print(f'{TAB}{col:>{width}}', end='')
             print()
 
         print()
