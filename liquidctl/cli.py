@@ -286,7 +286,7 @@ def _print_dev_status(dev, status):
 def _print_table(blocks):
     # Parsing the output produced by this function is discouraged, use `--json` instead.
 
-    SEP = ' '
+    SEP = '   '
 
     widths = [0, 0, 0, 0]
 
