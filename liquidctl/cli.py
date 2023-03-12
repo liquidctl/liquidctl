@@ -180,6 +180,8 @@ def _list_devices_objs(devices):
 
 
 def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **opts):
+    blocks = []
+
     for i, dev in enumerate(devices):
         warning = None
 
@@ -193,17 +195,17 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
             print(heading)
             continue
 
-        tmp = []
+        rows = []
 
         if dev.vendor_id:
-            tmp.append(('Vendor ID:', f'{dev.vendor_id:#06x}'))
+            rows.append(('Vendor ID:', f'{dev.vendor_id:#06x}'))
         if dev.product_id:
-            tmp.append(('Product ID:', f'{dev.product_id:#06x}'))
+            rows.append(('Product ID:', f'{dev.product_id:#06x}'))
         if dev.release_number:
-            tmp.append(('Release number:', f'{dev.release_number:#06x}'))
+            rows.append(('Release number:', f'{dev.release_number:#06x}'))
         try:
             if dev.serial_number:
-                tmp.append(('Serial number:', str(dev.serial_number)))
+                rows.append(('Serial number:', str(dev.serial_number)))
         except:
             msg = 'could not read the serial number'
             if sys.platform.startswith('linux') and os.geteuid:
@@ -215,13 +217,13 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
             else:
                 warning = msg
 
-        tmp.append(('Bus:', str(dev.bus)))
-        tmp.append(('Address:', str(dev.address)))
+        rows.append(('Bus:', str(dev.bus)))
+        rows.append(('Address:', str(dev.address)))
         if dev.port:
             port = '.'.join(map(str, dev.port))
-            tmp.append(('Port:', str(port)))
+            rows.append(('Port:', str(port)))
 
-        tmp.append(('Driver:', str(type(dev).__name__)))
+        rows.append(('Driver:', str(type(dev).__name__)))
         if debug:
             driver_hier = (i.__name__ for i in inspect.getmro(type(dev)))
             _LOGGER.debug('MRO: %s', ', '.join(driver_hier))
@@ -229,7 +231,9 @@ def _list_devices_human(devices, *, using_filters, device_id, verbose, debug, **
         if warning:
             _LOGGER.warning(warning)
 
-        _print_table(heading, tmp)
+        blocks.append((heading, rows))
+
+    _print_table(blocks)
 
     assert 'device' not in opts or len(devices) <= 1, 'too many results listed with --device'
 
@@ -276,33 +280,39 @@ def _print_dev_status(dev, status):
 
         tmp.append((f'{k}:', v, u))
 
-    _print_table(dev.description, tmp)
+    _print_table([(dev.description, tmp)])
 
 
-def _print_table(heading, rows):
-    SEP = '    '
+def _print_table(blocks):
+    # Parsing the output produced by this function is discouraged, use `--json` instead.
+
+    SEP = ' '
 
     widths = [0, 0, 0, 0]
 
-    for row in rows:
-        for i, col in enumerate(row):
-            widths[i] = max(widths[i], len(col))
+    for _, rows in blocks:
+        for row in rows:
+            for i, col in enumerate(row):
+                widths[i] = max(widths[i], len(col))
 
     total_width = sum(widths) + (widths.index(0) - 1) * len(SEP)
-    if total_width < len(heading):
-        widths[0] += len(heading) - total_width
-        total_width = len(heading)
 
-    print(heading)
-    print('-' * total_width)
+    for heading, _ in blocks:
+        if total_width < len(heading):
+            widths[0] += len(heading) - total_width
+            total_width = len(heading)
 
-    for row in rows:
-        print(f'{row[0]:<{widths[0]}}', end='')
-        for col, width in zip(row[1:], widths[1:]):
-            print(f'{SEP}{col:>{width}}', end='')
+    for heading, rows in blocks:
+        print(heading)
+        print('-' * total_width)
+
+        for row in rows:
+            print(f'{row[0]:<{widths[0]}}', end='')
+            for col, width in zip(row[1:], widths[1:]):
+                print(f'{SEP}{col:>{width}}', end='')
+            print()
+
         print()
-
-    print()
 
 
 def _device_set_color(dev, args, **opts):
