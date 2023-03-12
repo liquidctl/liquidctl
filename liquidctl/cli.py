@@ -283,17 +283,17 @@ def _print_dev_status(dev, status):
 
 def _print_table(blocks):
     # Parsing the output produced by this function is discouraged, use `--json` instead.
-    # TODO: handle (ignore?) unreasonably long columns (e.g. USB device addresses on Windows/Mac).
 
     TAB = '    '
     COLON = ':'
+    MAX_COL_WIDTH = 40 # Beyond it we bail out from trying to nicely format the entire line.
 
     widths = [0, 0, 0, 0]
 
     for _, rows in blocks:
         for row in rows:
             for i, col in enumerate(row):
-                if col:
+                if col and len(col) <= MAX_COL_WIDTH:
                     widths[i] = max(widths[i], len(col))
 
     widths[0] += len(COLON)
@@ -314,10 +314,16 @@ def _print_table(blocks):
         for row in rows:
             if len(row) == 3 and row[2]:
                 k, v, u = row
-                print(f'{k}{COLON:<{a - len(k)}}{TAB}{v:>{b}}{TAB}{u:>{c}}')
+                if max(len(k), len(v), len(u)) <= MAX_COL_WIDTH:
+                    print(f'{k}{COLON:<{a - len(k)}}{TAB}{v:>{b}}{TAB}{u:>{c}}')
+                else:
+                    print(f'{k}{COLON} {v} {u}')
             else:
                 k, v = row[:2]
-                print(f'{k}{COLON:<{a - len(k)}}{TAB}{v:>{b}}')
+                if max(len(k), len(v)) <= MAX_COL_WIDTH:
+                    print(f'{k}{COLON:<{a - len(k)}}{TAB}{v:>{b}}')
+                else:
+                    print(f'{k}{COLON} {v}')
 
         print()
 
