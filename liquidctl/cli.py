@@ -303,8 +303,8 @@ def _print_table(blocks):
             widths[0] += len(heading) - total_width
             total_width = len(heading)
 
-    a, b, c, _ = widths
     ruler = '-' * total_width
+    a, b, c, _ = widths
 
     for heading, rows in blocks:
         print(heading)
