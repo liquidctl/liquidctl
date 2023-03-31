@@ -248,6 +248,7 @@ def _dev_status_obj(dev, status):
     return {
         'bus': dev.bus,
         'address': dev.address,
+        'port': '.'.join(map(str, dev.port)) if dev.port else None,
         'description': dev.description.replace(' (experimental)', ''),
         'status': [convert(x) for x in status]
     }
