@@ -268,7 +268,7 @@ class VirtualBusDevice(BaseDriver):
 
     @property
     def port(self):
-        return None
+        return [12, 34]
 
 
 class VirtualBus(BaseBus):

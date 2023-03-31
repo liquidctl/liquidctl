@@ -37,7 +37,7 @@ def test_json_list(main):
             'serial_number': None,
             'bus': 'virtual',
             'address': 'virtual_address',
-            'port': None,
+            'port': [12, 34],
             'driver': 'VirtualBusDevice',
             'experimental': True,
         }
@@ -54,6 +54,7 @@ def test_json_initialize(main):
         {
             'bus': 'virtual',
             'address': 'virtual_address',
+            'port': '12.34',
             'description': 'Virtual Bus Device',
             'status': [
                 { 'key': 'Firmware version', 'value': '3.14.16', 'unit': '' },
@@ -72,6 +73,7 @@ def test_json_status(main):
         {
             'bus': 'virtual',
             'address': 'virtual_address',
+            'port': '12.34',
             'description': 'Virtual Bus Device',
             'status': [
                 { 'key': 'Temperature', 'value': 30.4, 'unit': '°C' },
