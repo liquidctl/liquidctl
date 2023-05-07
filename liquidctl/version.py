@@ -12,7 +12,6 @@ _SETUPTOOLS_SCM_PARAMS = {"version_scheme": "release-branch-semver"}
 
 
 def _build_version():
-
     try:
         from liquidctl._version import version, version_tuple
 
@@ -22,7 +21,6 @@ def _build_version():
 
 
 def _runtime_version():
-
     try:
         from setuptools_scm import get_version
     except ModuleNotFoundError:

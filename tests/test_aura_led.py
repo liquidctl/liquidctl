@@ -96,7 +96,6 @@ def test_aura_led_19AF_device_sync_channel(mockAuraLed_19AFDevice):
 
 
 def test_aura_led_19AF_device_invalid_set_color_arguments(mockAuraLed_19AFDevice):
-
     with pytest.raises(KeyError):
         mockAuraLed_19AFDevice.set_color("invalid", "off", [])
 

@@ -4,7 +4,6 @@ import sys
 from inspect import cleandoc
 
 if __name__ == "__main__":
-
     # This script is meant to be executed from this directory or the project root.
     # We use that assumption to make Python pick the local liquidctl modules,
     # instead other versions that may be installed on the environment/system.
