@@ -308,8 +308,8 @@ def _log_env_infos():
     _LOGGER.debug('version: %s', __version__)
     _LOGGER.debug('platform: %s', platform.platform())
     _LOGGER.debug('python: %s', sys.version.replace('\n', ' '))
-    _LOGGER.debug('encoding: %s default, %s preferred, utf8_mode %s',
-                  locale.getdefaultlocale()[1], locale.getpreferredencoding(), sys.flags.utf8_mode)
+    _LOGGER.debug('encoding: %s current, %s preferred, utf8_mode %s',
+                  locale.getlocale()[1], locale.getpreferredencoding(), sys.flags.utf8_mode)
 
     if sys.hexversion >= 0x03080000:
         from importlib.metadata import distribution, version, PackageNotFoundError
