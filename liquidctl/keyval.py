@@ -39,8 +39,8 @@ def get_runtime_dirs(appname='liquidctl'):
         # is available; this allows a user with XDG_RUNTIME_DIR set to still
         # find data stored by another user as long as it is in the fallback
         # path (see #37 for a real world use case)
-        if os.path.isdir('/var/run'):
-            dirs.append(os.path.join('/var/run', appname))
+        if os.path.isdir('/run'):
+            dirs.append(os.path.join('/run', appname))
         assert dirs, 'Could not get a suitable place to store runtime data'
     else:
         dirs = [os.path.join('/tmp', appname)]
