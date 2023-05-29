@@ -52,15 +52,20 @@ _STATUS_FAN_DUTY = "Fan duty"
 # name -> (channel_id, min_duty, max_duty)
 # TODO adjust min duty value to what the firmware enforces
 _SPEED_CHANNELS_KRAKENX = {
-    "pump": (0x1, 20, 100),
+    "pump": ([0x1, 0x0, 0x0], 20, 100),
 }
 
 # Available speed channels for model Z coolers
 # name -> (channel_id, min_duty, max_duty)
 # TODO adjust min duty values to what the firmware enforces
 _SPEED_CHANNELS_KRAKENZ = {
-    "pump": (0x1, 20, 100),
-    "fan": (0x2, 0, 100),
+    "pump": ([0x1, 0x0, 0x0], 20, 100),
+    "fan": ([0x2, 0x0, 0x0], 0, 100),
+}
+
+_SPEED_CHANNELS_KRAKEN2023 = {
+    "pump": ([0x1, 0x1, 0x0], 20, 100),
+    "fan": ([0x2, 0x1, 0x1], 0, 100),
 }
 
 _CRITICAL_TEMPERATURE = 59
@@ -367,7 +372,7 @@ class KrakenX3(UsbHidDriver):
         """Set channel to use a speed duty profile."""
 
         cid, dmin, dmax = self._speed_channels[channel]
-        header = [0x72, cid, 0x00, 0x00]
+        header = [0x72] + cid
         norm = normalize_profile(profile, _CRITICAL_TEMPERATURE)
         stdtemps = list(range(20, _CRITICAL_TEMPERATURE + 1))
         interp = [clamp(interpolate_profile(norm, t), dmin, dmax) for t in stdtemps]
@@ -566,7 +571,7 @@ class KrakenZ3(KrakenX3):
             0x300C,
             "NZXT Kraken 2023 Elite",
             {
-                "speed_channels": _SPEED_CHANNELS_KRAKENZ,
+                "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
                 "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
                 "bulk_buffer_size": 1024 * 1024 * 2,  # 2 MB
@@ -578,7 +583,7 @@ class KrakenZ3(KrakenX3):
             0x300E,
             "NZXT Kraken 2023",
             {
-                "speed_channels": _SPEED_CHANNELS_KRAKENZ,
+                "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
                 "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
                 "bulk_buffer_size": 1024 * 1024 * 2,  # 2 MB
@@ -870,6 +875,7 @@ class KrakenZ3(KrakenX3):
         bucketIndex = self._find_next_unoccupied_bucket(
             buckets
         )  # find the first unoccupied bucket in the list
+
         bucketIndex = self._prepare_bucket(
             bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1
         )  # prepare bucket or find a more suitable one
@@ -889,6 +895,7 @@ class KrakenZ3(KrakenX3):
             0x32,
             0x10,
         ] + bulkInfo
+
         dataSize = math.ceil((len(header) + len(data)) / 1024)
         dataSizeBytes = list(
             # calculates the number of needed packets
