@@ -39,7 +39,6 @@ _LOGGER = logging.getLogger(__name__)
 _READ_LENGTH = 64
 _WRITE_LENGTH = 64
 _MAX_READ_ATTEMPTS = 12
-_BULK_WRITE_LENGTH = 512
 
 _LCD_TOTAL_MEMORY = 24320
 
@@ -73,6 +72,9 @@ _COLOR_CHANNELS_KRAKENX = {"external": 0b001, "ring": 0b010, "logo": 0b100, "syn
 _COLOR_CHANNELS_KRAKENZ = {
     "external": 0b001,
 }
+
+# Available color channels and IDs for model Z coolers
+_COLOR_CHANNELS_KRAKEN2023 = {}
 
 _HWMON_CTRL_MAPPING_KRAKENX = {"pump": 1}
 
@@ -317,6 +319,9 @@ class KrakenX3(UsbHidDriver):
     def set_color(self, channel, mode, colors, speed="normal", direction="forward", **kwargs):
         """Set the color mode for a specific channel."""
 
+        if len(self._color_channels) == 0:
+            raise NotSupportedByDevice()
+
         if "backwards" in mode:
             _LOGGER.warning("deprecated mode, move to direction=backward option")
             mode = mode.replace("backwards-", "")
@@ -330,7 +335,8 @@ class KrakenX3(UsbHidDriver):
         elif maxcolors == 0:
             if colors:
                 _LOGGER.warning("too many colors for mode=%s, none needed", mode)
-            colors = [[0, 0, 0]]  # discard the input but ensure at least one step
+
+            colors = [[0, 0, 0]]
         elif len(colors) > maxcolors:
             _LOGGER.warning("too many colors for mode=%s, dropping to %d", mode, maxcolors)
             colors = colors[:maxcolors]
@@ -498,7 +504,8 @@ class KrakenX3(UsbHidDriver):
                     + [0x00] * 10
                 )
                 self._write(msg + color_lists[i % 4])
-            self._write([0x22, 0x03, cid, 0x08])  # this actually enables wings mode
+            # this actually enables wings mode
+            self._write([0x22, 0x03, cid, 0x08])
 
         else:
             opcode = [0x2A, 0x04]
@@ -550,17 +557,53 @@ class KrakenZ3(KrakenX3):
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
                 "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
+                "bulk_buffer_size": 512,
+                "lcd_resolution": (320, 320),
             },
-        )
+        ),
+        (
+            0x1E71,
+            0x300C,
+            "NZXT Kraken 2023 Elite",
+            {
+                "speed_channels": _SPEED_CHANNELS_KRAKENZ,
+                "color_channels": _COLOR_CHANNELS_KRAKEN2023,
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
+                "bulk_buffer_size": 1024 * 1024 * 2,  # 2 MB
+                "lcd_resolution": (640, 640),
+            },
+        ),
+        (
+            0x1E71,
+            0x300E,
+            "NZXT Kraken 2023",
+            {
+                "speed_channels": _SPEED_CHANNELS_KRAKENZ,
+                "color_channels": _COLOR_CHANNELS_KRAKEN2023,
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
+                "bulk_buffer_size": 1024 * 1024 * 2,  # 2 MB
+                "lcd_resolution": (240, 240),
+            },
+        ),
     ]
 
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+    def __init__(
+        self,
+        device,
+        description,
+        speed_channels,
+        color_channels,
+        bulk_buffer_size,
+        lcd_resolution,
+        **kwargs,
+    ):
         super().__init__(device, description, speed_channels, color_channels, **kwargs)
 
         if sys.platform == "win32":
             self.bulk_device = WinUsbPy()
+
             found_device = self._find_winusb_device(
-                "vid_1e71", "pid_3008", self.device.serial_number
+                device.vendor_id, device.product_id, self.device.serial_number
             )
             if not found_device:
                 self.bulk_device = None
@@ -575,8 +618,10 @@ class KrakenZ3(KrakenX3):
             )
             if self.bulk_device:
                 self.bulk_device.open()
-
-        self.orientation = 0  # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
+        self.bulk_buffer_size = bulk_buffer_size
+        self.lcd_resolution = lcd_resolution
+        # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
+        self.orientation = 0
         self.brightness = 50  # default 50%
 
     def _find_winusb_device(self, vid, pid, serial):
@@ -585,11 +630,12 @@ class KrakenZ3(KrakenX3):
         )
         for device in winusb_devices:
             if (
-                device.path.find(vid + "&" + pid) != -1
+                device.path.find("vid_{:x}&pid_{:x}".format(vid, pid)) != -1
                 and device.parent
                 and device.parent.find(serial) != -1
             ):
                 self.bulk_device.init_winusb_device_with_path(device.path)
+
                 return True
         return False
 
@@ -606,10 +652,6 @@ class KrakenZ3(KrakenX3):
         """
 
         self.device.clear_enqueued_reports()
-        # request static infos
-        self._write([0x10, 0x01])  # firmware info
-        self._write([0x20, 0x03])  # lighting info
-        self._write([0x30, 0x01])  # lcd info
 
         # initialize
         if self._hwmon and not direct_access:
@@ -621,19 +663,23 @@ class KrakenZ3(KrakenX3):
                 _LOGGER.warning(
                     "forcing re-initialization despite %s kernel driver", self._hwmon.driver
                 )
-        update_interval = (lambda secs: 1 + round((secs - 0.5) / 0.25))(0.5)  # see issue #128
+        # see issue #128
+        update_interval = (lambda secs: 1 + round((secs - 0.5) / 0.25))(0.5)
         self._write([0x70, 0x02, 0x01, 0xB8, update_interval])
         self._write([0x70, 0x01])
 
         self._status = []
 
-        self._read_until(
-            {
-                b"\x11\x01": self.parse_firm_info,
-                b"\x21\x03": self.parse_led_info,
-                b"\x31\x01": self.parse_lcd_info,
-            }
-        )
+        # request static infos
+        self._write([0x10, 0x01])  # firmware info
+        self._read_until({b"\x11\x01": self.parse_firm_info})
+
+        self._write([0x30, 0x01])  # lcd info
+        self._read_until({b"\x31\x01": self.parse_lcd_info})
+
+        if len(self._color_channels) > 0:
+            self._write([0x20, 0x03])  # lighting info
+            self._read_until({b"\x21\x03": self.parse_led_info})
 
         return sorted(self._status)
 
@@ -683,12 +729,10 @@ class KrakenZ3(KrakenX3):
         return self._read()
 
     def _bulk_write(self, data):
-        padding = [0x0] * (_BULK_WRITE_LENGTH - len(data))
-        out_data = data + padding
         if sys.platform == "win32":
-            _LOGGER.debug("writing %d bytes: %r", len(out_data), LazyHexRepr(out_data))
-            out_data = bytes(out_data)
-        self.bulk_device.write(0x2, out_data)
+            _LOGGER.debug("writing %d bytes: %r", len(data), LazyHexRepr(data))
+            data = bytes(data)
+        self.bulk_device.write(0x2, data)
 
     def set_screen(self, channel, mode, value, **kwargs):
         """Set the screen mode and content.
@@ -735,20 +779,21 @@ class KrakenZ3(KrakenX3):
             return
         elif mode == "static":
             data = self._prepare_static_file(value, self.orientation)
-            self._send_data(data, [0x02, 0x0, 0x0, 0x0, 0x0, 0x40, 0x06])
+            self._send_data(data, [0x02, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
             return
         elif mode == "gif":
             data = self._prepare_gif_file(value, self.orientation)
             assert (
                 len(data) / 1000 < _LCD_TOTAL_MEMORY
             ), f"Max file size after resize is 24MB, selected file is {len(data) / 1000000}MB"
-            self._send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(3, "little")))
+            self._send_data(data, [0x01, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
             return
         elif mode == "liquid":
             self._switch_bucket(0, 2)
             return
 
-        if self.bulk_device and (mode == "static" or mode == "gif"):  # release device when finished
+        # release device when finished
+        if self.bulk_device and (mode == "static" or mode == "gif"):
             if sys.platform == "win32":
                 self.bulk_device.close_winusb_device()
             else:
@@ -761,26 +806,27 @@ class KrakenZ3(KrakenX3):
         path is the path to any image file
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
         """
-        img = Image.open(path)
-        img = img.resize((320, 320))
-        img = img.rotate(rotation * -90)
-        data = img.getdata()
+        data = (
+            Image.open(path)
+            .resize(self.lcd_resolution)
+            .rotate(rotation * -90)
+            .convert("RGB")
+            .getdata()
+        )
         result = []
         pixelDataIndex = 0
-        for i in range(800):
-            for p in range(0, 512, 4):
-                result.append(data[pixelDataIndex][0])
-                result.append(data[pixelDataIndex][1])
-                result.append(data[pixelDataIndex][2])
-                result.append(0)
-                pixelDataIndex += 1
+        for pixelDataIndex in range(0, len(data)):
+            result.append(data[pixelDataIndex][0])
+            result.append(data[pixelDataIndex][1])
+            result.append(data[pixelDataIndex][2])
+            result.append(0)
         return result
 
     def _prepare_gif_file(self, path, rotation):
         """
         path is the path of the gif file
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
-        Gifs are resized to 320x320 and rotated to match the desired orientation
+        Gifs are resized to LCD resolution and rotated to match the desired orientation
         result is a bytesIo stream
         """
         img = Image.open(path)
@@ -789,9 +835,7 @@ class KrakenZ3(KrakenX3):
 
         def prepare_frames(frames):
             for frame in frames:
-                resized = frame.copy()
-                resized = resized.resize((320, 320))
-                resized = resized.rotate(rotation * -90)
+                resized = frame.copy().resize(self.lcd_resolution).rotate(rotation * -90)
                 yield resized
 
         frames = prepare_frames(frames)
@@ -801,7 +845,12 @@ class KrakenZ3(KrakenX3):
 
         result_bytes = io.BytesIO()
         result_img.save(
-            result_bytes, format="GIF", save_all=True, append_images=list(frames), loop=0
+            result_bytes,
+            format="GIF",
+            interlace=False,
+            save_all=True,
+            append_images=list(frames),
+            loop=0,
         )
 
         return result_bytes.getvalue()
@@ -818,12 +867,6 @@ class KrakenZ3(KrakenX3):
         self._write_then_read([0x36, 0x03])  # unknown
 
         buckets = self._query_buckets()  # query all buckets and store their response
-
-        self._write_then_read([0x20, 0x03])  # unknown
-        self._write_then_read([0x74, 0x01])  # keepalive
-        self._write_then_read([0x70, 0x01])  # unknown
-        self._write_then_read([0x74, 0x01])  # keepalive
-
         bucketIndex = self._find_next_unoccupied_bucket(
             buckets
         )  # find the first unoccupied bucket in the list
@@ -831,13 +874,28 @@ class KrakenZ3(KrakenX3):
             bucketIndex if bucketIndex != -1 else 0, bucketIndex == -1
         )  # prepare bucket or find a more suitable one
 
-        packetCount = math.floor((math.ceil(len(data) / _BULK_WRITE_LENGTH) + 1) / 2)
-        packetCountBytes = list(
-            packetCount.to_bytes(2, "little")  # calculates the number of needed packets
+        # first bulk write message contains a standard part and information about the transfer
+        header = [
+            0x12,
+            0xFA,
+            0x01,
+            0xE8,
+            0xAB,
+            0xCD,
+            0xEF,
+            0x98,
+            0x76,
+            0x54,
+            0x32,
+            0x10,
+        ] + bulkInfo
+        dataSize = math.ceil((len(header) + len(data)) / 1024)
+        dataSizeBytes = list(
+            # calculates the number of needed packets
+            dataSize.to_bytes(2, "little")
         )
-
         bucketMemoryStart = self._get_bucket_memory_offset(
-            buckets, bucketIndex, packetCount
+            buckets, bucketIndex, dataSize
         )  # extracts the bucket starting address
 
         if bucketMemoryStart == -1:  # cant find a good memory start
@@ -846,36 +904,18 @@ class KrakenZ3(KrakenX3):
             bucketMemoryStart = [0x0, 0x0]
 
         # setup bucket for transfer
-        if not self._setup_bucket(
-            bucketIndex, bucketIndex + 1, bucketMemoryStart, packetCountBytes
-        ):
+        if not self._setup_bucket(bucketIndex, bucketIndex + 1, bucketMemoryStart, dataSizeBytes):
             _LOGGER.error("Failed to setup bucket for data transfer")
 
         self._write_then_read([0x36, 0x01, bucketIndex])  # start data transfer
+        self._bulk_write(header)
 
-        self._bulk_write(
-            [
-                0x12,
-                0xFA,
-                0x01,
-                0xE8,
-                0xAB,
-                0xCD,
-                0xEF,
-                0x98,
-                0x76,
-                0x54,
-                0x32,
-                0x10,
-            ]  # first bulk write message contains a standard part and information about the transfer
-            + bulkInfo
-        )
-
-        for i in range(0, len(data), _BULK_WRITE_LENGTH):  # start sending data in 512mb chunks
-            self._bulk_write(list(data[i : i + _BULK_WRITE_LENGTH]))
+        for i in range(0, len(data), self.bulk_buffer_size):  # start sending data in chunks
+            self._bulk_write(list(data[i : i + self.bulk_buffer_size]))
 
         self._write([0x36, 0x02])  # end data transfer
-        if not self._switch_bucket(bucketIndex):  # switch to newly written bucket
+        # switch to newly written bucket
+        if not self._switch_bucket(bucketIndex):
             _LOGGER.error("Failed to switch active bucket")
 
     def _query_buckets(self):
@@ -909,7 +949,7 @@ class KrakenZ3(KrakenX3):
                 return bucketIndex
         return -1
 
-    def _get_bucket_memory_offset(self, buckets, bucketIndex, packetCount):
+    def _get_bucket_memory_offset(self, buckets, bucketIndex, dataSize):
         """
         returns the memory start address for the selected bucket
         memory offset is calculated by first checking if the bucket can already
@@ -925,7 +965,7 @@ class KrakenZ3(KrakenX3):
         currentBucketSize = int.from_bytes([currentBucket[19], currentBucket[20]], "little")
 
         # check if we can fit content in existing bucket space
-        if packetCount <= currentBucketSize:
+        if dataSize <= currentBucketSize:
             return [currentBucket[17], currentBucket[18]]
 
         # find max byte number
@@ -941,7 +981,7 @@ class KrakenZ3(KrakenX3):
             if startByte < minOccupiedByte:
                 minOccupiedByte = startByte
             if (
-                (startByte > currentBucketOffset and startByte < currentBucketOffset + packetCount)
+                (startByte > currentBucketOffset and startByte < currentBucketOffset + dataSize)
                 or (startByte < currentBucketOffset and endByte > startByte)
                 or (startByte == currentBucketOffset and bI != bucketIndex)
             ):
@@ -952,11 +992,11 @@ class KrakenZ3(KrakenX3):
             return [currentBucket[17], currentBucket[18]]
 
         # check if we would exceed available memory if we put data at the end
-        if maxOccupiedByte + packetCount < _LCD_TOTAL_MEMORY:
+        if maxOccupiedByte + dataSize < _LCD_TOTAL_MEMORY:
             return list(maxOccupiedByte.to_bytes(2, "little"))
 
         # if the lowest used byte is more than zero and we can fit the data then start from zero
-        if packetCount < minOccupiedByte:
+        if dataSize < minOccupiedByte:
             return [0x0, 0x0]
 
         # if all else fails return -1 to reset and start over
