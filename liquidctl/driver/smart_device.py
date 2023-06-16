@@ -111,6 +111,8 @@ Copyright Jonas Malaco, CaseySJ and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import numpy as np
+
 import itertools
 import logging
 import time
@@ -706,16 +708,38 @@ class RGBController(_BaseSmartDevice):
     _WRITE_LENGTH = 64
 
     _COLOR_MODES = {
-        "fixed":            ((0x00, 0x32, 0x00), 0x01, 0x00, 1, 1),
-        "spectrum-wave":    ((0x02, 0xfa, 0x00), 0x01, 0x00, 0, 0),
-        "breathing":        ((0x07, 0x14, 0x00), 0x01, 0x08, 1, 1),
-        "fading":           ((0x01, 0x28, 0x00), 0x03, 0x08, 1, 1),
-        "pulse":            ((0x06, 0x0f, 0x00), 0x01, 0x08, 1, 1),
-        "alternating":      ((0x05, 0xe8, 0x03), 0x02, 0x00, 2, 2),
-        "rainbow-pulse":    ((0x0d, 0xfa, 0x00), 0x01, 0x00, 0, 0),
-        "super-rainbow":    ((0x0c, 0xfa, 0x00), 0x01, 0x00, 0, 0),
-        "rainbow-flow":     ((0x0b, 0xfa, 0x00), 0x01, 0x00, 0, 0),
-        "starry-night":     ((0x09, 0x0f, 0x00), 0x01, 0x00, 1, 1)
+        'off':              (0x00, 0x00, 0x00, 0, 0),
+        'fixed':            (0x00, 0x00, 0x00, 1, 1),
+        'super-fixed':      (0x00, 0x00, 0x00, 1, 40),
+        'breathing':        (0x07, 0x00, 0x08, 1, 8),
+        'fading':           (0x01, 0x00, 0x08, 1, 8),
+        'covering-marquee': (0x04, 0x00, 0x00, 1, 8),
+        'pulse':            (0x06, 0x00, 0x08, 1, 1),
+        'spectrum-wave':    (0x02, 0x00, 0x00, 0, 0),
+        'alternating':      (0x05, 0x01, 0x00, 2, 2),
+        'starry-night':     (0x09, 0x00, 0x00, 1, 1),
+        'rainbow-pulse':    (0x0d, 0x01, 0x00, 0, 0),
+        'rainbow-flow':     (0x0b, 0x01, 0x00, 0, 0),
+        'super-rainbow':    (0x0c, 0x01, 0x00, 0, 0),
+        'candle':           (0x08, 0x00, 0x00, 0, 1)
+    }
+
+    _SPEED_VALUES = {
+        'breathing':          [[0x28, 0x00], [0x1e, 0x00], [0x14,0x00], [0x0a, 0x00], [0x04,0x00]],
+        'fading':             [[0x50, 0x00], [0x3c, 0x00], [0x28,0x00], [0x14, 0x00], [0x0a,0x00]],
+        'pulse':              [[0x19, 0x00], [0x14, 0x00], [0x0f,0x00], [0x07, 0x00], [0x04,0x00]],
+        'alternating-moving': [[0x20, 0x00], [0xbc, 0x00], [0xf4,0x00], [0x90, 0x00], [0x2c,0x00]], 
+        'starry-night':       [[0x19, 0x00], [0x14, 0x00], [0x0f,0x00], [0x07, 0x00], [0x04,0x00]],
+        'rainbow-flow':       [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'super-rainbow':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'rainbow-pulse':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'spectrum-wave':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'cover-marquee':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'alternating':        [[0x40, 0x06], [0x14, 0x05], [0xe8, 0x03], [0x20, 0x03], [0x58, 0x02]], 
+        'fixed':              [[0x32, 0x00]]*5,
+        'super-fixed':        [[0x32, 0x00]]*5,
+        'candle':             [[0x32, 0x00]]*5,
+        'off':                [[0x00, 0x00]]*5
     }
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
@@ -791,24 +815,41 @@ class RGBController(_BaseSmartDevice):
                 return
         assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
+    def _write_individual_color(self, cid, colors):
+        color_count = len(colors)
+        led_padding = [0x00, 0x00, 0x00]*(40 - color_count)  # turn off remaining LEDs
+        leds = list(itertools.chain(*colors)) + led_padding
+        self._write([0x22, 0x10, cid, 0x00] + leds[0:60])  # send first 20 colors to device (3 bytes per color)
+        self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
+        self._write([0x22, 0xa0, cid, 0x00, 0x01, 0x00, 0x00, 0x08, 0x00,
+                     0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
+
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
-        (cmode0, cmode1, cmode2), cmode3, cmode4, _, _ = self._COLOR_MODES[mode]
+        cmode0, mod1, mod2, mincolors, maxcolors = self._COLOR_MODES[mode]
 
-        # Header and device id
-        header = [0x2a, 0x04, cid, cid]
+        color_count = len(colors)
 
-        # Mode
-        g, r, b = colors[0][0], colors[0][1], colors[0][2]
-        color_mode = [cmode0, cmode1, cmode2] + list(itertools.chain(*colors))#, g, r, b]
+        if maxcolors == 40:
+            self._write_individual_color(cid, colors)
+        else:
+            # Header and device id
+            header = [0x2a, 0x04, cid, cid]
 
-        # Footer
-        footer = [cmode3, cmode4, 0x08, 0x03]
+            # Color mode
+            speed = self._SPEED_VALUES[mode][sval]
+            color_mode = [cmode0, speed[0], speed[1]] + list(itertools.chain(*colors))
 
-        # Space inbetween data and footer
-        msg_length = len(header) + len(color_mode) + len(footer)
-        space = [0x00 for _ in range(self._WRITE_LENGTH - msg_length)]
+            # Footer
+            mod3 = 0x02 if direction =='backward' else 0x00
+            footer = [mod3, color_count, mod2, 0x08, 0x03] + [0x00]*4
 
-        self._write(header + color_mode + space + footer)
+            # Space inbetween data and footer
+            msg_length = len(header) + len(color_mode) + len(footer)
+            space = [0x00 for _ in range(self._WRITE_LENGTH - msg_length)]
+
+            print_arr = ["{:02x}".format(i) for i in header + color_mode + space + footer]
+            print(np.array(print_arr).reshape(4, 16))
+            self._write(header + color_mode + space + footer)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         raise NotSupportedByDevice()
@@ -821,3 +862,16 @@ class RGBController(_BaseSmartDevice):
 NzxtSmartDeviceDriver = SmartDevice
 SmartDeviceDriver = SmartDevice
 SmartDeviceV2Driver = SmartDevice2
+
+# TODO: 
+# Marquee mode:
+#   - speed
+#   - direction
+#   - led size
+# alternating mode:
+#    - moving
+#    -led size
+# wings mode:
+# super-breathing:
+# wave:
+# music mode
