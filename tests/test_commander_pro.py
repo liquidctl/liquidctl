@@ -164,8 +164,8 @@ def test_connect_lighting(lightingNodeProDeviceUnconnected):
     assert lightingNodeProDeviceUnconnected._data is not None
 
 
-@pytest.mark.parametrize('exp,fan_modes', [([(3, 0x01)], {'4': 'dc'}), ([(3, 0x00)], {'4': 'off'}), ([(4, 0x02)], {'5': 'pwm'}), ([(0, 0x01),(2, 0x02),(1, 0x01)], {'1': 'dc', '3':'pwm', '2': 'dc'})])
-def test_initialize_commander_pro_fan_modes(commanderProDevice, exp, fan_modes, tmp_path):
+@pytest.mark.parametrize('exp,fan_mode', [([(3, 0x01)], {'4': 'dc'}), ([(3, 0x00)], {'4': 'off'}), ([(4, 0x02)], {'5': 'pwm'}), ([(0, 0x01),(2, 0x02),(1, 0x01)], {'1': 'dc', '3':'pwm', '2': 'dc'})])
+def test_initialize_commander_pro_fan_mode(commanderProDevice, exp, fan_mode, tmp_path):
 
     responses = [
         '000009d4000000000000000000000000',  # firmware
@@ -179,7 +179,7 @@ def test_initialize_commander_pro_fan_modes(commanderProDevice, exp, fan_modes, 
     for d in responses:
         commanderProDevice.device.preload_read(Report(0, bytes.fromhex(d)))
 
-    commanderProDevice.initialize(direct_access=True, fan_modes=fan_modes)
+    commanderProDevice.initialize(direct_access=True, fan_mode=fan_mode)
 
     sent = commanderProDevice.device.sent
     assert len(sent) == 4+len(exp)
