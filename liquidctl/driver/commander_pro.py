@@ -162,7 +162,7 @@ class CommanderPro(UsbHidDriver):
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
         return ret
 
-    def _initialize_directly(self, fan_modes: dict, **kwargs):
+    def _initialize_directly(self, set_fan_modes, **kwargs):
         res = self._send_command(_CMD_GET_FIRMWARE)
         fw_version = (res[1], res[2], res[3])
 
@@ -184,7 +184,7 @@ class CommanderPro(UsbHidDriver):
             ]
 
         if self._fan_count > 0:
-            for i, value in fan_modes.items():
+            for i, value in set_fan_modes.items():
                 fan_num = int(i) - 1
                 if value not in ['dc', 'pwm', 'off']:
                     raise ValueError(f"invalid fan mode: '{value}'")
@@ -192,10 +192,10 @@ class CommanderPro(UsbHidDriver):
                 self._send_command(_CMD_SET_FAN_MODE, [0x02, fan_num, _FAN_MODES.get(value)])
 
             res = self._send_command(_CMD_GET_FAN_MODES)
-            fanModes = res[1:self._fan_count+1]
-            self._data.store('fan_modes', fanModes)
+            fan_modes = res[1:self._fan_count+1]
+            self._data.store('fan_modes', fan_modes)
             status += [
-                (f'Fan {i + 1} control mode', _fan_mode_desc(fanModes[i]), '')
+                (f'Fan {i + 1} control mode', _fan_mode_desc(fan_modes[i]), '')
                 for i in range(6)
             ]
 
@@ -242,7 +242,7 @@ class CommanderPro(UsbHidDriver):
 
         return status
 
-    def initialize(self, direct_access=False, fan_modes={}, **kwargs):
+    def initialize(self, direct_access=False, fan_mode={}, **kwargs):
         """Initialize the device and the driver.
 
         This method should be called every time the systems boots, resumes from
@@ -254,11 +254,16 @@ class CommanderPro(UsbHidDriver):
         to `get_status()`.
         """
 
+        # fix #615 but preserve API compatibility with liquidctl <= 1.12.x
+        if not fan_mode and kwargs.get("fan_modes"):
+            _LOGGER.warning("deprecated parameter name `fan_modes`, use `fan_mode`")
+            fan_mode = kwargs["fan_modes"]
+
         if self._hwmon and not direct_access:
             _LOGGER.info('bound to %s kernel driver, assuming it is already initialized',
                          self._hwmon.driver)
 
-            if fan_modes:
+            if fan_mode:
                 # say "with" instead of "by" because eventually the driver may start supporting fan
                 # modes, and we're not actually checking for it at runtime
                 _LOGGER.warning('fan mode options not supported with %s kernel driver, ignoring',
@@ -268,7 +273,7 @@ class CommanderPro(UsbHidDriver):
             if self._hwmon:
                 _LOGGER.warning('forcing re-initialization despite %s kernel driver',
                                 self._hwmon.driver)
-            return self._initialize_directly(fan_modes)
+            return self._initialize_directly(fan_mode)
 
     def _get_status_directly(self):
         temp_probes = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)
