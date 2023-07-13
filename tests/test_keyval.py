@@ -83,6 +83,10 @@ def test_fs_backend_handles_values_corupted_with_nulls(tmpdir, caplog):
     assert val is None
     assert 'was corrupted' in caplog.text
 
+    val, new_val = store.load_store('key', lambda x: 24)
+    assert val is None
+    assert new_val == 24
+
 
 def test_fs_backend_load_store_returns_old_and_new_values(tmpdir):
     run_dir = tmpdir.mkdir('run_dir')

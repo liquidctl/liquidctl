@@ -155,7 +155,7 @@ class _FilesystemBackend:
                     break
                 except OSError as err:
                     _LOGGER.warning('%s exists but could not be read: %s', read_path, err)
-                except ValueError as err:
+                except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError) as err:
                     _LOGGER.warning('%s exists but was corrupted: %s', key, err)
             else:
                 _LOGGER.debug('no data (file) found for %s', key)
