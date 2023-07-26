@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.13.0] – 2023-07-26
+
+### Changes since 1.12.1
+
+Added:
+
+- Corsair Hydro Elite RGB: add support for H100i and H150i Elite RGB (liquidctl#556, PR liquidctl#557, PR liquidctl#559)
+
+Changed:
+
+- NZXT H1 V2: no longer experimental
+- Aura LED motherboards: no longer experimental
+
+Fixed:
+
+- Corsair HXi (2022): read exactly 4 bytes for timedeltas (liquidctl#575)
+- Corsair Commander Pro: fix `fan_mode` (liquidctl#615, PR liquidctl#616)
+- Python 3.11: fix deprecation on `locale.getDefaultLocale`
+- Python 3.11.4: fix exception handling when parsing null bytes in persisted data
+
+*Five years ago I started liquidctl. One month after that, v1.0.0rc1 was tagged with support for the first devices.*
+
+
 ## [1.12.1] – 2023-01-14
 
 ### Changes since 1.12.0

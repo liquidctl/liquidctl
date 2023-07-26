@@ -664,7 +664,7 @@ class SmartDevice2(_BaseSmartDevice):
 
 class H1V2(SmartDevice2):
     _MATCHES = [
-        (0x1e71, 0x2015, 'NZXT H1 V2 (experimental)', {
+        (0x1e71, 0x2015, 'NZXT H1 V2', {
             'speed_channel_count': 2,
             'color_channel_count': 0
         }),

@@ -142,9 +142,9 @@ class AuraLed(UsbHidDriver):
     """
 
     _MATCHES = [
-        (0x0B05, 0x19AF, "ASUS Aura LED Controller (experimental)", {}),
-        (0x0B05, 0x1939, "ASUS Aura LED Controller (experimental)", {}),
-        (0x0B05, 0x18F3, "ASUS Aura LED Controller (experimental)", {}),
+        (0x0B05, 0x19AF, "ASUS Aura LED Controller", {}),
+        (0x0B05, 0x1939, "ASUS Aura LED Controller", {}),
+        (0x0B05, 0x18F3, "ASUS Aura LED Controller", {}),
     ]
 
     def initialize(self, **kwargs):

@@ -124,14 +124,14 @@ subjective "from more to less liquid control-ly" order.
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.11.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | <sup>_e_</sup> | git |
+| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | <sup>_e_</sup> | 1.13.0 |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | <sup>_LZe_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_he_</sup> | 1.11.1 |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_eh_</sup> | 1.11.1 |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
@@ -146,17 +146,17 @@ subjective "from more to less liquid control-ly" order.
 | Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_ehp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | <sup>_e_</sup> | 1.10.0 |
+| Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
-| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_eh_</sup> | git |
+| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_eh_</sup> | 1.13.0 |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
 | LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
-| Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | <sup>_e_</sup> | 1.10.0 |
+| Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | | 1.5.2 |
 
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
@@ -347,8 +347,8 @@ This will also install the necessary Python libraries.
 # the latest stable version
 python -m pip install liquidctl
 
-# a specific version (e.g. 1.12.1)
-python -m pip install liquidctl==1.12.1
+# a specific version (e.g. 1.13.0)
+python -m pip install liquidctl==1.13.0
 ```
 
 If [git] is installed, pip can also install the latest snapshot of the official
