@@ -20,6 +20,13 @@ Fixed:
 - Python 3.11: fix deprecation on `locale.getDefaultLocale`
 - Python 3.11.4: fix exception handling when parsing null bytes in persisted data
 
+### Checksums
+
+```
+ee17241689c0bf3de43cf4d97822e344f5b57513d16dd160e37fa0e389a158c7  dist/liquidctl-1.13.0.tar.gz
+405a55d531022082087c97ed8f4cc315b25493ad22be88ca8bd6852d49621a47  dist/liquidctl-1.13.0-py3-none-any.whl
+```
+
 *Five years ago I started liquidctl. One month after that, v1.0.0rc1 was tagged with support for the first devices.*
 
 
