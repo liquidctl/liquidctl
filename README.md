@@ -225,7 +225,7 @@ On FreeBSD and DragonFly BSD, liquidctl is maintained in the Ports Collections,
 and is available as a pre-built binary package.
 
 ```
-pkg install py37-liquidctl
+pkg install py39-liquidctl
 ```
 
 ### Manual installation
@@ -249,7 +249,7 @@ libraries already provided by the operating system.
 On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
-- Python 3.7 or later _(python3, python)_
+- Python 3.8 or later _(python3, python)_
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
@@ -270,7 +270,7 @@ needed:
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
 
-On macOS, Python (3.7 or later) and LibUSB 1.0 must be installed beforehand.
+On macOS, Python (3.8 or later) and LibUSB 1.0 must be installed beforehand.
 
 ```
 brew install python libusb
@@ -279,7 +279,7 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.7 or later) must be installed beforehand, which can be
+On Windows, Python (3.8 or later) must be installed beforehand, which can be
 done from the [official website][python.org].  It is recommended to select the
 option to add `python` and other tools to the `PATH`.
 

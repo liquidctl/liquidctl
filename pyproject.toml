@@ -16,7 +16,7 @@ addopts = "--doctest-modules -ra"
 
 [tool.black]
 line-length = 100
-target-version = ["py37"]
+target-version = ["py38"]
 extend-exclude = '''
   /*
     To have all items start with |, this isn't a real comment; still, it
