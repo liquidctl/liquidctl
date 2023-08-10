@@ -11,6 +11,7 @@ All configuration is done through USB, and persists as long as the device still 
 
 All capabilities available at the hardware level are supported, but other features offered by CAM, like presets based on CPU or GPU temperatures, have not been implemented.  Pump and fan control based on liquid temperature is supported on units running firmware versions 4 or above.
 
+Monitoring and/or configuring the coolers is not possible with CAM running, otherwise you'll get errors such as `OSError('read error')`.
 
 ## NZXT Kraken M22
 
