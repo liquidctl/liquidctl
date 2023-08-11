@@ -7,6 +7,7 @@ Both X and Z models house seventh-generation Asetek pump designs, plus secondary
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The coolers also report relevant data via USB, including pump and/or fan speeds and liquid temperature.  The pump speed can be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
+Monitoring and/or configuring the coolers is not possible with CAM running, otherwise you'll get errors such as `OSError('read error')`.
 
 ## NZXT Kraken X53, X63, X73
 
