@@ -66,58 +66,57 @@ from datetime import datetime
 from docopt import docopt
 import liquidctl.cli as _borrow
 from liquidctl.util import normalize_profile, interpolate_profile
-from liquidctl.driver import * 
+from liquidctl.driver import *
 from liquidctl.driver import msi
 
-if sys.platform == 'darwin':
+if sys.platform == "darwin":
     import re
     import subprocess
-elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
+elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
     import psutil
 
-VERSION = '0.0.1'
+VERSION = "0.0.1"
 
 LOGGER = logging.getLogger(__name__)
 
-INTERNAL_CHIP_NAME = '_internal'
+INTERNAL_CHIP_NAME = "_internal"
 
 MAX_FAILURES = 3
 
-def read_sensors(device):
 
-    #TODO: implement cpu frequency sensor for all OS
-    
+def read_sensors(device):
     sensors = {}
     for k, v, u in device.get_status():
-        if u == '°C':
-            sensor_name = k.lower().replace(' ', '_').replace('_temperature', '')
-            sensors[f'{INTERNAL_CHIP_NAME}.{sensor_name}'] = v
-    if sys.platform == 'darwin':
-        istats_stdout = subprocess.check_output(['istats']).decode('utf-8')
-        for line in istats_stdout.split('\n'):
-            if line.startswith('CPU'):
-                cpu_temp = float(re.search(r'\d+\.\d+', line).group(0))
-                sensors['istats.cpu'] = cpu_temp
+        if u == "°C":
+            sensor_name = k.lower().replace(" ", "_").replace("_temperature", "")
+            sensors[f"{INTERNAL_CHIP_NAME}.{sensor_name}"] = v
+    if sys.platform == "darwin":
+        istats_stdout = subprocess.check_output(["istats"]).decode("utf-8")
+        for line in istats_stdout.split("\n"):
+            if line.startswith("CPU"):
+                cpu_temp = float(re.search(r"\d+\.\d+", line).group(0))
+                sensors["istats.cpu"] = cpu_temp
                 break
-    elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
+    elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
         for m, li in psutil.sensors_temperatures().items():
             for label, current, _, _ in li:
-                sensor_name = label.lower().replace(' ', '_')
-                sensors[f'{m}.{sensor_name}'] = current
-        sensors['cpu_freq'] = psutil.cpu_freq().current
+                sensor_name = label.lower().replace(" ", "_")
+                sensors[f"{m}.{sensor_name}"] = current
+        sensors["cpu_freq"] = psutil.cpu_freq().current
     return sensors
 
 
 def show_sensors(device):
-    print('{:<60}  {:>18}'.format('Sensor identifier', 'Temperature'))
-    print('-' * 80)
+    print("{:<60}  {:>18}".format("Sensor identifier", "Temperature"))
+    print("-" * 80)
     sensors = read_sensors(device)
     for k, v in sensors.items():
-        print('{:<70}  {:>6}{}'.format(k, v, '°C'))
+        print("{:<70}  {:>6}{}".format(k, v, "°C"))
+
 
 def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100):
     """Parse, validate and normalize a temperature–duty profile.
-    
+
     >>> parse_profile('smart', 0, 60, 25, 100)
     'smart'
 
@@ -156,39 +155,45 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100):
         if arg in msi.MpgCooler.BUILTIN_MODES.keys():
             return arg
         else:
-            val = ast.literal_eval('[' + arg + ']')
+            val = ast.literal_eval("[" + arg + "]")
             if len(val) == 1 and isinstance(val[0], int):
                 # for arg == '<number>' set fixed duty between mintemp and maxtemp - 1
                 val = [(mintemp, val[0]), (maxtemp - 1, val[0])]
     except:
-        msg = ( "profile must be comma-separated (temperature, duty) tuples or " +
-               f"recognised cooler mode string {str(BUILTIN_MODES.keys())}")
+        msg = (
+            "profile must be comma-separated (temperature, duty) tuples or "
+            + f"recognised cooler mode string {str(msi.MpgCooler.BUILTIN_MODES.keys())}"
+        )
         raise ValueError(msg)
     for step in val:
         if not isinstance(step, tuple) or len(step) != 2:
-            raise ValueError('profile must be comma-separated (temperature, duty) tuples')
+            raise ValueError("profile must be comma-separated (temperature, duty) tuples")
         temp, duty = step
         if not isinstance(temp, int) or temp < mintemp or temp > maxtemp:
-            raise ValueError('temperature must be integer between {} and {}'.format(mintemp, maxtemp))
+            raise ValueError(
+                "temperature must be integer between {} and {}".format(mintemp, maxtemp)
+            )
         if not isinstance(duty, int) or duty < minduty or duty > maxduty:
-            raise ValueError('duty must be integer between {} and {}'.format(minduty, maxduty))
+            raise ValueError("duty must be integer between {} and {}".format(minduty, maxduty))
     return normalize_profile(val, critx=maxtemp)
 
 
 def control(device, channels, profiles, sensor, update_interval):
-    LOGGER.info('device: %s on bus %s and address %s', device.description, device.bus, device.address)
+    LOGGER.info(
+        "device: %s on bus %s and address %s", device.description, device.bus, device.address
+    )
     for channel, profile in zip(channels, profiles):
-        LOGGER.info('channel: %s following profile %s on %s', channel, str(profile), sensor)
-    
+        LOGGER.info("channel: %s following profile %s on %s", channel, str(profile), sensor)
+
     device.set_profile(channels, profiles)
 
-    LOGGER.info('starting...')
+    LOGGER.info("starting...")
     failures = 0
     while True:
         try:
             sensor_data = read_sensors(device)
             temp = sensor_data[sensor]
-            freq = sensor_data.get('cpu_freq', 0)
+            freq = sensor_data.get("cpu_freq", 0)
 
             device.set_oled_clock(datetime.now())
             device.set_oled_show_cpu_status(freq, temp)
@@ -197,50 +202,59 @@ def control(device, channels, profiles, sensor, update_interval):
             failures += 1
             LOGGER.error(err)
             if failures >= MAX_FAILURES:
-                LOGGER.critical('too many failures in a row: %d', failures)
+                LOGGER.critical("too many failures in a row: %d", failures)
                 raise
         time.sleep(update_interval)
 
 
-if __name__ == '__main__':
-    if len(sys.argv) == 2 and sys.argv[1] == 'doctest':
+if __name__ == "__main__":
+    if len(sys.argv) == 2 and sys.argv[1] == "doctest":
         import doctest
+
         doctest.testmod(verbose=True)
         sys.exit(0)
 
-    args = docopt(__doc__, version='coreliquid_ctl v'.format(VERSION))
+    args = docopt(__doc__, version="coreliquid_ctl v".format(VERSION))
 
-    if args['--debug']:
-        args['--verbose'] = True
-        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
+    if args["--debug"]:
+        args["--verbose"] = True
+        logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(name)s: %(message)s")
         import liquidctl.version
-        LOGGER.debug('coreliquid_ctl v%s', VERSION)
-        LOGGER.debug('liquidctl v%s', liquidctl.version.__version__)
-    elif args['--verbose']:
-        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+
+        LOGGER.debug("coreliquid_ctl v%s", VERSION)
+        LOGGER.debug("liquidctl v%s", liquidctl.version.__version__)
+    elif args["--verbose"]:
+        logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
         LOGGER.setLevel(logging.INFO)
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+        logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
         sys.tracebacklimit = 0
 
     frwd = _borrow._make_opts(args)
     selected = list(find_liquidctl_devices(**frwd))
     if len(selected) > 1:
-        raise SystemExit('too many devices, filter or select one.  See liquidctl --help and coreliquid_ctl --help.')
+        raise SystemExit(
+            "too many devices, filter or select one.  See liquidctl --help and coreliquid_ctl --help."
+        )
     elif len(selected) == 0:
-        raise SystemExit('no devices matches available drivers and selection criteria')
+        raise SystemExit("no devices matches available drivers and selection criteria")
 
     device = selected[0]
     device.connect()
     try:
-        if args['show-sensors']:
+        if args["show-sensors"]:
             show_sensors(device)
-        elif args['control']:
-            control(device, args['<channel>'], list(map(parse_profile, args['<profile>'])),
-                    args['<sensor>'], update_interval=float(args['--interval']))
+        elif args["control"]:
+            control(
+                device,
+                args["<channel>"],
+                list(map(parse_profile, args["<profile>"])),
+                args["<sensor>"],
+                update_interval=float(args["--interval"]),
+            )
         else:
-            raise Exception('nothing to do')
+            raise Exception("nothing to do")
     except KeyboardInterrupt:
-        LOGGER.info('stopped by user.')
+        LOGGER.info("stopped by user.")
     finally:
         device.disconnect()
