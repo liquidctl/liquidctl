@@ -25,7 +25,7 @@ Device guides
 - [Corsair HXi and RMi series PSUs](corsair-hxi-rmi-psu-guide.md)
 - [Corsair Hydro Platinum, Pro XT and Elite RGB all-in-one liquidctl coolers](corsair-platinum-pro-xt-guide.md)
 - [DDR4 DIMMs](ddr4-guide.md)
-- [Fourth-generation (X3/Z3) NZXT liquid coolers](kraken-x3-z3-guide.md)
+- [Fourth-generation (X3/Z3/2023) NZXT liquid coolers](kraken-x3-z3-2023-guide.md)
 - [Gigabyte RGB Fusion 2.0 lighting controllers](gigabyte-rgb-fusion2-guide.md)
 - [NVIDIA graphics cards](nvidia-guide.md)
 - [NZXT E-series PSUs](nzxt-e-series-psu-guide.md)

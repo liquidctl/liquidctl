@@ -132,7 +132,7 @@ subjective "from more to less liquid control-ly" order.
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_eh_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken 2023 (Elite, Standard)](docs/kraken-x3-z3-guide.md) | <sup>_eh_</sup> | - |
+| AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>_e_</sup> | git |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_ehp_</sup> | 1.11.1 |

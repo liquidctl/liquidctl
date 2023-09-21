@@ -533,19 +533,19 @@ def test_krakenz3_set_speed_profile_hwmon(mock_krakenz3, has_support, tmp_path):
 
 def test_krakenz3_not_totally_broken(mock_krakenz3):
     """Reasonable example calls to untested APIs do not raise exceptions."""
-    # mock_krakenz3.initialize()
-    # mock_krakenz3.device.preload_read(Report(0, Z3_SAMPLE_STATUS))
-    # _ = mock_krakenz3.get_status()
-    # mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
-    # mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
+    mock_krakenz3.initialize()
+    mock_krakenz3.device.preload_read(Report(0, Z3_SAMPLE_STATUS))
+    _ = mock_krakenz3.get_status()
+    mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
+    mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
 
-    # # set_screen should be the last set of functions called
-    # mock_krakenz3.set_screen("lcd", "liquid", None)
-    # mock_krakenz3.set_screen("lcd", "brightness", "60")
-    # mock_krakenz3.set_screen("lcd", "orientation", "90")
+    # set_screen should be the last set of functions called
+    mock_krakenz3.set_screen("lcd", "liquid", None)
+    mock_krakenz3.set_screen("lcd", "brightness", "60")
+    mock_krakenz3.set_screen("lcd", "orientation", "90")
     mock_krakenz3.set_screen(
         "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg")
     )
-    # # mock_krakenz3.set_screen(
-    # #     "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
-    # # )
+    mock_krakenz3.set_screen(
+        "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
+    )
