@@ -174,7 +174,9 @@ def test_mpg_core_liquid_k360_not_totally_broken(mpgCoreLiquidK360Device):
     profile = ((0, 30), (25, 40), (60, 60), (100, 75))
     dev.set_speed_profile("pump", profile)
     dev.set_fixed_speed("waterblock fan", 42)
-    dev.set_screen("oled", "preloaded", "10")
+    dev.set_screen("oled", "image", "3")
+    dev.set_screen("oled", "banner", "")
+    dev.set_screen("oled", "disable", "")
 
 
 def test_mpg_core_liquid_k360_set_clock(mpgCoreLiquidK360Device):
