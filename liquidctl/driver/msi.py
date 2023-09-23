@@ -465,7 +465,15 @@ class MpgCooler(UsbHidDriver):
         "settings": _ScreenMode.SETTINGS,
         "disable": _ScreenMode.DISABLED,
     }
-
+    HWMONITORDISPLAY = {
+        "cpu_freq": _OLEDHardwareMonitorOffset.CPU_FREQ,
+        "cpu_temp": _OLEDHardwareMonitorOffset.CPU_TEMP,
+        "gpu_freq": _OLEDHardwareMonitorOffset.GPU_MEMORY_FREQ,
+        "gpu_usage": _OLEDHardwareMonitorOffset.GPU_USAGE,
+        "fan_pump": _OLEDHardwareMonitorOffset.FAN_PUMP,
+        "fan_radiator": _OLEDHardwareMonitorOffset.FAN_RADIATOR,
+        "fan_cpumos": _OLEDHardwareMonitorOffset.FAN_CPUMOS,
+    }
     _MATCHES = [
         (0x0DB0, 0xB130, "MSI MPG Coreliquid K360", {"fan_count": 5}),
         (0x0DB0, 0xCA00, "Unknown", {}),
@@ -726,26 +734,33 @@ class MpgCooler(UsbHidDriver):
         except KeyError as e:
             raise Exception(f"Unknown screen mode! Should be one of: {self.SCREEN_MODES.keys()}") from e
 
+        if mode == _ScreenMode.HARDWARE:
+            show_idx = [self.HWMONITORDISPLAY[x].value for x in value.split(" ")]
+            show_area = [i in show_idx for i in range(_OLEDHardwareMonitorOffset.MAXIMUM.value + 1)]
+            self.set_oled_show_hardware_monitor(show_area)
         if mode == _ScreenMode.IMAGE:
-            values = value.split(' ')
-            idx = int(values[0])
-            if len(values) > 1:
-                file = ' '.join(values[1:])
+            values = value.split(';')
+            imgtype,idx = map(int,values[:2])
+            if len(values) > 2:
+                assert imgtype == 1, "Cannot override default images (image type 0)"
+                file = values[2]
                 bmp_img = self._prepare_bmp(file)
                 self.set_oled_upload_gif(bmp_img, idx)
-                return
-            self.set_oled_show_profile(1, idx)
+            self.set_oled_show_profile(imgtype, idx)
         elif mode == _ScreenMode.BANNER:
-            opts = value.split(' ')
+            opts = value.split(';')
             if len(opts) == 3:
-                message, banner_type, save_slot = opts
+                banner_type, save_slot = opts[:2]
+                message = opts[2]
                 self.set_oled_user_message(message)
-                self.set_oled_show_banner(banner_type=banner_type, bmp_no=save_slot)
+                self.set_oled_show_banner(banner_type=int(banner_type), bmp_no=int(save_slot))
             elif len(opts) == 4:
-                message, banner_type, save_slot, image_file = opts
+                banner_type, save_slot, message, image_file = opts
+                banner_type, save_slot = map(int, (banner_type, save_slot))
                 img = self._prepare_bmp(image_file)
                 assert save_slot >= 4, "Cannot overwrite preset banner images, "\
                     "please use save slots starting from 4 for your uploaded files"
+                print("here")
                 self.set_oled_upload_banner(img, banner_no = save_slot)
                 self.set_oled_user_message(message)
                 self.set_oled_show_banner(banner_type=banner_type, bmp_no=save_slot)
@@ -753,7 +768,7 @@ class MpgCooler(UsbHidDriver):
             style = int(value)
             self.set_oled_show_clock(style)
         elif mode == _ScreenMode.SETTINGS:
-            brightness, direction = value.split(' ')
+            brightness, direction = [int(x) for x in value.split(';')]
             self.set_oled_brightness_and_direction(brightness=brightness, direction=direction)
         elif mode == _ScreenMode.DISABLED:
             self.set_oled_show_disable()
@@ -939,12 +954,21 @@ class MpgCooler(UsbHidDriver):
         return self._write([0x90] + list(message[:60].encode("ascii", "ignore")))
 
     def set_oled_show_hardware_monitor(self, show_area, radiator_fan_smart_mode_on_off=True):
+        """
+        
+        Parameters
+        ----------
+        show_area:
+            Array[bool] Indicates which hardware features will be presented on the screen,
+                        from CPU_FREQ, CPU_TEMP, GPU_MEMORY_FREQ, GPU_USAGE, FAN_PUMP, FAN_RADIATOR, FAN_CPUMOS
+        """
         if len(show_area) < 7:
             return False
         buf = bytearray(_REPORT_LENGTH)
         buf[0] = 0xD0
         buf[1] = 0x71
         for item in iter(_OLEDHardwareMonitorOffset):
+            print(item.value)
             if item.value != _OLEDHardwareMonitorOffset.MAXIMUM and show_area[item.value]:
                 buf[item.value + 2] = 1
             if show_area[5]:
