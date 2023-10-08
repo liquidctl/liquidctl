@@ -4,7 +4,6 @@ from struct import pack
 from datetime import datetime
 
 
-
 import pytest
 from _testutils import MockHidapiDevice, Report
 
@@ -178,11 +177,11 @@ def test_mpg_core_liquid_k360_not_totally_broken(mpgCoreLiquidK360Device):
     profile = ((0, 30), (25, 40), (60, 60), (100, 75))
     dev.set_speed_profile("pump", profile)
     dev.set_fixed_speed("waterblock fan", 42)
-    dev.set_screen("oled", "image", "0;4")
-    dev.set_screen("oled", "banner", "1;0;Hello, world")
-    dev.set_screen("oled", "disable", "")
-    dev.set_screen("oled", "clock", "0")
-    dev.set_screen("oled", "hardware", "cpu_temp")
+    dev.set_screen("lcd", "image", "0;4")
+    dev.set_screen("lcd", "banner", "1;0;Hello, world")
+    dev.set_screen("lcd", "disable", "")
+    dev.set_screen("lcd", "clock", "0")
+    dev.set_screen("lcd", "hardware", "cpu_temp;cpu_freq")
 
 
 def test_mpg_core_liquid_k360_set_clock(mpgCoreLiquidK360Device):

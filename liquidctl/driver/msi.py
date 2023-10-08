@@ -699,6 +699,9 @@ class MpgCooler(UsbHidDriver):
             "specifically for that purpose."
         )
 
+        # for safety, set the initial temperature point
+        self.set_oled_show_cpu_status(0, 100)
+
     def set_fixed_speed(self, channel, duty, **opts):
         channel_nums = self.parse_channel(channel)
 
@@ -729,7 +732,7 @@ class MpgCooler(UsbHidDriver):
         return self._read()[2]
 
     def set_screen(self, channel, mode, value, **kwargs):
-        assert channel.lower() == "oled"
+        assert channel.lower() == "lcd"
         try:
             mode = self.SCREEN_MODES[mode]
         except KeyError as e:
@@ -738,7 +741,7 @@ class MpgCooler(UsbHidDriver):
             ) from e
 
         if mode == _ScreenMode.HARDWARE:
-            show_idx = [self.HWMONITORDISPLAY[x].value for x in value.split(" ")]
+            show_idx = [self.HWMONITORDISPLAY[x].value for x in value.split(";")]
             show_area = [i in show_idx for i in range(_OLEDHardwareMonitorOffset.MAXIMUM.value + 1)]
             self.set_oled_show_hardware_monitor(show_area)
         if mode == _ScreenMode.IMAGE:
