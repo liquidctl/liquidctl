@@ -142,10 +142,10 @@ Maximum length of the displayed banner mesages is 62 ASCII characters. hardware 
 | mode name | action | options |
 | --- | --- | --- |
 | hardware | set the screen to display hardware info | up to 3 semicolon delimited keys from the available sensors |
-| image | set the screen to display a custom or preset image | <type (0=preset,1=custom)>;<index>[;<filename>] |
-| banner | set the screen to display a message with custom or preset image as background | <type (0=preset,1=custom)>;<index>;<message>[;<filename>]
+| image | set the screen to display a custom or preset image | \<type (0=preset,1=custom)\>;\<index\>[;\<filename\>] |
+| banner | set the screen to display a message with custom or preset image as background | \<type (0=preset,1=custom)\>;\<index\>;\<message\>[;\<filename\>]
 | clock | set the screen to display system time (requires control service to send the time to the device) | integer between 0 and 2 to specify the style of the clock display |
-| settings | set the screen brightness and orientation: <brightness (0-10)>;<direction (0-3)> | 
+| settings | set the screen brightness and orientation | \<brightness (0-10)\>;\<direction (0-3)\> | 
 | disable | disables the lcd screen | |
 
 | Display orientation | value |
