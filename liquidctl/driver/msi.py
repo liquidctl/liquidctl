@@ -396,10 +396,11 @@ class _UploadType(Enum):
     BANNER = 0
     GIF = 1
 
+
 @unique
 class _ScreenMode(Enum):
     HARDWARE = 0
-    IMAGE =  1
+    IMAGE = 1
     BANNER = 3
     CLOCK = 4
     SETTINGS = 5
@@ -582,10 +583,10 @@ class MpgCooler(UsbHidDriver):
             ##    ('Temperature sensor 1', array[16] + (array[17] << 8), '°C'),
             ##    ('Temperature sensor 2', array[18] + (array[19] << 8), '°C'),
         ]
-    
+
     def set_time(self, time):
         return self.set_oled_clock(time)
-    
+
     def set_hardware_status(self, T, cpu_f=0, gpu_f=0, gpu_U=0, **kwargs):
         self.set_oled_show_cpu_status(cpu_f, T)
         self.set_oled_gpu_status(gpu_f, gpu_U)
@@ -732,15 +733,17 @@ class MpgCooler(UsbHidDriver):
         try:
             mode = self.SCREEN_MODES[mode]
         except KeyError as e:
-            raise Exception(f"Unknown screen mode! Should be one of: {self.SCREEN_MODES.keys()}") from e
+            raise Exception(
+                f"Unknown screen mode! Should be one of: {self.SCREEN_MODES.keys()}"
+            ) from e
 
         if mode == _ScreenMode.HARDWARE:
             show_idx = [self.HWMONITORDISPLAY[x].value for x in value.split(" ")]
             show_area = [i in show_idx for i in range(_OLEDHardwareMonitorOffset.MAXIMUM.value + 1)]
             self.set_oled_show_hardware_monitor(show_area)
         if mode == _ScreenMode.IMAGE:
-            values = value.split(';')
-            imgtype,idx = map(int,values[:2])
+            values = value.split(";")
+            imgtype, idx = map(int, values[:2])
             if len(values) > 2:
                 assert imgtype == 1, "Cannot override default images (image type 0)"
                 file = values[2]
@@ -748,7 +751,7 @@ class MpgCooler(UsbHidDriver):
                 self.set_oled_upload_gif(bmp_img, idx)
             self.set_oled_show_profile(imgtype, idx)
         elif mode == _ScreenMode.BANNER:
-            opts = value.split(';')
+            opts = value.split(";")
             if len(opts) == 3:
                 banner_type, save_slot = opts[:2]
                 message = opts[2]
@@ -758,17 +761,19 @@ class MpgCooler(UsbHidDriver):
                 banner_type, save_slot, message, image_file = opts
                 banner_type, save_slot = map(int, (banner_type, save_slot))
                 img = self._prepare_bmp(image_file)
-                assert save_slot >= 4, "Cannot overwrite preset banner images, "\
+                assert save_slot >= 4, (
+                    "Cannot overwrite preset banner images, "
                     "please use save slots starting from 4 for your uploaded files"
+                )
                 print("here")
-                self.set_oled_upload_banner(img, banner_no = save_slot)
+                self.set_oled_upload_banner(img, banner_no=save_slot)
                 self.set_oled_user_message(message)
                 self.set_oled_show_banner(banner_type=banner_type, bmp_no=save_slot)
         elif mode == _ScreenMode.CLOCK:
             style = int(value)
             self.set_oled_show_clock(style)
         elif mode == _ScreenMode.SETTINGS:
-            brightness, direction = [int(x) for x in value.split(';')]
+            brightness, direction = [int(x) for x in value.split(";")]
             self.set_oled_brightness_and_direction(brightness=brightness, direction=direction)
         elif mode == _ScreenMode.DISABLED:
             self.set_oled_show_disable()
@@ -955,7 +960,7 @@ class MpgCooler(UsbHidDriver):
 
     def set_oled_show_hardware_monitor(self, show_area, radiator_fan_smart_mode_on_off=True):
         """
-        
+
         Parameters
         ----------
         show_area:
@@ -1158,7 +1163,7 @@ class MpgCooler(UsbHidDriver):
 
     def set_oled_clock(self, time):
         """
-        Sends the specified time to the device. 
+        Sends the specified time to the device.
         """
         return self._write(
             (

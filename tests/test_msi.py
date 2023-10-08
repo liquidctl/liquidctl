@@ -1,5 +1,9 @@
+# uses the psf/black style
+
 from struct import pack
 from datetime import datetime
+
+
 
 import pytest
 from _testutils import MockHidapiDevice, Report
@@ -179,6 +183,7 @@ def test_mpg_core_liquid_k360_not_totally_broken(mpgCoreLiquidK360Device):
     dev.set_screen("oled", "disable", "")
     dev.set_screen("oled", "clock", "0")
     dev.set_screen("oled", "hardware", "cpu_temp")
+
 
 def test_mpg_core_liquid_k360_set_clock(mpgCoreLiquidK360Device):
     time = datetime(2012, 12, 21, 9, 54, 20)
