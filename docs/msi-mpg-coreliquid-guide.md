@@ -3,17 +3,15 @@ _Driver API and source code available in [`liquidctl.driver.msi`](../liquidctl/d
 
 _Currently, only the K360 model is experimentally supported as more testing and feedback is needed._
 
-This driver is for the MSI MPG coreliquid series of AIO coolers, of which currently only the coreliquid K360 has been tested and verified to be working. The usage of speed profiles for this model requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`extra/yoda`](../extra/yoda).
+This driver is for the MSI MPG coreliquid series of AIO coolers, of which currently only the coreliquid K360 has been tested and verified to be working. The usage of speed profiles for this model requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`extra/yoda`](../extra/yoda). Device configuration, including lighgting and fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
 
-Device configuration persists until a new configuration is sent to the device. A cold boot does not reset the device configuration, but it does erase any previous cpu temperature data from the device. The default control temperature upon starting the device is 0°C, so on boot the device fans will spin on the lowest point of a fan profile.
-
-LED lighting is controlled via preset modes, which are sent once to the device as a configuration, after which the device then independently commands the LEDs until a new configuration is received. Lighting modes persist similarly to the fan and pump speed settings.
+LED lighting is controlled via preset modes, which are sent once to the device as a configuration, after which the device then independently commands the LEDs until a new configuration is received.
 
 The K360 model includes an LCD screen capable of displaying various preset animations, hardware status, ASCII banners with a preset or custom background image, and preset or custom images.
 
 ## Initialization
 
-Controlling the device does not require initialization. Initialization is optional, and will set default fan curves and LCD screen settings.
+Controlling the device does not always require initialization, but some features, such as changing the display settings may not function before initialization. Initialization on its own will set default fan curves and LCD screen settings.
 
 ## Monitoring
 
