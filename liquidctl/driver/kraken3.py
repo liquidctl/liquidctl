@@ -4,6 +4,8 @@ Supported devices:
 
 - NZXT Kraken X (X53, X63 and X73)
 - NZXT Kraken Z (Z53, Z63 and Z73)
+- NZXT Kraken 2023
+- NZXT Kraken 2023 Elite
 
 Copyright Tom Frey, Jonas Malaco, Shady Nawara and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
