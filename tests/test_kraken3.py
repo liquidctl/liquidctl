@@ -105,6 +105,8 @@ def mock_krakenz3():
         speed_channels=_SPEED_CHANNELS_KRAKENZ,
         color_channels=_COLOR_CHANNELS_KRAKENZ,
         hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+        bulk_buffer_size=512,
+        lcd_resolution=(320, 320),
     )
 
     dev.connect()
@@ -143,7 +145,16 @@ class MockKraken(MockHidapiDevice):
 
 
 class MockKrakenZ3(KrakenZ3):
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+    def __init__(
+        self,
+        device,
+        description,
+        speed_channels,
+        color_channels,
+        bulk_buffer_size,
+        lcd_resolution,
+        **kwargs,
+    ):
         KrakenX3.__init__(self, device, description, speed_channels, color_channels, **kwargs)
 
         self.bulk_device = MockPyusbDevice(0x1E71, 0x3008)
@@ -151,6 +162,8 @@ class MockKrakenZ3(KrakenZ3):
 
         self.orientation = 0
         self.brightness = 50
+        self.bulk_buffer_size = bulk_buffer_size
+        self.lcd_resolution = lcd_resolution
 
         self.screen_mode = None
 
@@ -182,6 +195,7 @@ class MockKrakenZ3(KrakenZ3):
 
     def _bulk_write(self, data):
         fixed_data_index = self.bulk_data_index
+
         if (
             self.screen_mode == "static" and self.bulk_data_index > 1
         ):  # the rest of the message should be identical to index 1

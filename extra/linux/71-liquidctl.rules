@@ -482,6 +482,12 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2001", TAG+="uacc
 # NZXT HUE 2 Ambient
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2002", TAG+="uaccess"
 
+# NZXT Kraken 2023
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="300e", TAG+="uaccess"
+
+# NZXT Kraken 2023 Elite
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="300c", TAG+="uaccess"
+
 # NZXT Kraken M22
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1715", TAG+="uaccess"
 
