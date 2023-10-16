@@ -137,7 +137,7 @@ def test_mpg_core_liquid_k360_set_speed_profile(mpgCoreLiquidK360Device):
 
     mpgCoreLiquidK360Device.set_speed_profile("fans", curve_profile)
 
-    fan_report, T_report = mpgCoreLiquidK360Device.device.sent[-2:]
+    fan_report, T_report = mpgCoreLiquidK360Device.device.sent[-3:-1]
 
     # fan 1
     assert fan_report.data[1:9] == [3] + duties + [0] * 2
