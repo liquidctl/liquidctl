@@ -22,6 +22,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import itertools
 import logging
 import random
+import re
 
 from enum import Enum, unique
 
@@ -86,7 +87,7 @@ class _PumpMode(Enum):
         return _PumpMode.QUIET
 
 
-def _sequence(storage):
+def _sequence():
     """Return a generator that produces valid protocol sequence numbers.
 
     Sequence numbers are random.
@@ -113,9 +114,9 @@ def _quoted(*names):
 class CoolitDriver(UsbHidDriver):
     """liquidctl driver for Corsair H110i GT cooler"""
 
-    SUPPORTED_DEVICES = [
-        (0x1B1C, 0x0C04, None, 'Corsair H110i GT (experimental)',
-            {'fan_count': 2, 'rgb_fans': False}),
+    _MATCHES = [
+        (0x1B1C, 0x0C04, 'Corsair H110i GT (experimental)',
+            {'has_pump' : True, 'fan_count': 2, 'rgb_fans': False}),
     ]
 
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
@@ -129,10 +130,12 @@ class CoolitDriver(UsbHidDriver):
 
     def connect(self, **kwargs):
         """Connect to the device."""
-        super().connect(**kwargs)
-        ids = f'{self.vendor_id:04x}_{self.product_id:04x}'
-        self._data = RuntimeStorage(key_prefixes=[ids, self.address])
-        self._sequence = _sequence(self._data)
+        ret = super().connect(**kwargs)
+        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+        loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
+        self._data = RuntimeStorage(key_prefixes=[ids, loc])
+        self._sequence = _sequence()
+        return ret
 
     def initialize(self, pump_mode='quiet', **kwargs):
         """Initialize the device and set the pump mode
@@ -248,7 +251,6 @@ class CoolitDriver(UsbHidDriver):
         self.device.clear_enqueued_reports()
         self.device.write(package)
         buf = bytes(self.device.read(_REPORT_LENGTH))
-        self.device.release()
         LOGGER.debug('received %s', buf.hex())
         return buf
 
