@@ -92,8 +92,10 @@ def _sequence():
 
     Sequence numbers are random.
     """
+    num = 1
     while True:
-        yield random.randint(_SEQUENCE_MIN, _SEQUENCE_MAX)
+        yield (num % 31) + 1
+        num += 1
 
 
 def _prepare_profile(original):
