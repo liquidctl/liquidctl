@@ -29,6 +29,7 @@ from liquidctl.driver import aura_led
 from liquidctl.driver import aquacomputer
 from liquidctl.driver import commander_core
 from liquidctl.driver import commander_pro
+from liquidctl.driver import coolit
 from liquidctl.driver import corsair_hid_psu
 from liquidctl.driver import hydro_platinum
 from liquidctl.driver import kraken2
