@@ -152,10 +152,7 @@ class CoolitDriver(UsbHidDriver):
         """
         self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
 
-        dataPackages =  list()
-        dataPackages.append(self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES))
-
-        res = self._send_commands(dataPackages)
+        res = self._send_command(self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES))
 
         fw_version = (res[3] >> 4, res[3] & 0xf, res[2])
         return [('Firmware version', '%d.%d.%d' % fw_version, '')]
@@ -246,12 +243,20 @@ class CoolitDriver(UsbHidDriver):
 
         buf[0] = startIndex - 1
 
-        return self._send_command(buf)
+        return self._send_buffer(buf)
 
-    def _send_command(self, package):
-        LOGGER.debug('write %s', package.hex())
+    def _send_command(self, dataPackage):
+        buf = bytearray(_REPORT_LENGTH)
+
+        buf[0] = len(dataPackage)
+        buf[1:] = dataPackage
+
+        return self._send_buffer(buf)
+
+    def _send_buffer(self, buf):
+        LOGGER.debug('write %s', buf.hex())
         self.device.clear_enqueued_reports()
-        self.device.write(package)
+        self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
         LOGGER.debug('received %s', buf.hex())
         return buf
