@@ -306,7 +306,22 @@ class CoolitDriver(UsbHidDriver):
             else:
                 raise ValueError(f'Unsupported fan {mode}')
 
-        pump_mode = _PumpMode(self._data.load('pump_mode', of_type=int))
+        self._send_commands(
+            [
+                self._build_data_package(
+                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([_PUMP_INDEX])
+                ),
+                self._build_data_package(
+                    _COMMAND_FAN_FIXED_RPM,
+                    _OP_CODE_WRITE_TWO_BYTES,
+                    params=bytes(
+                        _PUMP_DEFAULT_QUIET
+                        if pump_mode == _PumpMode.QUIET
+                        else _PUMP_DEFAULT_EXTREME
+                    ),
+                ),
+            ]
+        )
 
         self._send_command(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([_PUMP_INDEX])))
         if pump_mode == _PumpMode.QUIET:
