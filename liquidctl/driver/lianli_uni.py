@@ -64,7 +64,7 @@ class LianLiUNI(UsbHidDriver):
 
         channel_byte = channel_byte | _CHANNEL_PWM_MASK << channel
 
-        self.write(_SYNC_CHANNEL_COMMANDS[self.variant] + channel_byte)
+        self.device.write(_SYNC_CHANNEL_COMMANDS[self.variant] + channel_byte)
 
 
     def set_channel_speed(self, channel, speed):
@@ -78,7 +78,7 @@ class LianLiUNI(UsbHidDriver):
         elif self.variant in ['SL v2', 'AL v2']:
             command.append((200.0 + (19.0 * speed)) / 21)
 
-        self.write(command)
+        self.device.write(command)
 
     def set_channel_profile(self, channel, speed, mode):
         if mode == 'pwm':
