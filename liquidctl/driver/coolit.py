@@ -58,11 +58,12 @@ _OP_CODE_READ_THREE_BYTES = 0x0B
 _PROFILE_LENGTH = 5
 _CRITICAL_TEMPERATURE = 60
 
-_PUMP_DEFAULT_QUIET = [0x2e, 0x09]
-_PUMP_DEFAULT_EXTREME = [0x86, 0x0b]
+_PUMP_DEFAULT_QUIET = [0x2E, 0x09]
+_PUMP_DEFAULT_EXTREME = [0x86, 0x0B]
 
 _SEQUENCE_MIN = 1
 _SEQUENCE_MAX = 255
+
 
 @unique
 class _FanMode(Enum):
@@ -103,28 +104,32 @@ def _prepare_profile(original):
     normal = normalize_profile(clamped, _CRITICAL_TEMPERATURE)
     missing = _PROFILE_LENGTH - len(normal)
     if missing < 0:
-        raise ValueError(f'Too many points in profile (remove {-missing})')
+        raise ValueError(f"Too many points in profile (remove {-missing})")
     if missing > 0:
         normal += missing * [(_CRITICAL_TEMPERATURE, 100)]
     return normal
 
 
 def _quoted(*names):
-    return ', '.join(map(repr, names))
+    return ", ".join(map(repr, names))
 
 
 class CoolitDriver(UsbHidDriver):
     """liquidctl driver for Corsair H110i GT cooler"""
 
     _MATCHES = [
-        (0x1B1C, 0x0C04, 'Corsair H110i GT (experimental)',
-            {'has_pump' : True, 'fan_count': 2, 'rgb_fans': False}),
+        (
+            0x1B1C,
+            0x0C04,
+            "Corsair H110i GT (experimental)",
+            {"has_pump": True, "fan_count": 2, "rgb_fans": False},
+        ),
     ]
 
     def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
         super().__init__(device, description, **kwargs)
         self._component_count = 1 + fan_count * rgb_fans
-        self._fan_names = [f'fan{i + 1}' for i in range(fan_count)]
+        self._fan_names = [f"fan{i + 1}" for i in range(fan_count)]
 
         # the following fields are only initialized in connect()
         self._data = None
@@ -133,72 +138,92 @@ class CoolitDriver(UsbHidDriver):
     def connect(self, **kwargs):
         """Connect to the device."""
         ret = super().connect(**kwargs)
-        ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
-        loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
+        ids = f"vid{self.vendor_id:04x}_pid{self.product_id:04x}"
+        loc = "loc" + "_".join(re.findall(r"\d+", self.address))
         self._data = RuntimeStorage(key_prefixes=[ids, loc])
         self._sequence = _sequence()
         return ret
 
-    def initialize(self, pump_mode='quiet', **kwargs):
+    def initialize(self, pump_mode="quiet", **kwargs):
         """Initialize the device and set the pump mode
 
         The device should be initialized every time it is powered on, including when
         the system resumes from suspending to memory.
 
-        Valid values for `pump_mode` are 'quiet' and 'extreme'.
+        Valid values for `pump_mode` are "quiet" and "extreme".
         Unconfigured fan channels may default to 100% duty.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        self._data.store('pump_mode', _PumpMode[pump_mode.upper()].value)
+        self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
 
-        res = self._send_command(self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES))
+        res = self._send_command(
+            self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES)
+        )
 
-        fw_version = (res[3] >> 4, res[3] & 0xf, res[2])
-        return [('Firmware version', '%d.%d.%d' % fw_version, '')]
+        fw_version = (res[3] >> 4, res[3] & 0xF, res[2])
+        return [("Firmware version", "%d.%d.%d" % fw_version, "")]
 
     def get_status(self, **kwargs):
         """Get a status report.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        dataPackages =  list()
+        dataPackages = list()
         dataPackages.append(self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES))
-        dataPackages.append(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])))
-        dataPackages.append(self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES))
-        dataPackages.append(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([1])))
-        dataPackages.append(self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES))
-        dataPackages.append(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([2])))
-        dataPackages.append(self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES))
+        dataPackages.append(
+            self._build_data_package(
+                _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])
+            )
+        )
+        dataPackages.append(
+            self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
+        )
+        dataPackages.append(
+            self._build_data_package(
+                _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([1])
+            )
+        )
+        dataPackages.append(
+            self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
+        )
+        dataPackages.append(
+            self._build_data_package(
+                _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([2])
+            )
+        )
+        dataPackages.append(
+            self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
+        )
 
         res = self._send_commands(dataPackages)
 
         temp = res[3] + res[2] / 255
 
         return [
-            ('Liquid temperature', temp, '°C'),
-            ('Fan 1 speed', u16le_from(res, offset=8), 'rpm'),
-            ('Fan 2 speed', u16le_from(res, offset=14), 'rpm'),
-            ('Pump speed', u16le_from(res, offset=20), 'rpm'),
+            ("Liquid temperature", temp, "°C"),
+            ("Fan 1 speed", u16le_from(res, offset=8), "rpm"),
+            ("Fan 2 speed", u16le_from(res, offset=14), "rpm"),
+            ("Pump speed", u16le_from(res, offset=20), "rpm"),
         ]
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
 
-        Valid channel values are 'fanN', where N >= 1 is the fan number, and
-        'fan', to simultaneously configure all fans.  Unconfigured fan channels
+        Valid channel values are "fanN", where N >= 1 is the fan number, and
+        "fan", to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
         """
         for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store(f'{hw_channel}_mode', _FanMode.FIXED_DUTY.value)
-            self._data.store(f'{hw_channel}_duty', duty)
+            self._data.store(f"{hw_channel}_mode", _FanMode.FIXED_DUTY.value)
+            self._data.store(f"{hw_channel}_duty", duty)
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Set fan or fans to follow a speed duty profile.
 
-        Valid channel values are 'fanN', where N >= 1 is the fan number, and
-        'fan', to simultaneously configure all fans.  Unconfigured fan channels
+        Valid channel values are "fanN", where N >= 1 is the fan number, and
+        "fan", to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
 
         Up to seven (temperature, duty) pairs can be supplied in `profile`,
@@ -208,17 +233,17 @@ class CoolitDriver(UsbHidDriver):
         """
         profile = list(profile)
         for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store(f'{hw_channel}_mode', _FanMode.CUSTOM_PROFILE.value)
-            self._data.store(f'{hw_channel}_profile', profile)
+            self._data.store(f"{hw_channel}_mode", _FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f"{hw_channel}_profile", profile)
         self._send_set_cooling()
 
     def _get_hw_fan_channels(self, channel):
         channel = channel.lower()
-        if channel == 'fan':
+        if channel == "fan":
             return self._fan_names
         if channel in self._fan_names:
             return [channel]
-        raise ValueError(f'Unknown channel, should be one of: {_quoted("fan", *self._fan_names)}')
+        raise ValueError(f"Unknown channel, should be one of: {_quoted('fan', *self._fan_names)}")
 
     def _build_data_package(self, command, opCode, params=None):
         if params:
@@ -254,37 +279,53 @@ class CoolitDriver(UsbHidDriver):
         return self._send_buffer(buf)
 
     def _send_buffer(self, buf):
-        LOGGER.debug('write %s', buf.hex())
+        LOGGER.debug("write %s", buf.hex())
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
-        LOGGER.debug('received %s', buf.hex())
+        LOGGER.debug("received %s", buf.hex())
         return buf
 
     def _send_set_cooling(self):
         for fan in self._fan_names:
-            fanIndex = 0 if fan == 'fan1' else 1
+            fanIndex = 0 if fan == "fan1" else 1
 
-            mode = _FanMode(self._data.load(f'{fan}_mode', of_type=int))
+            mode = _FanMode(self._data.load(f"{fan}_mode", of_type=int))
 
             if mode is _FanMode.FIXED_DUTY:
-                stored = self._data.load(f'{fan}_duty', of_type=int, default=100)
+                stored = self._data.load(f"{fan}_duty", of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
-                self._send_command(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])))
-                self._send_command(self._build_data_package(_COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])))
-                self._send_command(self._build_data_package(_COMMAND_FAN_FIXED_PWM, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fraction_of_byte(percentage=duty)])))
-                LOGGER.info('setting %s to %d%% duty cycle', fan, duty)
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
+                    )
+                )
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                    )
+                )
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_FIXED_PWM,
+                        _OP_CODE_WRITE_ONE_BYTE,
+                        params=bytes([fraction_of_byte(percentage=duty)]),
+                    )
+                )
+                LOGGER.info("setting %s to %d%% duty cycle", fan, duty)
 
             elif mode is _FanMode.CUSTOM_PROFILE:
-                stored = self._data.load(f'{fan}_profile', of_type=list, default=[])
+                stored = self._data.load(f"{fan}_profile", of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
 
                 fanTemperatureData = list()
-                fanTemperatureData.append(0x0A) # 'magical' 0x0A in front of curve definition packages
+                fanTemperatureData.append(
+                    0x0A
+                )  # "magical" 0x0A in front of curve definition packages
 
                 fanDutyData = list()
-                fanDutyData.append(0x0A) # 'magical' 0x0A in front of curve definition packages
+                fanDutyData.append(0x0A)  # "magical" 0x0A in front of curve definition packages
 
                 for temp, duty in profile:
                     fanTemperatureData.append(0x00)
@@ -294,17 +335,39 @@ class CoolitDriver(UsbHidDriver):
                     fanDutyData.append(int(rpm - (rpm % 255)) >> 8)
 
                 # Send temperature profile
-                self._send_command(self._build_data_package(_COMMAND_FAN_TEMP_TABLE, _OP_CODE_WRITE_THREE_BYTES, params=bytes(fanTemperatureData)))
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_TEMP_TABLE,
+                        _OP_CODE_WRITE_THREE_BYTES,
+                        params=bytes(fanTemperatureData),
+                    )
+                )
                 # Send duty cycle Profile
-                self._send_command(self._build_data_package(_COMMAND_FAN_RPM_TABLE, _OP_CODE_WRITE_THREE_BYTES, params=bytes(fanDutyData)))
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_RPM_TABLE,
+                        _OP_CODE_WRITE_THREE_BYTES,
+                        params=bytes(fanDutyData),
+                    )
+                )
 
                 # Change mode to custom Profile
-                self._send_command(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])))
-                self._send_command(self._build_data_package(_COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])))
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
+                    )
+                )
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                    )
+                )
 
-                LOGGER.info('setting %s to follow profile %r', fan, profile)
+                LOGGER.info("setting %s to follow profile %r", fan, profile)
             else:
-                raise ValueError(f'Unsupported fan {mode}')
+                raise ValueError(f"Unsupported fan {mode}")
+
+        pump_mode = _PumpMode(self._data.load("pump_mode", of_type=int))
 
         self._send_commands(
             [
@@ -323,10 +386,4 @@ class CoolitDriver(UsbHidDriver):
             ]
         )
 
-        self._send_command(self._build_data_package(_COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([_PUMP_INDEX])))
-        if pump_mode == _PumpMode.QUIET:
-            self._send_command(self._build_data_package(_COMMAND_FAN_FIXED_RPM, _OP_CODE_WRITE_TWO_BYTES, params=bytes(_PUMP_DEFAULT_QUIET)))
-        elif pump_mode == _PumpMode.EXTREME:
-            self._send_command(self._build_data_package(_COMMAND_FAN_FIXED_RPM, _OP_CODE_WRITE_TWO_BYTES, params=bytes(_PUMP_DEFAULT_EXTREME)))
-
-        LOGGER.info('setting pump mode to %s', pump_mode.name.lower())
+        LOGGER.info("setting pump mode to %s", pump_mode.name.lower())
