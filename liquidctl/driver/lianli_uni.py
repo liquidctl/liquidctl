@@ -1,5 +1,8 @@
 from liquidctl.driver.usb import UsbHidDriver
 
+_SYNC_ARGB_COMMAND_LENGTH = 7
+_SYNC_CHANNEL_COMMAND_LENGTH = 4
+
 _SYNC_ARGB_COMMANDS = {
     'SL': [224, 16, 48, 0, 0, 0],
     'AL': [224, 16, 65, 0, 0, 0],
@@ -52,11 +55,13 @@ class LianLiUNI(UsbHidDriver):
         self.variant = next(key for key in _PIDS if self.product_id in _PIDS[key])
 
     def sync_rgb_header(self, sync_rgb):
-        self._write(
-            _SYNC_ARGB_COMMANDS[self.variant][0:3],
-            0x1 if sync_byte else 0x0,
-            _SYNC_ARGB_COMMANDS[self.variant][3:]
-        )
+        buf = bytearray(_SYNC_ARGB_COMMAND_LENGTH)
+
+        buf[0:3] = _SYNC_ARGB_COMMANDS[self.variant][0:3]
+        buf[3] = 0x1 if sync_byte else 0x0
+        buf[4:] = _SYNC_ARGB_COMMANDS[self.variant][3:]
+
+        self.device.write(buf)
 
     def set_channel_pwm(self, channel):
         # TODO check channel at least 1
