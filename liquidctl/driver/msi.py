@@ -712,7 +712,9 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
 
-    def set_color(self, _, mode, colors, speed=1, brightness=10, color_selection=1, **opts):
+    def set_color(self, channel, mode, colors, speed=1, brightness=10, color_selection=1, **opts):
+        assert channel == "sync",\
+                f"Unexpected lighting channel {channel}. Supported: \"sync\""
         colors = list(colors)
         if not colors:
             color_selection = 0
