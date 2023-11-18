@@ -79,7 +79,7 @@ The preset, named modes are supported in the driver and they currently have expe
 
 ## RGB lighting with LEDs
 
-LEDs on the device are always synced with the same effect, so the channel argument is unused when setting colors.
+LEDs on the device are always synced with the same effect, so the only supported channel argument is "sync".
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)). Each animation mode supports zero to two colors, and some animation modes include an additional "rainbow" mode.
 
@@ -128,11 +128,11 @@ Some lighting modes are intended to react to the sounds currently playing on the
 | `visor` | Two | Yes |                        |
 | `water drop` | One | Yes |                        |
 
-Support for the rainbow option in the liquidctl cli is on the way, but it is included in the driver.
+Support for the rainbow option is not yet exposed by the liquidctl cli, but it is included in the driver.
 
 ## The LCD screen
 
-The screen resolution is 320 x 240 px, and custom images uploaded with this driver are resized to fit this requirement. The screen orientation and brightness (0-10) can also be controlled. The only channel available for the K360 model is "lcd".
+The screen resolution is 320 x 240 px, and custom images uploaded with this driver are resized to fit this requirement. The screen orientation and brightness (0-100) can also be controlled. The only channel available for the K360 model is "lcd".
 
 Maximum length of the displayed banner mesages is 62 ASCII characters. hardware status display functionality is limited, as the displayed data must be communicated to the device. This functionality is implemented in the driver, but currently its usage is limited to yoda, which gpu-unaware so the gpu_freq and gpu_usage parameters will not display correct information without custom update services.
 
@@ -143,7 +143,7 @@ Maximum length of the displayed banner mesages is 62 ASCII characters. hardware 
 | image | set the screen to display a custom or preset image | \<type (0=preset,1=custom)\>;\<index\>[;\<filename\>] |
 | banner | set the screen to display a message with custom or preset image as background | \<type (0=preset,1=custom)\>;\<index\>;\<message\>[;\<filename\>]
 | clock | set the screen to display system time (requires control service to send the time to the device) | integer between 0 and 2 to specify the style of the clock display |
-| settings | set the screen brightness and orientation | \<brightness (0-10)\>;\<direction (0-3)\> | 
+| settings | set the screen brightness and orientation | \<brightness (0-10)\>;\<direction (0-3)\> |
 | disable | disables the lcd screen | |
 
 | Display orientation | value |
