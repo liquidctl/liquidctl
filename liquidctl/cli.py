@@ -117,6 +117,7 @@ _PARSE_ARG = {
     '--single-12v-ocp': bool,
     '--pump-mode': str.lower,
     '--legacy-690lc': bool,
+    '--sync-rgb': bool,
     '--non-volatile': bool,
     '--direct-access': bool,
     '--fan-mode': lambda x: fan_mode_parser(x),

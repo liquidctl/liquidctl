@@ -1,4 +1,6 @@
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
+
 
 _SYNC_ARGB_COMMAND_LENGTH = 7
 _SYNC_CHANNEL_COMMAND_LENGTH = 4
@@ -34,18 +36,18 @@ class LianLiUNI(UsbHidDriver):
     """Lian-Li Uni fans"""
 
     _MATCHES = [
-        (0x0CF2, 0x7750, "LianLi-UNI SL", {"fan_count": 4, "temp_probs": 0, "led_channels": 2}),
-        (0x0CF2, 0xA100, "LianLi-UNI SL", {"fan_count": 4, "temp_probs": 0, "led_channels": 2}),
-        (0x0CF2, 0xA101, "LianLi-UNI AL", {"fan_count": 4, "temp_probs": 0, "led_channels": 2}),
+        (0x0CF2, 0x7750, "LianLi-UNI SL", {"fan_count": 1, "temp_probs": 0, "led_channels": 2}),
+        (0x0CF2, 0xA100, "LianLi-UNI SL", {"fan_count": 1, "temp_probs": 0, "led_channels": 2}),
+        (0x0CF2, 0xA101, "LianLi-UNI AL", {"fan_count": 1, "temp_probs": 0, "led_channels": 2}),
         (
             0x0CF2,
             0xA102,
             "LianLi-UNI SL-Infinity",
             {"fan_count": 4, "temp_probs": 0, "led_channels": 2},
         ),
-        (0x0CF2, 0xA103, "LianLi-UNI SL v2", {"fan_count": 4, "temp_probs": 0, "led_channels": 2}),
-        (0x0CF2, 0xA105, "LianLi-UNI SL v2", {"fan_count": 4, "temp_probs": 0, "led_channels": 2}),
-        (0x0CF2, 0xA104, "LianLi-UNI AL v2", {"fan_count": 4, "temp_probs": 0, "led_channels": 2}),
+        (0x0CF2, 0xA103, "LianLi-UNI SL v2", {"fan_count": 1, "temp_probs": 0, "led_channels": 2}),
+        (0x0CF2, 0xA105, "LianLi-UNI SL v2", {"fan_count": 1, "temp_probs": 0, "led_channels": 2}),
+        (0x0CF2, 0xA104, "LianLi-UNI AL v2", {"fan_count": 1, "temp_probs": 0, "led_channels": 2}),
     ]
 
     def __init__(self, device, description, fan_count, temp_probs, led_channels, **kwargs):
@@ -53,7 +55,27 @@ class LianLiUNI(UsbHidDriver):
 
         self.variant = next(key for key in _PIDS if self.product_id in _PIDS[key])
 
-    def sync_rgb_header(self, sync_rgb):
+    def initialize(self, direct_access=False, fan_mode={}, **kwargs):
+        if 'rgb_sync' in kwargs and kwargs['rgb_sync']:
+            self._set_rgb_sync()
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        if channel not in range(1, 7):
+            raise ValueError('fan channel must be between 1 and 6')
+
+        channel_byte = _CHANNEL_BYTE_MASK << channel
+
+        is_pwm = False
+        if kwargs['fan_mode'] and channel in kwargs['fan_mode'] and kwargs['fan_mode'][channel] == 'pwm':
+            channel_byte = self._set_pwm_sync(channel_byte, channel)
+            is_pwm = True
+
+        self.device.write(bytearray(_SYNC_CHANNEL_COMMANDS[self.variant] + [channel_byte]))
+
+        if is_pwm:
+            self._set_manual_rpm(channel, duty)
+
+    def _set_rgb_sync(self, sync_rgb):
         buf = bytearray(_SYNC_ARGB_COMMAND_LENGTH)
 
         buf[0:3] = _SYNC_ARGB_COMMANDS[self.variant][0:3]
@@ -62,15 +84,10 @@ class LianLiUNI(UsbHidDriver):
 
         self.device.write(buf)
 
-    def set_channel_pwm(self, channel):
-        # TODO check channel at least 1
-        channel_byte = _CHANNEL_BYTE_MASK << channel
+    def _set_pwm_sync(self, channel_byte, channel):
+        return channel_byte | _CHANNEL_PWM_MASK << channel
 
-        channel_byte = channel_byte | _CHANNEL_PWM_MASK << channel
-
-        self.device.write(_SYNC_CHANNEL_COMMANDS[self.variant] + channel_byte)
-
-    def set_channel_speed(self, channel, speed):
+    def _set_manual_rpm(self, channel, speed):
         speed = min(speed, 100.0)
         command = [224, channel + 32, 0]
 
@@ -81,10 +98,8 @@ class LianLiUNI(UsbHidDriver):
         elif self.variant in ["SL v2", "AL v2"]:
             command.append((200.0 + (19.0 * speed)) / 21)
 
-        self.device.write(command)
+        self.device.write(bytearray(command))
 
-    def set_channel_profile(self, channel, speed, mode):
-        if mode == "pwm":
-            self.set_channel_pwm(channel)
-        else:
-            self.set_channel_speed(channel, speed)
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
