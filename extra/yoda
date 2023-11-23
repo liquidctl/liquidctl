@@ -51,7 +51,7 @@ Options:
   -v, --verbose            Output additional information
   -g, --debug              Show debug information on stderr
   --legacy-690lc           Use Asetek 690LC in legacy mode (old Krakens)
-  --use-device-controller  Use the control loop integrated to the device (MPG coreliquid device) 
+  --use-device-controller  Use the control loop integrated to the device (MPG coreliquid device)
   --version                Display the version number
   --help                   Show this message
 
