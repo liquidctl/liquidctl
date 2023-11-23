@@ -158,7 +158,7 @@ def test_mpg_core_liquid_k360_set_color(mpgCoreLiquidK360Device):
     use_color = 1
 
     mpgCoreLiquidK360Device.set_color(
-        None, mode, colors, speed=speed, brightness=brightness, color_selection=use_color
+        "sync", mode, colors, speed=speed, brightness=brightness, color_selection=use_color
     )
     report = mpgCoreLiquidK360Device.device.sent[-1]
 
