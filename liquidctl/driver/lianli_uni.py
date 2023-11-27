@@ -31,6 +31,8 @@ _PIDS = {
 _CHANNEL_BYTE_MASK = 0x10
 _CHANNEL_PWM_MASK = 0x1
 
+_CHANNEL_PARSING_ERROR = 'unknown channel, should be one of fan1..6'
+
 
 class LianLiUNI(UsbHidDriver):
     """Lian-Li Uni fans"""
@@ -60,8 +62,7 @@ class LianLiUNI(UsbHidDriver):
             self._set_rgb_sync()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        if channel not in range(1, 7):
-            raise ValueError('fan channel must be between 1 and 6')
+        channel = self._parse_channel(channel)
 
         channel_byte = _CHANNEL_BYTE_MASK << channel
 
@@ -74,6 +75,24 @@ class LianLiUNI(UsbHidDriver):
 
         if is_pwm:
             self._set_manual_rpm(channel, duty)
+
+    def _parse_channel(self, channel):
+        channel = channel.split('fan')
+        error = False
+
+        if len(channel) != 2:
+            error = True
+        else:
+            try:
+                channel = int(channel[1])
+                if channel not in range(1, 7):
+                    error = True
+            except ValueError:
+                error = True
+
+        if error:
+            raise ValueError(_CHANNEL_PARSING_ERROR)
+        return channel
 
     def _set_rgb_sync(self, sync_rgb):
         buf = bytearray(_SYNC_ARGB_COMMAND_LENGTH)
