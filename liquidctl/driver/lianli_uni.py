@@ -31,7 +31,7 @@ _PIDS = {
 _CHANNEL_BYTE_MASK = 0x10
 _CHANNEL_PWM_MASK = 0x1
 
-_CHANNEL_PARSING_ERROR = 'unknown channel, should be one of fan1..6'
+_CHANNEL_PARSING_ERROR = "unknown channel, should be one of fan1..6"
 
 
 class LianLiUNI(UsbHidDriver):
@@ -58,7 +58,7 @@ class LianLiUNI(UsbHidDriver):
         self.variant = next(key for key in _PIDS if self.product_id in _PIDS[key])
 
     def initialize(self, direct_access=False, fan_mode={}, **kwargs):
-        if 'rgb_sync' in kwargs and kwargs['rgb_sync']:
+        if "rgb_sync" in kwargs and kwargs["rgb_sync"]:
             self._set_rgb_sync()
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -67,7 +67,11 @@ class LianLiUNI(UsbHidDriver):
         channel_byte = _CHANNEL_BYTE_MASK << channel
 
         is_pwm = False
-        if kwargs['fan_mode'] and channel in kwargs['fan_mode'] and kwargs['fan_mode'][channel] == 'pwm':
+        if (
+            kwargs["fan_mode"]
+            and channel in kwargs["fan_mode"]
+            and kwargs["fan_mode"][channel] == "pwm"
+        ):
             channel_byte = self._set_pwm_sync(channel_byte, channel)
             is_pwm = True
 
@@ -77,7 +81,7 @@ class LianLiUNI(UsbHidDriver):
             self._set_manual_rpm(channel, duty)
 
     def _parse_channel(self, channel):
-        channel = channel.split('fan')
+        channel = channel.split("fan")
         error = False
 
         if len(channel) != 2:
