@@ -44,7 +44,7 @@ body:
       placeholder: e.g. Corsair Hydro H100i Pro XT
     validations:
       required: false
-  - type: input
+  - type: dropdown
     id: checked-supported-devices
     attributes:
       label: Does your version of liquidctl support the device in question?
