@@ -24,6 +24,7 @@ Device selection options (see: list -v):
 
 Animation options (devices/modes can support zero or more):
   --speed <value>                    Abstract animation speed (device/mode specific)
+  --brightness <value>               LED brightness (device/mode specific)
   --time-per-color <value>           Time to wait on each color (seconds)
   --time-off <value>                 Time to wait with the LED turned off (seconds)
   --alert-threshold <number>         Threshold temperature for a visual alert (°C)
@@ -105,6 +106,7 @@ _PARSE_ARG = {
     '--pick': int,
 
     '--speed': str.lower,
+    '--brightness': int,
     '--time-per-color': int,
     '--time-off': int,
     '--alert-threshold': int,
