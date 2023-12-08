@@ -363,6 +363,8 @@ python -m pip install git+https://github.com/liquidctl/liquidctl#egg=liquidctl
 [git]: https://git-scm.com/
 [pip]: https://pip.pypa.io/en/stable/
 
+To set up rootless access to devices on Linux and BSDs, install documentation and completions, or to learn more about auxiliary scripts, continue reading for the next few sections.
+
 #### Allowing access to the devices
 [Allowing access to the devices]: #allowing-access-to-the-devices
 
