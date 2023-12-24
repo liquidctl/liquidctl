@@ -7,7 +7,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.util import clamp
+from liquidctl.util import clamp, u16le_from, rpadlist
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,9 +51,9 @@ class RogRyujin(UsbHidDriver):
 
         return [
             (_STATUS_TEMPERATURE, msg[3] + msg[4] / 10, "°C"),
-            (_STATUS_PUMP_SPEED, msg[6] << 8 | msg[5], "rpm"),
+            (_STATUS_PUMP_SPEED, u16le_from(msg, 5), "rpm"),
             (_STATUS_PUMP_DUTY, pump_duty, "%"),
-            (_STATUS_FAN_SPEED, msg[8] << 8 | msg[7], "rpm"),
+            (_STATUS_FAN_SPEED, u16le_from(msg, 7), "rpm"),
             (_STATUS_FAN_DUTY, fan_duty, "%"),
         ]
 
@@ -77,5 +77,4 @@ class RogRyujin(UsbHidDriver):
         return msg
 
     def _write(self, data):
-        padding = [0x0] * (_REPORT_LENGTH - len(data))
-        self.device.write(data + padding)
+        self.device.write(rpadlist(data, _REPORT_LENGTH, 0))
