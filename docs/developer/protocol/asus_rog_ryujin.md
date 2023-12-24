@@ -1,6 +1,6 @@
 # ASUS ROG RYUJIN II liquid cooler protocol
 
-The data of all usb packets is 65 bytes long and starts with `0xEC`
+The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
 
 
 ## Cooling Operations
