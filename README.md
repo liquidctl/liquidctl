@@ -118,6 +118,7 @@ subjective "from more to less liquid control-ly" order.
 
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
+| AIO liquid cooler  | [ASUS ROG RYUJIN II 360](docs/asus-rog-ryujin-guide.md) | <sup>_ep_</sup> | git |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Ze_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
