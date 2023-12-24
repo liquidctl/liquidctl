@@ -743,7 +743,9 @@ This is likely caused by having replaced the standard driver of a USB HID.  If t
 
 ### Device not listed (Linux)
 
-This is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0, but failed to reattach the original driver before terminating.
+First, check that the liquidctl version (`liquidctl --version`) you're running supports the device in question. An overview of supported devices and minimum recommended versions for them are available in [Supported devices]. Support for new devices can happen to be available only in Git for some time.
+
+If the device is supported, this is usually caused by having an unexpected kernel driver bound to a USB HID. In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0, but failed to reattach the original driver before terminating.
 
 This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
 
