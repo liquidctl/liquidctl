@@ -40,12 +40,15 @@ class RogRyujin(UsbHidDriver):
 
     def _get_duty(self) -> (int, int):
         """Get current pump and fan duty in %."""
+        self.device.clear_enqueued_reports()
         self._write([_PREFIX, _CMD_GET_SPEED])
         msg = self._read()
         return msg[4], msg[5]
 
     def get_status(self, **kwargs):
         pump_duty, fan_duty = self._get_duty()
+
+        self.device.clear_enqueued_reports()
         self._write([_PREFIX, _CMD_GET_STATUS])
         msg = self._read()
 
@@ -70,9 +73,7 @@ class RogRyujin(UsbHidDriver):
 
         self._write([_PREFIX, _CMD_SET_SPEED, 0x00, pump_duty, fan_duty])
 
-    def _read(self, clear_first=True):
-        if clear_first:
-            self.device.clear_enqueued_reports()
+    def _read(self):
         msg = self.device.read(_REPORT_LENGTH)
         return msg
 
