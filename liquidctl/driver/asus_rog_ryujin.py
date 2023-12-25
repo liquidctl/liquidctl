@@ -7,6 +7,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import ExpectationNotMet
 from liquidctl.util import clamp, u16le_from, rpadlist
 
 _LOGGER = logging.getLogger(__name__)
@@ -15,7 +16,9 @@ _REPORT_LENGTH = 65
 _PREFIX = 0xEC
 
 _CMD_GET_STATUS = 0x99
+_CMD_GET_STATUS_RESPONSE = 0x19
 _CMD_GET_SPEED = 0x9A
+_CMD_GET_SPEED_RESPONSE = 0x1A
 _CMD_SET_SPEED = 0x1A
 
 _STATUS_TEMPERATURE = "Liquid temperature"
@@ -42,7 +45,7 @@ class RogRyujin(UsbHidDriver):
         """Get current pump and fan duty in %."""
         self.device.clear_enqueued_reports()
         self._write([_PREFIX, _CMD_GET_SPEED])
-        msg = self._read()
+        msg = self._read(_CMD_GET_SPEED_RESPONSE)
         return msg[4], msg[5]
 
     def get_status(self, **kwargs):
@@ -50,7 +53,7 @@ class RogRyujin(UsbHidDriver):
 
         self.device.clear_enqueued_reports()
         self._write([_PREFIX, _CMD_GET_STATUS])
-        msg = self._read()
+        msg = self._read(_CMD_GET_STATUS_RESPONSE)
 
         return [
             (_STATUS_TEMPERATURE, msg[3] + msg[4] / 10, "°C"),
@@ -73,8 +76,14 @@ class RogRyujin(UsbHidDriver):
 
         self._write([_PREFIX, _CMD_SET_SPEED, 0x00, pump_duty, fan_duty])
 
-    def _read(self):
+    def _read(self, expected_header=None):
         msg = self.device.read(_REPORT_LENGTH)
+
+        if msg[0] != _PREFIX:
+            raise ExpectationNotMet("Unexpected report prefix")
+        if expected_header is not None and msg[1] != expected_header:
+            raise ExpectationNotMet("Unexpected report header")
+
         return msg
 
     def _write(self, data):
