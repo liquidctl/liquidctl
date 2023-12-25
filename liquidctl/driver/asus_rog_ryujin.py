@@ -29,7 +29,7 @@ class RogRyujin(UsbHidDriver):
     """ASUS ROG RYUJIN II 360 liquid cooler."""
 
     _MATCHES = [
-        (0x0B05, 0x1988, "ASUS ROG RYUJIN II 360", {"fan_count": 1}),
+        (0x0B05, 0x1988, "ASUS ROG RYUJIN II 360", {}),
     ]
 
     def __init__(self, device, description, **kwargs):
