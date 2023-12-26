@@ -3,6 +3,18 @@
 The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
 
 
+## Generic Operations
+
+### Get firmware info
+
+- Request:
+    - Header: `0xEC 0x82`
+- Response:
+    - Header: `0xEC 0x02`
+    - Data:
+        - Byte 4-18: Firmware version (ascii)
+
+
 ## Cooling Operations
 
 ### Get cooling info
@@ -59,3 +71,10 @@ The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
         - Byte 5: ?
 - Response:
     - Header: `0xEC 0x21`
+
+---
+- Request:
+    - Header: `0xEC 0xAF`
+- Response:
+    - Header: `0xEC 0x2F`
+        - Byte 4-17: ?

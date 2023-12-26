@@ -15,12 +15,15 @@ _LOGGER = logging.getLogger(__name__)
 _REPORT_LENGTH = 65
 _PREFIX = 0xEC
 
+_CMD_GET_FIRMWARE = 0x82
+_CMD_GET_FIRMWARE_RESPONSE = 0x02
 _CMD_GET_STATUS = 0x99
 _CMD_GET_STATUS_RESPONSE = 0x19
 _CMD_GET_SPEED = 0x9A
 _CMD_GET_SPEED_RESPONSE = 0x1A
 _CMD_SET_SPEED = 0x1A
 
+_STATUS_FIRMWARE = "Firmware version"
 _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
@@ -39,7 +42,10 @@ class RogRyujin(UsbHidDriver):
         super().__init__(device, description, **kwargs)
 
     def initialize(self, **kwargs):
-        pass
+        self.device.clear_enqueued_reports()
+        self._write([_PREFIX, _CMD_GET_FIRMWARE])
+        msg = self._read(_CMD_GET_FIRMWARE_RESPONSE)
+        return [(_STATUS_FIRMWARE, "".join(map(chr, msg[3:18])), "")]
 
     def _get_duty(self) -> (int, int):
         """Get current pump and fan duty in %."""

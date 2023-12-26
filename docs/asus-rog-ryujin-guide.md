@@ -2,6 +2,17 @@
 _Driver API and source code available in [`liquidctl.driver.asus_rog_ryujin`](../liquidctl/driver/asus_rog_ryujin.py)._
 
 
+## Initialization
+
+Initialization is not required. It outputs the firmware version:
+
+```
+# liquidctl initialize
+ASUS ROG RYUJIN II 360
+└── Firmware version    AURJ1-S750-0104
+```
+
+
 ## Monitoring
 
 The cooler reports the liquid temperature, the speed and the set duty of the pump and embedded micro fan.
