@@ -14,6 +14,7 @@ Device guides
 <!-- sort -->
 
 - [ASUS Aura LED (USB-based) controllers](asus-aura-led-guide.md)
+- [ASUS ROG RYUJIN II liquid coolers](asus-rog-ryujin-guide.md)
 - [Aquacomputer D5 Next watercooling pump](aquacomputer-d5next-guide.md)
 - [Aquacomputer Farbwerk 360 RGB controller](aquacomputer-farbwerk360-guide.md)
 - [Aquacomputer Octo fan controller](aquacomputer-octo-guide.md)
