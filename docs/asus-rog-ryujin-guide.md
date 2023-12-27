@@ -38,14 +38,23 @@ Pump duty can be set using channel `pump`.
 # liquidctl set pump speed 90
 ```
 
-Embedded fan duty can be set using channel `fan` or `fan1`.
+Use channel `fan` to set all fans at the same time:
 
 ```
 # liquidctl set fan speed 50
+```
+
+Use channel `fan1` to set the duty of the embedded fan:
+
+```
 # liquidctl set fan1 speed 50
 ```
 
-Control of the AIO fan controller is currently not supported.
+Use channel `fan2` to set the duty of the fans connected to the AIO fan controller:
+
+```
+# liquidctl set fan2 speed 50
+```
 
 ### Duty to speed relation
 
@@ -53,7 +62,9 @@ The resulting speeds do not scale linearly to the set duty values.
 For example pump duty values below 20%
 result in relatively small changes in pump speed.
 
-A mapping of duty values to pump and fan speeds:
+Speeds of the fans connected to the AIO fan controller depend on the fans themselves.
+
+A mapping of duty values to pump and embedded fan speeds:
 
 | Duty (%) | Pump speed (rpm) | Embedded fan speed (rpm) |
 |:---:|:---:|:---:|

@@ -8,7 +8,7 @@ import logging
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import ExpectationNotMet
-from liquidctl.util import clamp, u16le_from, rpadlist
+from liquidctl.util import clamp, u16le_from, rpadlist, fraction_of_byte
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,18 +17,23 @@ _PREFIX = 0xEC
 
 # Requests and their response headers
 _REQUEST_GET_FIRMWARE = (0x82, 0x02)
-_REQUEST_GET_STATUS = (0x99, 0x19)
-_REQUEST_GET_SPEED = (0x9A, 0x1A)
+_REQUEST_GET_COOLER_STATUS = (0x99, 0x19)
+_REQUEST_GET_COOLER_DUTY = (0x9A, 0x1A)
+_REQUEST_GET_CONTROLLER_DUTY = (0xA1, 0x21)
+_REQUEST_GET_CONTROLLER_SPEED = (0xA0, 0x20)
 
 # Command headers that don't need a response
-_CMD_SET_SPEED = 0x1A
+_CMD_SET_COOLER_SPEED = 0x1A
+_CMD_SET_CONTROLLER_SPEED = 0x21
 
 _STATUS_FIRMWARE = "Firmware version"
 _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
-_STATUS_FAN_SPEED = "Embedded Micro Fan speed"
-_STATUS_FAN_DUTY = "Embedded Micro Fan duty"
+_STATUS_COOLER_FAN_SPEED = "Embedded Micro Fan speed"
+_STATUS_COOLER_FAN_DUTY = "Embedded Micro Fan duty"
+_STATUS_CONTROLLER_FAN_SPEED = "AIO Fan Controller speed"
+_STATUS_CONTROLLER_FAN_DUTY = "AIO Fan Controller duty"
 
 
 class RogRyujin(UsbHidDriver):
@@ -42,35 +47,75 @@ class RogRyujin(UsbHidDriver):
         msg = self._request(*_REQUEST_GET_FIRMWARE)
         return [(_STATUS_FIRMWARE, "".join(map(chr, msg[3:18])), "")]
 
-    def _get_duty(self) -> (int, int):
-        """Get current pump and fan duty in %."""
-        msg = self._request(*_REQUEST_GET_SPEED)
+    def _get_cooler_duty(self) -> (int, int):
+        """Get current pump and embedded fan duty in %."""
+        msg = self._request(*_REQUEST_GET_COOLER_DUTY)
         return msg[4], msg[5]
 
+    def _get_cooler_status(self) -> (int, int, int, int, int):
+        """Get current liquid temperature, pump and embedded fan speed."""
+        msg = self._request(*_REQUEST_GET_COOLER_STATUS)
+        liquid_temp = msg[3] + msg[4] / 10
+        pump_speed = u16le_from(msg, 5)
+        fan_speed = u16le_from(msg, 7)
+        return liquid_temp, pump_speed, fan_speed
+
+    def _get_controller_speed(self) -> int:
+        """Get AIO controller fan speed in rpm."""
+        msg = self._request(*_REQUEST_GET_CONTROLLER_SPEED)
+        return u16le_from(msg, 5)
+
+    def _get_controller_duty(self) -> int:
+        """Get AIO controller fan duty in %."""
+        msg = self._request(*_REQUEST_GET_CONTROLLER_DUTY)
+        return round(msg[4] / 0xFF * 100)
+
     def get_status(self, **kwargs):
-        pump_duty, fan_duty = self._get_duty()
-        msg = self._request(*_REQUEST_GET_STATUS)
+        pump_duty, fan_duty = self._get_cooler_duty()
+        liquid_temp, pump_speed, fan_speed = self._get_cooler_status()
+        controller_speed = self._get_controller_speed()
+        controller_duty = self._get_controller_duty()
 
         return [
-            (_STATUS_TEMPERATURE, msg[3] + msg[4] / 10, "°C"),
-            (_STATUS_PUMP_SPEED, u16le_from(msg, 5), "rpm"),
+            (_STATUS_TEMPERATURE, liquid_temp, "°C"),
+            (_STATUS_PUMP_SPEED, pump_speed, "rpm"),
             (_STATUS_PUMP_DUTY, pump_duty, "%"),
-            (_STATUS_FAN_SPEED, u16le_from(msg, 7), "rpm"),
-            (_STATUS_FAN_DUTY, fan_duty, "%"),
+            (_STATUS_COOLER_FAN_SPEED, fan_speed, "rpm"),
+            (_STATUS_COOLER_FAN_DUTY, fan_duty, "%"),
+            (_STATUS_CONTROLLER_FAN_DUTY, controller_duty, "%"),
+            (_STATUS_CONTROLLER_FAN_SPEED, controller_speed, "rpm"),
         ]
 
-    def set_fixed_speed(self, channel, duty, **kwargs):
+    def _set_cooler_pump_duty(self, duty: int):
         duty = clamp(duty, 0, 100)
-        pump_duty, fan_duty = self._get_duty()
+        _, fan_duty = self._get_cooler_duty()
+        self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, duty, fan_duty])
 
+    def _set_cooler_fan_duty(self, duty: int):
+        duty = clamp(duty, 0, 100)
+        pump_duty, _ = self._get_cooler_duty()
+        self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, pump_duty, duty])
+
+    def _set_controller_duty(self, duty: int):
+        duty = clamp(duty, 0, 100)
+
+        # Controller duty is set between 0x00 and 0xFF
+        duty = fraction_of_byte(percentage=duty)
+
+        self._write([_PREFIX, _CMD_SET_CONTROLLER_SPEED, 0x00, 0x00, duty])
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
         if channel == "pump":
-            pump_duty = duty
-        elif channel == "fan" or channel == "fan1":
-            fan_duty = duty
+            self._set_cooler_pump_duty(duty)
+        elif channel == "fan":
+            self._set_cooler_fan_duty(duty)
+            self._set_controller_duty(duty)
+        elif channel == "fan1":
+            self._set_cooler_fan_duty(duty)
+        elif channel == "fan2":
+            self._set_controller_duty(duty)
         else:
             raise ValueError("invalid channel")
-
-        self._write([_PREFIX, _CMD_SET_SPEED, 0x00, pump_duty, fan_duty])
 
     def _request(self, request_header: int, response_header: int) -> list[int]:
         self.device.clear_enqueued_reports()

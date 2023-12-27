@@ -29,17 +29,35 @@ The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
         - Byte 6-7: Pump rpm (little endian)
         - Byte 8-9: Embedded Micro Fan rpm (little endian)
 
-### Get speed
+### Get duties of pump and of embedded micro fan
 
 - Request:
     - Header: `0xEC 0x9A`
 - Response:
     - Header: `0xEC 0x1A`
-    - Data: (same as set speed request but shifted right by 1 byte)
+    - Data:
         - Byte 5: Pump duty % from 0x00 to 0x64
         - Byte 6: Embedded Micro Fan duty % from 0x00 to 0x64
 
-### Set speed
+### Get fan speed of AIO fan controller
+
+- Request:
+    - Header: `0xEC 0xA0`
+- Response:
+    - Header: `0xEC 0x20`
+    - Data:
+        - Byte 6-7: Fan rpm (little endian)
+
+### Get duty of AIO fan controller
+
+- Request:
+    - Header: `0xEC 0xA1`
+- Response:
+    - Header: `0xEC 0x21`
+    - Data:
+        - Byte 5: AIO fan controller duty from 0x00 to 0xFF
+
+### Set duties of pump and of embedded micro fan
 
 - Request:
     - Header: `0xEC 0x1A`
@@ -47,32 +65,20 @@ The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
         - Byte 4: Pump duty % from 0x00 to 0x64
         - Byte 5: Embedded Micro Fan duty % from 0x00 to 0x64
 - Response:
-    - `0xEC 0x1A`
+    - Header: `0xEC 0x1A`
+
+### Set duty of AIO fan controller
+
+- Request:
+    - Header: `0xEC 0x21`
+    - Data:
+        - Byte 5: AIO fan controller duty from 0x00 to 0xFF
+- Response:
+    - Header: `0xEC 0x21`
+
 
 ## Unknown
 
-- Request:
-    - Header: `0xEC 0xA0`
-- Response:
-    - Header: `0xEC 0x20`
-
----
-- Request:
-    - Header: `0xEC 0xA1`
-- Response:
-    - Header: `0xEC 0x21`
-    - Data:
-        - Byte 5: ?
-
----
-- Request:
-    - Header: `0xEC 0x21`
-    - Data:
-        - Byte 5: ?
-- Response:
-    - Header: `0xEC 0x21`
-
----
 - Request:
     - Header: `0xEC 0xAF`
 - Response:
