@@ -43,10 +43,10 @@ Pump duty can be set using channel `pump`.
 # liquidctl set pump speed 90
 ```
 
-Use channel `fan` to set all fans at the same time:
+Use channel `fans` to set all fans at the same time:
 
 ```
-# liquidctl set fan speed 50
+# liquidctl set fans speed 50
 ```
 
 Use channel `fan1` to set the duty of the embedded fan:

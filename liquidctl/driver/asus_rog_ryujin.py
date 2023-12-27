@@ -116,7 +116,7 @@ class RogRyujin(UsbHidDriver):
     def set_fixed_speed(self, channel, duty, **kwargs):
         if channel == "pump":
             self._set_cooler_pump_duty(duty)
-        elif channel == "fan":
+        elif channel == "fans":
             self._set_cooler_fan_duty(duty)
             self._set_controller_duty(duty)
         elif channel == "fan1":
