@@ -46,7 +46,10 @@ The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
 - Response:
     - Header: `0xEC 0x20`
     - Data:
-        - Byte 6-7: Fan rpm (little endian)
+        - Byte 4-5: Fan 4 rpm (little endian)
+        - Byte 6-7: Fan 1 rpm (little endian)
+        - Byte 8-9: Fan 2 rpm (little endian)
+        - Byte 10-11: Fan 3 rpm (little endian)
 
 ### Get duty of AIO fan controller
 

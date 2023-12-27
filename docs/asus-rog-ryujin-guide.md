@@ -15,16 +15,21 @@ ASUS ROG RYUJIN II 360
 
 ## Monitoring
 
-The cooler reports the liquid temperature, the speed and the set duty of the pump and embedded micro fan.
+The cooler reports the liquid temperature, the speeds and duties of all fans.
 
 ```
 # liquidctl status
 ASUS ROG RYUJIN II 360
-├── Liquid temperature          31.4  °C
-├── Pump speed                  1200  rpm
-├── Pump duty                     30  %
-├── Embedded Micro Fan speed    1290  rpm
-└── Embedded Micro Fan duty       20  %
+├── Liquid temperature                  26.2  °C
+├── Pump duty                             38  %
+├── Pump speed                          1410  rpm
+├── Embedded Micro Fan duty               40  %
+├── Embedded Micro Fan speed            2550  rpm
+├── AIO Fan Controller duty               38  %
+├── AIO Fan Controller speed - Fan 1     780  rpm
+├── AIO Fan Controller speed - Fan 2       0  rpm
+├── AIO Fan Controller speed - Fan 3       0  rpm
+└── AIO Fan Controller speed - Fan 4     750  rpm
 ```
 
 

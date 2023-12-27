@@ -32,7 +32,7 @@ _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
 _STATUS_COOLER_FAN_SPEED = "Embedded Micro Fan speed"
 _STATUS_COOLER_FAN_DUTY = "Embedded Micro Fan duty"
-_STATUS_CONTROLLER_FAN_SPEED = "AIO Fan Controller speed"
+_STATUS_CONTROLLER_FAN_SPEED = "AIO Fan Controller speed - Fan {}"
 _STATUS_CONTROLLER_FAN_DUTY = "AIO Fan Controller duty"
 
 
@@ -60,10 +60,14 @@ class RogRyujin(UsbHidDriver):
         fan_speed = u16le_from(msg, 7)
         return liquid_temp, pump_speed, fan_speed
 
-    def _get_controller_speed(self) -> int:
-        """Get AIO controller fan speed in rpm."""
+    def _get_controller_speeds(self) -> list[int]:
+        """Get AIO controller fan speeds in rpm."""
         msg = self._request(*_REQUEST_GET_CONTROLLER_SPEED)
-        return u16le_from(msg, 5)
+        speed1 = u16le_from(msg, 5)
+        speed2 = u16le_from(msg, 7)
+        speed3 = u16le_from(msg, 9)
+        speed4 = u16le_from(msg, 3)  # For some reason comes first in msg
+        return [speed1, speed2, speed3, speed4]
 
     def _get_controller_duty(self) -> int:
         """Get AIO controller fan duty in %."""
@@ -73,18 +77,22 @@ class RogRyujin(UsbHidDriver):
     def get_status(self, **kwargs):
         pump_duty, fan_duty = self._get_cooler_duty()
         liquid_temp, pump_speed, fan_speed = self._get_cooler_status()
-        controller_speed = self._get_controller_speed()
+        controller_speeds = self._get_controller_speeds()
         controller_duty = self._get_controller_duty()
 
-        return [
+        status = [
             (_STATUS_TEMPERATURE, liquid_temp, "°C"),
-            (_STATUS_PUMP_SPEED, pump_speed, "rpm"),
             (_STATUS_PUMP_DUTY, pump_duty, "%"),
-            (_STATUS_COOLER_FAN_SPEED, fan_speed, "rpm"),
+            (_STATUS_PUMP_SPEED, pump_speed, "rpm"),
             (_STATUS_COOLER_FAN_DUTY, fan_duty, "%"),
+            (_STATUS_COOLER_FAN_SPEED, fan_speed, "rpm"),
             (_STATUS_CONTROLLER_FAN_DUTY, controller_duty, "%"),
-            (_STATUS_CONTROLLER_FAN_SPEED, controller_speed, "rpm"),
         ]
+
+        for i, controller_speed in enumerate(controller_speeds):
+            status.append((_STATUS_CONTROLLER_FAN_SPEED.format(i + 1), controller_speed, "rpm"))
+
+        return status
 
     def _set_cooler_pump_duty(self, duty: int):
         duty = clamp(duty, 0, 100)
