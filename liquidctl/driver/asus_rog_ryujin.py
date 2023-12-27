@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
+from typing import List
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import ExpectationNotMet
@@ -60,7 +61,7 @@ class RogRyujin(UsbHidDriver):
         fan_speed = u16le_from(msg, 7)
         return liquid_temp, pump_speed, fan_speed
 
-    def _get_controller_speeds(self) -> list[int]:
+    def _get_controller_speeds(self) -> List[int]:
         """Get AIO controller fan speeds in rpm."""
         msg = self._request(*_REQUEST_GET_CONTROLLER_SPEED)
         speed1 = u16le_from(msg, 5)
@@ -125,12 +126,12 @@ class RogRyujin(UsbHidDriver):
         else:
             raise ValueError("invalid channel")
 
-    def _request(self, request_header: int, response_header: int) -> list[int]:
+    def _request(self, request_header: int, response_header: int) -> List[int]:
         self.device.clear_enqueued_reports()
         self._write([_PREFIX, request_header])
         return self._read(response_header)
 
-    def _read(self, expected_header=None) -> list[int]:
+    def _read(self, expected_header=None) -> List[int]:
         msg = self.device.read(_REPORT_LENGTH)
 
         if msg[0] != _PREFIX:
@@ -140,5 +141,5 @@ class RogRyujin(UsbHidDriver):
 
         return msg
 
-    def _write(self, data: list[int]):
+    def _write(self, data: List[int]):
         self.device.write(rpadlist(data, _REPORT_LENGTH, 0))
