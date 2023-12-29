@@ -95,33 +95,33 @@ class RogRyujin(UsbHidDriver):
 
         return status
 
+    def _set_cooler_duties(self, pump_duty: int, fan_duty: int):
+        self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, pump_duty, fan_duty])
+
     def _set_cooler_pump_duty(self, duty: int):
-        duty = clamp(duty, 0, 100)
         pump_duty, fan_duty = self._get_cooler_duty()
 
         if duty == pump_duty:
             return
 
-        self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, duty, fan_duty])
+        self._set_cooler_duties(duty, fan_duty)
 
     def _set_cooler_fan_duty(self, duty: int):
-        duty = clamp(duty, 0, 100)
         pump_duty, fan_duty = self._get_cooler_duty()
 
         if duty == fan_duty:
             return
 
-        self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, pump_duty, duty])
+        self._set_cooler_duties(pump_duty, duty)
 
     def _set_controller_duty(self, duty: int):
-        duty = clamp(duty, 0, 100)
-
         # Controller duty is set between 0x00 and 0xFF
         duty = fraction_of_byte(percentage=duty)
 
         self._write([_PREFIX, _CMD_SET_CONTROLLER_SPEED, 0x00, 0x00, duty])
 
     def set_fixed_speed(self, channel, duty, **kwargs):
+        duty = clamp(duty, 0, 100)
         if channel == "pump":
             self._set_cooler_pump_duty(duty)
         elif channel == "fans":
