@@ -97,12 +97,20 @@ class RogRyujin(UsbHidDriver):
 
     def _set_cooler_pump_duty(self, duty: int):
         duty = clamp(duty, 0, 100)
-        _, fan_duty = self._get_cooler_duty()
+        pump_duty, fan_duty = self._get_cooler_duty()
+
+        if duty == pump_duty:
+            return
+
         self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, duty, fan_duty])
 
     def _set_cooler_fan_duty(self, duty: int):
         duty = clamp(duty, 0, 100)
-        pump_duty, _ = self._get_cooler_duty()
+        pump_duty, fan_duty = self._get_cooler_duty()
+
+        if duty == fan_duty:
+            return
+
         self._write([_PREFIX, _CMD_SET_COOLER_SPEED, 0x00, pump_duty, duty])
 
     def _set_controller_duty(self, duty: int):
