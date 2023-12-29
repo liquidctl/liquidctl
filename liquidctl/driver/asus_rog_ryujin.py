@@ -53,7 +53,7 @@ class RogRyujin(UsbHidDriver):
         msg = self._request(*_REQUEST_GET_COOLER_DUTY)
         return msg[4], msg[5]
 
-    def _get_cooler_status(self) -> (int, int, int, int, int):
+    def _get_cooler_status(self) -> (int, int, int):
         """Get current liquid temperature, pump and embedded fan speed."""
         msg = self._request(*_REQUEST_GET_COOLER_STATUS)
         liquid_temp = msg[3] + msg[4] / 10
