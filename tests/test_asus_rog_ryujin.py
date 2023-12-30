@@ -12,27 +12,30 @@ def mockRyujin():
 class _MockRyujinDevice(MockHidapiDevice):
     def __init__(self):
         super().__init__(vendor_id=0x0B05, product_id=0x1988)
+        self.requests = []
         self.response = None
 
     def write(self, data):
         super().write(data)
+        self.requests.append(data)
+
         assert data[0] == 0xEC
         header = data[1]
 
         # Sampled responses without trailing zeros
-        if header == 0x82:
+        if header == 0x82:  # Get firmware info
             self.response = "ec02004155524a312d533735302d30313034"
-        elif header == 0x99:
-            self.response = "ec19001b044605"
-        elif header == 0x9A:
-            self.response = "ec1a000023"
-        elif header == 0xA0:
+        elif header == 0x99:  # Get cooler status (temperature, pump speed, embedded fan speed)
+            self.response = "ec19001b056405100e"
+        elif header == 0x9A:  # Get pump and embedded fan duty
+            self.response = "ec1a0000223c"
+        elif header == 0xA0:  # Get AIO fan controller fan speeds
             self.response = "ec200000000c03ee02"
-        elif header == 0xA1:
+        elif header == 0xA1:  # Get AIO fan controller duty
             self.response = "ec2100005b"
-        elif header == 0x1A:
+        elif header == 0x1A:  # Set pump and embedded fan duty
             self.response = "ec1a"
-        elif header == 0x21:
+        elif header == 0x21:  # Set AIO fan controller duty
             self.response = "ec21"
         else:
             self.response = None
@@ -52,11 +55,44 @@ class _MockRyujinDevice(MockHidapiDevice):
         return buf[:length]
 
 
-def test_basic(mockRyujin):
+def test_initialize(mockRyujin):
     with mockRyujin.connect():
-        mockRyujin.initialize()
-        mockRyujin.get_status()
+        (firmware_status,) = mockRyujin.initialize()
+
+        assert firmware_status[1] == "AURJ1-S750-0104"
+
+
+def test_status(mockRyujin):
+    with mockRyujin.connect():
+        actual = mockRyujin.get_status()
+
+        expected = [
+            ("Liquid temperature", pytest.approx(27.5), "°C"),
+            ("Pump speed", 1380, "rpm"),
+            ("Embedded Micro Fan speed", 3600, "rpm"),
+            ("Pump duty", 34, "%"),
+            ("Embedded Micro Fan duty", 60, "%"),
+            ("AIO Fan Controller duty", 36, "%"),
+            ("AIO Fan Controller speed - Fan 1", 780, "rpm"),
+            ("AIO Fan Controller speed - Fan 2", 750, "rpm"),
+            ("AIO Fan Controller speed - Fan 3", 0, "rpm"),
+            ("AIO Fan Controller speed - Fan 4", 0, "rpm"),
+        ]
+
+    assert sorted(actual) == sorted(expected)
+
+
+def test_set_fixed_speeds(mockRyujin):
+    with mockRyujin.connect():
         mockRyujin.set_fixed_speed(channel="pump", duty=10)
+        assert mockRyujin.device.requests[-1][3] == 0x0A
+
         mockRyujin.set_fixed_speed(channel="fan1", duty=20)
+        assert mockRyujin.device.requests[-1][4] == 0x14
+
         mockRyujin.set_fixed_speed(channel="fan2", duty=30)
+        assert mockRyujin.device.requests[-1][4] == 0x4C
+
         mockRyujin.set_fixed_speed(channel="fans", duty=40)
+        assert mockRyujin.device.requests[-2][4] == 0x28
+        assert mockRyujin.device.requests[-1][4] == 0x66
