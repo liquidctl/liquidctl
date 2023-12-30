@@ -90,3 +90,8 @@ Note the minimum speed of the embedded fan is 390 rpm,
 meaning the fan may not start spinning at duty values below 10%.
 
 Speeds can deviate +- 10% from the stated values.
+
+
+## Screen
+
+The screen of the cooler is not yet supported.

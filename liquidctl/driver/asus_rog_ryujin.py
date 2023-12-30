@@ -8,7 +8,7 @@ import logging
 from typing import List
 
 from liquidctl.driver.usb import UsbHidDriver
-from liquidctl.error import ExpectationNotMet
+from liquidctl.error import ExpectationNotMet, NotSupportedByDriver
 from liquidctl.util import clamp, u16le_from, rpadlist, fraction_of_byte
 
 _LOGGER = logging.getLogger(__name__)
@@ -133,6 +133,10 @@ class RogRyujin(UsbHidDriver):
             self._set_controller_duty(duty)
         else:
             raise ValueError("invalid channel")
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        # Not yet reverse engineered / implemented
+        raise NotSupportedByDriver()
 
     def _request(self, request_header: int, response_header: int) -> List[int]:
         self.device.clear_enqueued_reports()
