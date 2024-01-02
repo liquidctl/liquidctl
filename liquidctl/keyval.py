@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 import os
+import stat
 import sys
 import tempfile
 from ast import literal_eval
@@ -69,6 +70,45 @@ def _open_with_lock(path, flags, *, shared=False):
         yield f
 
 
+if {'umask', 'stat', 'chmod'} <= os.__dict__.keys() \
+        and {os.stat, os.chmod} <= os.supports_fd:
+    @contextmanager
+    def _os_open(path, flags, mode=0o777, *, dir_fd=None):
+        """Helper function that wraps os.open() and os.close() in a context manager"""
+        fd = os.open(path, flags, mode, dir_fd=dir_fd)
+        try:
+            yield fd
+        finally:
+            os.close(fd)
+
+    @contextmanager
+    def _umask_bits(mode):
+        """Context manager that temporarily sets the specified bits in the umask of the current process"""
+        old_umask = os.umask(0o777)
+        os.umask(old_umask | mode)
+        try:
+            yield
+        finally:
+            os.umask(old_umask)
+
+    def _chmod_bits(path, mode, *, flags=0):
+        """Helper function that sets the specified bits in the Unix permissions of a file"""
+        with _os_open(path, os.O_RDONLY | flags) as fd:
+            st = os.stat(fd)
+            st_mode = stat.S_IMODE(st.st_mode)
+            # do not chmod() if there's nothing to change -- we might not be the owner
+            if st_mode | mode != st_mode:
+                os.chmod(fd, st_mode | mode)
+
+else:
+    @contextmanager
+    def _umask_bits(umask):
+        yield
+
+    def _chmod_bits(path, mode):
+        pass
+
+
 class _FilesystemBackend:
     def _sanitize(self, key):
         if not isinstance(key, str):
@@ -83,10 +123,13 @@ class _FilesystemBackend:
         # dir is selected for writes and prefered for reads
         self._read_dirs = [os.path.join(x, *key_prefixes) for x in runtime_dirs]
         self._write_dir = self._read_dirs[0]
-        os.makedirs(self._write_dir, exist_ok=True)
-        if sys.platform == 'linux':
+        # create leading directories with default permissions
+        os.makedirs(os.path.dirname(self._write_dir), exist_ok=True)
+        with _umask_bits(0o077):
+            # create leaf directory as 0o0700, but do not break ACLs
+            os.makedirs(self._write_dir, exist_ok=True)
             # set the sticky bit to prevent removal during cleanup
-            os.chmod(self._write_dir, 0o1700)
+            _chmod_bits(self._write_dir, 0o1000, flags=os.O_DIRECTORY)
         _LOGGER.debug('data in %s', self._write_dir)
 
     def load(self, key):
