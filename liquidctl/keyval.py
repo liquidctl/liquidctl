@@ -50,14 +50,16 @@ def get_runtime_dirs(appname='liquidctl'):
 
 @contextmanager
 def _open_with_lock(path, flags, *, shared=False):
-    if flags | os.O_RDWR:
+    # os.O_ACCMODE does not exist on Windows
+    access = flags & (os.O_RDONLY | os.O_WRONLY | os.O_RDWR)
+    if access == os.O_RDWR:
         write_mode = 'r+'
-    elif flags | os.O_RDONLY:
-        write_mode = 'r'
-    elif flags | os.O_WRONLY:
+    elif access == os.O_WRONLY:
         write_mode = 'w'
+    elif access == os.O_RDONLY:
+        write_mode = 'r'
     else:
-        assert False, 'unreachable'
+        raise ValueError(f'Invalid os.open() flags: {flags}')
 
     with os.fdopen(os.open(path, flags), mode=write_mode) as f:
         if sys.platform == 'win32':
