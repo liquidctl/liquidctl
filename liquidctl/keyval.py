@@ -61,7 +61,7 @@ def _open_with_lock(path, flags, *, shared=False):
     else:
         raise ValueError(f'Invalid os.open() flags: {flags}')
 
-    with os.fdopen(os.open(path, flags), mode=write_mode) as f:
+    with os.fdopen(os.open(path, flags, 0o666), mode=write_mode) as f:
         if sys.platform == 'win32':
             msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
         elif shared:
