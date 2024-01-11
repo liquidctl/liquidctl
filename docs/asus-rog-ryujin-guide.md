@@ -1,5 +1,5 @@
-# ASUS ROG RYUJIN II liquid cooler
-_Driver API and source code available in [`liquidctl.driver.asus_rog_ryujin`](../liquidctl/driver/asus_rog_ryujin.py)._
+# ASUS Ryujin II liquid coolers
+_Driver API and source code available in [`liquidctl.driver.asus_ryujin`](../liquidctl/driver/asus_ryujin.py)._
 
 _New in git._<br>
 
@@ -65,14 +65,13 @@ Use channel `fan2` to set the duty of the fans connected to the AIO fan controll
 ### Duty to speed relation
 
 The resulting speeds do not scale linearly to the set duty values.  
-For example pump duty values below 20%
-result in relatively small changes in pump speed.
+For example pump duty values below 20% result in relatively small changes in pump speed.
 
 Speeds of the fans connected to the AIO fan controller depend on the fans themselves.
 
-A mapping of duty values to pump and embedded fan speeds:
+Pump impeller and embedded fan duty values approximately map to the following speeds (± 10%):
 
-| Duty (%) | Pump speed (rpm) | Embedded fan speed (rpm) |
+| Duty (%) | Pump impeller speed (rpm) | Pump fan speed (rpm) |
 |:---:|:---:|:---:|
 | 0 | 840 | 0 |
 | 10 | 870 | **390** |
@@ -86,10 +85,8 @@ A mapping of duty values to pump and embedded fan speeds:
 | 90 | 2520 | 4590 |
 | 100 | 2800 | 4800 |
 
-Note the minimum speed of the embedded fan is 390 rpm,
-meaning the fan may not start spinning at duty values below 10%.
+Note the minimum speed of the embedded pump fan is 390 rpm, meaning the fan may not start spinning at duty values below 10%.
 
-Speeds can deviate +- 10% from the stated values.
 
 
 ## Screen

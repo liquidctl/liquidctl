@@ -1,4 +1,4 @@
-"""liquidctl driver for the ASUS ROG RYUJIN II 360 liquid cooler.
+"""liquidctl driver for the ASUS Ryujin II liquid coolers.
 
 Copyright Florian Freudiger and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -31,17 +31,17 @@ _STATUS_FIRMWARE = "Firmware version"
 _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
-_STATUS_COOLER_FAN_SPEED = "Embedded Micro Fan speed"
-_STATUS_COOLER_FAN_DUTY = "Embedded Micro Fan duty"
-_STATUS_CONTROLLER_FAN_SPEED = "AIO Fan Controller speed - Fan {}"
-_STATUS_CONTROLLER_FAN_DUTY = "AIO Fan Controller duty"
+_STATUS_COOLER_FAN_SPEED = "Pump fan speed"
+_STATUS_COOLER_FAN_DUTY = "Pump fan  duty"
+_STATUS_CONTROLLER_FAN_SPEED = "External fan {} speed"
+_STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
 
 
 class RogRyujin(UsbHidDriver):
-    """ASUS ROG RYUJIN II 360 liquid cooler."""
+    """ASUS Ryujin II liquid cooler."""
 
     _MATCHES = [
-        (0x0B05, 0x1988, "ASUS ROG RYUJIN II 360", {}),
+        (0x0B05, 0x1988, "ASUS Ryujin II 360 (experimental)", {}),
     ]
 
     def initialize(self, **kwargs):
