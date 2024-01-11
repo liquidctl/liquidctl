@@ -127,9 +127,9 @@ class RogRyujin(UsbHidDriver):
         elif channel == "fans":
             self._set_cooler_fan_duty(duty)
             self._set_controller_duty(duty)
-        elif channel == "fan1":
+        elif channel == "pump-fan":
             self._set_cooler_fan_duty(duty)
-        elif channel == "fan2":
+        elif channel == "external-fans":
             self._set_controller_duty(duty)
         else:
             raise ValueError("invalid channel")

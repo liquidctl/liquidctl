@@ -50,16 +50,16 @@ Use channel `fans` to set all fans at the same time:
 # liquidctl set fans speed 50
 ```
 
-Use channel `fan1` to set the duty of the embedded fan:
+Use channel `pump-fan` to set the duty of the embedded fan:
 
 ```
-# liquidctl set fan1 speed 50
+# liquidctl set pump-fan speed 50
 ```
 
-Use channel `fan2` to set the duty of the fans connected to the AIO fan controller:
+Use channel `external-fans` to set the duty of the fans connected to the AIO fan controller:
 
 ```
-# liquidctl set fan2 speed 50
+# liquidctl set external-fans speed 50
 ```
 
 ### Duty to speed relation
