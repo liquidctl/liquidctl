@@ -77,6 +77,7 @@ import os
 import platform
 import re
 import sys
+from importlib.metadata import distribution, version, PackageNotFoundError
 from numbers import Number
 from traceback import format_exception
 
@@ -311,23 +312,18 @@ def _log_env_infos():
     _LOGGER.debug('encoding: %s current, %s preferred, utf8_mode %s',
                   locale.getlocale()[1], locale.getpreferredencoding(), sys.flags.utf8_mode)
 
-    if sys.hexversion >= 0x03080000:
-        from importlib.metadata import distribution, version, PackageNotFoundError
+    try:
+        dist = distribution('liquidctl')
+    except PackageNotFoundError:
+        _LOGGER.debug('not installed, package metadata not available')
+        return
 
+    for req in dist.requires:
+        name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
         try:
-            dist = distribution('liquidctl')
-        except PackageNotFoundError:
-            _LOGGER.debug('not installed, package metadata not available')
-            return
-
-        for req in dist.requires:
-            name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
-            try:
-                _LOGGER.debug('with %s: %s', name, version(name))
-            except Exception as err:
-                _LOGGER.debug('with %s: version n/a (%s)', name, err)
-    else:
-        _LOGGER.debug('importlib.metadata not available')
+            _LOGGER.debug('with %s: %s', name, version(name))
+        except Exception as err:
+            _LOGGER.debug('with %s: version n/a (%s)', name, err)
 
 
 class _ErrorAcc:
