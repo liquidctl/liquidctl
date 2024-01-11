@@ -25,6 +25,7 @@ from liquidctl.driver.base import BaseBus, find_all_subclasses
 # automatically enabled drivers
 from liquidctl.driver import asetek
 from liquidctl.driver import asetek_pro
+from liquidctl.driver import asus_ryujin
 from liquidctl.driver import aura_led
 from liquidctl.driver import aquacomputer
 from liquidctl.driver import commander_core
