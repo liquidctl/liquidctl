@@ -37,7 +37,7 @@ _STATUS_CONTROLLER_FAN_SPEED = "External fan {} speed"
 _STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
 
 
-class RogRyujin(UsbHidDriver):
+class AsusRyujin(UsbHidDriver):
     """ASUS Ryujin II liquid cooler."""
 
     _MATCHES = [

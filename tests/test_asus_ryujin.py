@@ -1,12 +1,12 @@
 import pytest
 
 from _testutils import MockHidapiDevice
-from liquidctl.driver.asus_ryujin import RogRyujin
+from liquidctl.driver.asus_ryujin import AsusRyujin
 
 
 @pytest.fixture
 def mockRyujin():
-    return RogRyujin(_MockRyujinDevice(), "Mock ASUS Ryujin II")
+    return AsusRyujin(_MockRyujinDevice(), "Mock ASUS Ryujin II")
 
 
 class _MockRyujinDevice(MockHidapiDevice):
