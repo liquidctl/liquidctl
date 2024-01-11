@@ -9,7 +9,7 @@ Initialization is not required. It outputs the firmware version:
 
 ```
 # liquidctl initialize
-ASUS ROG RYUJIN II 360
+ASUS Ryujin II 360 (experimental)
 └── Firmware version    AURJ1-S750-0104
 ```
 
@@ -20,17 +20,17 @@ The cooler reports the liquid temperature, the speeds and duties of all fans.
 
 ```
 # liquidctl status
-ASUS ROG RYUJIN II 360
-├── Liquid temperature                  26.2  °C
-├── Pump duty                             38  %
-├── Pump speed                          1410  rpm
-├── Embedded Micro Fan duty               40  %
-├── Embedded Micro Fan speed            2550  rpm
-├── AIO Fan Controller duty               38  %
-├── AIO Fan Controller speed - Fan 1     780  rpm
-├── AIO Fan Controller speed - Fan 2       0  rpm
-├── AIO Fan Controller speed - Fan 3       0  rpm
-└── AIO Fan Controller speed - Fan 4     750  rpm
+ASUS Ryujin II 360 (experimental)
+├── Liquid temperature      26.0  °C
+├── Pump duty                 30  %
+├── Pump speed              1200  rpm
+├── Pump fan duty             40  %
+├── Pump fan speed          2550  rpm
+├── External fan duty         50  %
+├── External fan 1 speed     990  rpm
+├── External fan 2 speed    1020  rpm
+├── External fan 3 speed       0  rpm
+└── External fan 4 speed       0  rpm
 ```
 
 

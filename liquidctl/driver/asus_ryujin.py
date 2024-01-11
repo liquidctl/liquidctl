@@ -32,7 +32,7 @@ _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
 _STATUS_COOLER_FAN_SPEED = "Pump fan speed"
-_STATUS_COOLER_FAN_DUTY = "Pump fan  duty"
+_STATUS_COOLER_FAN_DUTY = "Pump fan duty"
 _STATUS_CONTROLLER_FAN_SPEED = "External fan {} speed"
 _STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
 

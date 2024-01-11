@@ -69,14 +69,14 @@ def test_status(mockRyujin):
         expected = [
             ("Liquid temperature", pytest.approx(27.5), "°C"),
             ("Pump speed", 1380, "rpm"),
-            ("Embedded Micro Fan speed", 3600, "rpm"),
+            ("Pump fan speed", 3600, "rpm"),
             ("Pump duty", 34, "%"),
-            ("Embedded Micro Fan duty", 60, "%"),
-            ("AIO Fan Controller duty", 36, "%"),
-            ("AIO Fan Controller speed - Fan 1", 780, "rpm"),
-            ("AIO Fan Controller speed - Fan 2", 750, "rpm"),
-            ("AIO Fan Controller speed - Fan 3", 0, "rpm"),
-            ("AIO Fan Controller speed - Fan 4", 0, "rpm"),
+            ("Pump fan duty", 60, "%"),
+            ("External fan duty", 36, "%"),
+            ("External fan 1 speed", 780, "rpm"),
+            ("External fan 2 speed", 750, "rpm"),
+            ("External fan 3 speed", 0, "rpm"),
+            ("External fan 4 speed", 0, "rpm"),
         ]
 
     assert sorted(actual) == sorted(expected)
@@ -87,10 +87,10 @@ def test_set_fixed_speeds(mockRyujin):
         mockRyujin.set_fixed_speed(channel="pump", duty=10)
         assert mockRyujin.device.requests[-1][3] == 0x0A
 
-        mockRyujin.set_fixed_speed(channel="fan1", duty=20)
+        mockRyujin.set_fixed_speed(channel="pump-fan", duty=20)
         assert mockRyujin.device.requests[-1][4] == 0x14
 
-        mockRyujin.set_fixed_speed(channel="fan2", duty=30)
+        mockRyujin.set_fixed_speed(channel="external-fans", duty=30)
         assert mockRyujin.device.requests[-1][4] == 0x4C
 
         mockRyujin.set_fixed_speed(channel="fans", duty=40)
