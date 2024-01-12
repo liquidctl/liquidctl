@@ -73,7 +73,7 @@ class _MockCoreLiquid(MockHidapiDevice):
             self.preload_read(Report(0, reply))
         elif list(data[1:3]) == [0xB6, 0xCC]:  # get aprom fw
             self.preload_read(Report(0, reply))
-        elif data[1] == 0xF1:                  # get screen fw
+        elif data[1] == 0xF1:  # get screen fw
             self.preload_read(Report(0, reply))
         return super().write(data)
 

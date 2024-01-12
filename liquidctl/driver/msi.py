@@ -576,7 +576,6 @@ class MpgCooler(UsbHidDriver):
             ("Pump mode", pump_mode, ""),
         ]
 
-
     def get_status(self, **kwargs):
         self._write((0x31,))
         array = self._read()
@@ -592,7 +591,6 @@ class MpgCooler(UsbHidDriver):
             ("Water block duty", u16le_from(array, offset=0x1C), "%"),
             ("Pump speed", u16le_from(array, offset=0xA), "rpm"),
             ("Pump duty", u16le_from(array, offset=0x1E), "%"),
-
             # Temperature values are not used by the K360 model, it only reports
             # some default values that are not meaningful for the user.
             # https://github.com/liquidctl/liquidctl/pull/564#discussion_r1450753883
