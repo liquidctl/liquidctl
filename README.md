@@ -102,17 +102,18 @@ specific usage instructions and other useful information.
 The table is manually sorted to keep certain device families, like confusing
 generations of Corsair coolers and NZXT Smart Devices, in chronological order.
 
+Categories are sorted in a somewhat subjective "from more to less liquid
+control-ly" order.
+
 Common prefixes or suffixes are deduplicated and brought before device
 differentiators: for example, "Platinum H100i, H100i SE, H115i" instead of
 "H100i Platinum, H100i Platinum SE, H115i Platinum".
 
-Newly supported devices are added with the `n` note.  If they are members of an
-already supported family, the family is temporarily split between old and new
-devices until the next release.
+If a newly supported device is a member of an already supported family, the
+family is temporarily split between old and new devices until the next release.
 
-Within a category, the notes are sorted alphabetically, major (upper case)
-notes before minor (lower case) ones.  Categories are sorted in a somewhat
-subjective "from more to less liquid control-ly" order.
+Device notes are sorted alphabetically, major (upper case) notes before minor
+(lower case) ones.
 
 -->
 
