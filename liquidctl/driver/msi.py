@@ -21,7 +21,7 @@ from PIL import Image
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
-from liquidctl.util import RelaxedNamesEnum, clamp
+from liquidctl.util import RelaxedNamesEnum, clamp, u16le_from
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -582,20 +582,24 @@ class MpgCooler(UsbHidDriver):
         array = self._read()
         assert array[1] == 0x31, "Unexpected value in response buffer"
         return [
-            ("Fan 1 speed", array[2] + (array[3] << 8), "rpm"),
-            ("Fan 1 duty", array[0x16] + (array[0x17] << 8), "%"),
-            ("Fan 2 speed", array[4] + (array[5] << 8), "rpm"),
-            ("Fan 2 duty", array[0x18] + (array[0x19] << 8), "%"),
-            ("Fan 3 speed", array[6] + (array[7] << 8), "rpm"),
-            ("Fan 3 duty", array[0x1A] + (array[0x1B] << 8), "%"),
-            ("Water block speed", array[8] + (array[9] << 8), "rpm"),
-            ("Water block duty", array[0x1C] + (array[0x1D] << 8), "%"),
-            ("Pump speed", array[0xA] + (array[0xB] << 8), "rpm"),
-            ("Pump duty", array[0x1E] + (array[0x1F] << 8), "%"),
-            ##    ('Temperature inlet', array[12] + (array[13] << 8), '°C'),
-            ##    ('Temperature outlet', array[14] + (array[15] << 8), '°C'),
-            ##    ('Temperature sensor 1', array[16] + (array[17] << 8), '°C'),
-            ##    ('Temperature sensor 2', array[18] + (array[19] << 8), '°C'),
+            ("Fan 1 speed", u16le_from(array, offset=2), "rpm"),
+            ("Fan 1 duty", u16le_from(array, offset=0x16), "%"),
+            ("Fan 2 speed", u16le_from(array, offset=4), "rpm"),
+            ("Fan 2 duty", u16le_from(array, offset=0x18), "%"),
+            ("Fan 3 speed", u16le_from(array, offset=6), "rpm"),
+            ("Fan 3 duty", u16le_from(array, offset=0x1A), "%"),
+            ("Water block speed", u16le_from(array, offset=8), "rpm"),
+            ("Water block duty", u16le_from(array, offset=0x1C), "%"),
+            ("Pump speed", u16le_from(array, offset=0xA), "rpm"),
+            ("Pump duty", u16le_from(array, offset=0x1E), "%"),
+
+            # Temperature values are not used by the K360 model, it only reports
+            # some default values that are not meaningful for the user.
+            # https://github.com/liquidctl/liquidctl/pull/564#discussion_r1450753883
+            # ('Temperature inlet', u16le_from(array, offset=12), '°C'),
+            # ('Temperature outlet', u16le_from(array, offset=14), '°C'),
+            # ('Temperature sensor 1', u16le_from(array, offset=16), '°C'),
+            # ('Temperature sensor 2', u16le_from(array, offset=18), '°C'),
         ]
 
     def set_time(self, time):
@@ -651,7 +655,22 @@ class MpgCooler(UsbHidDriver):
             buf[offset + 7] = config.temp6
         return self._write(buf)
 
-    def set_profile(self, channels, profiles):
+    def _send_safe_temp(self):
+        _LOGGER.info(
+            "duty profiles on this device require continuous communication, "
+            "setting initial control temperature to 100C for safety."
+        )
+        self.set_oled_show_cpu_status(0, 100)
+
+    def set_profiles(self, channels, profiles):
+        """
+        Set custom or device preset fan curve for multiple channels.
+
+        NOTE: The device will not keep updating its duty cycles
+        automatically after this function is called. The device
+        manages duties according to the previous temperature
+        sent to it via device.set_oled_show_cpu_status()
+        """
         fan_cfg = self.get_fan_config()
         fan_temp_cfg = self.get_fan_temp_config()
         channel_idx = [self.parse_channel(ch) for ch in channels]
@@ -668,15 +687,19 @@ class MpgCooler(UsbHidDriver):
                 fan_cfg[i] = fanmode
                 fan_temp_cfg[i] = tempmode
 
+        self._fan_cfg = fan_cfg
+        self._fan_temp_cfg = fan_temp_cfg
+
         self.set_fan_config(fan_cfg)
         self.set_fan_temp_config(fan_temp_cfg)
+        self._send_safe_temp()
 
     def parse_channel(self, channel):
         if channel == "pump":
             return [4]
         elif channel == "fans":
             return range(_RAD_FAN_COUNT)
-        elif channel == "waterblock fan":
+        elif channel == "waterblock-fan":
             return [3]
         elif channel[:3] == "fan" and (int(channel[3:]) in range(_RAD_FAN_COUNT)):
             return [int(channel[3:])]
@@ -691,6 +714,8 @@ class MpgCooler(UsbHidDriver):
 
     def set_speed_profile(self, channel, profile, **opts):
         """
+        Set custom fan curve for a given channel.
+
         NOTE: The device will not keep updating its duty cycles
         automatically after this function is called. The device
         manages duties according to the previous temperature
@@ -706,14 +731,7 @@ class MpgCooler(UsbHidDriver):
 
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
-
-        _LOGGER.info(
-            "duty profiles on this device require continuous communication, "
-            "setting default speeds to the highest point on the curve."
-        )
-
-        # for safety, set the initial temperature point
-        self.set_oled_show_cpu_status(0, 100)
+        self._send_safe_temp()
 
     def set_fixed_speed(self, channel, duty, **opts):
         channel_nums = self.parse_channel(channel)
@@ -754,7 +772,8 @@ class MpgCooler(UsbHidDriver):
                 f"Unknown screen mode! Should be one of: {self.SCREEN_MODES.keys()}"
             ) from e
 
-        opts = value.split(";")
+        if value is not None:
+            opts = value.split(";")
 
         if mode == _ScreenMode.HARDWARE:
             # hardware monitor options are a list of the values to display
@@ -1424,6 +1443,7 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(
             [_FanTempConfig(_FanMode.BALANCE.value, 0, 0, 0, 0, 0, 0, 0)] * self._fan_count
         )
+        self._send_safe_temp()
 
     def switch_to_game_mode(self):
         self.set_fan_config(
@@ -1432,6 +1452,7 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(
             [_FanTempConfig(_FanMode.GAME.value, 0, 0, 0, 0, 0, 0, 0)] * self._fan_count
         )
+        self._send_safe_temp()
 
     def switch_to_silent_mode(self):
         self.set_fan_config(
@@ -1440,6 +1461,7 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(
             [_FanTempConfig(_FanMode.SILENT.value, 0, 0, 0, 0, 0, 0, 0)] * self._fan_count
         )
+        self._send_safe_temp()
 
     def switch_to_smart_mode(self):
         self.set_fan_config(
@@ -1448,6 +1470,7 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(
             [_FanTempConfig(_FanMode.SMART.value, 0, 0, 0, 0, 0, 0, 0)] * self._fan_count
         )
+        self._send_safe_temp()
 
     def switch_to_default_mode(self):
         self.set_fan_config(
@@ -1456,6 +1479,7 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(
             [_FanTempConfig(_FanMode.DEFAULT.value, 0, 0, 0, 0, 0, 0, 0)] * self._fan_count
         )
+        self._send_safe_temp()
 
     # def set_oled_cpu_message(self, message):
     #     return self._write([0x90] +

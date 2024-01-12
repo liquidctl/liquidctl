@@ -195,12 +195,18 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100, str_allow
 
 
 def auto_control(device, channels, profiles, sensors, update_interval):
+    """Communicate sensor data directly with the device.
+
+    Implemented for use with the MSI coreliquid AIO.
+    Allows compatible devices to utilize their internal control loop
+    to determine appropriate fan speeds for the CPU temperature.
+    """
     assert getattr(
         device, 'HAS_AUTOCONTROL', False
     ), f'No registered control loop capability for device {device}!'
     from datetime import datetime
 
-    device.set_profile(channels, profiles)
+    device.set_profiles(channels, profiles)
 
     assert all(
         s == sensors[0] for s in sensors
