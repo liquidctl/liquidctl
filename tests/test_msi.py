@@ -69,7 +69,12 @@ class _MockCoreLiquid(MockHidapiDevice):
             for i in (2, 10, 18, 26, 34):
                 reply[i : i + 10] = self._fan_temp_configs
             self.preload_read(Report(0, reply))
-
+        elif list(data[1:3]) == [0xB0, 0xCC]:  # get ldrom fw
+            self.preload_read(Report(0, reply))
+        elif list(data[1:3]) == [0xB6, 0xCC]:  # get aprom fw
+            self.preload_read(Report(0, reply))
+        elif data[1] == 0xF1:                  # get screen fw
+            self.preload_read(Report(0, reply))
         return super().write(data)
 
 
@@ -85,7 +90,16 @@ def test_mpg_core_liquid_k360_initializes(mpgCoreLiquidK360Device):
     writes = len(mpgCoreLiquidK360Device.device.sent)
     assert (
         writes
-        == 5  # get fan config, get fan T config, set screen settings, set default fan config, set default fan T config
+        == 9
+        # 1 get fan config,
+        # 2 get fan T config,
+        # 3 get aprom fw,
+        # 4 get ldrom fw,
+        # 5 get display fw,
+        # 6 set screen settings,
+        # 7 set fan config,
+        # 8 set fan T config,
+        # 9 set safe control temperature
     )
 
 

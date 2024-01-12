@@ -477,8 +477,8 @@ class MpgCooler(UsbHidDriver):
     }
     _MATCHES = [
         (0x0DB0, 0xB130, "MSI MPG Coreliquid K360", {"fan_count": 5}),
-        (0x0DB0, 0xCA00, "Unknown", {}),
-        (0x0DB0, 0xCA02, "Unknown", {}),
+        (0x0DB0, 0xCA00, "Suspected MSI MPG Coreliquid", {}),
+        (0x0DB0, 0xCA02, "Suspected MSI MPG Coreliquid", {}),
     ]
     HAS_AUTOCONTROL = True
 
@@ -528,6 +528,11 @@ class MpgCooler(UsbHidDriver):
         self._feature_data = self.device.get_feature_report(0x52, _MAX_DATA_LENGTH)
         self._fan_cfg = self.get_fan_config()
         self._fan_temp_cfg = self.get_fan_temp_config()
+        aprom_hi, aprom_lo = self.get_firmware_version_aprom()
+        self._aprom_firmware_version = aprom_hi << 4 + aprom_lo
+        ldrom_hi, ldrom_lo = self.get_firmware_version_ldrom()
+        self._ldrom_firmware_version = ldrom_hi << 4 + ldrom_lo
+        self._oled_firmware_version = self.get_oled_firmware_version()
 
         return ret
 
@@ -562,6 +567,15 @@ class MpgCooler(UsbHidDriver):
             self.switch_to_silent_mode()
         elif pump_mode_int == _FanMode.SMART.value:
             self.switch_to_smart_mode()
+
+        return [
+            ("Display firmware version", self._oled_firmware_version, ""),
+            ("APROM firmware version", self._aprom_firmware_version, ""),
+            ("LDROM firmware version", self._ldrom_firmware_version, ""),
+            ("Serial number", self.serial_number, ""),
+            ("Pump mode", pump_mode, ""),
+        ]
+
 
     def get_status(self, **kwargs):
         self._write((0x31,))

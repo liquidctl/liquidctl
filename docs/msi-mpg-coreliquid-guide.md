@@ -13,6 +13,16 @@ The K360 model includes an LCD screen capable of displaying various preset anima
 
 Controlling the device does not always require initialization, but some features, such as changing the display settings may not function before initialization. Initialization on its own will set default fan curves and LCD screen settings.
 
+```
+# liquidctl initialize --pump-mode smart
+MSI MPG Coreliquid K360
+├── Display firmware version               2
+├── APROM firmware version                 0
+├── LDROM firmware version               256
+├── Serial number               A02020123456
+└── Pump mode                          smart
+```
+
 ## Monitoring
 
 The AIO unit is able to report fan speeds, pump speed, water block speed, and duties.
