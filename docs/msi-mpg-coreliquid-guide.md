@@ -52,7 +52,7 @@ Fixed speeds can be set by specifying the desired channel and duty value.
 | Channel | Minimum duty | Maximum duty |
 | --- | -- | --- |
 | `pump` | 60% | 100% |
-| `radiator fan` | 20% | 100% | |
+| radiator fans (`fans`, `fan1`, `fan2`, `fan3`) | 20% | 100% | |
 | `waterblock fan` | 0% | 100% | |
 
 For profiles, one or more temperature–duty pairs are supplied instead of single value.
@@ -82,6 +82,13 @@ The preset, named modes are supported in the driver and they currently have expe
 LEDs on the device are always synced with the same effect, so the only supported channel argument is "sync".
 
 Colors can be specified in RGB, HSV or HSL (see [Supported color specification formats](../README.md#supported-color-specification-formats)). Each animation mode supports zero to two colors, and some animation modes include an additional "rainbow" mode.
+
+Lighting effect speed can be controlled with the `--speed` parameter, which can vary between 0 and 3.
+
+```
+# liquidctl set sync color clock aa00aa 00aaaa --speed 0
+# liquidctl set sync color steady ffb6c1
+```
 
 Some lighting modes are intended to react to the sounds currently playing on the system. These modes do not currently function as intended with this driver.
 
@@ -128,13 +135,36 @@ Some lighting modes are intended to react to the sounds currently playing on the
 | `visor` | Two | Yes |                        |
 | `water drop` | One | Yes |                        |
 
-Support for the rainbow option is not yet exposed by the liquidctl cli, but it is included in the driver.
+Support for the rainbow option is not yet exposed by the liquidctl cli, but it is included in the driver as the color_selection flag.
+
+```
+>>> from liquidctl.driver import find_liquidctl_devices
+>>> coreliquid_device = next(find_liquidctl_devices())
+>>> coreliquid_device.connect()
+>>> coreliquid_device.set_colors("sync", "clock", [], color_selection=0)
+```
 
 ## The LCD screen
 
 The screen resolution is 320 x 240 px, and custom images uploaded with this driver are resized to fit this requirement. The screen orientation and brightness (0-100) can also be controlled. The only channel available for the K360 model is "lcd".
 
-Maximum length of the displayed banner mesages is 62 ASCII characters. hardware status display functionality is limited, as the displayed data must be communicated to the device. This functionality is implemented in the driver, but currently its usage is limited to yoda, which gpu-unaware so the gpu_freq and gpu_usage parameters will not display correct information without custom update services.
+Uploading and choosing which images or banner backgrounds to display is experimentally supported, sometimes an uploaded file may be viewable from a different index on the device than the one it was originally uploaded to.
+
+```
+# liquidctl set lcd screen settings '80;0'
+# liquidctl set lcd screen hardware 'cpu_temp;cpu_freq;fan_radiator'
+```
+```
+# liquidctl set lcd screen banner '1;4;A cool message in 62 characters!;/home/username/Pictures/pic.jpg'
+# liquidctl set lcd screen banner '0;1;Hello, MSI?'
+# liquidctl set lcd screen banner '1;4;I can also show a previously uploaded background!'
+```
+
+```
+# liquidctl set lcd screen disable
+```
+
+Maximum length of the displayed banner mesages is 62 ASCII characters. hardware status display functionality is limited, as the displayed data must be communicated to the device. This functionality is implemented in the driver, but currently its usage is limited to yoda, which is gpu-unaware so the gpu_freq and gpu_usage parameters will not display correct information without custom update services.
 
 
 | mode name | action | options |
@@ -143,7 +173,7 @@ Maximum length of the displayed banner mesages is 62 ASCII characters. hardware 
 | image | set the screen to display a custom or preset image | \<type (0=preset,1=custom)\>;\<index\>[;\<filename\>] |
 | banner | set the screen to display a message with custom or preset image as background | \<type (0=preset,1=custom)\>;\<index\>;\<message\>[;\<filename\>]
 | clock | set the screen to display system time (requires control service to send the time to the device) | integer between 0 and 2 to specify the style of the clock display |
-| settings | set the screen brightness and orientation | \<brightness (0-10)\>;\<direction (0-3)\> |
+| settings | set the screen brightness and orientation | \<brightness (0-100)\>;\<direction (0-3)\> |
 | disable | disables the lcd screen | |
 
 | Display orientation | value |

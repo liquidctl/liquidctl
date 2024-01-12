@@ -201,7 +201,7 @@ A fan temperature config consists of 8 bit integer values:
   - Mode index
   - 7 temperature points in Celsius.
 
-### Get fan speed config - `0x32` (Get) or `0x40` (Set)
+### Fan speed config - `0x32` (Get) or `0x40` (Set)
 
 Format:
 

@@ -508,7 +508,7 @@ class MpgCooler(UsbHidDriver):
         # uninitialized; because of this, we explicitly exclude the undesired
         # usage_page, and assume in all other cases that we either
         # have the desired usage page, or that on that system a
-        # single handle is returned for that device interface (see: 259)
+        # single handle is returned for that device interface (see: #259)
 
         if handle.hidinfo["usage_page"] == EXTRA_USAGE_PAGE:
             return
@@ -542,7 +542,7 @@ class MpgCooler(UsbHidDriver):
         if direction not in ("default", "top", "bottom", "left", "right", "0", "1", "2", "3"):
             _LOGGER.warning(
                 "unknown direction value: correct values are 0-3 or top, "
-                "button, left, right, default."
+                "bottom, left, right, default."
             )
         if direction in ("1", "left"):
             dir_int = 1
@@ -977,12 +977,15 @@ class MpgCooler(UsbHidDriver):
 
     def set_oled_show_hardware_monitor(self, opts, radiator_fan_smart_mode_on_off=True):
         """
+        Command device to display hardware information on the built in display.
 
         Parameters
         ----------
-        show_area:
-            Array[bool] Indicates which hardware features will be presented on the screen,
-                        from CPU_FREQ, CPU_TEMP, GPU_MEMORY_FREQ, GPU_USAGE, FAN_PUMP, FAN_RADIATOR, FAN_CPUMOS
+        opts:
+            Array[str] Indicates which hardware features will be presented on the screen,
+                       from CPU_FREQ, CPU_TEMP, GPU_MEMORY_FREQ, GPU_USAGE, FAN_PUMP, FAN_RADIATOR, FAN_CPUMOS
+        radiator_fan_smart_mode_on_off:
+            Bool Indicates whether smart control is enabled, this slightly alters the visualization
         """
         show_idx = [self.HWMONITORDISPLAY[x.lower()].value for x in opts]
         show_area = [i in show_idx for i in range(_OLEDHardwareMonitorOffset.MAXIMUM.value + 1)]
