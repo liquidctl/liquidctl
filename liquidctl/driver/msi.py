@@ -703,7 +703,7 @@ class MpgCooler(UsbHidDriver):
             return [int(channel[3:])]
         else:
             raise ValueError(
-                'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock fan" or "pump".'
+                'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock-fan" or "pump".'
             )
 
     @staticmethod

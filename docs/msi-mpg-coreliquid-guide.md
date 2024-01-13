@@ -63,7 +63,7 @@ Fixed speeds can be set by specifying the desired channel and duty value.
 | --- | -- | --- |
 | `pump` | 60% | 100% |
 | radiator fans (`fans`, `fan1`, `fan2`, `fan3`) | 20% | 100% | |
-| `waterblock fan` | 0% | 100% | |
+| `waterblock-fan` | 0% | 100% | |
 
 For profiles, one or more temperature–duty pairs are supplied instead of single value.
 
