@@ -9,7 +9,7 @@ Initialization is not required. It outputs the firmware version:
 
 ```
 # liquidctl initialize
-ASUS Ryujin II 360 (experimental)
+ASUS Ryujin II 360
 └── Firmware version    AURJ1-S750-0104
 ```
 
@@ -20,7 +20,7 @@ The cooler reports the liquid temperature, the speeds and duties of all fans.
 
 ```
 # liquidctl status
-ASUS Ryujin II 360 (experimental)
+ASUS Ryujin II 360
 ├── Liquid temperature      26.0  °C
 ├── Pump duty                 30  %
 ├── Pump speed              1200  rpm

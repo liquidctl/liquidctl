@@ -119,44 +119,44 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
-| AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_ep_</sup> | git |
-| AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Ze_</sup> | 1.9.1 |
+| AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | git |
+| AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.11.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | <sup>_e_</sup> | 1.13.0 |
+| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | 1.11.1 |
+| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.13.0 |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |
-| AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | <sup>_LZe_</sup> | 1.9.1 |
+| AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_eh_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>_e_</sup> | git |
-| Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
-| Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
-| Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
+| AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>__</sup> | git |
+| Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.11.1 |
+| Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.11.1 |
+| Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander ST](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.12.1 |
+| Fan/LED controller | [Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | 1.11.1 |
+| Fan/LED controller | [Corsair Commander ST](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | 1.12.1 |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | | 1.7.2 |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_ehp_</sup> | 1.12.1 |
+| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
-| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_eh_</sup> | 1.13.0 |
+| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.13.0 |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
-| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
+| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
@@ -166,7 +166,6 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 <sup>_U_</sup> _Requires `--unsafe` features._<br>
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
 <sup>_a_</sup> _Architecture-specific limitations._<br>
-<sup>_e_</sup> _Experimental support._<br>
 <sup>_h_</sup> _Can leverage hwmon driver._<br>
 <sup>_p_</sup> _Only partially supported._<br>
 <sup>_x_</sup> _Only supported on Linux._<br>
@@ -621,7 +620,6 @@ characters to be escaped.
     "address": "/dev/hidraw3",
     "port": null,
     "driver": "Kraken2",
-    "experimental": false
   },
   ...
 ]

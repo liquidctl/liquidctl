@@ -41,7 +41,7 @@ class AsusRyujin(UsbHidDriver):
     """ASUS Ryujin II liquid cooler."""
 
     _MATCHES = [
-        (0x0B05, 0x1988, "ASUS Ryujin II 360 (experimental)", {}),
+        (0x0B05, 0x1988, "ASUS Ryujin II 360", {}),
     ]
 
     def initialize(self, **kwargs):

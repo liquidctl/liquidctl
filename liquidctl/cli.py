@@ -164,8 +164,7 @@ def _list_devices_objs(devices):
 
     return [
         {
-            # replace the experimental suffix with a proper field
-            'description': dev.description.replace(' (experimental)', ''),
+            'description': dev.description,
             'vendor_id': dev.vendor_id,
             'product_id': dev.product_id,
             'release_number': dev.release_number,
@@ -174,7 +173,7 @@ def _list_devices_objs(devices):
             'address': dev.address,
             'port': dev.port,
             'driver': type(dev).__name__,
-            'experimental': dev.description.endswith('(experimental)'),
+            'experimental': False, # removed, kept only for backward compatibility
         }
         for dev in devices
     ]
@@ -245,11 +244,10 @@ def _dev_status_obj(dev, status):
             unit = 's'
         return { 'key': key, 'value': val, 'unit': unit }
 
-    # suppress the experimental suffix, `list` reports it in `.experimental`
     return {
         'bus': dev.bus,
         'address': dev.address,
-        'description': dev.description.replace(' (experimental)', ''),
+        'description': dev.description,
         'status': [convert(x) for x in status]
     }
 
