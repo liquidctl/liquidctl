@@ -571,7 +571,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x300C,
-            "NZXT Kraken 2023 Elite",
+            "NZXT Kraken 2023 Elite (broken)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
@@ -583,7 +583,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x300E,
-            "NZXT Kraken 2023",
+            "NZXT Kraken 2023 (broken)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
