@@ -173,7 +173,8 @@ def _list_devices_objs(devices):
             'address': dev.address,
             'port': dev.port,
             'driver': type(dev).__name__,
-            'experimental': False, # removed, kept only for backward compatibility
+            # deprecated:
+            'experimental': '(experimental)' in dev.description,
         }
         for dev in devices
     ]
