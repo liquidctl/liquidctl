@@ -125,7 +125,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | 1.11.1 |
+| AIO liquid cooler  | ~~[Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.11.1 |
 | AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.13.0 |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |
@@ -134,13 +134,13 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>__</sup> | git |
+| AIO liquid cooler  | ~~[NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md)~~ | <sup>_B_</sup> | git |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander ST](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | 1.12.1 |
+| Fan/LED controller | ~~[Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.11.1 |
+| Fan/LED controller | ~~[Corsair Commander ST](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.12.1 |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
@@ -162,6 +162,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | | 1.5.2 |
 
+<sup>_B_</sup> _Known to be currently broken in at least one major way._<br>
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
 <sup>_U_</sup> _Requires `--unsafe` features._<br>
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
