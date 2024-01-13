@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer D5 Next (experimental)
+Aquacomputer D5 Next
 ├── Firmware version           1023
 └── Serial number       03500-24905
 ```
@@ -25,7 +25,7 @@ additionally exposes +5V and +12V voltage rail readings:
 
 ```
 # liquidctl status
-Aquacomputer D5 Next (experimental)
+Aquacomputer D5 Next
 ├── Liquid temperature     26.9  °C
 ├── Soft. Sensor 1         50.0  °C
 ├── Pump speed             1968  rpm

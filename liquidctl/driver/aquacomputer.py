@@ -166,25 +166,25 @@ class Aquacomputer(UsbHidDriver):
         (
             0x0C70,
             0xF00E,
-            "Aquacomputer D5 Next (experimental)",
+            "Aquacomputer D5 Next",
             {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]},
         ),
         (
             0x0C70,
             0xF010,
-            "Aquacomputer Farbwerk 360 (experimental)",
+            "Aquacomputer Farbwerk 360",
             {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK360]},
         ),
         (
             0x0C70,
             0xF011,
-            "Aquacomputer Octo (experimental)",
+            "Aquacomputer Octo",
             {"device_info": _DEVICE_INFO[_DEVICE_OCTO]},
         ),
         (
             0x0C70,
             0xF00D,
-            "Aquacomputer Quadro (experimental)",
+            "Aquacomputer Quadro",
             {"device_info": _DEVICE_INFO[_DEVICE_QUADRO]},
         ),
     ]

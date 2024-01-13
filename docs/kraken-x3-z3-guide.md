@@ -166,7 +166,7 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-rainbow-pulse` | None | ✓ |
 
 
-## The LCD screen (only Z and 2023 models; experimental)
+## The LCD screen (only Z and 2023 models)
 
 _New in git._<br>
 

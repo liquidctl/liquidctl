@@ -66,7 +66,7 @@ def test_modified_readme_example(capsys):
     # end of modified example; check that it more or less did what it should
 
     out, _ = capsys.readouterr()
-    assert 'Virtual Bus Device (experimental) at virtual:virtual_address:' in out
+    assert 'Virtual Bus Device at virtual:virtual_address:' in out
     assert 'initialize' in out
     assert 'Firmware version: 3.14.16' in out
     assert 'get status' in out

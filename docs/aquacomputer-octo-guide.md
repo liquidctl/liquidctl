@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer Octo (experimental)
+Aquacomputer Octo
 ├── Firmware version           1019
 └── Serial number       14994-51690
 ```
@@ -24,7 +24,7 @@ groups provide RPM speed, voltage, current and power readings:
 
 ```
 # liquidctl status
-Aquacomputer Octo (experimental)
+Aquacomputer Octo
 ├── Sensor 1          37.0  °C
 ├── Soft. Sensor 2     2.9  °C
 ├── Soft. Sensor 8    40.7  °C

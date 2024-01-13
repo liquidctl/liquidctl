@@ -39,7 +39,7 @@ def test_json_list(main):
             'address': 'virtual_address',
             'port': None,
             'driver': 'VirtualBusDevice',
-            'experimental': True,
+            'experimental': False,
         }
     ]
     assert got == exp

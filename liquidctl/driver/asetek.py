@@ -436,9 +436,9 @@ class Hydro690Lc(_ModernBase690Lc):
     """Corsair-branded fifth generation Asetek 690LC cooler."""
 
     _MATCHES = [
-        (0x1b1c, 0x0c02, 'Corsair Hydro H80i GT (experimental)', {}),
-        (0x1b1c, 0x0c03, 'Corsair Hydro H100i GTX (experimental)', {}),
-        (0x1b1c, 0x0c07, 'Corsair Hydro H110i GTX (experimental)', {}),
+        (0x1b1c, 0x0c02, 'Corsair Hydro H80i GT', {}),
+        (0x1b1c, 0x0c03, 'Corsair Hydro H100i GTX', {}),
+        (0x1b1c, 0x0c07, 'Corsair Hydro H110i GTX', {}),
         (0x1b1c, 0x0c08, 'Corsair Hydro H80i v2', {}),
         (0x1b1c, 0x0c09, 'Corsair Hydro H100i v2', {}),
         (0x1b1c, 0x0c0a, 'Corsair Hydro H115i', {}),

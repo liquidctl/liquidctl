@@ -9,7 +9,7 @@ Initialization is _currently_ not required, but is recommended. It outputs the f
 
 ```
 # liquidctl initialize
-Aquacomputer Quadro (experimental)
+Aquacomputer Quadro
 ├── Firmware version           1032
 └── Serial number       23410-65344
 ```
@@ -22,7 +22,7 @@ The Quadro exposes four temperature sensors and four groups of fan sensors for o
 
 ```
 # liquidctl status
-Aquacomputer Quadro (experimental)
+Aquacomputer Quadro
 ├── Sensor 3          15.9  °C
 ├── Soft. Sensor 2      40.3  °C 
 ├── Soft. Sensor 3      50.0  °C 
