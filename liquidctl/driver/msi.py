@@ -21,7 +21,7 @@ from PIL import Image
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
-from liquidctl.util import RelaxedNamesEnum, clamp, u16le_from
+from liquidctl.util import RelaxedNamesEnum, check_unsafe, clamp, u16le_from
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -477,13 +477,24 @@ class MpgCooler(UsbHidDriver):
     }
     _MATCHES = [
         (0x0DB0, 0xB130, "MSI MPG Coreliquid K360", {"fan_count": 5}),
-        (0x0DB0, 0xCA00, "Suspected MSI MPG Coreliquid", {}),
-        (0x0DB0, 0xCA02, "Suspected MSI MPG Coreliquid", {}),
+        (
+            0x0DB0,
+            0xCA00,
+            "Suspected MSI MPG Coreliquid",
+            {"unsafe": ["experimental_coreliquid_cooler"]},
+        ),
+        (
+            0x0DB0,
+            0xCA02,
+            "Suspected MSI MPG Coreliquid",
+            {"unsafe": ["experimental_coreliquid_cooler"]},
+        ),
     ]
     HAS_AUTOCONTROL = True
 
-    def __init__(self, device, description, **kwargs):
+    def __init__(self, device, description, unsafe=[], **kwargs):
         super().__init__(device, description, **kwargs)
+        self._UNSAFE = unsafe
         self._feature_data_per_led = bytearray(_PER_LED_LENGTH + 5)
         self._bytearray_oled_hardware_monitor_data = bytearray(_REPORT_LENGTH)
         self._per_led_rgb_jonboard = bytearray(_PER_LED_LENGTH)
@@ -515,6 +526,8 @@ class MpgCooler(UsbHidDriver):
         yield from super().probe(handle, **kwargs)
 
     def connect(self, **kwargs):
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
         ret = super().connect(**kwargs)
         self._data = kwargs.pop(
             "runtime_storage",
@@ -537,6 +550,8 @@ class MpgCooler(UsbHidDriver):
         return ret
 
     def initialize(self, **kwargs):
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
         pump_mode = kwargs.pop("pump_mode", "balanced")
         direction = kwargs.pop("direction", "default")
         if pump_mode == "balanced":
@@ -577,6 +592,12 @@ class MpgCooler(UsbHidDriver):
         ]
 
     def get_status(self, **kwargs):
+        if not check_unsafe(*self._UNSAFE, **kwargs):
+            _LOGGER.debug(
+                f"{self.description}: disabled, requires unsafe features "
+                f"'{','.join(self._UNSAFE)}'"
+            )
+            return []
         self._write((0x31,))
         array = self._read()
         assert array[1] == 0x31, "Unexpected value in response buffer"
@@ -600,10 +621,12 @@ class MpgCooler(UsbHidDriver):
             # ('Temperature sensor 2', u16le_from(array, offset=18), '°C'),
         ]
 
-    def set_time(self, time):
+    def set_time(self, time, **kwargs):
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
         return self.set_oled_clock(time)
 
     def set_hardware_status(self, T, cpu_f=0, gpu_f=0, gpu_U=0, **kwargs):
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
         self.set_oled_show_cpu_status(cpu_f, T)
         self.set_oled_gpu_status(gpu_f, gpu_U)
 
@@ -710,7 +733,7 @@ class MpgCooler(UsbHidDriver):
     def clamp_and_pad(values):
         return ([clamp(v, 0, 100) for v in values] + [0] * _MAX_DUTIES)[:_MAX_DUTIES]
 
-    def set_speed_profile(self, channel, profile, **opts):
+    def set_speed_profile(self, channel, profile, **kwargs):
         """
         Set custom fan curve for a given channel.
 
@@ -719,6 +742,8 @@ class MpgCooler(UsbHidDriver):
         manages duties according to the previous temperature
         sent to it via device.set_oled_show_cpu_status()
         """
+
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
 
         duties_temps = list(zip(*profile))
         duties, temps = tuple(self.clamp_and_pad(v) for v in duties_temps)
@@ -731,8 +756,10 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(self._fan_temp_cfg)
         self._send_safe_temp()
 
-    def set_fixed_speed(self, channel, duty, **opts):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         channel_nums = self.parse_channel(channel)
+
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
 
         for i in channel_nums:
             self._fan_cfg[i] = _FanConfig(_FanMode.CUSTOMIZE.value, *([duty] * _MAX_DUTIES))
@@ -741,7 +768,9 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
 
-    def set_color(self, channel, mode, colors, speed=1, brightness=10, color_selection=1, **opts):
+    def set_color(self, channel, mode, colors, speed=1, brightness=10, color_selection=1, **kwargs):
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
         assert channel == "sync", f'Unexpected lighting channel {channel}. Supported: "sync"'
         colors = list(colors)
         if not colors:
@@ -762,6 +791,8 @@ class MpgCooler(UsbHidDriver):
         return self._read()[2]
 
     def set_screen(self, channel, mode, value, **kwargs):
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
         assert channel.lower() == "lcd"
         try:
             mode = self.SCREEN_MODES[mode]

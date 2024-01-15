@@ -3,11 +3,11 @@
 from struct import pack
 from datetime import datetime
 
-
 import pytest
 from _testutils import MockHidapiDevice, Report
 
 from liquidctl.driver.msi import MpgCooler, _REPORT_LENGTH, _DEFAULT_FEATURE_DATA, _LightingMode
+from liquidctl.error import UnsafeFeaturesNotEnabled
 
 
 @pytest.fixture
@@ -17,6 +17,18 @@ def mpgCoreLiquidK360Device():
     dev = MpgCooler(device, description)
 
     dev.connect()
+    return dev
+
+
+@pytest.fixture
+def mpgCoreLiquidDeviceExperimental():
+    _, pid, desc, kwargs = MpgCooler._MATCHES[-1]
+    description = "Mock " + desc
+    unsafe = kwargs["unsafe"]
+    device = _MockCoreLiquid(vendor_id=0xFFFF, product_id=pid)
+    dev = MpgCooler(device, description, unsafe=unsafe)
+
+    dev.connect(unsafe=unsafe)
     return dev
 
 
@@ -201,7 +213,7 @@ def test_mpg_core_liquid_k360_not_totally_broken(mpgCoreLiquidK360Device):
 def test_mpg_core_liquid_k360_set_clock(mpgCoreLiquidK360Device):
     time = datetime(2012, 12, 21, 9, 54, 20)
 
-    mpgCoreLiquidK360Device.set_oled_clock(time)
+    mpgCoreLiquidK360Device.set_time(time)
 
     report = mpgCoreLiquidK360Device.device.sent[-1]
     assert report.data[:8] == [131, 12, 12, 21, 4, 9, 54, 20]
@@ -210,8 +222,111 @@ def test_mpg_core_liquid_k360_set_clock(mpgCoreLiquidK360Device):
 def test_mpg_core_liquid_k360_set_hw_status(mpgCoreLiquidK360Device):
     cpu_freq = 3500.0
     cpu_T = 54.0
+    gpu_f = 7000
 
-    mpgCoreLiquidK360Device.set_oled_show_cpu_status(cpu_freq, cpu_T)
+    mpgCoreLiquidK360Device.set_hardware_status(cpu_T, cpu_f=cpu_freq, gpu_f=gpu_f)
 
-    report = mpgCoreLiquidK360Device.device.sent[-1]
-    assert report.data[:5] == [133, 172, 13, 54, 0]
+    cpu_report = mpgCoreLiquidK360Device.device.sent[-2]
+    assert cpu_report.data[:5] == [133, 172, 13, 54, 0]
+
+    gpu_report = mpgCoreLiquidK360Device.device.sent[-1]
+    assert gpu_report.data[:5] == [134, 88, 27, 0, 0]
+
+
+def test_unsafe_core_liquid_get_status(mpgCoreLiquidDeviceExperimental):
+    status = mpgCoreLiquidDeviceExperimental.get_status()
+    assert status == []
+
+    status = mpgCoreLiquidDeviceExperimental.get_status(unsafe=["other"])
+    assert status == []
+
+    status = mpgCoreLiquidDeviceExperimental.get_status(unsafe=["experimental_coreliquid_cooler"])
+    assert mpgCoreLiquidDeviceExperimental.device.sent[-1].number == 0xD0
+
+
+def test_unsafe_core_liquid_set_fixed_speed(mpgCoreLiquidDeviceExperimental):
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_fixed_speed("pump", 65)
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_fixed_speed("pump", 65, unsafe=["other"])
+
+    mpgCoreLiquidDeviceExperimental.set_fixed_speed(
+        "pump", 65, unsafe=["experimental_coreliquid_cooler"]
+    )
+
+
+def test_unsafe_core_liquid_set_speed_profile(mpgCoreLiquidDeviceExperimental):
+    duties = [20, 30, 34, 40, 50]
+    temps = [30, 50, 80, 90, 100]
+    curve_profile = zip(duties, temps)
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_speed_profile("fans", curve_profile)
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_speed_profile("fans", curve_profile, unsafe=["other"])
+
+    mpgCoreLiquidDeviceExperimental.set_speed_profile(
+        "fans", curve_profile, unsafe=["experimental_coreliquid_cooler"]
+    )
+
+
+def test_unsafe_core_liquid_set_color(mpgCoreLiquidDeviceExperimental):
+    colors = [[255, 255, 0], [0, 255, 255]]
+    mode = "clock"
+    speed = 2
+    brightness = 5
+    use_color = 1
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_color(
+            "sync", mode, colors, speed=speed, brightness=brightness, color_selection=use_color
+        )
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_color(
+            "sync",
+            mode,
+            colors,
+            speed=speed,
+            brightness=brightness,
+            color_selection=use_color,
+            unsafe=["other"],
+        )
+
+    mpgCoreLiquidDeviceExperimental.set_color(
+        "sync",
+        mode,
+        colors,
+        speed=speed,
+        brightness=brightness,
+        color_selection=use_color,
+        unsafe=["experimental_coreliquid_cooler"],
+    )
+
+
+def test_unsafe_core_liquid_set_clock(mpgCoreLiquidDeviceExperimental):
+    time = datetime(2012, 12, 21, 9, 54, 20)
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_time(time)
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_time(time, unsafe=["other"])
+
+    mpgCoreLiquidDeviceExperimental.set_time(time, unsafe=["experimental_coreliquid_cooler"])
+
+
+def test_unsafe_core_liquid_set_hw_status(mpgCoreLiquidDeviceExperimental):
+    cpu_freq = 3500.0
+    cpu_T = 54.0
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_hardware_status(cpu_T, cpu_f=cpu_freq)
+
+    with pytest.raises(UnsafeFeaturesNotEnabled):
+        mpgCoreLiquidDeviceExperimental.set_hardware_status(cpu_T, cpu_f=cpu_freq, unsafe=["other"])
+
+    mpgCoreLiquidDeviceExperimental.set_hardware_status(
+        cpu_T, cpu_f=cpu_freq, unsafe=["experimental_coreliquid_cooler"]
+    )
