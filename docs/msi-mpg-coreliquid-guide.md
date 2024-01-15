@@ -176,15 +176,16 @@ Uploading and choosing which images or banner backgrounds to display is experime
 
 Maximum length of the displayed banner mesages is 62 ASCII characters. hardware status display functionality is limited, as the displayed data must be communicated to the device. This functionality is implemented in the driver, but currently its usage is limited to yoda, which is gpu-unaware so the gpu_freq and gpu_usage parameters will not display correct information without custom update services.
 
-
 | mode name | action | options |
 | --- | --- | --- |
 | hardware | set the screen to display hardware info | up to 3 semicolon delimited keys from the available sensors |
-| image | set the screen to display a custom or preset image | \<type (0=preset,1=custom)\>;\<index\>[;\<filename\>] |
-| banner | set the screen to display a message with custom or preset image as background | \<type (0=preset,1=custom)\>;\<index\>;\<message\>[;\<filename\>]
+| image | set the screen to display a custom or preset image | \<type (0=preset,1=custom)\>;\<index (0-5)\>[;\<filename\>] |
+| banner | set the screen to display a message with custom or preset image as background | \<type (0=preset,1=custom)\>;\<index (0-3)\>;\<message\>[;\<filename\>]
 | clock | set the screen to display system time (requires control service to send the time to the device) | integer between 0 and 2 to specify the style of the clock display |
 | settings | set the screen brightness and orientation | \<brightness (0-100)\>;\<direction (0-3)\> |
 | disable | disables the lcd screen | |
+
+The index field of image and banner modes denotes which of the device-stored images to show on the display, or to which save slot to store an uploaded image in. Use type=0 to display one of the preset animations, and type=1 to upload or display a custom image.
 
 | Display orientation | value |
 | --- | --- |
