@@ -285,7 +285,7 @@ Sets the clock display style on the OLED screen. `clock_style` determines the vi
 
 ### Upload Image - `0xC0` (GIF) or `0xD0` (Banner)
 
-File uploads are initiated by a single report, after which the data is transferred in chunks of 60 bytes. Uploaded images must be 240x320 px size, and in the standard 24-bit color BMP format. A short sleep (2 seconds has proven safe) should be pla2 seconds has proven safeced between the transfer initiation and start of the data transfer to make sure the device is ready.
+File uploads are initiated by a single report, after which the data is transferred in chunks of 60 bytes. Uploaded images must be 240x320 px size, and in the standard 24-bit color BMP format. A short sleep (2 seconds has proven safe) should be placed between the transfer initiation and start of the data transfer to make sure the device is ready.
 
 **Transfer initiation report**
 | Byte index | Description |
