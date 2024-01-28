@@ -10,6 +10,7 @@ Supported devices:
 Copyright Tom Frey, Jonas Malaco, Shady Nawara and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
+
 # uses the psf/black style
 
 import itertools

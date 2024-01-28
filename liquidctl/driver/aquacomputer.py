@@ -56,6 +56,7 @@ Virtual temp sensor reading is supported in 6.0+.
 Copyright Aleksa Savic and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
+
 # uses the psf/black style
 
 import logging, time, errno
