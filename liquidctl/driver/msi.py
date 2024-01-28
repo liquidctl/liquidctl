@@ -434,7 +434,7 @@ class MpgCooler(UsbHidDriver):
 
     def get_status(self, **kwargs):
         if not check_unsafe(*self._UNSAFE, **kwargs):
-            _LOGGER.debug(
+            _LOGGER.warning(
                 f"{self.description}: disabled, requires unsafe features "
                 f"'{','.join(self._UNSAFE)}'"
             )
