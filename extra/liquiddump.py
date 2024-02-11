@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """liquiddump – continuously dump monitoring data from liquidctl devices.
 
 This is a experimental script that continuously dumps the status of all
