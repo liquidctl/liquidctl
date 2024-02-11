@@ -393,7 +393,7 @@ certain scenarios:
 
 - [liquidctl(8) man page][liquidctl.8];
 - [completions for the liquidctl CLI in Bash][liquidctl.bash];
-- [host-based automatic fan/pump speed control][yoda];
+- [host-based automatic fan/pump speed control][yoda.py];
 - [send liquidctl data to HWiNFO][LQiNFO.py];
 - [and more...][extra/].
 
@@ -401,7 +401,7 @@ certain scenarios:
 [extra/]: extra/
 [liquidctl.8]: liquidctl.8
 [liquidctl.bash]: extra/completions/liquidctl.bash
-[yoda]: extra/yoda
+[yoda.py]: extra/yoda.py
 
 ### Working locally
 [Working locally]: #working-locally

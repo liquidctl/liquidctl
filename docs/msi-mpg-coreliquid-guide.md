@@ -3,7 +3,7 @@ _Driver API and source code available in [`liquidctl.driver.msi`](../liquidctl/d
 
 _Currently, only the K360 model is experimentally supported as more testing and feedback is needed._
 
-This driver is for the MSI MPG coreliquid series of AIO coolers, of which currently only the coreliquid K360 has been tested and verified to be working. The usage of speed profiles for this model requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`extra/yoda`](../extra/yoda). Device configuration, including lighting and fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
+This driver is for the MSI MPG coreliquid series of AIO coolers, of which currently only the coreliquid K360 has been tested and verified to be working. The usage of speed profiles for this model requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`yoda.py`](../extra/yoda.py). Device configuration, including lighting and fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
 
 LED lighting is controlled via preset modes, which are sent once to the device as a configuration, after which the device then independently commands the LEDs until a new configuration is received.
 
@@ -47,7 +47,7 @@ First, some important notes...
 
 *You must carefully consider what pump and fan speeds to run.  Heat output, case airflow, radiator size, installed fans and ambient temperature are some of the factors to take into account.  Test your settings under different scenarios, and make sure that they are appropriate, correctly applied and persistent.*
 
-*The device has no internal temperature measurement to control the fan speeds, and simply running a liquidctl command to set a speed profile will not persistently provide this necessary data to the device. You can use [`extra/yoda`](../extra/yoda) to communicate with the cooler, or create your own service to keep the device updated on the current temperature.*
+*The device has no internal temperature measurement to control the fan speeds, and simply running a liquidctl command to set a speed profile will not persistently provide this necessary data to the device. You can use [`yoda.py`](../extra/yoda.py) to communicate with the cooler, or create your own service to keep the device updated on the current temperature.*
 
 *You should also consider monitoring your hardware temperatures and setting alerts for overheating components or pump failures.*
 
@@ -75,7 +75,7 @@ For profiles, one or more temperature–duty pairs are supplied instead of singl
 
 liquidctl will normalize and optimize this profile before pushing it to the device.  Adding `--verbose` will trace the final profile that is being applied.
 
-The device also has preset pump/fan curves that can be applied independently for each channel with [`yoda`](../extra/yoda). Perhaps most notable is the "smart" mode, which enables fan-stop for two of the three radiator fans. Fan-stop is locked by the device for custom fan profiles, likely to prevent the liquid from overheating.
+The device also has preset pump/fan curves that can be applied independently for each channel with [`yoda.py`](../extra/yoda.py). Perhaps most notable is the "smart" mode, which enables fan-stop for two of the three radiator fans. Fan-stop is locked by the device for custom fan profiles, likely to prevent the liquid from overheating.
 
 The preset device profiles are:
 
@@ -85,7 +85,7 @@ The preset device profiles are:
   - Default
   - Smart
 
-The preset, named modes are supported in the driver and they currently have experimental support in [`yoda`](../extra/yoda), support in the liquidctl cli is on the way.
+The preset, named modes are supported in the driver and they currently have experimental support in [`yoda.py`](../extra/yoda.py), support in the liquidctl cli is on the way.
 
 ## RGB lighting with LEDs
 
@@ -174,7 +174,7 @@ Uploading and choosing which images or banner backgrounds to display is experime
 # liquidctl set lcd screen disable
 ```
 
-Maximum length of the displayed banner mesages is 62 ASCII characters. hardware status display functionality is limited, as the displayed data must be communicated to the device. This functionality is implemented in the driver, but currently its usage is limited to yoda, which is gpu-unaware so the gpu_freq and gpu_usage parameters will not display correct information without custom update services.
+Maximum length of the displayed banner mesages is 62 ASCII characters. hardware status display functionality is limited, as the displayed data must be communicated to the device. This functionality is implemented in the driver, but currently its usage is limited to [`yoda.py`](../extra/yoda.py), which is gpu-unaware so the gpu_freq and gpu_usage parameters will not display correct information without custom update services.
 
 | mode name | action | options |
 | --- | --- | --- |
