@@ -62,6 +62,7 @@ Requirements:
   Windows        none, system sensors not yet supported
 
 Changelog:
+  0.0.6  Add --use-device-controller and make psutil optional.
   0.0.5  Document how profiles are specified
   0.0.4  Fix casing of log and error messages
   0.0.3  Remove duplicate option definition
