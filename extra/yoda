@@ -133,7 +133,7 @@ def show_sensors(device):
 def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100, str_allowed=False):
     """Parse, validate and normalize a temperature–duty profile.
 
-    >>> parse_profile('smart', 0, 60, 25, 100)
+    >>> parse_profile('smart', str_allowed=True)
     'smart'
 
     >>> parse_profile('(20,30),(30,50),(34,80),(40,90)', 0, 60, 25, 100)
@@ -148,27 +148,27 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100, str_allow
     >>> parse_profile('(20,30),(50,100', 0, 60, 25, 100)
     Traceback (most recent call last):
         ...
-    ValueError: Profile must be comma-separated (temperature, duty) tuples
+    ValueError: profile must be comma-separated (temperature, duty) tuples or supported mode name
     >>> parse_profile('(20,30),(50,100,2)', 0, 60, 25, 100)
     Traceback (most recent call last):
         ...
-    ValueError: Profile must be comma-separated (temperature, duty) tuples
+    ValueError: profile must be comma-separated (temperature, duty) tuples
     >>> parse_profile('(20,30),(50,97.6)', 0, 60, 25, 100)
     Traceback (most recent call last):
         ...
-    ValueError: Duty must be integer number between 25 and 100
+    ValueError: duty must be integer between 25 and 100
     >>> parse_profile('(20,15),(50,100)', 0, 60, 25, 100)
     Traceback (most recent call last):
         ...
-    ValueError: Duty must be integer number between 25 and 100
+    ValueError: duty must be integer between 25 and 100
     >>> parse_profile('(20,30),(70,100)', 0, 60, 25, 100)
     Traceback (most recent call last):
         ...
-    ValueError: Temperature must be integer number between 0 and 60
+    ValueError: temperature must be integer between 0 and 60
 
     """
     try:
-        if arg in liquidctl.driver.msi.MpgCooler.BUILTIN_MODES.keys() and str_allowed:
+        if str_allowed and arg in liquidctl.driver.msi.MpgCooler.BUILTIN_MODES:
             return arg
         else:
             val = ast.literal_eval('[' + arg + ']')
@@ -176,11 +176,9 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100, str_allow
                 # for arg == '<number>' set fixed duty between mintemp and maxtemp - 1
                 val = [(mintemp, val[0]), (maxtemp - 1, val[0])]
     except:
-        msg = (
-            'profile must be comma-separated (temperature, duty) tuples or '
-            + f'recognised cooler mode string {str(liquidctl.driver.msi.MpgCooler.BUILTIN_MODES.keys())}'
+        raise ValueError(
+            'profile must be comma-separated (temperature, duty) tuples or supported mode name'
         )
-        raise ValueError(msg)
     for step in val:
         if not isinstance(step, tuple) or len(step) != 2:
             raise ValueError('profile must be comma-separated (temperature, duty) tuples')
