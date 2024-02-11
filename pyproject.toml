@@ -28,7 +28,6 @@ extend-exclude = '''
 
   # exclude some old files, pending a future conversion; by default, any new
   # files should *not* be excluded
-  | (^/conftest\.py$)
   | (^/extra/contrib/fusion_rgb_cycle\.py$)
   | (^/extra/windows/LQiNFO\.py$)
   | (^/liquidctl/cli\.py$)
