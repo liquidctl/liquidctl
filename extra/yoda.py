@@ -57,7 +57,7 @@ Options:
 
 Requirements:
   all platforms  liquidctl, including the Python APIs (pip install liquidctl)
-  Linux/FreeBSD  psutil (pip install psutil)
+  Linux/FreeBSD  psutil [optional] (pip install psutil)
   macOS          iStats (gem install iStats)
   Windows        none, system sensors not yet supported
 
@@ -85,19 +85,22 @@ import liquidctl.cli as _borrow
 from liquidctl.util import normalize_profile, interpolate_profile
 import liquidctl.driver
 
-if sys.platform == 'darwin':
-    import re
-    import subprocess
-elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
-    import psutil
-
-VERSION = '0.0.5'
+VERSION = '0.0.6'
 
 LOGGER = logging.getLogger(__name__)
 
 INTERNAL_CHIP_NAME = '_internal'
 
 MAX_FAILURES = 3
+
+if sys.platform == 'darwin':
+    import re
+    import subprocess
+elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
+    try:
+        import psutil
+    except ModuleNotFoundError:
+        psutil = None
 
 
 def read_sensors(device):
@@ -113,7 +116,7 @@ def read_sensors(device):
                 cpu_temp = float(re.search(r'\d+\.\d+', line).group(0))
                 sensors['istats.cpu'] = cpu_temp
                 break
-    elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
+    elif psutil:
         for m, li in psutil.sensors_temperatures().items():
             for label, current, _, _ in li:
                 sensor_name = label.lower().replace(' ', '_')
@@ -326,6 +329,9 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
         sys.tracebacklimit = 0
+
+    if (sys.platform.startswith('linux') or sys.platform.startswith('freebsd')) and not psutil:
+        LOGGER.warning('system sensors are not available, psutil not found')
 
     frwd = _borrow._make_opts(args)
     selected = list(liquidctl.driver.find_liquidctl_devices(**frwd))
