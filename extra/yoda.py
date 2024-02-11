@@ -126,11 +126,12 @@ def read_sensors(device):
 
 
 def show_sensors(device):
-    print('{:<60}  {:>18}'.format('Sensor identifier', 'Temperature'))
+    print('{:<60}  {:>14}'.format('Sensor identifier', 'Value'))
     print('-' * 80)
     sensors = read_sensors(device)
     for k, v in sensors.items():
-        print('{:<70}  {:>6}{}'.format(k, v, '°C'))
+        unit = 'MHz' if k == 'cpu_freq' else '°C'
+        print(f'{k:<60}  {v:>14.1f} {unit}')
 
 
 def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100, str_allowed=False):
