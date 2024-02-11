@@ -48,24 +48,24 @@ from liquidctl.driver import *
 
 LOGGER = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    args = docopt(__doc__, version='0.1.1')
+if __name__ == "__main__":
+    args = docopt(__doc__, version="0.1.1")
     frwd = _borrow._make_opts(args)
     devs = list(find_liquidctl_devices(**frwd))
-    update_interval = float(args['--interval'])
+    update_interval = float(args["--interval"])
 
-    if args['--debug']:
-        args['--verbose'] = True
-        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-    elif args['--verbose']:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    if args["--debug"]:
+        args["--verbose"] = True
+        logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(name)s: %(message)s")
+    elif args["--verbose"]:
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        logging.basicConfig(level=logging.WARNING, format="%(message)s")
         sys.tracebacklimit = 0
 
     try:
         for d in devs:
-            LOGGER.info('initializing %s', d.description)
+            LOGGER.info("initializing %s", d.description)
             d.connect()
         status = {}
         while True:
@@ -73,19 +73,19 @@ if __name__ == '__main__':
                 try:
                     status[d.description] = d.get_status()
                 except usb.core.USBError as err:
-                    LOGGER.warning('failed to read from the device, possibly serving stale data')
+                    LOGGER.warning("failed to read from the device, possibly serving stale data")
                     LOGGER.debug(err, exc_info=True)
             print(json.dumps(status), flush=True)
             time.sleep(update_interval)
     except KeyboardInterrupt:
-        LOGGER.info('canceled by user')
+        LOGGER.info("canceled by user")
     except:
-        LOGGER.exception('unexpected error')
+        LOGGER.exception("unexpected error")
         sys.exit(1)
     finally:
         for d in devs:
             try:
-                LOGGER.info('disconnecting from %s', d.description)
+                LOGGER.info("disconnecting from %s", d.description)
                 d.disconnect()
             except:
-                LOGGER.exception('unexpected error when disconnecting')
+                LOGGER.exception("unexpected error when disconnecting")
