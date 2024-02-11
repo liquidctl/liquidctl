@@ -3,7 +3,7 @@ import sys
 collect_ignore = [
     "setup.py",
     "extra/contrib/fusion_rgb_cycle.py",  # depends on coloraide
-    "extra/prometheus-liquidctl-exporter",  # depends on prometheus_client
+    "extra/prometheus-liquidctl-exporter.py",  # depends on prometheus_client
 ]
 
 if sys.platform != "linux":
