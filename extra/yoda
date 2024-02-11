@@ -202,7 +202,6 @@ def auto_control(device, channels, profiles, sensors, update_interval):
     assert getattr(
         device, 'HAS_AUTOCONTROL', False
     ), f'No registered control loop capability for device {device}!'
-    from datetime import datetime
 
     device.set_profiles(channels, profiles)
 
