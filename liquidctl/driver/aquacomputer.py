@@ -428,12 +428,11 @@ class Aquacomputer(UsbHidDriver):
     def _set_fixed_speed_hwmon(self, channel, duty):
         hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
 
-        # Set channel to direct percent mode, if pwmX_enable exists
-        if self._hwmon.has_attribute(hwmon_pwm_enable_name):
-            self._hwmon.write_int(hwmon_pwm_enable_name, 1)
+        # Set channel to direct percent mode
+        self._hwmon.write_int(hwmon_pwm_enable_name, 1)
 
-            # Some devices (Octo, Quadro and Aquaero) can not accept reports in quick succession, so slow down a bit
-            time.sleep(0.2)
+        # Some devices (Octo, Quadro and Aquaero) can not accept reports in quick succession, so slow down a bit
+        time.sleep(0.2)
 
         # Convert duty from percent to PWM range (0-255)
         pwm_duty = duty * 255 // 100
@@ -475,12 +474,13 @@ class Aquacomputer(UsbHidDriver):
         duty = clamp(duty, 0, 100)
 
         if self._hwmon:
-            hwmon_pwm_name, _ = self._fan_name_to_hwmon_names(channel)
+            hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
 
-            # Check if pwmX is present, as that's the baseline for being able to set a PWM speed
-            # If pwmX_enable is also present, great! But we'll make use of that in the specialized function
-            if self._hwmon.has_attribute(hwmon_pwm_name):
-                # If we have to use direct access, warn that we are sidestepping the kernel driver
+            # Check if the required attributes are present
+            if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
+                hwmon_pwm_enable_name
+            ):
+                # They are, and if we have to use direct access, warn that we are sidestepping the kernel driver
                 if direct_access:
                     _LOGGER.warning(
                         "directly writing fixed speed despite %s kernel driver having support",
