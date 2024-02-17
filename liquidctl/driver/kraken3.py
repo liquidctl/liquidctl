@@ -251,8 +251,8 @@ class KrakenX3(UsbHidDriver):
         return sorted(self._status)
 
     def parse_firm_info(self, msg):
-        fw = f"{msg[0x11]}.{msg[0x12]}.{msg[0x13]}"
-        self._status.append(("Firmware version", fw, ""))
+        self.fw = (msg[0x11], msg[0x12], msg[0x13])
+        self._status.append(("Firmware version", f"{self.fw[0]}.{self.fw[1]}.{self.fw[2]}", ""))
 
     def parse_led_info(self, msg):
         channel_count = msg[14]
