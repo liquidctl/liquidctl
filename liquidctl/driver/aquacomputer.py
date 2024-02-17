@@ -476,7 +476,10 @@ class Aquacomputer(UsbHidDriver):
         if self._hwmon:
             hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
 
-            # Check if the required attributes are present
+            # pwmX and pwmX_enable attributes are required in order to set the PWM value,
+            # as well as the channel mode to "direct PWM value". Without pwmX_enable,
+            # we can't guarantee that the PWM value will at all be used, as the channel
+            # could be in a different mode (PID, curve, fan follow).
             if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
                 hwmon_pwm_enable_name
             ):
