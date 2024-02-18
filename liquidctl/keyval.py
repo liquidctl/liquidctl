@@ -71,6 +71,9 @@ def _open_with_lock(path, flags, *, shared=False):
 
         yield f
 
+        if access != os.O_RDONLY:
+            f.flush()  # ensure flushing before automatic unlocking
+
 
 if {'umask', 'stat', 'chmod'} <= os.__dict__.keys() \
         and {os.stat, os.chmod} <= os.supports_fd:
@@ -165,7 +168,6 @@ class _FilesystemBackend:
 
         with _open_with_lock(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC) as f:
             f.write(data)
-            f.flush()  # ensure flushing before automatic unlocking
 
         _LOGGER.debug('stored %s=%r (in %s)', key, value, path)
 
@@ -211,7 +213,6 @@ class _FilesystemBackend:
             assert literal_eval(data) == new_value, 'encode/decode roundtrip fails'
             f.write(data)
             f.truncate()
-            f.flush()  # ensure flushing before automatic unlocking
 
             _LOGGER.debug('replaced with %s=%r (stored in %s)', key, new_value, path)
 
