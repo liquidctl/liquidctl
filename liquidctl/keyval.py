@@ -134,7 +134,7 @@ class _FilesystemBackend:
             # create leaf directory as 0o0700, but do not break ACLs
             os.makedirs(self._write_dir, exist_ok=True)
             # set the sticky bit to prevent removal during cleanup
-            _chmod_bits(self._write_dir, 0o1000, flags=os.O_DIRECTORY)
+            _chmod_bits(self._write_dir, 0o1000)  # flags=os.O_DIRECTORY, but !win32
         _LOGGER.debug('data in %s', self._write_dir)
 
     def load(self, key):
