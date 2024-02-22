@@ -127,6 +127,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | ~~[Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.11.1 |
 | AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.13.0 |
+| AIO liquid cooler  | [Corsair iCUE Elite RGB H115i](docs/corsair-platinum-pro-xt-guide.md) | | git |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [MSI MPG Coreliquid K360](docs/msi-mpg-coreliquid-guide.md) | <sup>_p_</sup> | git |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |

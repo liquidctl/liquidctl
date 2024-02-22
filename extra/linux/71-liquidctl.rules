@@ -353,16 +353,16 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00d", TAG+="uacc
 # Asetek 690LC (assuming NZXT Kraken X)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
 
-# Corsair Commander Core
+# Corsair Commander Core (broken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c1c", TAG+="uaccess"
 
-# Corsair Commander Core XT
+# Corsair Commander Core XT (broken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c2a", TAG+="uaccess"
 
 # Corsair Commander Pro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c10", TAG+="uaccess"
 
-# Corsair Commander ST
+# Corsair Commander ST (broken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c32", TAG+="uaccess"
 
 # Corsair HX1000i
@@ -455,6 +455,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uacc
 # Corsair iCUE H100i Elite RGB
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c35", TAG+="uaccess"
 
+# Corsair iCUE H115i Elite RGB
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c36", TAG+="uaccess"
+
 # Corsair iCUE H150i Elite RGB
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c37", TAG+="uaccess"
 
@@ -488,10 +491,10 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2001", TAG+="uacc
 # NZXT HUE 2 Ambient
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2002", TAG+="uaccess"
 
-# NZXT Kraken 2023
+# NZXT Kraken 2023 (broken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="300e", TAG+="uaccess"
 
-# NZXT Kraken 2023 Elite
+# NZXT Kraken 2023 Elite (broken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="300c", TAG+="uaccess"
 
 # NZXT Kraken M22
@@ -535,3 +538,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200d", TAG+="uacc
 
 # NZXT Smart Device V2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200f", TAG+="uaccess"
+
+# Suspected MSI MPG Coreliquid
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="ca00", TAG+="uaccess"
+
+# Suspected MSI MPG Coreliquid
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="ca02", TAG+="uaccess"
