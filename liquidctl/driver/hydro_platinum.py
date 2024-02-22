@@ -10,6 +10,7 @@ Supported devices:
 - Corsair Hydro H115i Pro XT
 - Corsair Hydro H150i Pro XT
 - Corsair iCUE H100i Elite RGB
+- Corsair iCUE H115i Elite RGB
 - Corsair iCUE H150i Elite RGB
 
 Copyright Jonas Malaco and contributors
@@ -129,6 +130,8 @@ class HydroPlatinum(UsbHidDriver):
         (0x1b1c, 0x0c22, 'Corsair Hydro H150i Pro XT',
             {'fan_count': 3, 'fan_leds': 0}),
         (0x1b1c, 0x0c35, 'Corsair iCUE H100i Elite RGB',
+            {'fan_count': 2, 'fan_leds': 0}),
+        (0x1b1c, 0x0c36, 'Corsair iCUE H115i Elite RGB',
             {'fan_count': 2, 'fan_leds': 0}),
         (0x1b1c, 0x0c37, 'Corsair iCUE H150i Elite RGB',
             {'fan_count': 3, 'fan_leds': 0}),
