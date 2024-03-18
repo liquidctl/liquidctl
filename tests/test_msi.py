@@ -24,9 +24,9 @@ def mpgCoreLiquidK360Device():
 def mpgCoreLiquidDeviceExperimental():
     _, pid, desc, kwargs = MpgCooler._MATCHES[-1]
     description = "Mock " + desc
-    unsafe = kwargs["unsafe"]
+    unsafe = kwargs["_unsafe"]
     device = _MockCoreLiquid(vendor_id=0xFFFF, product_id=pid)
-    dev = MpgCooler(device, description, unsafe=unsafe)
+    dev = MpgCooler(device, description, **kwargs, unsafe=unsafe)
 
     dev.connect(unsafe=unsafe)
     return dev
