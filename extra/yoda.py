@@ -299,7 +299,7 @@ def control(device, channels, profiles, sensors, update_interval, **kwargs):
                     cpu_f=sensor_data.get("cpu_freq", 0),
                     gpu_f=sensor_data.get("gpu_freq", 0),
                     gpu_U=sensor_data.get("gpu_usage", 0),
-                    **kwargs
+                    **kwargs,
                 )
 
             failures = 0
@@ -335,7 +335,7 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
         sys.tracebacklimit = 0
     if args["--unsafe"] is not None:
-        unsafe = args["--unsafe"].lower().split(',')
+        unsafe = args["--unsafe"].lower().split(",")
     else:
         unsafe = []
 
