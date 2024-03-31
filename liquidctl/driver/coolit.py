@@ -340,13 +340,9 @@ class CoolitDriver(UsbHidDriver):
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
                 pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
 
-                fanTemperatureData = list()
-                fanTemperatureData.append(
-                    0x0A
-                )  # "magical" 0x0A in front of curve definition packages
-
-                fanDutyData = list()
-                fanDutyData.append(0x0A)  # "magical" 0x0A in front of curve definition packages
+                # "magical" 0x0A in front of curve definition packages
+                fanTemperatureData = [0x0A]
+                fanDutyData = [0x0A]
 
                 for temp, duty in profile:
                     fanTemperatureData.append(temp)
