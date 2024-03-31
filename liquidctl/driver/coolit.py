@@ -156,7 +156,7 @@ class CoolitDriver(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         if pump_mode not in ["quiet", "extreme"]:
-            _LOGGER.warning(
+            LOGGER.warning(
                 'pump mode must be either "quiet" or "extreme", falling back to "quiet"'
             )
             pump_mode = "quiet"
