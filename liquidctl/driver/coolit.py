@@ -228,6 +228,7 @@ class CoolitDriver(UsbHidDriver):
         for hw_channel in self._get_hw_fan_channels(channel):
             self._data.store(f"{hw_channel}_mode", _FanMode.FIXED_DUTY.value)
             self._data.store(f"{hw_channel}_duty", duty)
+            LOGGER.info(f"setting {hw_channel} to duty mode")
 
         if pump_mode and pump_mode in ["quiet", "extreme"]:
             self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
@@ -250,6 +251,7 @@ class CoolitDriver(UsbHidDriver):
         for hw_channel in self._get_hw_fan_channels(channel):
             self._data.store(f"{hw_channel}_mode", _FanMode.CUSTOM_PROFILE.value)
             self._data.store(f"{hw_channel}_profile", profile)
+            LOGGER.info(f"setting {hw_channel} to profile mode")
 
         if pump_mode and pump_mode in ["quiet", "extreme"]:
             self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
