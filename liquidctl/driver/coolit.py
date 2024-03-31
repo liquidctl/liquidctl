@@ -155,11 +155,9 @@ class CoolitDriver(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        if kwargs['pump_mode']:
-            if kwargs['pump_mode'] not in ['quiet', 'extreme']:
-                _LOGGER.warning('pump mode must be either "quiet" or "extreme"')
-            else:
-                pump_mode = kwargs['pump_mode']
+        if pump_mode not in ['quiet', 'extreme']:
+            _LOGGER.warning('pump mode must be either "quiet" or "extreme", falling back to "quiet"')
+            pump_mode = 'quiet'
 
         self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
 
