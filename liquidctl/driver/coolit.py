@@ -176,7 +176,11 @@ class CoolitDriver(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples.
         """
         dataPackages = list()
+
+        # temperature
         dataPackages.append(self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES))
+
+        # fan 1
         dataPackages.append(
             self._build_data_package(
                 _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])
@@ -185,6 +189,8 @@ class CoolitDriver(UsbHidDriver):
         dataPackages.append(
             self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
         )
+
+        # fan 2
         dataPackages.append(
             self._build_data_package(
                 _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([1])
@@ -193,6 +199,8 @@ class CoolitDriver(UsbHidDriver):
         dataPackages.append(
             self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
         )
+
+        # pump
         dataPackages.append(
             self._build_data_package(
                 _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([2])
