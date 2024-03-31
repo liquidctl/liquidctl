@@ -35,7 +35,6 @@ from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profil
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
-_MAX_FAN_RPM = 2250
 _PUMP_INDEX = 0x02
 
 _COMMAND_FIRMWARE_ID = 0x01
@@ -348,11 +347,10 @@ class CoolitDriver(UsbHidDriver):
                 fanDutyData.append(0x0A)  # "magical" 0x0A in front of curve definition packages
 
                 for temp, duty in profile:
-                    fanTemperatureData.append(0x00)
                     fanTemperatureData.append(temp)
-                    rpm = duty * _MAX_FAN_RPM / 100
-                    fanDutyData.append(int(rpm % 255))
-                    fanDutyData.append(int(rpm - (rpm % 255)) >> 8)
+                    fanTemperatureData.append(0x00)
+                    fanDutyData.append(duty)
+                    fanDutyData.append(0x00)
 
                 # Send temperature profile
                 self._send_command(
