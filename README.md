@@ -772,6 +772,8 @@ When commenting on an issue, please describe the problem in as much detail as po
 
 Also include the arguments and output of all relevant/failing liquidctl commands, using the `--debug` option to enable additional debug information.
 
+**Please ensure that you are running the latest firmware on the device before reporting a bug.** There are [known issues](https://github.com/liquidctl/liquidctl/issues/624) with the Kraken 240, for instance, where USB communication stops working before a firmware update is applied.
+
 
 ## Additional documentation
 [Additional documentation]: #additional-documentation
