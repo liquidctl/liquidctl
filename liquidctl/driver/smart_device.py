@@ -699,11 +699,11 @@ class H1V2(SmartDevice2):
 
 class RGBController(_BaseSmartDevice):
     _MATCHES = [
-        (0x1e71, 0x2012, 'NZXT Kraken 2023 RGB Controller', {
+        (0x1e71, 0x2012, 'NZXT 2023 RGB Controller', {
             'speed_channel_count': 0,
             'color_channel_count': 3
         }),
-        (0x1e71, 0x2021, 'NZXT Kraken 2023 RGB Controller', {
+        (0x1e71, 0x2021, 'NZXT 2023 RGB Controller', {
             'speed_channel_count': 0,
             'color_channel_count': 3
         }),
