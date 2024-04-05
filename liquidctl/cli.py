@@ -77,6 +77,7 @@ import os
 import platform
 import re
 import sys
+from importlib.metadata import distribution, version, PackageNotFoundError
 from numbers import Number
 from traceback import format_exception
 
@@ -163,8 +164,7 @@ def _list_devices_objs(devices):
 
     return [
         {
-            # replace the experimental suffix with a proper field
-            'description': dev.description.replace(' (experimental)', ''),
+            'description': dev.description,
             'vendor_id': dev.vendor_id,
             'product_id': dev.product_id,
             'release_number': dev.release_number,
@@ -173,7 +173,8 @@ def _list_devices_objs(devices):
             'address': dev.address,
             'port': dev.port,
             'driver': type(dev).__name__,
-            'experimental': dev.description.endswith('(experimental)'),
+            # deprecated:
+            'experimental': '(experimental)' in dev.description,
         }
         for dev in devices
     ]
@@ -244,11 +245,10 @@ def _dev_status_obj(dev, status):
             unit = 's'
         return { 'key': key, 'value': val, 'unit': unit }
 
-    # suppress the experimental suffix, `list` reports it in `.experimental`
     return {
         'bus': dev.bus,
         'address': dev.address,
-        'description': dev.description.replace(' (experimental)', ''),
+        'description': dev.description,
         'status': [convert(x) for x in status]
     }
 
@@ -311,23 +311,18 @@ def _log_env_infos():
     _LOGGER.debug('encoding: %s current, %s preferred, utf8_mode %s',
                   locale.getlocale()[1], locale.getpreferredencoding(), sys.flags.utf8_mode)
 
-    if sys.hexversion >= 0x03080000:
-        from importlib.metadata import distribution, version, PackageNotFoundError
+    try:
+        dist = distribution('liquidctl')
+    except PackageNotFoundError:
+        _LOGGER.debug('not installed, package metadata not available')
+        return
 
+    for req in dist.requires:
+        name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
         try:
-            dist = distribution('liquidctl')
-        except PackageNotFoundError:
-            _LOGGER.debug('not installed, package metadata not available')
-            return
-
-        for req in dist.requires:
-            name = re.search('^[a-zA-Z0-9]([a-zA-Z0-9._-]*)', req).group(0)
-            try:
-                _LOGGER.debug('with %s: %s', name, version(name))
-            except Exception as err:
-                _LOGGER.debug('with %s: version n/a (%s)', name, err)
-    else:
-        _LOGGER.debug('importlib.metadata not available')
+            _LOGGER.debug('with %s: %s', name, version(name))
+        except Exception as err:
+            _LOGGER.debug('with %s: version n/a (%s)', name, err)
 
 
 class _ErrorAcc:

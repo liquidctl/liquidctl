@@ -3,8 +3,6 @@ _Driver API and source code available in [`liquidctl.driver.aura_led`](../liquid
 
 _New in 1.10.0._<br>
 
-_Note: this driver is marked as **experimental** because of the need for additional testing and feedback by the community._<br>
-
 This driver supports ASUS Aura USB-based lighting controllers that appear in various ASUS Z490, Z590, and Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate lighting effects on each addressable LED. The other mode is _effect_ mode in which the controller itself modulates lighting effects on each addressable LED. Effect mode requires the application to issue a single set of command codes to the controller in order to initiate the given effect. The controller continues to process that effect until the application sends a different command.
 
 This driver employs the _effect_ mode (fire and forget). The selected lighting mode remains in effect until it is explicitly changed. This means the selected lighting mode remains in effect (a) on cold boot, (b) on warm boot, (c) after wake-from-sleep.
@@ -26,7 +24,7 @@ ASUS Aura LED controller does not need to be initialized before use. Initializat
 
 ```
 # liquidctl initialize
-ASUS Aura LED Controller (experimental)
+ASUS Aura LED Controller
 └── Firmware version    AULA3-AR32-0207
 ```
 
@@ -38,7 +36,7 @@ On ASUS ProArt Z690-Creator WiFi the following is returned:
 
 ```
 # liquidctl status
-ASUS Aura LED Controller (experimental)
+ASUS Aura LED Controller
 ├── ARGB channels: 2
 └──  RGB channels: 1
 ```
@@ -47,7 +45,7 @@ To display the set of 6-byte status values, use `--debug` on the command line. T
 
 ```
 # liquidctl --debug status
-ASUS Aura LED Controller (experimental)
+ASUS Aura LED Controller
 ├── ARGB channels: 2
 ├──  RGB channels: 1
 ├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00
@@ -66,7 +64,7 @@ On ASUS ROG Strix Z690-i Gaming WiFi (mini-ITX) the following is returned:
 
 ```
 # liquidctl --debug status
-ASUS Aura LED Controller (experimental)
+ASUS Aura LED Controller
 ├── ARGB channels: 2
 ├──  RGB channels: 1
 ├── Device Config: 1     0x1e, 0x9f, 0x02, 0x01, 0x00, 0x00
@@ -85,7 +83,7 @@ On some ASUS Z490 boards (controller ID 0x18F3) the following is returned:
 
 ```
 # liquidctl --debug status
-ASUS Aura LED Controller (experimental)
+ASUS Aura LED Controller
 ├── ARGB channels: 1
 ├──  RGB channels: 1
 ├── Device Config: 1     0x1e, 0x9f, 0x01, 0x01, 0x00, 0x00

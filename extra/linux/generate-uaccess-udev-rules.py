@@ -103,7 +103,6 @@ if __name__ == "__main__":
     for svid, did, sdid, descriptions in nvidia_devs:
         print()
         for desc in descriptions:
-            desc = desc.replace(" (experimental)", "")
             print(f"# {desc}")
         entry = f"""
             KERNEL=="i2c-*", ATTR{{name}}=="NVIDIA i2c adapter 1 *", ATTRS{{vendor}}=="0x10de", \\
@@ -134,7 +133,6 @@ if __name__ == "__main__":
     for vid, pid, descriptions in usb_devs:
         print()
         for desc in descriptions:
-            desc = desc.replace(" (experimental)", "")
             print(f"# {desc}")
         print(
             f'SUBSYSTEMS=="usb", ATTRS{{idVendor}}=="{vid:04x}", ATTRS{{idProduct}}=="{pid:04x}", TAG+="uaccess"'

@@ -6,7 +6,7 @@ body:
     id: description
     attributes:
       label: Describe the bug
-      description: Please start by describing the bug in as much detail as possible.
+      description: Please start by describing the bug in as much detail as possible. If a device is missing altogether, please check the [Supported devices](https://github.com/liquidctl/liquidctl#supported-devices) section in the README to verify that your version has support.
       placeholder: ex. "liquidctl fails to read the fan speed of the two attached fans"
     validations:
       required: true
@@ -44,6 +44,16 @@ body:
       placeholder: e.g. Corsair Hydro H100i Pro XT
     validations:
       required: false
+  - type: dropdown
+    id: checked-supported-devices
+    attributes:
+      label: Does your version of liquidctl support the device in question?
+      description: Support for new enough devices can happen to be available only in Git snapshots for some time. Please check the [Supported devices](https://github.com/liquidctl/liquidctl#supported-devices) section in the README to verify if your version has support.
+      options:
+        - Yes, my version supports it
+        - I've checked and it does not
+    validations:
+      required: true
   - type: input
     id: operating-system
     attributes:

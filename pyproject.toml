@@ -16,7 +16,7 @@ addopts = "--doctest-modules -ra"
 
 [tool.black]
 line-length = 100
-target-version = ["py37"]
+target-version = ["py38"]
 extend-exclude = '''
   /*
     To have all items start with |, this isn't a real comment; still, it
@@ -28,7 +28,6 @@ extend-exclude = '''
 
   # exclude some old files, pending a future conversion; by default, any new
   # files should *not* be excluded
-  | (^/conftest\.py$)
   | (^/extra/contrib/fusion_rgb_cycle\.py$)
   | (^/extra/windows/LQiNFO\.py$)
   | (^/liquidctl/cli\.py$)

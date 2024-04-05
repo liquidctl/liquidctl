@@ -105,6 +105,8 @@ def mock_krakenz3():
         speed_channels=_SPEED_CHANNELS_KRAKENZ,
         color_channels=_COLOR_CHANNELS_KRAKENZ,
         hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+        bulk_buffer_size=512,
+        lcd_resolution=(320, 320),
     )
 
     dev.connect()
@@ -143,7 +145,16 @@ class MockKraken(MockHidapiDevice):
 
 
 class MockKrakenZ3(KrakenZ3):
-    def __init__(self, device, description, speed_channels, color_channels, **kwargs):
+    def __init__(
+        self,
+        device,
+        description,
+        speed_channels,
+        color_channels,
+        bulk_buffer_size,
+        lcd_resolution,
+        **kwargs,
+    ):
         KrakenX3.__init__(self, device, description, speed_channels, color_channels, **kwargs)
 
         self.bulk_device = MockPyusbDevice(0x1E71, 0x3008)
@@ -151,6 +162,8 @@ class MockKrakenZ3(KrakenZ3):
 
         self.orientation = 0
         self.brightness = 50
+        self.bulk_buffer_size = bulk_buffer_size
+        self.lcd_resolution = lcd_resolution
 
         self.screen_mode = None
 
@@ -182,6 +195,7 @@ class MockKrakenZ3(KrakenZ3):
 
     def _bulk_write(self, data):
         fixed_data_index = self.bulk_data_index
+
         if (
             self.screen_mode == "static" and self.bulk_data_index > 1
         ):  # the rest of the message should be identical to index 1
@@ -525,13 +539,22 @@ def test_krakenz3_not_totally_broken(mock_krakenz3):
     mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
     mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
 
-    # set_screen should be the last set of functions called
+
+def test_krakenz3_screen_not_totally_broken(mock_krakenz3):
+    """Reasonable example calls to untested APIs do not raise exceptions."""
+    mock_krakenz3.initialize()
     mock_krakenz3.set_screen("lcd", "liquid", None)
     mock_krakenz3.set_screen("lcd", "brightness", "60")
     mock_krakenz3.set_screen("lcd", "orientation", "90")
     mock_krakenz3.set_screen(
         "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg")
     )
+
+
+@pytest.mark.skip("Currently broken with pillow >= 10.2.0 (see #661)")
+def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
+    """Reasonable example calls to untested APIs do not raise exceptions."""
+    mock_krakenz3.initialize()
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )

@@ -41,11 +41,11 @@ The NZXT RGB & Fan Controller is a retail version of the NZXT Smart Device V2.
 
 ## NZXT RGB & Fan Controller (3+6 channels)
 
-_New in git._<br>
+_New in 1.12.1._<br>
 
 In 2022 NZXT released a new version of the RGB & Fan Controller with 3 fan speed channels and 6 lighting channels.
 
-For now, this new version is only partially (and experimentally) supported by liquidctl: only monitoring and fan control are available.
+For now, this new version is only partially supported by liquidctl: only monitoring and fan control are available.
 
 
 ## Initialization

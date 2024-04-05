@@ -56,6 +56,7 @@ Virtual temp sensor reading is supported in 6.0+.
 Copyright Aleksa Savic and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
+
 # uses the psf/black style
 
 import logging, time, errno
@@ -166,25 +167,25 @@ class Aquacomputer(UsbHidDriver):
         (
             0x0C70,
             0xF00E,
-            "Aquacomputer D5 Next (experimental)",
+            "Aquacomputer D5 Next",
             {"device_info": _DEVICE_INFO[_DEVICE_D5NEXT]},
         ),
         (
             0x0C70,
             0xF010,
-            "Aquacomputer Farbwerk 360 (experimental)",
+            "Aquacomputer Farbwerk 360",
             {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK360]},
         ),
         (
             0x0C70,
             0xF011,
-            "Aquacomputer Octo (experimental)",
+            "Aquacomputer Octo",
             {"device_info": _DEVICE_INFO[_DEVICE_OCTO]},
         ),
         (
             0x0C70,
             0xF00D,
-            "Aquacomputer Quadro (experimental)",
+            "Aquacomputer Quadro",
             {"device_info": _DEVICE_INFO[_DEVICE_QUADRO]},
         ),
     ]
@@ -475,7 +476,10 @@ class Aquacomputer(UsbHidDriver):
         if self._hwmon:
             hwmon_pwm_name, hwmon_pwm_enable_name = self._fan_name_to_hwmon_names(channel)
 
-            # Check if the required attributes are present
+            # pwmX and pwmX_enable attributes are required in order to set the PWM value,
+            # as well as the channel mode to "direct PWM value". Without pwmX_enable,
+            # we can't guarantee that the PWM value will at all be used, as the channel
+            # could be in a different mode (PID, curve, fan follow).
             if self._hwmon.has_attribute(hwmon_pwm_name) and self._hwmon.has_attribute(
                 hwmon_pwm_enable_name
             ):

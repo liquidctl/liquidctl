@@ -102,68 +102,73 @@ specific usage instructions and other useful information.
 The table is manually sorted to keep certain device families, like confusing
 generations of Corsair coolers and NZXT Smart Devices, in chronological order.
 
+Categories are sorted in a somewhat subjective "from more to less liquid
+control-ly" order.
+
 Common prefixes or suffixes are deduplicated and brought before device
 differentiators: for example, "Platinum H100i, H100i SE, H115i" instead of
 "H100i Platinum, H100i Platinum SE, H115i Platinum".
 
-Newly supported devices are added with the `n` note.  If they are members of an
-already supported family, the family is temporarily split between old and new
-devices until the next release.
+If a newly supported device is a member of an already supported family, the
+family is temporarily split between old and new devices until the next release.
 
-Within a category, the notes are sorted alphabetically, major (upper case)
-notes before minor (lower case) ones.  Categories are sorted in a somewhat
-subjective "from more to less liquid control-ly" order.
+Device notes are sorted alphabetically, major (upper case) notes before minor
+(lower case) ones.
 
 -->
 
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
-| AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Ze_</sup> | 1.9.1 |
+| AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | git |
+| AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.11.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | <sup>_e_</sup> | git |
+| AIO liquid cooler  | ~~[Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.11.1 |
+| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.13.0 |
+| AIO liquid cooler  | [Corsair iCUE Elite RGB H115i](docs/corsair-platinum-pro-xt-guide.md) | | git |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
+| AIO liquid cooler  | [MSI MPG Coreliquid K360](docs/msi-mpg-coreliquid-guide.md) | <sup>_p_</sup> | git |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |
-| AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | <sup>_LZe_</sup> | 1.9.1 |
+| AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_he_</sup> | 1.11.1 |
-| Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
-| Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
-| Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
+| AIO liquid cooler  | ~~[NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md)~~ | <sup>_B_</sup> | git |
+| Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.11.1 |
+| Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.11.1 |
+| Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander ST](docs/corsair-commander-core-guide.md) | <sup>_ep_</sup> | 1.12.1 |
+| Fan/LED controller | ~~[Corsair Commander Core, Core XT](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.11.1 |
+| Fan/LED controller | ~~[Corsair Commander ST](docs/corsair-commander-core-guide.md)~~ | <sup>_Bp_</sup> | 1.12.1 |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | | 1.7.2 |
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_ehp_</sup> | 1.12.1 |
+| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | <sup>_e_</sup> | 1.10.0 |
+| Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
-| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_eh_</sup> | git |
+| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.13.0 |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
-| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_ehp_</sup> | 1.11.1 |
+| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
-| Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | <sup>_e_</sup> | 1.10.0 |
+| Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | | 1.5.2 |
 
+<sup>_B_</sup> _Known to be currently broken in at least one major way._<br>
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
 <sup>_U_</sup> _Requires `--unsafe` features._<br>
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
 <sup>_a_</sup> _Architecture-specific limitations._<br>
-<sup>_e_</sup> _Experimental support._<br>
 <sup>_h_</sup> _Can leverage hwmon driver._<br>
 <sup>_p_</sup> _Only partially supported._<br>
 <sup>_x_</sup> _Only supported on Linux._<br>
@@ -225,7 +230,7 @@ On FreeBSD and DragonFly BSD, liquidctl is maintained in the Ports Collections,
 and is available as a pre-built binary package.
 
 ```
-pkg install py37-liquidctl
+pkg install py39-liquidctl
 ```
 
 ### Manual installation
@@ -249,7 +254,7 @@ libraries already provided by the operating system.
 On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
-- Python 3.7 or later _(python3, python)_
+- Python 3.8 or later _(python3, python)_
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
@@ -270,7 +275,7 @@ needed:
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
 
-On macOS, Python (3.7 or later) and LibUSB 1.0 must be installed beforehand.
+On macOS, Python (3.8 or later) and LibUSB 1.0 must be installed beforehand.
 
 ```
 brew install python libusb
@@ -279,7 +284,7 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.7 or later) must be installed beforehand, which can be
+On Windows, Python (3.8 or later) must be installed beforehand, which can be
 done from the [official website][python.org].  It is recommended to select the
 option to add `python` and other tools to the `PATH`.
 
@@ -347,8 +352,8 @@ This will also install the necessary Python libraries.
 # the latest stable version
 python -m pip install liquidctl
 
-# a specific version (e.g. 1.12.1)
-python -m pip install liquidctl==1.12.1
+# a specific version (e.g. 1.13.0)
+python -m pip install liquidctl==1.13.0
 ```
 
 If [git] is installed, pip can also install the latest snapshot of the official
@@ -361,6 +366,8 @@ python -m pip install git+https://github.com/liquidctl/liquidctl#egg=liquidctl
 
 [git]: https://git-scm.com/
 [pip]: https://pip.pypa.io/en/stable/
+
+To set up rootless access to devices on Linux and BSDs, install documentation and completions, or to learn more about auxiliary scripts, continue reading for the next few sections.
 
 #### Allowing access to the devices
 [Allowing access to the devices]: #allowing-access-to-the-devices
@@ -387,7 +394,7 @@ certain scenarios:
 
 - [liquidctl(8) man page][liquidctl.8];
 - [completions for the liquidctl CLI in Bash][liquidctl.bash];
-- [host-based automatic fan/pump speed control][yoda];
+- [host-based automatic fan/pump speed control][yoda.py];
 - [send liquidctl data to HWiNFO][LQiNFO.py];
 - [and more...][extra/].
 
@@ -395,7 +402,7 @@ certain scenarios:
 [extra/]: extra/
 [liquidctl.8]: liquidctl.8
 [liquidctl.bash]: extra/completions/liquidctl.bash
-[yoda]: extra/yoda
+[yoda.py]: extra/yoda.py
 
 ### Working locally
 [Working locally]: #working-locally
@@ -616,7 +623,6 @@ characters to be escaped.
     "address": "/dev/hidraw3",
     "port": null,
     "driver": "Kraken2",
-    "experimental": false
   },
   ...
 ]
@@ -740,7 +746,9 @@ This is likely caused by having replaced the standard driver of a USB HID.  If t
 
 ### Device not listed (Linux)
 
-This is usually caused by having an unexpected kernel driver bound to a USB HID.  In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0, but failed to reattach the original driver before terminating.
+First, check that the liquidctl version (`liquidctl --version`) you're running supports the device in question. An overview of supported devices and minimum recommended versions for them are available in [Supported devices]. Support for new devices can happen to be available only in Git for some time.
+
+If the device is supported, this is usually caused by having an unexpected kernel driver bound to a USB HID. In most cases this is the result of having used a program that accessed the device (directly or indirectly) via libusb-1.0, but failed to reattach the original driver before terminating.
 
 This can be temporarily solved by manually rebinding the device to the kernel `usbhid` driver. Replace `<bus>` and `<port>` with the correct values from `lsusb -vt` (also assumes there is only HID interface, adjust if necessary):
 

@@ -143,7 +143,7 @@ class MockCommanderCoreDevice:
 @pytest.fixture
 def commander_core_device():
     device = MockCommanderCoreDevice()
-    core = CommanderCore(device, 'Corsair Commander Core (experimental)', True)
+    core = CommanderCore(device, 'Corsair Commander Core', True)
     core.connect()
     return core
 
@@ -270,7 +270,7 @@ def test_set_fixed_speed_error_commander_core(commander_core_device):
 
 def test_parse_channels_commander_core():
     """This test will go through and thoroughly test CommanderCore._parse_channels so we don't have to in other tests"""
-    core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core (experimental)', True)
+    core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core', True)
     tests = [
         ('pump', [0]), ('fans', [1, 2, 3, 4, 5, 6]),
         ('fan1', [1]), ('fan2', [2]), ('fan3', [3]), ('fan4', [4]), ('fan5', [5]), ('fan6', [6])
@@ -283,7 +283,7 @@ def test_parse_channels_commander_core():
 
 def test_parse_channels_commander_core_xt():
     """Test Core XT-specific channel layout"""
-    corext = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core (experimental)', False)
+    corext = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core', False)
     tests = [
         ('fans', [0, 1, 2, 3, 4, 5]),
         ('fan1', [0]), ('fan2', [1]), ('fan3', [2]), ('fan4', [3]), ('fan5', [4]), ('fan6', [5])
@@ -295,6 +295,6 @@ def test_parse_channels_commander_core_xt():
 
 def test_parse_channels_error_commander_core():
     """This tests to make sure we get an error with an invalid channel"""
-    core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core (experimental)', True)
+    core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core', True)
     with pytest.raises(ValueError):
         core._parse_channels('fan')

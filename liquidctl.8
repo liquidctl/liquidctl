@@ -1,6 +1,6 @@
 '\" t
 .nr is_macos 0
-.TH LIQUIDCTL 8 2023\-01\-08 "liquidctl" "System Manager's Manual"
+.TH LIQUIDCTL 8 2023\-07\-26 "liquidctl" "System Manager's Manual"
 .
 .SH NAME
 liquidctl \- monitor and control liquid coolers and other devices
@@ -242,6 +242,10 @@ Internal data used by some drivers.
 Cooling channels: (D5 Next): \fIfan\fR, \fIpump\fR; (Octo): \fIfan[1\-8]\fR; (Quadro:) \fIfan[1\-4]\fR; (Farbwerk 360:) not applicable.
 .PP
 Lighting channels: not yet supported.
+.SS ASUS Ryujin II 360
+Cooling channels: \fIpump\fR, \fIfans\fR, \fIpump\-fan\fR, \fIexternal\-fans\fR.
+.PP
+Screen: not yet supported.
 .SS Corsair iCUE Elite Capellix H100i, H115i, H150i
 .SS Corsair Commander Core
 .SS Corsair Commander Core XT
@@ -355,7 +359,7 @@ Mode	#colors
 .
 .SS Corsair Hydro H100i Platinum, H100i Platinum SE, H115i Platinum
 .SS Corsair Hydro H60i Pro XT, H100i Pro XT, H115i Pro XT, H150i Pro XT
-.SS Corsair Hydro H100i, H150i Elite RGB
+.SS Corsair Hydro H100i, H115i, H150i Elite RGB
 Cooling channels: \fIfan\fR, \fIfan[1\(en2]\fR; (only H150i Pro XT/Elite RGB:) \fIfan3\fR.
 .PP
 Pump mode (\fBinitialize \-\-pump\-mode \fImode\fR): \fIquiet\fR,
@@ -371,6 +375,68 @@ Channel	Mode	#colors (Platinum)	#colors (Pro XT/Elite RGB)	#colors (Platinum SE)
 \fIled\fR	\fIfixed\fR	1	1	1
 \fIled\fR	\fIsuper\-fixed\fR	24	16	48
 .TE
+.
+.SS MSI MPG Coreliquid K360
+Cooling channels: \fIfan1\fR, \fIfan2\fR, \fIfan3\fR, \fIfans\fR, \fIwaterblock-fan\fR, \fIpump\fR.
+.PP
+Lighting channels: \fIsync\fR.
+.PP
+LCD screens: \fIlcd\fR.
+.TS
+l c
+----
+l c
+.
+Mode	#colors
+\fIdisable\fR	0
+\fIsteady\fR	1
+\fIblink\fR	0
+\fIbreathing\fR	1
+\fIclock\fR	2
+\fIcolor pulse\fR	0
+\fIcolor ring\fR	0
+\fIcolor ring double flashing\fR	0
+\fIcolor ring flashing\fR	0
+\fIcolor shift\fR	0
+\fIcolor wave\fR	2
+\fIcorsair ique\fR	0
+\fIdisable2\fR	0
+\fIdouble flashing\fR	1
+\fIdouble meteor\fR	0
+\fIenergy\fR	0
+\fIfan control\fR	0
+\fIfire\fR	2
+\fIflashing\fR	1
+\fIjazz\fR	0
+\fIjrainbow\fR	0
+\fIlava\fR	0
+\fIlightning\fR	1
+\fImarquee\fR	1
+\fImeteor\fR	1\(en2
+\fImovie\fR	0
+\fImsi marquee\fR	1
+\fImsi rainbow\fR	0
+\fIplanetary\fR	0
+\fIplay\fR	0
+\fIpop\fR	0
+\fIrainbow\fR	0
+\fIrainbow double flashing\fR	0
+\fIrainbow flashing\fR	0
+\fIrainbow wave\fR	0
+\fIrandom\fR	0
+\fIrap\fR	0
+\fIstack\fR	1
+\fIvisor\fR	2
+\fIwater drop\fR	1
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fI0\fR, \fI1\fR and \fI2\fR.
+The LCD screen settings can be controlled with the
+\fBsettings\fR flag, that requires the arguments "\fIbrightness\fR;\fIdirection\fR"
+where an allowed brightness is an integer in the range \fI0-100\fR,
+and orientations \fI0-3\fR correspond to the orientations up, right, down and left.
 .
 .SS NZXT Kraken X40, X60
 .SS NZXT Kraken X31, X41, X61
@@ -410,12 +476,23 @@ The animation direction can be set with
 where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .
 .SS NZXT Kraken X53, X63, X73
+Cooling channels: \fIpump\fR.
+.PP
+Lighting channels: \fIexternal\fR, \fIring\fR, \fIlogo\fR, \fIsync\fR.
+.
 .SS NZXT Kraken Z53, Z63, Z73
-Cooling channels: \fIpump\fR; (only Z53, Z63, Z73:) \fIfan\fR.
+Cooling channels: \fIpump\fR, \fIfan\fR.
 .PP
-Lighting channels: \fIexternal\fR; (only X53, X63, X73:) \fIring\fR, \fIlogo\fR, \fIsync\fR.
+Lighting channels: \fIexternal\fR.
 .PP
-LCD screens (only Z53, Z63, Z73): \fIlcd\fR.
+LCD screens: \fIlcd\fR.
+.
+.SS NZXT Kraken 2023 Standard, Elite
+Cooling channels: \fIpump\fR, \fIfan\fR.
+.PP
+Lighting channels: none.
+.PP
+LCD screens: \fIlcd\fR.
 .TS
 l c
 ----

@@ -430,11 +430,11 @@ class SmartDevice2(_BaseSmartDevice):
             'speed_channel_count': 3,
             'color_channel_count': 2
         }),
-        (0x1e71, 0x2011, 'NZXT RGB & Fan Controller (3+6 channels) (experimental)', {
+        (0x1e71, 0x2011, 'NZXT RGB & Fan Controller (3+6 channels)', {
             'speed_channel_count': 3,
             'color_channel_count': 0
         }),
-        (0x1e71, 0x2019, 'NZXT RGB & Fan Controller (3+6 channels) (experimental)', {
+        (0x1e71, 0x2019, 'NZXT RGB & Fan Controller (3+6 channels)', {
             'speed_channel_count': 3,
             'color_channel_count': 0
         }),
@@ -666,7 +666,7 @@ class SmartDevice2(_BaseSmartDevice):
 
 class H1V2(SmartDevice2):
     _MATCHES = [
-        (0x1e71, 0x2015, 'NZXT H1 V2 (experimental)', {
+        (0x1e71, 0x2015, 'NZXT H1 V2', {
             'speed_channel_count': 2,
             'color_channel_count': 0
         }),

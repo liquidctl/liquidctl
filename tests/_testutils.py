@@ -240,7 +240,7 @@ class VirtualBusDevice(BaseDriver):
 
     @property
     def description(self):
-        return 'Virtual Bus Device (experimental)'
+        return 'Virtual Bus Device'
 
     @property
     def vendor_id(self):

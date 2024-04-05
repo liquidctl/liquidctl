@@ -7,6 +7,8 @@ Both X and Z models house seventh-generation Asetek pump designs, plus secondary
 
 All configuration is done through USB, and persists as long as the device still gets power, even if the system has gone to Soft Off (S5) state.  The coolers also report relevant data via USB, including pump and/or fan speeds and liquid temperature.  The pump speed can be sent to the motherboard (or other device) via the sense pin of a standard fan connector.
 
+Monitoring and/or configuring the coolers is not possible with CAM running, otherwise you'll get errors such as `OSError('read error')`.
+
 
 ## NZXT Kraken X53, X63, X73
 
@@ -20,6 +22,11 @@ All capabilities available at the hardware level are supported, but other featur
 The most notable difference between Kraken X and Kraken Z models is the replacement of the infinity mirror by a LCD screen.
 
 In addition to this, Kraken Z coolers restore the embedded fan controller that is missing from the current Kraken X models.
+
+
+## NZXT Kraken 2023 Standard, Elite
+
+Kraken 2023 AIOs use the same pump and as their Z3 predecessor but the integrated led controller has been removed. The LCD resolution is 240x240 for the standard version and 640x640 for the elite one.
 
 
 ## Initialization
@@ -88,6 +95,10 @@ For profiles, one or more temperature–duty pairs are supplied instead of singl
 
 liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
 
+_New in git._<br>
+
+Adds support for NZXT Kraken 2023 Standard, Elite
+
 
 ## RGB lighting with LEDs
 
@@ -155,7 +166,11 @@ they will be removed in a future version and are kept for now for backward compa
 | `backwards-rainbow-pulse` | None | ✓ |
 
 
-## The LCD screen (only Z models; experimental)
+## The LCD screen (only Z and 2023 models)
+
+_New in git._<br>
+
+Adds support for NZXT Kraken 2023 Standard, Elite
 
 _New in 1.11.0._<br>
 
