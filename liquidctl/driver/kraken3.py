@@ -772,10 +772,10 @@ class KrakenZ3(KrakenX3):
             self.orientation = msg[0x1A]
 
         # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023
-        # (standard and elite). In those cases, show an error until issue #631 is resolved.
+        # (non-elite). In those cases, show an error until issue #631 is resolved.
         def unsupported_fw_version():
             device_product_id = self.bulk_device.product_id
-            if device_product_id in (0x300C, 0x300E) and self.fw[0] == 2:
+            if device_product_id == 0x300E and self.fw[0] == 2:
                 _LOGGER.error(
                     "setting images is not supported on firmware 2.X.Y, please see issue #631"
                 )
