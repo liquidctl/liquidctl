@@ -248,11 +248,11 @@ class KrakenX3(UsbHidDriver):
         self._status = []
 
         self._read_until({b"\x11\x01": self.parse_firm_info, b"\x21\x03": self.parse_led_info})
+        self._status.append(("Firmware version", f"{self.fw[0]}.{self.fw[1]}.{self.fw[2]}", ""))
         return sorted(self._status)
 
     def parse_firm_info(self, msg):
         self.fw = (msg[0x11], msg[0x12], msg[0x13])
-        self._status.append(("Firmware version", f"{self.fw[0]}.{self.fw[1]}.{self.fw[2]}", ""))
 
     def parse_led_info(self, msg):
         channel_count = msg[14]
@@ -681,6 +681,7 @@ class KrakenZ3(KrakenX3):
         # request static infos
         self._write([0x10, 0x01])  # firmware info
         self._read_until({b"\x11\x01": self.parse_firm_info})
+        self._status.append(("Firmware version", f"{self.fw[0]}.{self.fw[1]}.{self.fw[2]}", ""))
 
         self._write([0x30, 0x01])  # lcd info
         self._read_until({b"\x31\x01": self.parse_lcd_info})
