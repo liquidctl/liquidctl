@@ -780,7 +780,7 @@ class KrakenZ3(KrakenX3):
         # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023
         # (non-elite). In those cases, show an error until issue #631 is resolved.
         def unsupported_fw_version():
-            device_product_id = self.bulk_device.product_id
+            device_product_id = self.device.product_id
             if device_product_id == 0x300E:
                 self._get_fw_version()
                 if self.fw[0] == 2:
