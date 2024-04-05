@@ -111,11 +111,8 @@ Copyright Jonas Malaco, CaseySJ and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import numpy as np
-
 import itertools
 import logging
-import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
