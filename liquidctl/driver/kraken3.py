@@ -777,7 +777,7 @@ class KrakenZ3(KrakenX3):
             device_product_id = self.bulk_device.product_id
             if device_product_id == 0x300E and self.fw[0] == 2:
                 _LOGGER.error(
-                    "Setting images for NZXT Kraken 240/360 (standard) is not supported on firmware 2.X.Y, please see issue #631"
+                    "Setting images for NZXT Kraken 240/360 (standard) is not supported on firmware >2.x.x, please see issue #631"
                 )
                 return True
             return False
