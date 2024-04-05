@@ -698,10 +698,16 @@ class H1V2(SmartDevice2):
 
 
 class RGBController(_BaseSmartDevice):
-    _MATCHES = (0x1e71, 0x2012, 'NZXT RGB Controller', {
+    _MATCHES = [
+        (0x1e71, 0x2012, 'NZXT Kraken 2023 RGB Controller', {
             'speed_channel_count': 0,
             'color_channel_count': 3
-    }),
+        }),
+        (0x1e71, 0x2021, 'NZXT Kraken 2023 RGB Controller', {
+            'speed_channel_count': 0,
+            'color_channel_count': 3
+        }),
+    ]
 
     _MAX_READ_ATTEMPTS = 12
     _READ_LENGTH = 64
@@ -784,9 +790,7 @@ class RGBController(_BaseSmartDevice):
                     accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
                     if accessory_id == 0:
                         break
-                    print(accessory_id)
-                    ret.append((f'LED {c + 1} accessory {a + 1}',
-                                   Hue2Accessory(accessory_id), ''))
+                    ret.append((f'LED {c + 1}', Hue2Accessory(accessory_id), ''))
 
         parsers = {b'\x11\x01': parse_firm_info}
         if self._color_channels:
@@ -847,8 +851,6 @@ class RGBController(_BaseSmartDevice):
             msg_length = len(header) + len(color_mode) + len(footer)
             space = [0x00 for _ in range(self._WRITE_LENGTH - msg_length)]
 
-            print_arr = ["{:02x}".format(i) for i in header + color_mode + space + footer]
-            print(np.array(print_arr).reshape(4, 16))
             self._write(header + color_mode + space + footer)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
@@ -862,16 +864,3 @@ class RGBController(_BaseSmartDevice):
 NzxtSmartDeviceDriver = SmartDevice
 SmartDeviceDriver = SmartDevice
 SmartDeviceV2Driver = SmartDevice2
-
-# TODO: 
-# Marquee mode:
-#   - speed
-#   - direction
-#   - led size
-# alternating mode:
-#    - moving
-#    -led size
-# wings mode:
-# super-breathing:
-# wave:
-# music mode
