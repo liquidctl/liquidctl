@@ -151,6 +151,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
+| FAN/LED controller | [NZXT 2023 RGB Controller](docs/nzxt-smart-device-v1-guide.md) | <sup>_p_</sup> | 1.5.0 |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
