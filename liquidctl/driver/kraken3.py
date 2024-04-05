@@ -647,6 +647,12 @@ class KrakenZ3(KrakenX3):
                 return True
         return False
 
+    def _get_fw_version(self, clear_reports=True):
+        if clear_reports:
+            self.device.clear_enqueued_reports()
+        self._write([0x10, 0x01])  # firmware info
+        self._read_until({b"\x11\x01": self.parse_firm_info})
+
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
 
@@ -679,8 +685,7 @@ class KrakenZ3(KrakenX3):
         self._status = []
 
         # request static infos
-        self._write([0x10, 0x01])  # firmware info
-        self._read_until({b"\x11\x01": self.parse_firm_info})
+        self._get_fw_version(clear_reports=False)
         self._status.append(("Firmware version", f"{self.fw[0]}.{self.fw[1]}.{self.fw[2]}", ""))
 
         self._write([0x30, 0x01])  # lcd info
@@ -776,11 +781,13 @@ class KrakenZ3(KrakenX3):
         # (non-elite). In those cases, show an error until issue #631 is resolved.
         def unsupported_fw_version():
             device_product_id = self.bulk_device.product_id
-            if device_product_id == 0x300E and self.fw[0] == 2:
-                _LOGGER.error(
-                    "setting images is not supported on firmware 2.X.Y, please see issue #631"
-                )
-                return True
+            if device_product_id == 0x300E:
+                self._get_fw_version()
+                if self.fw[0] == 2:
+                    _LOGGER.error(
+                        "setting images is not supported on firmware 2.X.Y, please see issue #631"
+                    )
+                    return True
             return False
 
         self._read_until({b"\x31\x01": parse_lcd_info})
