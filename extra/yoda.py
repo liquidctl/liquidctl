@@ -48,7 +48,7 @@ Options:
   --bus <bus>              Filter devices by bus
   --address <address>      Filter devices by address in bus
   --usb-port <port>        Filter devices by USB port in bus
-  --unsafe <features>         Comma-separated bleeding-edge features to enable
+  --unsafe <features>      Comma-separated bleeding-edge features to enable
   -v, --verbose            Output additional information
   -g, --debug              Show debug information on stderr
   --legacy-690lc           Use Asetek 690LC in legacy mode (old Krakens)
