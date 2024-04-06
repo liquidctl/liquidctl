@@ -317,25 +317,30 @@ class MpgCooler(UsbHidDriver):
         "fan_cpumos": _OLEDHardwareMonitorOffset.FAN_CPUMOS,
     }
     _MATCHES = [
-        (0x0DB0, 0xB130, "MSI MPG Coreliquid K360", {"fan_count": 5}),
+        (
+            0x0DB0,
+            0xB130,
+            "MSI MPG Coreliquid K360",
+            {"fan_count": 5},
+        ),
         (
             0x0DB0,
             0xCA00,
             "Suspected MSI MPG Coreliquid",
-            {"unsafe": ["experimental_coreliquid_cooler"]},
+            {"_unsafe": ["experimental_coreliquid_cooler"]},
         ),
         (
             0x0DB0,
             0xCA02,
             "Suspected MSI MPG Coreliquid",
-            {"unsafe": ["experimental_coreliquid_cooler"]},
+            {"_unsafe": ["experimental_coreliquid_cooler"]},
         ),
     ]
     HAS_AUTOCONTROL = True
 
-    def __init__(self, device, description, unsafe=[], **kwargs):
+    def __init__(self, device, description, _unsafe=[], **kwargs):
         super().__init__(device, description, **kwargs)
-        self._UNSAFE = unsafe
+        self._UNSAFE = _unsafe
         self._feature_data_per_led = bytearray(_PER_LED_LENGTH + 5)
         self._bytearray_oled_hardware_monitor_data = bytearray(_REPORT_LENGTH)
         self._per_led_rgb_jonboard = bytearray(_PER_LED_LENGTH)
@@ -524,7 +529,7 @@ class MpgCooler(UsbHidDriver):
         )
         self.set_oled_show_cpu_status(0, 100)
 
-    def set_profiles(self, channels, profiles):
+    def set_profiles(self, channels, profiles, **kwargs):
         """
         Set custom or device preset fan curve for multiple channels.
 
@@ -533,6 +538,8 @@ class MpgCooler(UsbHidDriver):
         manages duties according to the previous temperature
         sent to it via device.set_oled_show_cpu_status()
         """
+        check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
         fan_cfg = self.get_fan_config()
         fan_temp_cfg = self.get_fan_temp_config()
         channel_idx = [self.parse_channel(ch) for ch in channels]
