@@ -648,6 +648,9 @@ class KrakenZ3(KrakenX3):
         return False
 
     def _get_fw_version(self, clear_reports=True):
+        if self.fw is not None:
+            return  # Already cached
+
         if clear_reports:
             self.device.clear_enqueued_reports()
         self._write([0x10, 0x01])  # firmware info
