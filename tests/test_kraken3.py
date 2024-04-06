@@ -166,6 +166,7 @@ class MockKrakenZ3(KrakenZ3):
         self.lcd_resolution = lcd_resolution
 
         self.screen_mode = None
+        self.fw = None
 
     def set_screen(self, channel, mode, value, **kwargs):
         self.screen_mode = mode
