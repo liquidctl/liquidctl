@@ -33,8 +33,11 @@ class NotSupportedByDevice(LiquidctlError):
 class NotSupportedByDriver(LiquidctlError):
     """Operation not supported by the driver."""
 
+    def __init__(self, explanation=None):
+        self._explanation = explanation
+
     def __str__(self) -> str:
-        return "operation not supported by the driver"
+        return f"operation not supported by the driver{f': {self._explanation}' if self._explanation is not None else ''}"
 
 
 class UnsafeFeaturesNotEnabled(LiquidctlError):
