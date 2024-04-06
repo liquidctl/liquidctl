@@ -26,7 +26,7 @@ if sys.platform == "win32":
     from winusbcdc import WinUsbPy
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
-from liquidctl.error import NotSupportedByDevice
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import (
     LazyHexRepr,
     normalize_profile,
@@ -779,16 +779,14 @@ class KrakenZ3(KrakenX3):
 
         # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023
         # (non-elite). In those cases, show an error until issue #631 is resolved.
-        def unsupported_fw_version():
+        def check_unsupported_fw_version():
             device_product_id = self.device.product_id
             if device_product_id == 0x300E:
                 self._get_fw_version()
                 if self.fw[0] == 2:
-                    _LOGGER.error(
+                    raise NotSupportedByDriver(
                         "setting images is not supported on firmware 2.X.Y, please see issue #631"
                     )
-                    return True
-            return False
 
         self._read_until({b"\x31\x01": parse_lcd_info})
 
@@ -805,14 +803,12 @@ class KrakenZ3(KrakenX3):
             self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(value_int / 90)])
             return
         elif mode == "static":
-            if unsupported_fw_version():
-                return
+            check_unsupported_fw_version()
             data = self._prepare_static_file(value, self.orientation)
             self._send_data(data, [0x02, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
             return
         elif mode == "gif":
-            if unsupported_fw_version():
-                return
+            check_unsupported_fw_version()
             data = self._prepare_gif_file(value, self.orientation)
             assert (
                 len(data) / 1000 < _LCD_TOTAL_MEMORY
