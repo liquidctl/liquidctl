@@ -631,6 +631,7 @@ class KrakenZ3(KrakenX3):
         # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.orientation = 0
         self.brightness = 50  # default 50%
+        self.fw = None
 
     def _find_winusb_device(self, vid, pid, serial):
         winusb_devices = self.bulk_device.list_usb_devices(
@@ -816,6 +817,10 @@ class KrakenZ3(KrakenX3):
             if is_fw_version2():
                 data = self._prepare_static_file_rgb16(value, self.orientation)
                 self._send_data_fw2(data, [0x06, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
+                # sending it twice is only required once after initialization
+                # the same behaviour is observed in manufacturer at init software
+                # some soft of framebuffer swapping?
+                self._send_data_fw2(data, [0x06, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
             else:
                 data = self._prepare_static_file(value, self.orientation)
                 self._send_data(data, [0x02, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
@@ -831,6 +836,7 @@ class KrakenZ3(KrakenX3):
         elif mode == "liquid":
             self._switch_bucket(0, 2)
             return
+        
 
         # release device when finished
         if self.bulk_device and (mode == "static" or mode == "gif"):
@@ -923,8 +929,7 @@ class KrakenZ3(KrakenX3):
         data is an array of bytes to write
         bulk info contains info about the transfer
         """
-
-        # first bulk write message contains a standard part and information about the transfer
+        self._write_then_read([0x36, 0x01, 0x00, 0x01, 0x06])  # start data transfer
         header = [
             0x12,
             0xFA,
@@ -939,14 +944,12 @@ class KrakenZ3(KrakenX3):
             0x32,
             0x10,
         ] + bulkInfo
-
-        self._write_then_read([0x36, 0x01, 0x00, 0x01, 0x06])  # start data transfer
         self._bulk_write(header)
 
         for i in range(0, len(data), self.bulk_buffer_size):  # start sending data in chunks
             self._bulk_write(list(data[i : i + self.bulk_buffer_size]))
 
-        self._write([0x36, 0x02])  # end data transfer
+        self._write_then_read([0x36, 0x02])  # end data transfer
 
 
     def _send_data(self, data, bulkInfo):
