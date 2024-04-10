@@ -350,14 +350,20 @@ class CoolitDriver(UsbHidDriver):
                     fanDutyData.append(duty)
                     fanDutyData.append(0x00)
 
-                # Send temperature profile
+                # select fan to customize
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_TEMP_TABLE,
-                        _OP_CODE_WRITE_THREE_BYTES,
-                        params=bytes(fanTemperatureData),
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
                     )
                 )
+
+                # Change mode to custom Profile
+                self._send_command(
+                    self._build_data_package(
+                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                    )
+                )
+
                 # Send duty cycle Profile
                 self._send_command(
                     self._build_data_package(
@@ -367,15 +373,12 @@ class CoolitDriver(UsbHidDriver):
                     )
                 )
 
-                # Change mode to custom Profile
+                # Send temperature profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
-                    )
-                )
-                self._send_command(
-                    self._build_data_package(
-                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                        _COMMAND_FAN_TEMP_TABLE,
+                        _OP_CODE_WRITE_THREE_BYTES,
+                        params=bytes(fanTemperatureData),
                     )
                 )
 
