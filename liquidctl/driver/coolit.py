@@ -12,10 +12,7 @@ Supported features
  - pump speed control
  - fan speed control
 
-Copyright (C) 2020  Jonas Malaco
-Copyright (C) 2020  RobertoBiundo
-Copyright (C) 2023  Serphentas
-
+Copyright Roberto Marques, Serphentas, and other contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
