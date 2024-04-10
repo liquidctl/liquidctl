@@ -365,8 +365,8 @@ class CoolitDriver(UsbHidDriver):
                 )
 
                 for temp, duty in profile:
-                    fanTemperatureData.append(temp)
                     fanTemperatureData.append(0x00)
+                    fanTemperatureData.append(temp)
 
                     rpm = duty * max_rpm / 100
                     fanDutyData.append(int(rpm % 255))
