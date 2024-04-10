@@ -120,6 +120,7 @@ subjective "from more to less liquid control-ly" order.
 | :--                | :-- | --: | :-: |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Ze_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
+| AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | <sup>_e_</sup> | git |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
