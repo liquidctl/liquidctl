@@ -44,6 +44,7 @@ _COMMAND_FAN_MODE = 0x12
 _COMMAND_FAN_FIXED_PWM = 0x13
 _COMMAND_FAN_FIXED_RPM = 0x14
 _COMMAND_FAN_READ_RPM = 0x16
+_COMMAND_FAN_MAX_RPM = 0x17
 _COMMAND_FAN_RPM_TABLE = 0x19
 _COMMAND_FAN_TEMP_TABLE = 0x1A
 
@@ -62,7 +63,6 @@ _PUMP_DEFAULT_EXTREME = [0x86, 0x0B]
 
 _SEQUENCE_MIN = 1
 _SEQUENCE_MAX = 255
-
 
 @unique
 class _FanMode(Enum):
@@ -344,11 +344,33 @@ class CoolitDriver(UsbHidDriver):
                 fanTemperatureData = [0x0A]
                 fanDutyData = [0x0A]
 
+                # get max RPM for current fan
+                dataPackages = []
+                dataPackages.append(
+                    self._build_data_package(
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])
+                    )
+                )
+                dataPackages.append(
+                    self._build_data_package(_COMMAND_FAN_MAX_RPM, _OP_CODE_READ_TWO_BYTES)
+                )
+                res = self._send_commands(dataPackages)
+
+                max_rpm = u16le_from(res, offset=4)
+
+
+                max_rpm = self._data.load(
+                    f'max_rpm_fan{fanIndex + 1}',
+                    of_type=int
+                )
+
                 for temp, duty in profile:
                     fanTemperatureData.append(temp)
                     fanTemperatureData.append(0x00)
-                    fanDutyData.append(duty)
-                    fanDutyData.append(0x00)
+
+                    rpm = duty * max_rpm / 100
+                    fanDutyData.append(int(rpm % 255))
+                    fanDutyData.append(int(rpm - (rpm % 255)) >> 8)
 
                 # select fan to customize
                 self._send_command(
