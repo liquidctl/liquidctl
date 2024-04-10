@@ -19,16 +19,13 @@ Copyright (C) 2023  Serphentas
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import itertools
 import logging
-import random
 import re
 
 from enum import Enum, unique
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
-from liquidctl.pmbus import compute_pec
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profile
 
 
@@ -63,6 +60,7 @@ _PUMP_DEFAULT_EXTREME = [0x86, 0x0B]
 
 _SEQUENCE_MIN = 1
 _SEQUENCE_MAX = 255
+
 
 @unique
 class _FanMode(Enum):
@@ -354,15 +352,7 @@ class CoolitDriver(UsbHidDriver):
                 dataPackages.append(
                     self._build_data_package(_COMMAND_FAN_MAX_RPM, _OP_CODE_READ_TWO_BYTES)
                 )
-                res = self._send_commands(dataPackages)
-
-                max_rpm = u16le_from(res, offset=4)
-
-
-                max_rpm = self._data.load(
-                    f'max_rpm_fan{fanIndex + 1}',
-                    of_type=int
-                )
+                max_rpm = u16le_from(self._send_commands(dataPackages), offset=4)
 
                 for temp, duty in profile:
                     fanTemperatureData.append(0x00)
