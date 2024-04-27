@@ -76,7 +76,11 @@ jobs:
     - name: Run unit tests and module doctests
       run: |
         export PATH=$PWD/vtest/bin/:$PWD/vtest/Scripts/:$PATH
-        XDG_RUNTIME_DIR=.tests_rundir python -m pytest
+        find /opt/homebrew -name libusb\*.dylib
+        python -c "import platform; print(platform.machine(), platform.architecture())"
+        python -c "import sys; print(sys.maxsize)"
+        PYUSB_DEBUG=debug python -m liquidctl list -g
+        PYUSB_DEBUG=debug XDG_RUNTIME_DIR=.tests_rundir python -m pytest
 
     - name: Set up a environment to install into, and install the package from sources
       run: |
