@@ -295,11 +295,9 @@ class CoolitDriver(UsbHidDriver):
         return self._send_buffer(buf)
 
     def _send_buffer(self, buf):
-        LOGGER.debug("write %s", buf.hex())
         self.device.clear_enqueued_reports()
         self.device.write(buf)
         buf = bytes(self.device.read(_REPORT_LENGTH))
-        LOGGER.debug("received %s", buf.hex())
         return buf
 
     def _send_set_cooling(self):
