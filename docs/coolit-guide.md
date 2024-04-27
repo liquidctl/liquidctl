@@ -5,7 +5,7 @@ _Driver API and source code available in [`liquidctl.driver.coolit`](../liquidct
 [Initialization]: #initialization
 
 The AIO does not need to be initialized prior to use, but it will set the pump
-mode to quiet.
+mode to `quiet`.
 
 ```
 # liquidctl initialize
@@ -17,8 +17,8 @@ When (re)initializing the device, it is possible to select the pump mode:
 
 ```
 # liquidctl initialize --pump-mode extreme
-Corsair Hydro H100i Pro
-└── Firmware version      2.10.0.0
+Corsair H110i GT (experimental)
+└── Firmware version      2.0.0
 ```
 
 Allowed pump modes are:
@@ -41,7 +41,7 @@ Corsair H110i GT (experimental)
 
 ## Fan speed control
 
-Fan speeds can be configured either to fixed duty values or profiles.  The
+Fan speeds can be configured either to fixed duty values or profiles. The
 profiles accept up to seven (liquid temperature, duty) points, and are
 interpolated by the device.
 
