@@ -21,6 +21,10 @@ The device expect packets in the following order/format:
 
 See the `_build_data_package` function for data package construction.
 
+Multiple "data packages" can be merged into a single command, i.e. one single TX to the device. To do so,
+simply create a list with data packages, and send the list altogether with `_send_command`. See `get_status`
+for a usage example.
+
 ## Opcodes
 
 The device can be read or written to, in 1/2/3 byte(s).
