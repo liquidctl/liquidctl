@@ -1,6 +1,8 @@
 # Corsair Hydro H110i GT AIO liquid cooler
 _Driver API and source code available in [`liquidctl.driver.coolit`](../liquidctl/driver/coolit.py)._
 
+_New in git._<br>
+
 ## Initialization
 [Initialization]: #initialization
 
@@ -9,7 +11,7 @@ mode to `quiet`.
 
 ```
 # liquidctl initialize
-Corsair H110i GT (experimental)
+Corsair H110i GT
 └── Firmware version    2.0.0
 ```
 
@@ -17,7 +19,7 @@ When (re)initializing the device, it is possible to select the pump mode:
 
 ```
 # liquidctl initialize --pump-mode extreme
-Corsair H110i GT (experimental)
+Corsair H110i GT
 └── Firmware version      2.0.0
 ```
 
@@ -32,7 +34,7 @@ the liquid temperature.
 
 ```
 # liquidctl status
-Corsair H110i GT (experimental)
+Corsair H110i GT
 ├── Liquid temperature    32.6  °C
 ├── Fan 1 speed           1130  rpm
 ├── Fan 2 speed           1130  rpm

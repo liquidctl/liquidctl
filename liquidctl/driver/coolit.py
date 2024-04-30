@@ -85,7 +85,7 @@ class _PumpMode(Enum):
 def _sequence():
     """Return a generator that produces valid protocol sequence numbers.
 
-    Sequence numbers are random.
+    Sequence numbers start from 2 to 31, then rolling over to 1 and up again.
     """
     num = 1
     while True:
@@ -115,7 +115,7 @@ class CoolitDriver(UsbHidDriver):
         (
             0x1B1C,
             0x0C04,
-            "Corsair H110i GT (experimental)",
+            "Corsair H110i GT",
             {"has_pump": True, "fan_count": 2, "rgb_fans": False},
         ),
     ]
