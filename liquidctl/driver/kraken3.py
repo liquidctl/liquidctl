@@ -10,6 +10,7 @@ Supported devices:
 Copyright Tom Frey, Jonas Malaco, Shady Nawara and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
+
 # uses the psf/black style
 
 import itertools
@@ -25,7 +26,7 @@ if sys.platform == "win32":
     from winusbcdc import WinUsbPy
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
-from liquidctl.error import NotSupportedByDevice
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import (
     LazyHexRepr,
     normalize_profile,
@@ -212,6 +213,7 @@ class KrakenX3(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
         self._hwmon_ctrl_mapping = hwmon_ctrl_mapping
+        self._fw = None
 
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
@@ -247,11 +249,11 @@ class KrakenX3(UsbHidDriver):
         self._status = []
 
         self._read_until({b"\x11\x01": self.parse_firm_info, b"\x21\x03": self.parse_led_info})
+        self._status.append(("Firmware version", f"{self._fw[0]}.{self._fw[1]}.{self._fw[2]}", ""))
         return sorted(self._status)
 
     def parse_firm_info(self, msg):
-        fw = f"{msg[0x11]}.{msg[0x12]}.{msg[0x13]}"
-        self._status.append(("Firmware version", fw, ""))
+        self._fw = (msg[0x11], msg[0x12], msg[0x13])
 
     def parse_led_info(self, msg):
         channel_count = msg[14]
@@ -559,7 +561,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x3008,
-            "NZXT Kraken Z (Z53, Z63 or Z73) (experimental)",
+            "NZXT Kraken Z (Z53, Z63 or Z73)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKENZ,
                 "color_channels": _COLOR_CHANNELS_KRAKENZ,
@@ -571,7 +573,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x300C,
-            "NZXT Kraken 2023 Elite (experimental)",
+            "NZXT Kraken 2023 Elite (broken)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
@@ -583,7 +585,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x300E,
-            "NZXT Kraken 2023 (experimental)",
+            "NZXT Kraken 2023 (broken)",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
@@ -646,6 +648,15 @@ class KrakenZ3(KrakenX3):
                 return True
         return False
 
+    def _get_fw_version(self, clear_reports=True):
+        if self._fw is not None:
+            return  # Already cached
+
+        if clear_reports:
+            self.device.clear_enqueued_reports()
+        self._write([0x10, 0x01])  # firmware info
+        self._read_until({b"\x11\x01": self.parse_firm_info})
+
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and the driver.
 
@@ -678,8 +689,8 @@ class KrakenZ3(KrakenX3):
         self._status = []
 
         # request static infos
-        self._write([0x10, 0x01])  # firmware info
-        self._read_until({b"\x11\x01": self.parse_firm_info})
+        self._get_fw_version(clear_reports=False)
+        self._status.append(("Firmware version", f"{self._fw[0]}.{self._fw[1]}.{self._fw[2]}", ""))
 
         self._write([0x30, 0x01])  # lcd info
         self._read_until({b"\x31\x01": self.parse_lcd_info})
@@ -770,6 +781,17 @@ class KrakenZ3(KrakenX3):
             self.brightness = msg[0x18]
             self.orientation = msg[0x1A]
 
+        # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023
+        # (non-elite). In those cases, show an error until issue #631 is resolved.
+        def check_unsupported_fw_version():
+            device_product_id = self.device.product_id
+            if device_product_id == 0x300E:
+                self._get_fw_version()
+                if self._fw[0] == 2:
+                    raise NotSupportedByDriver(
+                        "setting images is not supported on firmware 2.X.Y, please see issue #631"
+                    )
+
         self._read_until({b"\x31\x01": parse_lcd_info})
 
         if mode == "brightness":
@@ -785,10 +807,12 @@ class KrakenZ3(KrakenX3):
             self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(value_int / 90)])
             return
         elif mode == "static":
+            check_unsupported_fw_version()
             data = self._prepare_static_file(value, self.orientation)
             self._send_data(data, [0x02, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
             return
         elif mode == "gif":
+            check_unsupported_fw_version()
             data = self._prepare_gif_file(value, self.orientation)
             assert (
                 len(data) / 1000 < _LCD_TOTAL_MEMORY

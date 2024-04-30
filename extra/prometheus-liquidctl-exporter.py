@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """prometheus-liquidctl-exporter – host a metrics HTTP endpoint with Prometheus formatted data from liquidctl
 
 This is an experimental script that collects stats from liquidctl and exposes them as a http://localhost:8098/metrics
@@ -57,12 +58,12 @@ def gauge_name_sanitize(name):
 
 class LiquidCollector(object):
     def __init__(self):
-        self.description = 'liquidctl exported metrics'
+        self.description = "liquidctl exported metrics"
 
     def collect(self):
-        labels = ['device', 'sensor', 'unit']
-        g = GaugeMetricFamily('liquidctl', self.description, labels=labels)
-        i = InfoMetricFamily('liquidctl', self.description, labels=['device'])
+        labels = ["device", "sensor", "unit"]
+        g = GaugeMetricFamily("liquidctl", self.description, labels=labels)
+        i = InfoMetricFamily("liquidctl", self.description, labels=["device"])
         for d in devs:
             try:
                 get_status = d.get_status()
@@ -74,22 +75,30 @@ class LiquidCollector(object):
                     if isinstance(sample_value, timedelta):
                         # cast timedelta into seconds and override the supplied unit
                         sample_value = sample_value.seconds
-                        unit = 'seconds'
+                        unit = "seconds"
 
-                    if unit != '':
+                    if unit != "":
                         # FIXME doesn't handle multiple equal devices well
-                        label_values = [d.description.replace(' (experimental)', ''), sanitized_name, unit]
+                        label_values = [d.description, sanitized_name, unit]
                         g.add_metric(label_values, value=sample_value)
                         LOGGER.debug(
-                            '%s: %s as GaugeMetric %s labels %s',
-                            d.description, metric, sanitized_name, '/'.join(label_values))
+                            "%s: %s as GaugeMetric %s labels %s",
+                            d.description,
+                            metric,
+                            sanitized_name,
+                            "/".join(label_values),
+                        )
                     else:
                         i.add_metric([d.description], value={sanitized_name: sample_value})
                         LOGGER.debug(
-                            '%s: %s InfoMetric labeled with %s => %s',
-                            d.description, metric, sanitized_name, sample_value)
+                            "%s: %s InfoMetric labeled with %s => %s",
+                            d.description,
+                            metric,
+                            sanitized_name,
+                            sample_value,
+                        )
             except usb.core.USBError as err:
-                LOGGER.warning('failed to read from the device, possibly serving stale data')
+                LOGGER.warning("failed to read from the device, possibly serving stale data")
                 LOGGER.debug(err, exc_info=True)
         yield g
         yield i
@@ -99,61 +108,61 @@ def _make_opts(arguments):
     options = {}
     for arg, val in arguments.items():
         if val is not None and arg in _PARSE_ARG:
-            opt = arg.replace('--', '').replace('-', '_')
+            opt = arg.replace("--", "").replace("-", "_")
             options[opt] = _PARSE_ARG[arg](val)
     return options
 
 
 _PARSE_ARG = {
-    '--legacy-690lc': bool,
-    '--vendor': lambda x: int(x, 16),
-    '--product': lambda x: int(x, 16),
-    '--release': lambda x: int(x, 16),
-    '--serial': str,
-    '--bus': str,
-    '--address': str,
-    '--usb-port': lambda x: tuple(map(int, x.split('.'))),
-    '--match': str,
-    '--pick': int,
+    "--legacy-690lc": bool,
+    "--vendor": lambda x: int(x, 16),
+    "--product": lambda x: int(x, 16),
+    "--release": lambda x: int(x, 16),
+    "--serial": str,
+    "--bus": str,
+    "--address": str,
+    "--usb-port": lambda x: tuple(map(int, x.split("."))),
+    "--match": str,
+    "--pick": int,
 }
 
-if __name__ == '__main__':
-    args = docopt(__doc__, version='0.1.1')
+if __name__ == "__main__":
+    args = docopt(__doc__, version="0.1.1")
     opts = _make_opts(args)
     devs = list(find_liquidctl_devices(**opts))
     for d in devs:
-        LOGGER.info('initializing %s', d.description)
+        LOGGER.info("initializing %s", d.description)
         d.connect()
 
-    if args['--debug']:
-        args['--verbose'] = True
-        logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(name)s: %(message)s')
-    elif args['--verbose']:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    if args["--debug"]:
+        args["--verbose"] = True
+        logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(name)s: %(message)s")
+    elif args["--verbose"]:
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     else:
-        logging.basicConfig(level=logging.WARNING, format='%(message)s')
+        logging.basicConfig(level=logging.WARNING, format="%(message)s")
         sys.tracebacklimit = 0
 
     REGISTRY.register(LiquidCollector())
 
-    if args['--server-port']:
-        server_port = int(args['--server-port'])
+    if args["--server-port"]:
+        server_port = int(args["--server-port"])
     else:
         server_port = 8098
 
     start_http_server(server_port)
-    LOGGER.debug('server started on port %s', server_port)
+    LOGGER.debug("server started on port %s", server_port)
 
     try:
         while True:
             # Keep HTTP server alive in a loop
             time.sleep(2)
     except KeyboardInterrupt:
-        LOGGER.info('canceled by user')
+        LOGGER.info("canceled by user")
     finally:
         for d in devs:
             try:
-                LOGGER.info('disconnecting from %s', d.description)
+                LOGGER.info("disconnecting from %s", d.description)
                 d.disconnect()
             except:
-                LOGGER.exception('unexpected error when disconnecting')
+                LOGGER.exception("unexpected error when disconnecting")

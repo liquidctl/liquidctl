@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2022–2022  Peter Eckersley <pde@pde.is>
 # SPDX-License-Identifier: GPL-3.0-or-later
 

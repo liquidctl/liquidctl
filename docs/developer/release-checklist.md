@@ -26,12 +26,12 @@ Then install locally and:
 
  - [ ] Run my personal setup scripts:
        `liquidcfg && liquiddyncfg`
- - [ ] Test yoda:
-       `extra/yoda --match kraken control pump with '(20,50),(50,100)' on coretemp.package_id_0 and fan with '(20,25),(34,100)' on _internal.liquid --verbose`
- - [ ] Test krakenduty:
-       `extra/krakenduty-poc train && extra/krakenduty-poc status`
- - [ ] Test liquiddump:
-       `extra/liquiddump | jq -c .`
+ - [ ] Test yoda.py:
+       `extra/yoda.py --match kraken control pump with '(20,50),(50,100)' on coretemp.package_id_0 and fan with '(20,25),(34,100)' on _internal.liquid --verbose`
+ - [ ] Test liquiddump.py:
+       `extra/liquiddump.py | jq -c .`
+ - [ ] Test krakenduty-poc.py:
+       `extra/krakenduty-poc.py train && extra/krakenduty-poc.py status`
 
 ## Test in CI
 

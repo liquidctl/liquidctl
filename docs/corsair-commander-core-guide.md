@@ -12,7 +12,7 @@ The device should be initialized every time it is powered on.
 
 ```
 # liquidctl initialize
-Corsair Commander Core (experimental)
+Corsair Commander Core
 ├── Firmware version            2.6.201
 ├── AIO LED count                    29
 ├── RGB port 1 LED count              8
@@ -39,7 +39,7 @@ the temperature measured by the probe.
 
 ```
 # liquidctl status
-Corsair Commander Core (experimental)
+Corsair Commander Core
 ├── Pump speed           2356  rpm
 ├── Fan speed 1           810  rpm
 ├── Fan speed 2           791  rpm
@@ -54,7 +54,7 @@ The Core XT variant of the device is not meant for use with an AIO, so parameter
 not present.
 
 ```
-Corsair Commander Core XT (experimental)
+Corsair Commander Core XT
 ├── Fan speed 1    2737  rpm
 ├── Fan speed 2    2786  rpm
 ├── Fan speed 3       0  rpm

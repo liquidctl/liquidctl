@@ -166,6 +166,7 @@ class MockKrakenZ3(KrakenZ3):
         self.lcd_resolution = lcd_resolution
 
         self.screen_mode = None
+        self.fw = None
 
     def set_screen(self, channel, mode, value, **kwargs):
         self.screen_mode = mode
@@ -539,13 +540,22 @@ def test_krakenz3_not_totally_broken(mock_krakenz3):
     mock_krakenz3.set_speed_profile(channel="fan", profile=iter([(20, 20), (30, 50), (40, 100)]))
     mock_krakenz3.set_fixed_speed(channel="pump", duty=50)
 
-    # set_screen should be the last set of functions called
+
+def test_krakenz3_screen_not_totally_broken(mock_krakenz3):
+    """Reasonable example calls to untested APIs do not raise exceptions."""
+    mock_krakenz3.initialize()
     mock_krakenz3.set_screen("lcd", "liquid", None)
     mock_krakenz3.set_screen("lcd", "brightness", "60")
     mock_krakenz3.set_screen("lcd", "orientation", "90")
     mock_krakenz3.set_screen(
         "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg")
     )
+
+
+@pytest.mark.skip("Currently broken with pillow >= 10.2.0 (see #661)")
+def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
+    """Reasonable example calls to untested APIs do not raise exceptions."""
+    mock_krakenz3.initialize()
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )
