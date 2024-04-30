@@ -214,7 +214,7 @@ class Coolit(UsbHidDriver):
             ("Pump speed", u16le_from(res, offset=20), "rpm"),
         ]
 
-    def set_fixed_speed(self, channel, duty, pump_mode="", **kwargs):
+    def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
 
         Valid channel values are "fanN", where N >= 1 is the fan number, and
@@ -225,13 +225,9 @@ class Coolit(UsbHidDriver):
             self._data.store(f"{hw_channel}_mode", _FanMode.FIXED_DUTY.value)
             self._data.store(f"{hw_channel}_duty", duty)
             LOGGER.info(f"setting {hw_channel} to duty mode")
-
-        if pump_mode and pump_mode in ["quiet", "extreme"]:
-            self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
-
         self._send_set_cooling()
 
-    def set_speed_profile(self, channel, profile, pump_mode="", **kwargs):
+    def set_speed_profile(self, channel, profile, **kwargs):
         """Set fan or fans to follow a speed duty profile.
 
         Valid channel values are "fanN", where N >= 1 is the fan number, and
@@ -248,10 +244,6 @@ class Coolit(UsbHidDriver):
             self._data.store(f"{hw_channel}_mode", _FanMode.CUSTOM_PROFILE.value)
             self._data.store(f"{hw_channel}_profile", profile)
             LOGGER.info(f"setting {hw_channel} to profile mode")
-
-        if pump_mode and pump_mode in ["quiet", "extreme"]:
-            self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
-
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
