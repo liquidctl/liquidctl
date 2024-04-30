@@ -109,7 +109,7 @@ def _quoted(*names):
     return ", ".join(map(repr, names))
 
 
-class CoolitDriver(UsbHidDriver):
+class Coolit(UsbHidDriver):
     """liquidctl driver for Corsair H110i GT cooler"""
 
     _MATCHES = [
