@@ -26,5 +26,5 @@ def test_driver_not_totally_broken(mock_h110i_gt):
     cooler = mock_h110i_gt
     cooler.initialize()
     _ = cooler.get_status(pump_mode="extreme")
-    cooler.set_fixed_speed("fan1", 42, pump_mode="quiet")
-    cooler.set_speed_profile("fan2", [(20, 30), (40, 90)], pump_mode="extreme")
+    cooler.set_fixed_speed("fan1", 42)
+    cooler.set_speed_profile("fan2", [(20, 30), (40, 90)])
