@@ -21,6 +21,7 @@ import re
 
 from enum import Enum, unique
 
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profile
@@ -252,6 +253,14 @@ class CoolitDriver(UsbHidDriver):
             self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
 
         self._send_set_cooling()
+
+    def set_color(self, channel, mode, colors, **kwargs):
+        """Not supported by this driver."""
+        raise NotSupportedByDriver()
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Not supported by this device."""
+        raise NotSupportedByDevice()
 
     def _get_hw_fan_channels(self, channel):
         channel = channel.lower()
