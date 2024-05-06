@@ -530,6 +530,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2011", TAG+="uacc
 # NZXT RGB & Fan Controller (3+6 channels)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2019", TAG+="uaccess"
 
+# NZXT RGB & Fan Controller (3+6 channels)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2020", TAG+="uaccess"
+
 # NZXT Smart Device (V1)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1714", TAG+="uaccess"
 
