@@ -1,10 +1,8 @@
 # Corsair Commander Core, Core XT and ST
 _Driver API and source code available in [`liquidctl.driver.commander_core`](../liquidctl/driver/commander_core.py)._
 
-_New in 1.9.0: fixed duty cycles are now supported._<br>
 _Changed in 1.11.0: the Corsair Commander Core XT is now supported._<br>
 _Changed in 1.12.0: the Corsair Commander ST is now supported._<br>
-_New in 1.13.1: speed curve profiles are now supported._<br>
 
 Currently, functionality implemented is listed here. More is planned to be added.
 
@@ -70,6 +68,8 @@ Corsair Commander Core XT
 
 ### Speed curve profiles
 
+_New in git._<br>
+
 The pump or fans speeds can be configured using a speed curve profile with a minimum of 2 or up to 7 curve points.
 
 Each curve point consists of both a temperature (in celsius) and a duty (percentage).
@@ -84,6 +84,8 @@ liquidctl set fans speed 28 0  35 50  40 75  41 85  42 90  43 95  44 100
 
 
 ### Fixed duty cycle
+
+_New in 1.9.0._<br>
 
 The pump or fan speeds can be set to a fixed duty cycle.
 
@@ -104,11 +106,12 @@ On the Core XT, the `pump` channel is not present. The `fans` channel can be use
 configure all fans.
 
 ### Notes
-- A channel may only be configured with a single fixed duty cycle or a single fan curve profile (independently
-from the other channel configurations).
-- _The pump and some fans have a limit to how slow they can go and will not stop when set to zero.
-This is a hardware limitation that cannot be changed._
-- _The cooler's lights flash with every update. Due to limitations in both the device hardware and liquidctl,
-there currently is no way to solve this problem. For more information, see: [#448]._
+
+- A channel may only be configured with a single fixed duty cycle or a single fan curve profile
+  (independently from the other channel configurations).
+- The pump and some fans have a limit to how slow they can go and will not stop when set to zero.
+  This is a hardware limitation that cannot be changed.
+- The cooler's lights flash with every update. Due to limitations in both the device hardware and
+  liquidctl, there currently is no way to solve this problem. For more information, see: [#448].
 
 [#448]: https://github.com/liquidctl/liquidctl/issues/448
