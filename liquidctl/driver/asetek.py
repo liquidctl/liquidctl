@@ -351,7 +351,7 @@ class Legacy690Lc(_Base690Lc):
             self._data = runtime_storage
         else:
             ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
-            loc = f'bus{self.bus}_port{"_".join(map(str, self.port))}'
+            loc = f'bus{self.bus}_address{self.address}'
             self._data = RuntimeStorage(key_prefixes=[ids, loc, 'legacy'])
         return ret
 
