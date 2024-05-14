@@ -176,8 +176,10 @@ class BaseUsbDriver(BaseDriver):
     def port(self):
         """Physical location of the device, or None if N/A.
 
-        Tuple of USB port numbers, from the root hub to this device.  Not
-        dependendent on bus enumeration order.
+        Tuple of USB port numbers, from the root hub to this device.
+
+        Only available for PyUSB-backed devices, and only when using LibUSB 1.0.
+        But has the advantage of not depending on the bus enumeration order.
         """
         return self.device.port
 
