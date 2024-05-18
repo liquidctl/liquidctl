@@ -790,14 +790,14 @@ class KrakenZ3(KrakenX3):
                 self._get_fw_version()
                 if self._fw[0] == 2:
                     raise NotSupportedByDriver(
-                        "gif images is not supported on firmware 2.X.Y, please see issue #631"
+                        "gif images are not supported on firmware 2.X.Y, please see issue #631"
                     )
-        
-        def is_fw_version2():
+
+        def _is_2023_fw_version2():
             device_product_id = self.device.product_id
             if device_product_id == 0x300E:
                 self._get_fw_version()
-                return self.fw[0] == 2
+                return self._fw[0] == 2
             return False
 
         self._read_until({b"\x31\x01": parse_lcd_info})
@@ -815,13 +815,17 @@ class KrakenZ3(KrakenX3):
             self._write([0x30, 0x02, 0x01, self.brightness, 0x0, 0x0, 0x1, int(value_int / 90)])
             return
         elif mode == "static":
-            if is_fw_version2():
+            if _is_2023_fw_version2():
                 data = self._prepare_static_file_rgb16(value, self.orientation)
-                self._send_data_fw2(data, [0x06, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
+                self._send_2023_data_fw2(
+                    data, [0x06, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little"))
+                )
                 # sending it twice is only required once after initialization
-                # the same behaviour is observed in manufacturer at init software
+                # the same behaviour is observed in manufacturer at init
                 # some soft of framebuffer swapping?
-                self._send_data_fw2(data, [0x06, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
+                self._send_2023_data_fw2(
+                    data, [0x06, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little"))
+                )
             else:
                 data = self._prepare_static_file(value, self.orientation)
                 self._send_data(data, [0x02, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
@@ -837,7 +841,6 @@ class KrakenZ3(KrakenX3):
         elif mode == "liquid":
             self._switch_bucket(0, 2)
             return
-        
 
         # release device when finished
         if self.bulk_device and (mode == "static" or mode == "gif"):
@@ -868,7 +871,7 @@ class KrakenZ3(KrakenX3):
             result.append(data[pixelDataIndex][2])
             result.append(0)
         return result
-    
+
     def _prepare_static_file_rgb16(self, path, rotation):
         """
         path is the path to any image file
@@ -884,11 +887,11 @@ class KrakenZ3(KrakenX3):
         result = []
         pixelDataIndex = 0
         for pixelDataIndex in range(0, len(data)):
-            dr = (data[pixelDataIndex][0] >> 3)
-            dg = (data[pixelDataIndex][1] >> 2)
-            db = (data[pixelDataIndex][2] >> 3)
+            dr = data[pixelDataIndex][0] >> 3
+            dg = data[pixelDataIndex][1] >> 2
+            db = data[pixelDataIndex][2] >> 3
             result.append((dr << 3) + (dg >> 3))
-            result.append(((dg & 0x7) << 5) + db )
+            result.append(((dg & 0x7) << 5) + db)
         return result
 
     def _prepare_gif_file(self, path, rotation):
@@ -924,8 +927,9 @@ class KrakenZ3(KrakenX3):
 
         return result_bytes.getvalue()
 
-    def _send_data_fw2(self, data, bulkInfo):
+    def _send_2023_data_fw2(self, data, bulkInfo):
         """
+        This method is intended for Kraken 2023 firmware version 2.X.Y
         sends image or gif to device
         data is an array of bytes to write
         bulk info contains info about the transfer
@@ -951,7 +955,6 @@ class KrakenZ3(KrakenX3):
             self._bulk_write(list(data[i : i + self.bulk_buffer_size]))
 
         self._write_then_read([0x36, 0x02])  # end data transfer
-
 
     def _send_data(self, data, bulkInfo):
         """
