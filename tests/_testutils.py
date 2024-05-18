@@ -82,6 +82,10 @@ class MockHidapiDevice:
 class MockPyusbDevice():
     def __init__(self, vendor_id=None, product_id=None, release_number=None,
                  serial_number=None, bus=None, address=None, port=None):
+
+        assert port is None, \
+            'port numbers are only available on libusb-1.0 and should not be dependended on'
+
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.release_number = release_number

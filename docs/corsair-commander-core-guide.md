@@ -66,9 +66,28 @@ Corsair Commander Core XT
 
 ## Programming the pump and fan speeds
 
+### Speed curve profiles
+
+_New in git._<br>
+
+The pump or fans speeds can be configured using a speed curve profile with a minimum of 2 or up to 7 curve points.
+
+Each curve point consists of both a temperature (in celsius) and a duty (percentage).
+
+
+```
+liquidctl set fans speed 28 0  35 50  40 75  41 85  42 90  43 95  44 100
+              |          |  |
+           channel       |  duty
+                      temp
+```
+
+
+### Fixed duty cycle
+
 _New in 1.9.0._<br>
 
-Currently, the pump and each fan can be set to a fixed duty cycle.
+The pump or fan speeds can be set to a fixed duty cycle.
 
 ```
 # liquidctl set fan1 speed 70
@@ -76,18 +95,23 @@ Currently, the pump and each fan can be set to a fixed duty cycle.
                channel    duty
 ```
 
-Valid channel values on the Core (non-XT) and ST are `pump`, `fanN`, where 1 <= N <= 6 is the fan number.
-On the Core XT, the `pump` channel is not present. The `fans` channel can be used to simultaneously
-configure all fans.
 
 In iCUE the pump can be set to different modes that correspond to a fixed percent that can be used in liquidctl.
 Quiet is 75%, Balanced is 85% and Extreme is 100%.
 
-_Note: the pump and some fans have a limit to how slow they can go and will not stop when set to zero.
-This is a hardware limitation that cannot be changed._
+### Device channels
 
-_Note: the cooler's lights flash with every update.
-Due to limitations in both the device hardware and liquidctl, there currently is no way to solve this problem.
-For more information, see: [#448]._
+Valid channel values on the Core (non-XT) and ST are `pump`, `fanN`, where 1 <= N <= 6 is the fan number.
+On the Core XT, the `pump` channel is not present. The `fans` channel can be used to simultaneously
+configure all fans.
+
+### Notes
+
+- A channel may only be configured with a single fixed duty cycle or a single fan curve profile
+  (independently from the other channel configurations).
+- The pump and some fans have a limit to how slow they can go and will not stop when set to zero.
+  This is a hardware limitation that cannot be changed.
+- The cooler's lights flash with every update. Due to limitations in both the device hardware and
+  liquidctl, there currently is no way to solve this problem. For more information, see: [#448].
 
 [#448]: https://github.com/liquidctl/liquidctl/issues/448

@@ -29,8 +29,11 @@ _CMD_SLEEP = (0x01, 0x03, 0x00, 0x01)
 _CMD_GET_FIRMWARE = (0x02, 0x13)
 _CMD_CLOSE_ENDPOINT = (0x05, 0x01, 0x00)
 _CMD_OPEN_ENDPOINT = (0x0d, 0x00)
-_CMD_READ = (0x08, 0x00)
+_CMD_READ_INITIAL = (0x08, 0x00, 0x01)
+_CMD_READ_MORE = (0x08, 0x00, 0x02)
+_CMD_READ_FINAL = (0x08, 0x00, 0x03)
 _CMD_WRITE = (0x06, 0x00)
+_CMD_WRITE_MORE = (0x07, 0x00)
 
 _MODE_LED_COUNT = (0x20,)
 _MODE_GET_SPEEDS = (0x17,)
@@ -38,6 +41,7 @@ _MODE_GET_TEMPS = (0x21,)
 _MODE_CONNECTED_SPEEDS = (0x1a,)
 _MODE_HW_SPEED_MODE = (0x60, 0x6d)
 _MODE_HW_FIXED_PERCENT = (0x61, 0x6d)
+_MODE_HW_CURVE_PERCENT = (0x62, 0x6d)
 
 _DATA_TYPE_SPEEDS = (0x06, 0x00)
 _DATA_TYPE_LED_COUNT = (0x0f, 0x00)
@@ -45,15 +49,18 @@ _DATA_TYPE_TEMPS = (0x10, 0x00)
 _DATA_TYPE_CONNECTED_SPEEDS = (0x09, 0x00)
 _DATA_TYPE_HW_SPEED_MODE = (0x03, 0x00)
 _DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
+_DATA_TYPE_HW_CURVE_PERCENT = (0x05, 0x00)
 
+_FAN_MODE_FIXED_PERCENT = 0x00
+_FAN_MODE_CURVE_PERCENT = 0x02
 
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
 
     _MATCHES = [
-        (0x1b1c, 0x0c1c, 'Corsair Commander Core (broken)', {"has_pump": True}),
-        (0x1b1c, 0x0c2a, 'Corsair Commander Core XT (broken)', {"has_pump": False}),
-        (0x1b1c, 0x0c32, 'Corsair Commander ST (broken)', {"has_pump": True}),
+        (0x1b1c, 0x0c1c, 'Corsair Commander Core', {"has_pump": True}),
+        (0x1b1c, 0x0c2a, 'Corsair Commander Core XT', {"has_pump": False}),
+        (0x1b1c, 0x0c32, 'Corsair Commander ST', {"has_pump": True}),
     ]
 
     def __init__(self, device, description, has_pump, **kwargs):
@@ -137,7 +144,57 @@ class CommanderCore(UsbHidDriver):
         raise NotSupportedByDriver
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        raise NotSupportedByDriver
+        channels = self._parse_channels(channel)
+        curve_points = list(profile)
+        if len(curve_points) < 2:
+            ValueError('a minimum of 2 speed curve points must be configured.')
+        if len(curve_points) > 7:
+            ValueError('a maximum of 7 speed curve points may be configured.')
+
+        with self._wake_device_context():
+            # Set hardware speed mode
+            res = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
+            device_count = res[0]
+
+            data = bytearray(res[0:device_count + 1])
+            for chan in channels:
+                data[chan + 1] = _FAN_MODE_CURVE_PERCENT
+            self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
+
+
+            # Read in data and split by device
+            res = self._read_data(_MODE_HW_CURVE_PERCENT, _DATA_TYPE_HW_CURVE_PERCENT)
+            device_count = res[0]
+            data_by_device = []
+
+            i = 1
+            for _ in range(0, device_count):
+                count = res[i+1]
+                start = i
+                end = i + 4 * count + 2
+                i = end
+                data_by_device.append(res[start:end])
+
+            # Modify data for channels in channels array
+            for chan in channels:
+                new_data = []
+
+                # set temperature sensor
+                new_data.append(b"\x00")
+
+                # set number of curve points
+                new_data.append(int.to_bytes(len(curve_points), length=1, byteorder="big"))
+
+                # set curve points
+                for (temp, duty) in curve_points:
+                    new_data.append(int.to_bytes(temp*10, length=2, byteorder="little", signed=False))
+                    new_data.append(int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False))
+
+                # Update device data
+                data_by_device[chan] = b''.join(new_data)
+
+            out = bytes([device_count]) + b''.join(data_by_device)
+            self._write_data(_MODE_HW_CURVE_PERCENT, _DATA_TYPE_HW_CURVE_PERCENT, out)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         channels = self._parse_channels(channel)
@@ -149,7 +206,7 @@ class CommanderCore(UsbHidDriver):
 
             data = bytearray(res[0:device_count + 1])
             for chan in channels:
-                data[chan + 1] = 0x00  # Set the device's hardware mode to fixed percent
+                data[chan + 1] = _FAN_MODE_FIXED_PERCENT
             self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
 
             # Set speed
@@ -201,12 +258,14 @@ class CommanderCore(UsbHidDriver):
 
     def _read_data(self, mode, data_type):
         self._send_command(_CMD_OPEN_ENDPOINT, mode)
-        raw_data = self._send_command(_CMD_READ)
+        raw_data = self._send_command(_CMD_READ_INITIAL)
+        more_raw_data = self._send_command(_CMD_READ_MORE)
+        final_raw_data = self._send_command(_CMD_READ_FINAL)
         self._send_command(_CMD_CLOSE_ENDPOINT)
         if tuple(raw_data[3:5]) != data_type:
             raise ExpectationNotMet('device returned incorrect data type')
 
-        return raw_data[5:]
+        return raw_data[5:] + more_raw_data[3:] + final_raw_data[3:]
 
     def _send_command(self, command, data=()):
         # self.device.write expects buf[0] to be the report number or 0 if not used
@@ -229,7 +288,7 @@ class CommanderCore(UsbHidDriver):
 
         res = self.device.read(_RESPONSE_LENGTH)
         while res[0] != 0x00:
-            res = self.device.read(_RESPONSE_LENGTH)        
+            res = self.device.read(_RESPONSE_LENGTH)
         buf = bytes(res)
         assert buf[1] == command[0], 'response does not match command'
         return buf
@@ -247,12 +306,38 @@ class CommanderCore(UsbHidDriver):
 
         self._send_command(_CMD_OPEN_ENDPOINT, mode)
 
-        buf = bytearray(len(data) + len(data_type) + 4)
-        buf[0: 2] = int.to_bytes(len(data) + 2, length=2, byteorder="little", signed=False)
-        buf[4: 4 + len(data_type)] = data_type
-        buf[4 + len(data_type):] = data
+        # Write data
+        data_len = len(data)
+        data_start_index = 0
+        while (data_start_index < data_len):
+            if (data_start_index == 0):
+                # First 9 bytes are in use
+                packet_data_len = _REPORT_LENGTH - 9
 
-        self._send_command(_CMD_WRITE, buf)
+                if (data_len < packet_data_len):
+                    packet_data_len = data_len
+
+                # Num Data Length bytes + 0x05 + 0x06 + Num Data Type bytes + Num Data bytes
+                buf = bytearray(2 + 2 + len(data_type) + packet_data_len)
+
+                # Data Length value (includes data type length) - 0x03 and 0x04
+                buf[0: 2] = int.to_bytes(data_len + len(data_type), length=2, byteorder="little", signed=False)
+                # Data Type value - 0x07 and 0x08
+                buf[4: 4 + len(data_type)] = data_type
+                # Data - 0x09 onwards
+                buf[4 + len(data_type):] = data[0:packet_data_len]
+
+                self._send_command(_CMD_WRITE, buf)
+                data_start_index += packet_data_len
+            else:
+                # First 3 bytes are in use
+                packet_data_len = _REPORT_LENGTH - 3
+                if data_len - data_start_index < packet_data_len:
+                    packet_data_len = data_len - data_start_index
+
+                self._send_command(_CMD_WRITE_MORE, data[data_start_index:data_start_index + packet_data_len])
+                data_start_index += packet_data_len
+
         self._send_command(_CMD_CLOSE_ENDPOINT)
 
     def _fan_to_channel(self, fan):

@@ -48,6 +48,7 @@ Options:
   --bus <bus>              Filter devices by bus
   --address <address>      Filter devices by address in bus
   --usb-port <port>        Filter devices by USB port in bus
+  --unsafe <features>      Comma-separated bleeding-edge features to enable
   -v, --verbose            Output additional information
   -g, --debug              Show debug information on stderr
   --legacy-690lc           Use Asetek 690LC in legacy mode (old Krakens)
@@ -104,9 +105,9 @@ elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
         psutil = None
 
 
-def read_sensors(device):
+def read_sensors(device, **kwargs):
     sensors = {}
-    for k, v, u in device.get_status():
+    for k, v, u in device.get_status(**kwargs):
         if u == "°C":
             sensor_name = k.lower().replace(" ", "_").replace("_temperature", "")
             sensors[f"{INTERNAL_CHIP_NAME}.{sensor_name}"] = v
@@ -126,10 +127,10 @@ def read_sensors(device):
     return sensors
 
 
-def show_sensors(device):
+def show_sensors(device, **kwargs):
     print("{:<60}  {:>14}".format("Sensor identifier", "Value"))
     print("-" * 80)
-    sensors = read_sensors(device)
+    sensors = read_sensors(device, **kwargs)
     for k, v in sensors.items():
         unit = "MHz" if k == "cpu_freq" else "°C"
         print(f"{k:<60}  {v:>14.1f} {unit}")
@@ -197,7 +198,7 @@ def parse_profile(arg, mintemp=0, maxtemp=100, minduty=0, maxduty=100, str_allow
     return normalize_profile(val, critx=maxtemp)
 
 
-def auto_control(device, channels, profiles, sensors, update_interval):
+def auto_control(device, channels, profiles, sensors, update_interval, **kwargs):
     """Communicate sensor data directly with the device.
 
     Implemented for use with the MSI coreliquid AIO.
@@ -208,7 +209,7 @@ def auto_control(device, channels, profiles, sensors, update_interval):
         device, "HAS_AUTOCONTROL", False
     ), f"No registered control loop capability for device {device}!"
 
-    device.set_profiles(channels, profiles)
+    device.set_profiles(channels, profiles, **kwargs)
 
     assert all(
         s == sensors[0] for s in sensors
@@ -219,16 +220,17 @@ def auto_control(device, channels, profiles, sensors, update_interval):
     failures = 0
     while True:
         try:
-            sensor_data = read_sensors(device)
+            sensor_data = read_sensors(device, **kwargs)
             temp = sensor_data[sensor]
             freq = sensor_data.get("cpu_freq", 0)
 
-            device.set_time(datetime.now())
+            device.set_time(datetime.now(), **kwargs)
             device.set_hardware_status(
                 temp,
                 cpu_f=freq,
                 gpu_f=sensor_data.get("gpu_freq", 0),
                 gpu_U=sensor_data.get("gpu_usage", 0),
+                **kwargs,
             )
             failures = 0
         except Exception as err:
@@ -240,7 +242,7 @@ def auto_control(device, channels, profiles, sensors, update_interval):
         time.sleep(update_interval)
 
 
-def control(device, channels, profiles, sensors, update_interval):
+def control(device, channels, profiles, sensors, update_interval, **kwargs):
     LOGGER.info(
         "device: %s on bus %s and address %s", device.description, device.bus, device.address
     )
@@ -267,7 +269,7 @@ def control(device, channels, profiles, sensors, update_interval):
     failures = 0
     while True:
         try:
-            sensor_data = read_sensors(device)
+            sensor_data = read_sensors(device, **kwargs)
             for i, (channel, profile, sensor) in enumerate(zip(channels, profiles, sensors)):
                 # compute the exponential moving average (ema), used as a low-pass filter (lpf)
                 ema = averages[i]
@@ -288,15 +290,16 @@ def control(device, channels, profiles, sensors, update_interval):
                     ema,
                     duty,
                 )
-                apply_duty(channel, duty)
+                apply_duty(channel, duty, **kwargs)
             if getattr(device, "NEEDS_TIME", False):
-                device.set_time(datetime.now())
+                device.set_time(datetime.now(), **kwargs)
             if getattr(device, "NEEDS_HWSTATUS", False):
                 device.set_hardware_status(
                     sensor_data[sensors[0]],
                     cpu_f=sensor_data.get("cpu_freq", 0),
                     gpu_f=sensor_data.get("gpu_freq", 0),
                     gpu_U=sensor_data.get("gpu_usage", 0),
+                    **kwargs,
                 )
 
             failures = 0
@@ -331,6 +334,10 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
         sys.tracebacklimit = 0
+    if args["--unsafe"] is not None:
+        unsafe = args["--unsafe"].lower().split(",")
+    else:
+        unsafe = []
 
     if (sys.platform.startswith("linux") or sys.platform.startswith("freebsd")) and not psutil:
         LOGGER.warning("system sensors are not available, psutil not found")
@@ -345,10 +352,10 @@ if __name__ == "__main__":
         raise SystemExit("no devices matches available drivers and selection criteria")
 
     device = selected[0]
-    device.connect()
+    device.connect(unsafe=unsafe)
     try:
         if args["show-sensors"]:
-            show_sensors(device)
+            show_sensors(device, unsafe=unsafe)
         elif args["control"]:
             if args["--use-device-controller"]:
                 auto_control(
@@ -357,6 +364,7 @@ if __name__ == "__main__":
                     list(map(lambda p: parse_profile(p, str_allowed=True), args["<profile>"])),
                     args["<sensor>"],
                     update_interval=int(args["--interval"]),
+                    unsafe=unsafe,
                 )
             else:
                 control(
@@ -365,6 +373,7 @@ if __name__ == "__main__":
                     list(map(parse_profile, args["<profile>"])),
                     args["<sensor>"],
                     update_interval=int(args["--interval"]),
+                    unsafe=unsafe,
                 )
         else:
             raise Exception("nothing to do")

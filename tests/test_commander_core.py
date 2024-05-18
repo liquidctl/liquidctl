@@ -40,6 +40,7 @@ class MockCommanderCoreDevice:
         self.speeds = (None, None, None, None, None, None, None)
         self.fixed_speeds = (0, 0, 0, 0, 0, 0, 0)
         self.temperatures = (None, None)
+        self.curve_points_by_device = [[],[],[],[],[],[],[]]
 
     def read(self, length):
         data = bytearray([0x00, self._last_write[2], 0x00])
@@ -49,7 +50,7 @@ class MockCommanderCoreDevice:
             for i in range(0, 3):
                 data.append(self.firmware_version[i])
         if self._awake:
-            if self._last_write[2] == 0x08:  # Get data
+            if self._last_write[2] == 0x08 or self._last_write[2] == 0x09:  # Get data
                 channel = self._last_write[3]
                 mode = self._modes.get(channel)
                 if mode[1] == 0x00:
@@ -98,10 +99,33 @@ class MockCommanderCoreDevice:
                         data.append(len(self.fixed_speeds))
                         for i in self.fixed_speeds:
                             data.extend(int_to_le(i))
+                    elif mode[0] == 0x62:
+                        data.extend([0x05, 0x00]) # data type
+                        num_ports = len(self.curve_points_by_device)
+                        data.append(num_ports)
+                        for i in range(num_ports):
+                            data.append(0) # temp sensor
+                            data.append(len(self.curve_points_by_device[i])) # num curve points
+                            for (temp, duty) in self.curve_points_by_device[i]:
+                                data.extend(int_to_le(temp * 10)) # temperature
+                                data.extend(int_to_le(duty)) # duty
                     else:
                         raise NotImplementedError(f'Read for {mode.hex(":")}')
                 else:
                     raise NotImplementedError(f'Read for {mode.hex(":")}')
+            elif self._last_write[2] == 0x09:  # Get more data
+                channel = self._last_write[3]
+                mode = self._modes.get(channel)
+                if mode[1] == 0x6d:
+                    if mode[0] == 0x62:
+                        for i in range(3, 7):
+                            data.append(0) # temp sensor
+                            data.append(len(self.curve_points_by_device[i])) # num curve points
+                            for (temp, duty) in self.curve_points_by_device[i]:
+                                data.extend(int_to_le(temp * 10))
+                                data.extend(int_to_le(duty))
+
+
 
         return list(data)[:length]
 
@@ -121,23 +145,49 @@ class MockCommanderCoreDevice:
         elif data[2] == 0x01 and data[3] == 0x03 and data[4] == 0x00:
             self._awake = data[5] == 0x02
         elif self._awake:
+            channel = data[3]
+            mode = self._modes.get(channel)
+
             if data[2] == 0x06:  # Write command
-                channel = data[3]
-                mode = self._modes.get(channel)
-                length = u16le_from(data[4:6])
-                data_type = data[8:10]
-                written_data = data[10:8+length]
+                self.data_length = u16le_from(data[4:6])
+                self.written_data_type = data[8:10]
+                self.written_data = data[10:8+self.data_length]
+                if len(self.written_data) < self.data_length - 2:
+                    return
+            if data[2] == 0x07: # Write More command
+                self.written_data += data[4:]
+                if len(self.written_data) < self.data_length - 2:
+                    return
+
+            if data[2] == 0x06 or data[2] == 0x07:
                 if mode[1] == 0x6d:
-                    if mode[0] == 0x60 and list(data_type) == [0x03, 0x00]:
-                        self.speeds_mode = tuple(written_data[i+1] for i in range(0, written_data[0]))
-                    elif mode[0] == 0x61 and list(data_type) == [0x04, 0x00]:
-                        self.fixed_speeds = tuple(u16le_from(written_data[i*2+1:i*2+3]) for i in range(0, written_data[0]))
+                    if mode[0] == 0x60 and list(self.written_data_type) == [0x03, 0x00]:
+                        self.speeds_mode = tuple(self.written_data[i+1] for i in range(0, self.written_data[0]))
+                    elif mode[0] == 0x61 and list(self.written_data_type) == [0x04, 0x00]:
+                        self.fixed_speeds = tuple(u16le_from(self.written_data[i*2+1:i*2+3]) for i in range(0, self.written_data[0]))
+                    elif mode[0] == 0x62 and list(self.written_data_type) == [0x05, 0x00]:
+                        curve_index = 1
+                        for port_index in range(0, self.written_data[0]):
+                            self.curve_points_by_device[port_index] = []
+                            # get number of curve points
+                            num_points = self.written_data[curve_index + 1]
+
+                            # store temperature and duty
+                            for i in range(num_points):
+                                point_index = curve_index + 2 + i*4
+                                cp_temp = u16le_from(self.written_data[point_index: point_index + 2]) / 10
+                                cp_duty = u16le_from(self.written_data[point_index + 2: point_index + 4])
+                                self.curve_points_by_device[port_index].append((cp_temp, cp_duty))
+
+                            # update index to next curve
+                            curve_index += 4 * num_points + 2
                     else:
                         raise NotImplementedError('Invalid Write command')
                 else:
                     raise NotImplementedError('Invalid Write command')
 
         return len(data)
+
 
 
 @pytest.fixture
@@ -263,6 +313,60 @@ def test_set_fixed_speed_error_commander_core(commander_core_device):
 
     with pytest.raises(ExpectationNotMet):
         commander_core_device.set_fixed_speed('fan1', 95)
+
+    # Ensure device is asleep at end
+    assert not commander_core_device.device._awake
+
+
+def test_set_speed_profile_fans_commander_core(commander_core_device):
+    """This tests setting the speed of all the fans"""
+    commander_core_device.device.speeds_mode = (0, 0, 0, 0, 0, 0, 0)
+    commander_core_device.device.fixed_speeds = (8, 9, 10, 11, 12, 13, 14)
+
+    commander_core_device.set_speed_profile('fans', [
+        (22, 0), (32, 25), (34, 50), (36, 75), (38,85), (40,95), (42, 100)
+    ])
+
+    assert commander_core_device.device.speeds_mode == (0, 2, 2, 2, 2, 2, 2)
+    assert commander_core_device.device.curve_points_by_device[0] == []
+    assert commander_core_device.device.curve_points_by_device[1] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
+    assert commander_core_device.device.curve_points_by_device[2] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
+    assert commander_core_device.device.curve_points_by_device[3] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
+    assert commander_core_device.device.curve_points_by_device[4] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
+    assert commander_core_device.device.curve_points_by_device[5] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
+    assert commander_core_device.device.curve_points_by_device[6] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
+
+    # Ensure device is asleep at end
+    assert not commander_core_device.device._awake
+
+def test_set_speed_curve_profile_single_channel_commander_core(commander_core_device):
+    """This tests setting the speed curve profile of a single fan"""
+    commander_core_device.device.speeds_mode = (0, 0, 0, 0, 0, 0, 0)
+    commander_core_device.device.fixed_speeds = (8, 9, 10, 11, 12, 13, 14)
+    commander_core_device.device.curve_points_by_device[0] = []
+    commander_core_device.device.curve_points_by_device[1] = []
+    commander_core_device.device.curve_points_by_device[2] = []
+    commander_core_device.device.curve_points_by_device[3] = []
+    commander_core_device.device.curve_points_by_device[4] = []
+    commander_core_device.device.curve_points_by_device[5] = []
+    commander_core_device.device.curve_points_by_device[6] = []
+
+    commander_core_device.set_speed_profile('pump', [(22, 0), (42, 100)])
+    commander_core_device.set_speed_profile('fan1', [(22, 1), (42, 10)])
+    commander_core_device.set_speed_profile('fan2', [(22, 2), (42, 20)])
+    commander_core_device.set_speed_profile('fan3', [(22, 3), (42, 30)])
+    commander_core_device.set_speed_profile('fan4', [(22, 4), (42, 40)])
+    commander_core_device.set_speed_profile('fan5', [(22, 5), (42, 50)])
+    commander_core_device.set_speed_profile('fan6', [(22, 6), (42, 60)])
+
+    assert commander_core_device.device.speeds_mode == (2, 2, 2, 2, 2, 2, 2)
+    assert commander_core_device.device.curve_points_by_device[0] == [(22, 0), (42, 100)]
+    assert commander_core_device.device.curve_points_by_device[1] == [(22, 1), (42, 10)]
+    assert commander_core_device.device.curve_points_by_device[2] == [(22, 2), (42, 20)]
+    assert commander_core_device.device.curve_points_by_device[3] == [(22, 3), (42, 30)]
+    assert commander_core_device.device.curve_points_by_device[4] == [(22, 4), (42, 40)]
+    assert commander_core_device.device.curve_points_by_device[5] == [(22, 5), (42, 50)]
+    assert commander_core_device.device.curve_points_by_device[6] == [(22, 6), (42, 60)]
 
     # Ensure device is asleep at end
     assert not commander_core_device.device._awake
