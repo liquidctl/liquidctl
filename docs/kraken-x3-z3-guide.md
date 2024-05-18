@@ -172,6 +172,8 @@ _New in git._<br>
 
 Adds support for NZXT Kraken 2023 Standard, Elite
 
+*For firmware version 2 gif screen mode is no longer supported*
+
 _New in 1.11.0._<br>
 
 The LCD screen can be configured in a few different modes.
