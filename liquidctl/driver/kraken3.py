@@ -632,7 +632,6 @@ class KrakenZ3(KrakenX3):
         # 0 = Normal, 1 = +90 degrees, 2 = 180 degrees, 3 = -90(270) degrees
         self.orientation = 0
         self.brightness = 50  # default 50%
-        self.fw = None
 
     def _find_winusb_device(self, vid, pid, serial):
         winusb_devices = self.bulk_device.list_usb_devices(
