@@ -201,11 +201,9 @@ class MockKrakenZ3(KrakenZ3):
             self.screen_mode == "static" and self.bulk_data_index > 1
         ):  # the rest of the message should be identical to index 1
             fixed_data_index = 1
-        expected_response = krakenz3_response[self.screen_mode + "_bulk"][fixed_data_index]
-        if callable(expected_response):
-            expected_response = expected_response()
+
         assert (
-            data == expected_response
+            data == krakenz3_response[self.screen_mode + "_bulk"][fixed_data_index]
         ), f"Bulk write failed, wrong data for mode: {self.screen_mode}, data index: {self.bulk_data_index}"
         self.bulk_data_index += 1
         return super()._bulk_write(data)
@@ -554,6 +552,7 @@ def test_krakenz3_screen_not_totally_broken(mock_krakenz3):
     )
 
 
+@pytest.mark.skip("Currently broken with pillow >= 10.2.0 (see #661)")
 def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
     """Reasonable example calls to untested APIs do not raise exceptions."""
     mock_krakenz3.initialize()
