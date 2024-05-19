@@ -57,10 +57,11 @@ _FAN_MODE_CURVE_PERCENT = 0x02
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
 
+    # For a non-exhaustive list of issues, see: #520, #583, #598, #623, #705
     _MATCHES = [
-        (0x1b1c, 0x0c1c, 'Corsair Commander Core', {"has_pump": True}),
-        (0x1b1c, 0x0c2a, 'Corsair Commander Core XT', {"has_pump": False}),
-        (0x1b1c, 0x0c32, 'Corsair Commander ST', {"has_pump": True}),
+        (0x1b1c, 0x0c1c, 'Corsair Commander Core (broken)', {"has_pump": True}),
+        (0x1b1c, 0x0c2a, 'Corsair Commander Core XT (broken)', {"has_pump": False}),
+        (0x1b1c, 0x0c32, 'Corsair Commander ST (broken)', {"has_pump": True}),
     ]
 
     def __init__(self, device, description, has_pump, **kwargs):

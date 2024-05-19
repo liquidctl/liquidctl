@@ -126,7 +126,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | git |
+| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | git |
 | AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.13.0 |
 | AIO liquid cooler  | [Corsair iCUE Elite RGB H115i](docs/corsair-platinum-pro-xt-guide.md) | | git |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
@@ -142,7 +142,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander Core, Core XT, ST](docs/corsair-commander-core-guide.md) | <sup>_p_</sup> | git |
+| Fan/LED controller | [Corsair Commander Core, Core XT, ST](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | git |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
