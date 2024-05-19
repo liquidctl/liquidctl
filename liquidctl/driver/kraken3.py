@@ -585,7 +585,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x300E,
-            "NZXT Kraken 2023 (broken)",
+            "NZXT Kraken 2023",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
@@ -781,17 +781,6 @@ class KrakenZ3(KrakenX3):
             self.brightness = msg[0x18]
             self.orientation = msg[0x1A]
 
-        # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023
-        # (non-elite). In those cases, show an error until issue #631 is resolved.
-        def check_unsupported_fw_version():
-            device_product_id = self.device.product_id
-            if device_product_id == 0x300E:
-                self._get_fw_version()
-                if self._fw[0] == 2:
-                    raise NotSupportedByDriver(
-                        "gif images are not supported on firmware 2.X.Y, please see issue #631"
-                    )
-
         def _is_2023_fw_version2():
             device_product_id = self.device.product_id
             if device_product_id == 0x300E:
@@ -830,7 +819,10 @@ class KrakenZ3(KrakenX3):
                 self._send_data(data, [0x02, 0x0, 0x0, 0x0] + list(len(data).to_bytes(4, "little")))
             return
         elif mode == "gif":
-            check_unsupported_fw_version()
+            if _is_2023_fw_version2():
+                raise NotSupportedByDriver(
+                    "gif images are not supported on firmware 2.X.Y, please see issue #631"
+                )
             data = self._prepare_gif_file(value, self.orientation)
             assert (
                 len(data) / 1000 < _LCD_TOTAL_MEMORY
