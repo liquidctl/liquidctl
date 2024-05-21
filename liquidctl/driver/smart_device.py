@@ -111,6 +111,8 @@ Copyright Jonas Malaco, CaseySJ and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import numpy as np
+
 import itertools
 import logging
 import time
@@ -696,6 +698,169 @@ class H1V2(SmartDevice2):
         self.device.clear_enqueued_reports()
         self._read_until({b'\x75\x02': parse_fan_info})
         return sorted(ret)
+
+
+class RGBController(_BaseSmartDevice):
+    _MATCHES = [
+        (0x1e71, 0x2012, 'NZXT Kraken 2023 RGB Controller', {
+            'speed_channel_count': 0,
+            'color_channel_count': 3
+        }),
+        (0x1e71, 0x2021, 'NZXT Kraken 2023 RGB Controller', {
+            'speed_channel_count': 0,
+            'color_channel_count': 3
+        }),
+    ]
+
+    _MAX_READ_ATTEMPTS = 12
+    _READ_LENGTH = 64
+    _WRITE_LENGTH = 64
+
+    _COLOR_MODES = {
+        'off':              (0x00, 0x00, 0x00, 0, 0),
+        'fixed':            (0x00, 0x00, 0x00, 1, 1),
+        'super-fixed':      (0x00, 0x00, 0x00, 1, 40),
+        'breathing':        (0x07, 0x00, 0x08, 1, 8),
+        'fading':           (0x01, 0x00, 0x08, 1, 8),
+        'covering-marquee': (0x04, 0x00, 0x00, 1, 8),
+        'pulse':            (0x06, 0x00, 0x08, 1, 1),
+        'spectrum-wave':    (0x02, 0x00, 0x00, 0, 0),
+        'alternating':      (0x05, 0x01, 0x00, 2, 2),
+        'starry-night':     (0x09, 0x00, 0x00, 1, 1),
+        'rainbow-pulse':    (0x0d, 0x01, 0x00, 0, 0),
+        'rainbow-flow':     (0x0b, 0x01, 0x00, 0, 0),
+        'super-rainbow':    (0x0c, 0x01, 0x00, 0, 0),
+        'candle':           (0x08, 0x00, 0x00, 0, 1)
+    }
+
+    _SPEED_VALUES = {
+        'breathing':          [[0x28, 0x00], [0x1e, 0x00], [0x14,0x00], [0x0a, 0x00], [0x04,0x00]],
+        'fading':             [[0x50, 0x00], [0x3c, 0x00], [0x28,0x00], [0x14, 0x00], [0x0a,0x00]],
+        'pulse':              [[0x19, 0x00], [0x14, 0x00], [0x0f,0x00], [0x07, 0x00], [0x04,0x00]],
+        'alternating-moving': [[0x20, 0x00], [0xbc, 0x00], [0xf4,0x00], [0x90, 0x00], [0x2c,0x00]], 
+        'starry-night':       [[0x19, 0x00], [0x14, 0x00], [0x0f,0x00], [0x07, 0x00], [0x04,0x00]],
+        'rainbow-flow':       [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'super-rainbow':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'rainbow-pulse':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'spectrum-wave':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'cover-marquee':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
+        'alternating':        [[0x40, 0x06], [0x14, 0x05], [0xe8, 0x03], [0x20, 0x03], [0x58, 0x02]], 
+        'fixed':              [[0x32, 0x00]]*5,
+        'super-fixed':        [[0x32, 0x00]]*5,
+        'candle':             [[0x32, 0x00]]*5,
+        'off':                [[0x00, 0x00]]*5
+    }
+
+    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
+        """Instantiate a driver with a device handle."""
+        speed_channels = {}
+        color_channels = {f'led{i + 1}': (1 << i)
+                          for i in range(color_channel_count)}
+        if color_channels:
+            color_channels['sync'] = (1 << color_channel_count) - 1
+        super().__init__(device, description, speed_channels, color_channels, **kwargs)
+
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
+
+        Connected fans and LED accessories are detected.
+
+        This method should be called every time the systems boots, resumes from
+        a suspended state, or if the device has just been (re)connected.  In
+        those scenarios, no other method, except `connect()` or `disconnect()`,
+        should be called until the device and driver has been (re-)initialized.
+
+        Returns None or a list of `(property, value, unit)` tuples, similarly
+        to `get_status()`.
+        """
+
+        self.device.clear_enqueued_reports()
+
+        # request static infos
+        self._write([0x10, 0x01])  # firmware info
+        self._write([0x20, 0x03])  # lighting info
+        ret = []
+
+        def parse_firm_info(msg):
+            fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
+            ret.append(('Firmware version', fw, ''))
+
+        def parse_led_info(msg):
+            channel_count = msg[14]
+            offset = 15  # offset of first channel/first accessory
+            for c in range(channel_count):
+                for a in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
+                    accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
+                    if accessory_id == 0:
+                        break
+                    ret.append((f'LED {c + 1}', Hue2Accessory(accessory_id), ''))
+
+        parsers = {b'\x11\x01': parse_firm_info}
+        if self._color_channels:
+            parsers[b'\x21\x03'] = parse_led_info
+        self._read_until(parsers)
+        return sorted(ret)
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+
+        ret = []
+        ret.append((f'ARGB Channels: {len(self._color_channels)-1}', '', ''))
+        return sorted(ret)
+
+    def _read_until(self, parsers):
+        for _ in range(self._MAX_READ_ATTEMPTS):
+            msg = self.device.read(self._READ_LENGTH)
+            prefix = bytes(msg[0:2])
+            func = parsers.pop(prefix, None)
+            if func:
+                func(msg)
+            if not parsers:
+                return
+        assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
+
+    def _write_individual_color(self, cid, colors):
+        color_count = len(colors)
+        led_padding = [0x00, 0x00, 0x00]*(40 - color_count)  # turn off remaining LEDs
+        leds = list(itertools.chain(*colors)) + led_padding
+        self._write([0x22, 0x10, cid, 0x00] + leds[0:60])  # send first 20 colors to device (3 bytes per color)
+        self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
+        self._write([0x22, 0xa0, cid, 0x00, 0x01, 0x00, 0x00, 0x08, 0x00,
+                     0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
+
+    def _write_colors(self, cid, mode, colors, sval, direction='forward',):
+        cmode0, mod1, mod2, mincolors, maxcolors = self._COLOR_MODES[mode]
+
+        color_count = len(colors)
+
+        if maxcolors == 40:
+            self._write_individual_color(cid, colors)
+        else:
+            # Header and device id
+            header = [0x2a, 0x04, cid, cid]
+
+            # Color mode
+            speed = self._SPEED_VALUES[mode][sval]
+            color_mode = [cmode0, speed[0], speed[1]] + list(itertools.chain(*colors))
+
+            # Footer
+            mod3 = 0x02 if direction =='backward' else 0x00
+            footer = [mod3, color_count, mod2, 0x08, 0x03] + [0x00]*4
+
+            # Space inbetween data and footer
+            msg_length = len(header) + len(color_mode) + len(footer)
+            space = [0x00 for _ in range(self._WRITE_LENGTH - msg_length)]
+
+            self._write(header + color_mode + space + footer)
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        raise NotSupportedByDevice()
+    
+    def _write_fixed_duty(self, cid, duty):
+        raise NotSupportedByDevice()
 
 
 # backward compatibility

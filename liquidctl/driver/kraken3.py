@@ -781,16 +781,16 @@ class KrakenZ3(KrakenX3):
             self.brightness = msg[0x18]
             self.orientation = msg[0x1A]
 
-        # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023
-        # (non-elite). In those cases, show an error until issue #631 is resolved.
-        def check_unsupported_fw_version():
-            device_product_id = self.device.product_id
-            if device_product_id == 0x300E:
-                self._get_fw_version()
-                if self._fw[0] == 2:
-                    raise NotSupportedByDriver(
-                        "setting images is not supported on firmware 2.X.Y, please see issue #631"
-                    )
+        # Firmware 2.0.0 and onwards broke the implemented image setting mechanism for Kraken 2023 (standard)
+        # In those cases, show an error until issue #631 is resolved.
+        def unsupported_fw_version():
+            device_product_id = self.bulk_device.product_id
+            if device_product_id == 0x300E and self.fw[0] == 2:
+                _LOGGER.error(
+                    "Setting images for NZXT Kraken 240/360 (standard) is not supported on firmware >2.x.x, please see issue #631"
+                )
+                return True
+            return False
 
         self._read_until({b"\x31\x01": parse_lcd_info})
 
