@@ -202,3 +202,4 @@ directly accessing the device. Alternatively, direct access to the device can
 be forced with `--direct-access`.
 
 [liquidtux]: https://github.com/liquidctl/liquidtux
+[`issue-631`]: https://github.com/liquidctl/liquidctl/issues/631
