@@ -135,6 +135,8 @@ class HydroPlatinum(UsbHidDriver):
             {'fan_count': 2, 'fan_leds': 0}),
         (0x1b1c, 0x0c37, 'Corsair iCUE H150i Elite RGB',
             {'fan_count': 3, 'fan_leds': 0}),
+        (0x1b1c, 0x0c41, 'Corsair iCUE H150i Elite RGB (White)',
+            {'fan_count': 3, 'fan_leds': 0})
     ]
 
     @classmethod
