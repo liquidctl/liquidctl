@@ -195,3 +195,10 @@ def test_reads_status_from_hwmon(mock_psu, tmp_path):
     ]
 
     assert sorted(got) == sorted(expected)
+
+
+def test_enforce_minimum_user_set_fan_duty(mock_psu):
+
+    mock_psu.set_fixed_speed(channel='fan', duty=20)
+    _, report_data = mock_psu.device.sent[1]
+    assert report_data[2] == 30

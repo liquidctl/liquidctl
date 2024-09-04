@@ -68,7 +68,9 @@ The fan speed is normally controlled automatically by the PSU.  It is possible t
 # liquidctl set fan speed 90
 ```
 
-This changes the fan control mode to software control and sets the minimum allowed duty value to 30%.  To revert back to hardware control, re-`initialize` the device.
+This changes the fan control mode to software control; to revert back to hardware control,
+re-`initialize` the device. While in software control mode, a minimum allowed duty value of 30% is
+enforced, for safety, by liquidctl.
 
 ## Appendix: differences in efficiency data
 

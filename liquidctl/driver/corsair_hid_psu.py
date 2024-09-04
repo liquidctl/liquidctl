@@ -39,7 +39,7 @@ _RAIL_12V = 0x0
 _RAIL_5V = 0x1
 _RAIL_3P3V = 0x2
 _RAIL_NAMES = {_RAIL_12V: '+12V', _RAIL_5V: '+5V', _RAIL_3P3V: '+3.3V'}
-_MIN_FAN_DUTY = 0
+_MIN_FAN_DUTY = 30
 
 
 class OCPMode(Enum):
