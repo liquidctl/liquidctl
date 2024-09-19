@@ -179,6 +179,7 @@ class _BaseSmartDevice(UsbHidDriver):
         if channel == 'sync':
             selected_channels = self._speed_channels
         else:
+            _LOGGER.info(print(self._speed_channels))
             selected_channels = {channel: self._speed_channels[channel]}
         for cname, (cid, dmin, dmax) in selected_channels.items():
             duty = clamp(duty, dmin, dmax)
@@ -433,6 +434,10 @@ class SmartDevice2(_BaseSmartDevice):
             'color_channel_count': 0  # protocol changed, see #541
         }),
         (0x1e71, 0x2019, 'NZXT RGB & Fan Controller (3+6 channels)', {
+            'speed_channel_count': 3,
+            'color_channel_count': 0  # protocol changed, see #541
+        }),
+        (0x1e71, 0x201f, 'NZXT RGB & Fan Controller (3+6 channels)', {
             'speed_channel_count': 3,
             'color_channel_count': 0  # protocol changed, see #541
         }),
