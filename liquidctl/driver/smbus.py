@@ -61,13 +61,13 @@ if sys.platform == 'linux':
                 try:
                     i2c_bus = LinuxI2cBus(i2c_dev)
                 except ValueError as err:
-                    _LOGGER.debug('I²C adapter: %s (skipped, %s)', i2c_dev.name, err)
+                    _LOGGER.debug('I²C adapter: %s skipped: %s', i2c_dev.name, err)
                     continue
 
                 if bus and bus != i2c_bus.name:
                     continue
 
-                _LOGGER.debug('I²C adapter: %s', i2c_bus.name)
+                _LOGGER.debug('I²C adapter: %s (%s)', i2c_bus.name, i2c_bus.description or "N/A")
                 yield from i2c_bus.find_devices(drivers, **kwargs)
 
     class LinuxI2cBus:
