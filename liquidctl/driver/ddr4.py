@@ -149,6 +149,8 @@ class Ddr4Temperature(SmbusDriver):
 
         for dimm in range(cls._SA_MASK + 1):
             spd_addr = cls._SPD_DTIC | dimm
+            _LOGGER.debug('checking address: %x', spd_addr)
+
             eeprom = smbus.load_eeprom(spd_addr)
 
             if not eeprom or eeprom.name != 'ee1004':
