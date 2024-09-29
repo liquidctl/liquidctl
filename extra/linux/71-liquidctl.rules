@@ -458,6 +458,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c0c", TAG+="uacc
 # Corsair iCUE H100i Elite RGB
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c35", TAG+="uaccess"
 
+# Corsair iCUE H100i Elite RGB (White)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c40", TAG+="uaccess"
+
 # Corsair iCUE H115i Elite RGB
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c36", TAG+="uaccess"
 
