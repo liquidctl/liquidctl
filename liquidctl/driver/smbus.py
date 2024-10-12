@@ -175,6 +175,10 @@ if sys.platform == 'linux':
                 return LinuxEeprom(name, eeprom)
             except FileNotFoundError:
                 return None
+            except OSError as err:
+                _LOGGER.debug('%s exists but not readable: %r',
+                              self._i2c_dev.joinpath(dev, 'eeprom'), err)
+                return None
 
         @property
         def name(self):
