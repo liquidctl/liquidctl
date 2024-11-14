@@ -376,7 +376,7 @@ class PyUsbDevice:
 
     @property
     def address(self):
-        return self.usbdev.address
+        return str(self.usbdev.address)
 
     @property
     def port(self):
