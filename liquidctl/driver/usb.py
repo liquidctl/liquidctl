@@ -617,7 +617,7 @@ class PyUsbBus(BaseBus):
         for handle in PyUsbDevice.enumerate(vendor, product):
             if bus and handle.bus != bus:
                 continue
-            if address and handle.address != address:
+            if address and str(handle.address) != address:
                 continue
             if usb_port and handle.port != usb_port:
                 continue
