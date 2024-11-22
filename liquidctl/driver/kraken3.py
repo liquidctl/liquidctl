@@ -597,7 +597,7 @@ class KrakenZ3(KrakenX3):
         (
             0x1E71,
             0x3012,
-            "NZXT Kraken 2023 RGB",
+            "NZXT Kraken Elite RGB 2023",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
                 "color_channels": _COLOR_CHANNELS_KRAKEN2023,
