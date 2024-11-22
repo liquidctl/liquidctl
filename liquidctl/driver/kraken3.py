@@ -594,7 +594,7 @@ class KrakenZ3(KrakenX3):
                 "lcd_resolution": (240, 240),
             },
         ),
-                (
+        (
             0x1E71,
             0x3012,
             "NZXT Kraken 2023 RGB",
