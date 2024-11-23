@@ -102,6 +102,7 @@ _New in git._<br>
 
 Adds support for NZXT Kraken 2023 Standard, Elite
 
+Adds support for NZXT Kraken 2024 Elite, Elite RGB
 
 ## RGB lighting with LEDs
 
