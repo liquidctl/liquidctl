@@ -30,7 +30,7 @@ Kraken 2023 AIOs use the same pump and as their Z3 predecessor but the integrate
 
 ## NZXT Kraken 2024 Elite RGB
 
-The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining the 640x640 LCD. There's now a light ring on the pump housing. As of the 1.2.0 firmware, are still able to use GIF and static modes. 
+The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining the 640x640 LCD. There's now a light ring on the pump housing. As of the 1.2.1 firmware, it's still able to use GIF and static modes.
 
 ## Initialization
 
