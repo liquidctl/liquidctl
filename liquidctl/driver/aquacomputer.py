@@ -113,7 +113,7 @@ class Aquacomputer(UsbHidDriver):
         },
         _DEVICE_FARBWERK: {
             "type": _DEVICE_FARBWERK,
-            "temp_sensors": [0x2F, 0x30, 0x31, 0x32],
+            "temp_sensors": [0x2F, 0x31, 0x33, 0x35],
             "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
             "status_report_length": 0xB6,
         },
