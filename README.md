@@ -134,6 +134,8 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [NZXT Kraken 2024 Elite RGB](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.15.0 |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.15.0 |
+| Fan/LED controller | [Aquacomputer Farbwerk](docs/aquacomputer-farbwerk-guide.md) | <sup>_hp_</sup> | git |
+| Fan/LED controller | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
@@ -153,7 +155,6 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Power supply       | [Corsair ATX 3.1 HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | git |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
-| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
