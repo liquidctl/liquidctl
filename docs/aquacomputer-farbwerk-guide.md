@@ -18,7 +18,7 @@ The controller automatically sends a status HID report every second as soon as i
 
 ## Monitoring
 
-The Farbwerk 360 exposes four physical temperature sensors.
+The Farbwerk exposes four physical temperature sensors.
 
 ```
 # liquidctl status
