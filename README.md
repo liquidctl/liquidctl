@@ -163,6 +163,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | | 1.5.2 |
+| Laptop Fan/LED     | MSI Stealth 14 AI Studio A1VFG | <sup>_x_</sup> | |
 
 <sup>_B_</sup> _Known to be currently broken in at least one major way._<br>
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
