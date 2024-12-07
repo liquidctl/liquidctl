@@ -10,6 +10,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 import os
+import re
 
 from liquidctl.driver.base import BaseBus, BaseDriver, find_all_subclasses
 from liquidctl.error import NotSupportedByDevice
@@ -32,6 +33,11 @@ class MsiConfig:
     serial_number = None
     # could be found in: $ sudo dmidecode
     notebook_model = None
+
+    cpu_fan_speed_max = 150
+    cpu_fan_speed_min = 0
+    gpu_fan_speed_max = 150
+    gpu_fan_speed_min = 0
 
     fan_mode_address = 0xf4
     cooler_boost_address = 0x98
@@ -175,6 +181,9 @@ class CachedAcpiEcDriver(AcpiEcDriver):
         return self._data[address:address + size]
 
     def _write(self, address: int, value: int) -> bytes:
+        if self._read(address)[0] == value:
+            return
+
         if self._data is not None:
             data = list(self._data)
             data[address] = value
@@ -246,28 +255,52 @@ class MsiAcpiEc(CachedAcpiEcDriver):
         return value
 
     def _get_fan_duty(self, pu: str, index: int) -> int:
-        return self._get_option(f'{pu}_fan_speed_address_{index}')[0]
+        value = self._get_option(f'{pu}_fan_speed_address_{index}')[0]
+        duty_min = getattr(self._config, f'{pu}_fan_speed_min')
+        duty_max = getattr(self._config, f'{pu}_fan_speed_max')
+        duty_range = duty_max - duty_min
+        return int((value - duty_min) / duty_range * 100)
 
     def _get_color(self, channel: str) -> int:
         value = self._get_option(f'{channel}_light_address')[0]
         mask = getattr(self._config, f'{channel}_light_mask')
         if value & mask == mask:
-            return 'fixed'
+            return 'on'
         else:
             return 'off'
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        pu, *_, index = channel.lower().split(' ')
-        self._set_option(f'{pu}_fan_speed_address_{index}', duty)
+        m = re.match(
+            r'(?P<pu>(cpu|gpu)) fan( duty)? (step (?P<step>\d))?',
+            channel.lower())
+        pu = m.group('pu')
+        duty_percent = duty / 100
+        duty_min = getattr(self._config, f'{pu}_fan_speed_min')
+        duty_max = getattr(self._config, f'{pu}_fan_speed_max')
+        duty_raw = int(duty_min * (1 - duty_percent) + duty_max * duty_percent)
+
+        if m.group('step'):
+            step = int(m.group('step')) - 1
+            self._set_option(f'{pu}_fan_speed_address_{step}', duty_raw)
+
+        else:  # set flat profile, same value for the all steps
+            step = 0
+            while True:
+                try:
+                    self._set_option(f'{pu}_fan_speed_address_{step}', duty_raw)
+                except NotSupportedByDevice:
+                    break
+                step += 1
 
     def set_color(self, channel, mode, *args, **kwargs):
-        value = self._get_option(f'{channel}_light_address')[0]
-        mask = getattr(self._config, f'{channel}_light_mask')
-        if mode == 'off':
-            value ^= mask
-        elif mode == 'fixed':
+        led = channel.lower()
+        value = self._get_option(f'{led}_light_address')[0]
+        mask = getattr(self._config, f'{led}_light_mask')
+        if mode == 'on':
             value |= mask
-        self._set_option(f'{channel}_light_address', value)
+        elif mode == 'off':
+            value ^= mask
+        self._set_option(f'{led}_light_address', value)
 
     def get_status(self, **kwargs):
         ret = []
@@ -280,17 +313,21 @@ class MsiAcpiEc(CachedAcpiEcDriver):
 
         for pu in ('cpu', 'gpu'):
             ret += [
-                (f'{pu} temp', self._get_temp(pu), '°C'),
-                (f'{pu} fan speed', self._get_fan_speed(pu), 'rpm'),
+                (f'{pu} temp', self._get_temp(pu.lower()), '°C'),
+                (f'{pu} fan speed', self._get_fan_speed(pu.lower()), 'rpm'),
+                (f'{pu} fan duty', self._get_fan_duty(pu.lower(), 0), '%'),
             ]
 
-            i = 0
+            step = 0
             while True:
                 try:
-                    ret.append((f'{pu} fan {i} duty', self._get_fan_duty(pu, i), '%'))
+                    ret += [
+                        # (f'{pu} fan speed step {step + 1}', self._get_fan_speed(pu.lower()), 'rpm'),
+                        (f'{pu} fan duty step {step + 1}', self._get_fan_duty(pu.lower(), step), '%'),
+                    ]
                 except NotSupportedByDevice:
                     break
-                i += 1
+                step += 1
 
         self._sync()
         return ret
