@@ -221,6 +221,14 @@ class MsiAcpiEc(CachedAcpiEcDriver):
     def _set_option(self, name: str, value: int) -> None:
         self._write(self._get_option_address(name), value)
 
+    def _set_duty(self, name: str, duty: int) -> None:
+        pu, *_ = name.split('_')
+        duty_percent = duty / 100
+        duty_min = getattr(self._config, f'{pu}_fan_speed_min')
+        duty_max = getattr(self._config, f'{pu}_fan_speed_max')
+        duty_raw = int(duty_min * (1 - duty_percent) + duty_max * duty_percent)
+        self._set_option(name, duty_raw)
+
     @classmethod
     def probe(cls, device_path):
         with open(device_path, 'r+b') as f:
@@ -270,30 +278,34 @@ class MsiAcpiEc(CachedAcpiEcDriver):
             return 'off'
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        m = re.match(
-            r'(?P<pu>(cpu|gpu)) fan( duty)? (step (?P<step>\d))?',
-            channel.lower())
-        pu = m.group('pu')
-        duty_percent = duty / 100
-        duty_min = getattr(self._config, f'{pu}_fan_speed_min')
-        duty_max = getattr(self._config, f'{pu}_fan_speed_max')
-        duty_raw = int(duty_min * (1 - duty_percent) + duty_max * duty_percent)
-
-        if m.group('step'):
-            step = int(m.group('step')) - 1
-            self._set_option(f'{pu}_fan_speed_address_{step}', duty_raw)
-
-        else:  # set flat profile, same value for the all steps
+        if (m := re.match(r'^(?P<pu>(cpu|gpu)) fan( duty)$', channel.lower())):
+            # set flat profile, same value for the all steps
+            pu = m.group('pu')
             step = 0
             while True:
                 try:
-                    self._set_option(f'{pu}_fan_speed_address_{step}', duty_raw)
+                    self._set_duty(f'{pu}_fan_speed_address_{step}', duty)
                 except NotSupportedByDevice:
                     break
                 step += 1
 
+        elif (m := re.match(r'^(?P<pu>(cpu|gpu)) fan( duty)? step (?P<step>\d)$', channel.lower())):
+            # set single step value
+            pu = m.group('pu')
+            step = int(m.group('step')) - 1
+            self._set_duty(f'{pu}_fan_speed_address_{step}', duty)
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        pu, *_ = channel.lower().split(' ')
+
+        for step, (temp, duty) in enumerate(profile):
+            try:
+                self._set_duty(f'{pu}_fan_speed_address_{step}', duty)
+            except NotSupportedByDevice:
+                break
+
     def set_color(self, channel, mode, *args, **kwargs):
-        led = channel.lower()
+        led, *_ = channel.lower().split(' ')
         value = self._get_option(f'{led}_light_address')[0]
         mask = getattr(self._config, f'{led}_light_mask')
         if mode == 'on':
@@ -307,7 +319,7 @@ class MsiAcpiEc(CachedAcpiEcDriver):
 
         for led in LED_TYPES:
             try:
-                ret.append((led, self._get_color(led), ''))
+                ret.append((f'{led} light', self._get_color(led), ''))
             except NotSupportedByDevice:
                 pass
 
@@ -322,7 +334,6 @@ class MsiAcpiEc(CachedAcpiEcDriver):
             while True:
                 try:
                     ret += [
-                        # (f'{pu} fan speed step {step + 1}', self._get_fan_speed(pu.lower()), 'rpm'),
                         (f'{pu} fan duty step {step + 1}', self._get_fan_duty(pu.lower(), step), '%'),
                     ]
                 except NotSupportedByDevice:
