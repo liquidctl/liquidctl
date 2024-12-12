@@ -278,7 +278,7 @@ class MsiAcpiEc(CachedAcpiEcDriver):
             return 'off'
 
     def set_fixed_speed(self, channel, duty, **kwargs):
-        if (m := re.match(r'^(?P<pu>(cpu|gpu)) fan( duty)$', channel.lower())):
+        if (m := re.match(r'^(?P<pu>(cpu|gpu)) fan( duty)?$', channel.lower())):
             # set flat profile, same value for the all steps
             pu = m.group('pu')
             step = 0
