@@ -48,7 +48,7 @@ Fixed:
 The checksum algorithm has been changed from SHA256 to BLAKE3.
 
 ```
-$ b3sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}
+$ b3sum dist/liquidctl-1.14.0{.tar.gz,-py3-none-any.whl}
 699650664c92d78478478e1d992b23456a6ffc5efe83b508fa666dfad341598b  dist/liquidctl-1.14.0.tar.gz
 86eaff9c3c285a721c013f2e989d7cab9fb2d2eec9fb6949e9998de11d4f6a70  dist/liquidctl-1.14.0-py3-none-any.whl
 ```
