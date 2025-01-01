@@ -43,6 +43,16 @@ Fixed:
 - Convert `PyUsbDevice` addresses to strings (liquidctl#743)
 - Various issues with Unix file permission handling in `liquidctl.keyval` (liquidctl#659)
 
+### BLAKE3 checksums
+
+The checksum algorithm has been changed from SHA256 to BLAKE3.
+
+```
+$ b3sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}
+699650664c92d78478478e1d992b23456a6ffc5efe83b508fa666dfad341598b  dist/liquidctl-1.14.0.tar.gz
+86eaff9c3c285a721c013f2e989d7cab9fb2d2eec9fb6949e9998de11d4f6a70  dist/liquidctl-1.14.0-py3-none-any.whl
+```
+
 
 ## [1.13.0] – 2023-07-26
 
@@ -64,7 +74,7 @@ Fixed:
 - Python 3.11: fix deprecation on `locale.getDefaultLocale`
 - Python 3.11.4: fix exception handling when parsing null bytes in persisted data
 
-### Checksums
+### SHA256 checksums
 
 ```
 ee17241689c0bf3de43cf4d97822e344f5b57513d16dd160e37fa0e389a158c7  dist/liquidctl-1.13.0.tar.gz
@@ -82,7 +92,7 @@ Fixed:
 
 - Corsair HXi and RMi: check that the response matches the command that was sent (liquidctl#463)
 
-### Checksums
+### SHA256 checksums
 
 ```
 3f98b8400c9cd3e47925cafbe34b9d7a51705bf85ce1ec8d95d107a360f6f29e  dist/liquidctl-1.12.1.tar.gz
@@ -123,7 +133,7 @@ Removed:
 
 - CLI: remove long deprecated --hid option
 
-### Checksums
+### SHA256 checksums
 
 ```
 639e62d8845cd8d3718941e7894865f9c06abfc2826546606335e30f607d6fc3  dist/liquidctl-1.12.0.tar.gz
@@ -143,7 +153,7 @@ Fixed:
 
 See notes for 1.11.0 release.
 
-### Checksums
+### SHA256 checksums
 
 ```
 278c1aca8d891bfe8e0c164dfe6651261a0423b29f9c24cef060c3613f2a4fd7  dist/liquidctl-1.11.1.tar.gz
@@ -201,7 +211,7 @@ New Python dependencies: [crcmod], [pillow] and (Windows-only:) [winusbcdc].
 [pillow]: https://pypi.org/project/Pillow/
 [winusbcdc]: https://pypi.org/project/WinUsbCDC/
 
-### Checksums
+### SHA256 checksums
 
 ```
 a3b53e317ba9211e05be88d9158efdc02c51ae067ee974d3d9f0b79716cf7ba3  dist/liquidctl-1.11.0.tar.gz
@@ -239,7 +249,7 @@ Removed:
 - API: remove deprecated firmware version from the output of
   `KrakenX2.get_status()`
 
-### Checksums
+### SHA256 checksums
 
 ```
 f9dc1dacaf1d3a44b80000baac490b44c5fa7443159bd8d2ef4dbb1af49cc7ba  dist/liquidctl-1.10.0.tar.gz
@@ -260,7 +270,7 @@ Fixed:
 Starting with 1.9.0, liquidctl now uses a PEP 517 build.  See the notes for the
 1.9.0 release for more information.
 
-### Checksums
+### SHA256 checksums
 
 ```
 b4467e842d9a6adc804317a991354db041417f4f7dcf7d76799f2b1593ed1276  dist/liquidctl-1.9.1.tar.gz
@@ -376,7 +386,7 @@ python -m installer [args]
 [PyPA/installer]: https://github.com/pypa/installer
 [setuptools_scm]: https://github.com/pypa/setuptools_scm
 
-### Checksums
+### SHA256 checksums
 
 ```
 9e1ae595be2c3ea5899e12741c11307da27e86bc88f7f93c5ae40bb2aa03dc70  dist/liquidctl-1.9.0.tar.gz
@@ -391,7 +401,7 @@ python -m installer [args]
 Fixed:
 - Strip non-determinism from sdist/egg SOURCES.txt metadata
 
-### Checksums
+### SHA256 checksums
 
 ```
 0859dfe673babe9af10e4f431e0baa974961f0b2c973a37e64eb6c6c2fddbe73  dist/liquidctl-1.8.1.tar.gz
@@ -422,7 +432,7 @@ Fixed:
   (liquidctl#400)
 - Fix tolerant handling of single channel name in Corsair Lighting Node Core
 
-### Checksums
+### SHA256 checksums
 
 ```
 99b8ec4da617a01830951a8f1a37d616f50eed6d260220fe5c26d1bf90e1e91e  dist/liquidctl-1.8.0.tar.gz
@@ -438,7 +448,7 @@ Changelog since 1.7.1:
  - Default `--maximum-leds` to the maximum possible number of LEDs (liquidctl#367, PR liquidctl#368)
 ### Fixed
  - Fix moving flag in SD2/HUE2 `alternating` modes (liquidctl#385)
-### Checksums
+### SHA256 checksums
 ```
 b2337e0ca3bd36de1cbf581510aacfe23183d7bb176ad0dd43904be213583de3  dist/liquidctl-1.7.2.tar.gz
 ```
@@ -451,7 +461,7 @@ Changelog since 1.7.0:
 ### Fixed
  - Fix `KeyError` when logging due to colorlog<6
  - Swap DEBUG and INFO level colors
-### Checksums
+### SHA256 checksums
 ```
 10f650b9486ddac184330940550433685ae0abc70b66fe92d994042491aab356  dist/liquidctl-1.7.1.tar.gz
 5f35d4ac8ad6da374877d17c7a36bbb202b0a74bd773ebe45444f0089daba27b  dist/liquidctl-1.7.1-bin-windows-x86_64.zip
@@ -484,7 +494,7 @@ Changelog since 1.6.1:
 ### Fixed
  - Make `find_supported_devices()` account for `legacy_690lc` on Asetek 690LC drivers
  - Remove accidentally inherited `downgrade_to_legacy()` (unstable) from `Hydro690Lc`
-### Checksums
+### SHA256 checksums
 ```
 053675aca9ba9a3c14d8ef24d1a2e75c592c55a1b8ba494447bc13d3ae523d6f  dist/liquidctl-1.7.0.tar.gz
 d0f8f24961a22c7664c330d286e1c63d4df753d5fbe21ac77eb6488b27508751  dist/liquidctl-1.7.0-bin-windows-x86_64.zip
@@ -497,7 +507,7 @@ _Summary for the 1.6.1 release: one bug fix for HUE 2 controllers._
 Changelog since 1.6.0:
 ### Fixed
  - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (liquidctl#331)
-### Checksums
+### SHA256 checksums
 ```
 e3b6aa5ae55204f8d9a8813105269df7dc8f80087670e3eac88b722949b3843f  dist/liquidctl-1.6.1.tar.gz
 d14a32b7c0de5a2d25bc8280c32255da25e9bc32f103d099b678810a9a1b6c9c  dist/liquidctl-1.6.1-bin-windows-x86_64.zip
@@ -510,7 +520,7 @@ _Summary for the 1.5.2 release: one bug fix for HUE 2 controllers._
 Changelog since 1.5.1:
 ### Fixed
  - Smart Device V2/HUE 2: check if fan controller before initializing fan reporting (liquidctl#331)
-### Checksums
+### SHA256 checksums
 ```
 5738fda03f1d7bfb4416461a70351a5e040f1b57229674dd0f1f6f81d3750812  dist/liquidctl-1.5.2.tar.gz
 ```
@@ -555,7 +565,7 @@ Changelog since 1.5.1:
  - [extra] remove `krakencurve-poc`, use `yoda` instead
 ### Deprecated
  - Deprecate `-d`/`--device`; prefer `--match` or other selection options
-### Checksums
+### SHA256 checksums
 ```
 486dc366f10810a4efb301f3ceda10657a09937e9bc936cecec792ac26c2f186  dist/liquidctl-1.6.0.tar.gz
 9b2e144c1fa63aaf41dc3d6a264b2e78e14a5f424b86e3a5f4b80396677000e6  dist/liquidctl-1.6.0-bin-windows-x86_64.zip
@@ -576,7 +586,7 @@ Changelog since 1.5.0:
  - Only attempt to set the USB configuration if no other errors have been detected
  - Return the context manager when overriding `connect()`
  - Fix construction of fallback search paths for runtime data
-### Checksums
+### SHA256 checksums
 ```
 e2d97be0319501bcad9af80c837abdbfd820620edcf9381068a443ad971327eb  liquidctl-1.5.1-bin-windows-x86_64.zip
 9480e2dfbb0406fa8d57601a43a0f7c7573de1f5f24920b0e4000786ed236a8b  liquidctl-1.5.1.tar.gz
@@ -634,7 +644,7 @@ Changelog since 1.4.2:
  - Generate and verify the checksums of zip and exe built on AppVeyor
 ### Deprecated
  - Deprecate `backwards-` pseudo modes; use `--direction=backward` instead
-### Checksums
+### SHA256 checksums
 ```
 370eb9c662111b51465ac5e2649f7eaf423bd22799ef983c4957468e9d957c15  liquidctl-1.5.0-bin-windows-x86_64.zip
 762561a8b491aa98f0ccbbab4f9770813a82cc7fd776fa4c21873b994d63e892  liquidctl-1.5.0.tar.gz
@@ -662,7 +672,7 @@ Changelog since 1.4.1:
  - Fix check of maximum number of colors in Hydro Platinum super-fixed mode
  - Fix HID writes to Corsair HXi/RMi power supplies on Windows
  - Ensure Hydro Platinum/Pro XT is in static LEDs hardware mode
-### Checksums
+### SHA256 checksums
 ```
 83517ccb06cfdda556bc585a6a45edfcb5a21e38dbe270454ac97639d463e96d  dist/liquidctl-1.4.2-bin-windows-x86_64.zip
 39da5f5bcae1cbd91e42e78fdb19f4f03b6c1a585addc0b268e0c468e76f1a3c  dist/liquidctl-1.4.2.tar.gz
@@ -682,7 +692,7 @@ Changelog since 1.4.0:
  - Don't use report IDs when writing to NZXT E-series PSUs (liquidctl#166)
  - Recognize and raise Hidapi write errors
  - Use a mocked device to test backward compatibility with liquidctl 1.1.0
-### Checksums
+### SHA256 checksums
 ```
 895e55fd70e1fdfe3b2941d9139b91ffc4e902a469b077e810c35979dbe1cfdf  liquidctl-1.4.1-bin-windows-x86_64.zip
 59a3bc65b3f3e71a5714224401fe6e95dfdee591a1d6f4392bc4e6d6ad72ff8d  liquidctl-1.4.1.tar.gz
@@ -733,7 +743,7 @@ Changelog since 1.3.3:
  - Deprecate and ignore `--hid` override for API selection
 ### Removed
  - Remove the PyUsbHid device backend for HIDs
-### Checksums
+### SHA256 checksums
 ```
 250b7665b19b0c5d9ae172cb162bc920734eba720f3e337eb84409077c582966  liquidctl-1.4.0-bin-windows-x86_64.zip
 b35e6f297e67f9e145794bb57b88c626ef2bfd97e7fbb5b098f3dbf9ae11213e  liquidctl-1.4.0.tar.gz
@@ -748,7 +758,7 @@ Changelog since 1.3.2:
  - Add missing identifiers for HUE+ accessories on HUE 2 channels
  - Forward hid argument from `UsbHidDriver.find_supported_devices`
  - Prevent reporting stale data during long lived connections to HIDs (liquidctl#87)
-### Checksums
+### SHA256 checksums
 ```
 1422a892f9c2c69f5949cd831083c6fef8f6a1f6e3215e90b696bfcd557924b4  liquidctl-1.3.3-bin-windows-x86_64.zip
 d13180867e07420c5890fe1110e8f45fe343794549a9ed7d5e8e76663bc10c24  liquidctl-1.3.3.tar.gz
@@ -761,7 +771,7 @@ _Summary for the 1.3.2 release: fix fan status reporting from Smart Device V2._
 Changelog since 1.3.1:
 ### Fixed
  - Parse Smart Device V2 fan info from correct status message
-### Checksums
+### SHA256 checksums
 ```
 acf44a491567703c109c03f446c3c0761e5f9b97098613f8ecb4366a1d2afd50  liquidctl-1.3.2-bin-windows-x86_64.zip
 bb742947c15f4a3987685641c0dd73184c4a40add5ad818ced68e5ace3631b6b  liquidctl-1.3.2.tar.gz
@@ -777,7 +787,7 @@ Changelog since 1.3.0:
  - Improve the documentation
 ### Fixed
  - Fix parsing of `--verbose` in commands other than `list`
-### Checksums
+### SHA256 checksums
 ```
 de272dad305dc6651265640a280bedb21bc680a62117e625004c6aad2104da63  liquidctl-1.3.1-bin-windows-x86_64.zip
 6092a6fae477908c80adc825b290e39f0b26e604593884da23d40e892e553309  liquidctl-1.3.1.tar.gz
@@ -807,7 +817,7 @@ Changelog since 1.3.0rc1:
  - Restore experimental tag for the NZXT Kraken X31/X41/X61 family
 ### Removed
  - Remove dependency on appdirs
-### Checksums
+### SHA256 checksums
 ```
 ff935fd3d57dead4d5218e02f834a825893bc6716f96fc9566a8e3989a7c19fe  liquidctl-1.3.0-bin-windows-x86_64.zip
 ce0483b0a7f9cf2618cb30bdf3ff4195e20d9df6c615f69afe127f54956e42ce  liquidctl-1.3.0.tar.gz
@@ -838,7 +848,7 @@ Changelog since 1.2.0:
  - Fixed Corsair H100i GT device name in listing
 ### Deprecated
  - Use `liquidctl.driver.find_liquidctl_devices` instead of `liquidctl.cli.find_all_supported_devices`
-### Checksums
+### SHA256 checksums
 ```
 $ sha256sum liquidctl-1.3.0rc1*
 7a16a511baf5090c34cd3dfc5c21068a298515f31315be63e9b991ea17654671  liquidctl-1.3.0rc1-bin-windows-x86_64.zip
