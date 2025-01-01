@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.14.0] – 2025-01-01
+
+### Changes since 1.13.0
+
+Added:
+
+- Support for Corsair Hydro H110i GT (liquidctl#637)
+- Support for Corsair iCue Elite H100i RGB, white version (liquidctl#735)
+- Support for Corsair iCue Elite H115i RGB (liquidctl#678)
+- Support for Corsair iCue Elite H150i RGB, white version (liquidctl#725)
+- Support for Kraken 2023 standard and Elite models (liquidctl#605)
+- Support for MSI MPG Coreliquid K360 and two similar variants (liquidctl#564)
+- Support for NZXT RGB & Fan Controller with PID `201f` (liquidctl#733)
+- Support for NZXT RGB & Fan Controller with PID `2020` (liquidctl@a64e73e63eb3)
+- Support the ASUS Ryujin II 360, minus the screen (liquidctl#653)
+- Corsair Commander Core: partial/experimental support for speed profiles (liquidctl#687)
+
+Changed:
+
+- Corsair RMi/HXi PSUs: enforce a 30% minimum value for user-set fan duties (liquidctl#730)
+- NZXT Kraken Z?3/2023: error out when trying to set the screen is unsupported due to firmware v2.x
+- extra scripts: add `.py` extension to all scripts written in Python
+- extra/yoda: make `psutil` dependency optional
+
+Deprecated:
+
+- `experimental` fields in the `list --json` output
+
+Removed:
+
+- "Experimental" tags, notes and suffixes
+
+Fixed:
+
+- Corsair HX1000i/HX1500i: fix input power curves (liquidctl#675)
+- NZXT Kraken Z?3/2023: partially support setting the screen with firmware v2.x (liquidctl#692)
+- Linux: skip unreadable EEPROMs (liquidctl#731)
+- Windows: replace port numbers with bus address when setting a storage key (liquidctl#703)
+- extra/yoda: accept `--unsafe` flags
+- extra/yoda: output CPU frequency with the correct unit of MHz
+- Convert `PyUsbDevice` addresses to strings (liquidctl#743)
+- Various issues with Unix file permission handling in `liquidctl.keyval` (liquidctl#659)
+
+
 ## [1.13.0] – 2023-07-26
 
 ### Changes since 1.12.1

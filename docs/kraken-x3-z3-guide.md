@@ -95,7 +95,7 @@ For profiles, one or more temperature–duty pairs are supplied instead of singl
 
 liquidctl will normalize and optimize this profile before pushing it to the Kraken.  Adding `--verbose` will trace the final profile that is being applied.
 
-_New in git._<br>
+_New in 1.14.0._<br>
 
 Adds support for NZXT Kraken 2023 Standard, Elite
 
@@ -168,7 +168,7 @@ they will be removed in a future version and are kept for now for backward compa
 
 ## The LCD screen (only Z and 2023 models)
 
-_New in git._<br>
+_New in 1.14.0._<br>
 
 Adds support for NZXT Kraken 2023 Standard, Elite
 
