@@ -168,13 +168,8 @@ they will be removed in a future version and are kept for now for backward compa
 
 ## The LCD screen (only Z and 2023 models)
 
-_New in 1.14.0._<br>
-
-Adds support for NZXT Kraken 2023 Standard, Elite
-
-*On 2023 models (standard and Elite), GIF screen mode is no longer supported for firmware versions 2.X (see [#631][`issue-631`]).*
-
 _New in 1.11.0._<br>
+_Changed in 1.14.0: added support for NZXT Kraken 2023 Standard and Elite._<br>
 
 The LCD screen can be configured in a few different modes.
 
@@ -186,6 +181,10 @@ The LCD screen can be configured in a few different modes.
 ```
 
 Images and GiFs are automatically resized and rotated to match the device orientation.
+
+*Note that, on the 2023 models (Standard and Elite), the GIF screen mode is not currently supported
+on firmware versions 2.X (see [#631][`issue-631`]).*
+
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
