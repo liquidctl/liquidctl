@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased – 2025-01-01
+
+### Changes since 1.14.0
+
+Changed:
+
+- Increase the minimum required Python version to 3.9
+
+Fixed:
+
+- Permission errors when accessing driver data on Windows with Python 3.13
+
+
 ## [1.14.0] – 2025-01-01
 
 ### Changes since 1.13.0
