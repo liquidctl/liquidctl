@@ -594,6 +594,18 @@ class KrakenZ3(KrakenX3):
                 "lcd_resolution": (240, 240),
             },
         ),
+        (
+            0x1E71,
+            0x3012,
+            "NZXT Kraken 2024 Elite RGB",
+            {
+                "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
+                "color_channels": _COLOR_CHANNELS_KRAKEN2023,
+                "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
+                "bulk_buffer_size": 1024 * 1024 * 2,  # 2 MB
+                "lcd_resolution": (640, 640),
+            },
+        ),
     ]
 
     def __init__(
