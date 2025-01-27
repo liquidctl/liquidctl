@@ -1,7 +1,7 @@
 # Corsair Hydro H110i GT AIO liquid cooler
 _Driver API and source code available in [`liquidctl.driver.coolit`](../liquidctl/driver/coolit.py)._
 
-_New in git._<br>
+_New in 1.14.0._<br>
 
 ## Initialization
 [Initialization]: #initialization

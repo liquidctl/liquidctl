@@ -22,7 +22,7 @@
  - [ ] Run unit and doc tests:
        `python -m pytest`
 
-Then install locally and:
+Then, optionally, install locally and:
 
  - [ ] Run my personal setup scripts:
        `liquidcfg && liquiddyncfg`
@@ -37,13 +37,14 @@ Then install locally and:
 
  - [ ] Push HEAD:
        `git push origin HEAD`
- - [ ] Check all CI statuses (pytest, flake8 linting, and `list --verbose`)
+ - [ ] Check all CI job statuses
 
 ## Build source distribution and wheel
 
+ - [ ] Stash any subsequent changes (e.g. to this file)
  - [ ] Tag HEAD with changelog and PGP signature:
        `git tag -as "v$VERSION"`
- - [ ] Build the source distribution and wheel (stash any changes to this file beforehand):
+ - [ ] Build the source distribution and wheel:
        `python -m build`
  - [ ] Check that all necessary files are in the `dist/liquidctl-$VERSION.tar.gz` sdist
  - [ ] Check the contents of the `dist/liquidctl-$VERSION-py3-none-any.whl` wheel
@@ -56,11 +57,11 @@ Then install locally and:
  - [ ] Push vVERSION tag:
        `git push origin "v$VERSION"`
  - [ ] Upload sdist and wheel to PyPI:
-       `twine upload dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}{,.asc}`
+       `twine upload dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}`
  - [ ] Generate SHA256 checksums for the release files:
-       `sha256sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl} | tee "dist/liquidctl-$VERSION.sha256sums"`
+       `b3sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl} | tee "dist/liquidctl-$VERSION.B3SUMS"`
  - [ ] Upgrade the vVERSION tag on GitHub to a release (with sdist, wheel, and corresponding GPG signatures)
- - [ ] Update the HEAD changelog with the SHA256 checksums
+ - [ ] Update the HEAD changelog with the BLAKE3 checksums
 
 ## Post release
 

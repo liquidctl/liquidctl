@@ -1,7 +1,7 @@
 # ASUS Ryujin II liquid coolers
 _Driver API and source code available in [`liquidctl.driver.asus_ryujin`](../liquidctl/driver/asus_ryujin.py)._
 
-_New in git._<br>
+_New in 1.14.0._<br>
 
 ## Initialization
 

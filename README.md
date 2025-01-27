@@ -119,31 +119,30 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
-| AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | git |
-| AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | <sup>_p_</sup> | git |
+| AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | 1.14.0 |
+| AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro H100i, H115i, H150i](docs/asetek-pro-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro Platinum H100i, H100i SE, H115i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
 | AIO liquid cooler  | [Corsair Hydro Pro XT H60i, H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.8.1 |
-| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | git |
-| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.13.0 |
-| AIO liquid cooler  | [Corsair iCUE Elite RGB H115i](docs/corsair-platinum-pro-xt-guide.md) | | git |
+| AIO liquid cooler  | [Corsair iCUE Elite Capellix H100i, H115i, H150i](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | 1.14.0 |
+| AIO liquid cooler  | [Corsair iCUE Elite RGB H100i, H115i, H150i](docs/corsair-platinum-pro-xt-guide.md) | | 1.14.0 |
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
-| AIO liquid cooler  | [MSI MPG Coreliquid K360](docs/msi-mpg-coreliquid-guide.md) | <sup>_p_</sup> | git |
+| AIO liquid cooler  | [MSI MPG Coreliquid K360](docs/msi-mpg-coreliquid-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | <sup>_LZ_</sup> | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X42, X52, X62, X72](docs/kraken-x2-m2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| AIO liquid cooler  | ~~[NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md)~~ | <sup>_B_</sup> | git |
-| AIO liquid cooler  | [NZXT Kraken 2024 Elite RGB](docs/kraken-x3-z3-guide.md) | <sup>_B_</sup> | git |
+| AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.14.0 |
+| AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.14.0 |
+| AIO liquid cooler  | [NZXT Kraken 2024 Elite RGB](docs/kraken-x3-z3-guide.md) | <sup>__</sup> | git |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [Corsair Commander Core, Core XT, ST](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | git |
+| Fan/LED controller | [Corsair Commander Core, Core XT, ST](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | 1.14.0 |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
@@ -155,9 +154,8 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
-| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
-| Power supply       | [Corsair HX1000i (2022), HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.13.0 |
-| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.12.1 |
+| Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i, HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
+| Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
 | LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.11.1 |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
@@ -165,7 +163,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | | 1.5.2 |
 
-<sup>_B_</sup> _Known to be currently broken in at least one major way._<br>
+<sup>_B_</sup> _Broken in at least one significant way._<br>
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
 <sup>_U_</sup> _Requires `--unsafe` features._<br>
 <sup>_Z_</sup> _Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
@@ -255,7 +253,7 @@ libraries already provided by the operating system.
 On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
-- Python 3.8 or later _(python3, python)_
+- Python 3.9 or later _(python3, python)_
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
@@ -276,7 +274,7 @@ needed:
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
 
-On macOS, Python (3.8 or later) and LibUSB 1.0 must be installed beforehand.
+On macOS, Python (3.9 or later) and LibUSB 1.0 must be installed beforehand.
 
 ```
 brew install python libusb
@@ -285,7 +283,7 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.8 or later) must be installed beforehand, which can be
+On Windows, Python (3.9 or later) must be installed beforehand, which can be
 done from the [official website][python.org].  It is recommended to select the
 option to add `python` and other tools to the `PATH`.
 
@@ -353,8 +351,8 @@ This will also install the necessary Python libraries.
 # the latest stable version
 python -m pip install liquidctl
 
-# a specific version (e.g. 1.13.0)
-python -m pip install liquidctl==1.13.0
+# a specific version (e.g. 1.14.0)
+python -m pip install liquidctl==1.14.0
 ```
 
 If [git] is installed, pip can also install the latest snapshot of the official

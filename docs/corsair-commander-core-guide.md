@@ -68,7 +68,7 @@ Corsair Commander Core XT
 
 ### Speed curve profiles
 
-_New in git._<br>
+_New in 1.14.0._<br>
 
 The pump or fans speeds can be configured using a speed curve profile with a minimum of 2 or up to 7 curve points.
 

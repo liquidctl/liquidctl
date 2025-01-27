@@ -75,8 +75,7 @@ def _open_with_lock(path, flags, *, shared=False):
             f.flush()  # ensure flushing before automatic unlocking
 
 
-if {'umask', 'stat', 'chmod'} <= os.__dict__.keys() \
-        and {os.stat, os.chmod} <= os.supports_fd:
+if sys.platform != 'win32' and {os.stat, os.chmod} <= os.supports_fd:
     @contextmanager
     def _os_open(path, flags, mode=0o777, *, dir_fd=None):
         """Helper function that wraps os.open() and os.close() in a context manager"""
@@ -104,7 +103,6 @@ if {'umask', 'stat', 'chmod'} <= os.__dict__.keys() \
             # do not chmod() if there's nothing to change -- we might not be the owner
             if st_mode | mode != st_mode:
                 os.chmod(fd, st_mode | mode)
-
 else:
     @contextmanager
     def _umask_bits(umask):

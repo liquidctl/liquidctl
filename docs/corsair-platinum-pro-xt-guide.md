@@ -2,7 +2,7 @@
 _Driver API and source code available in [`liquidctl.driver.hydro_platinum`](../liquidctl/driver/hydro_platinum.py)._
 
 _Changed in 1.13.0: support added for the H100i and H150i Elite RGB models._<br>
-_Changed in git: the H115i Elite RGB is now supported._<br>
+_Changed in 1.14.0: the H115i Elite RGB is now supported._<br>
 
 ## Initializing the device and setting the pump mode
 

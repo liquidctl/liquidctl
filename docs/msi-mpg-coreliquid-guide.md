@@ -1,5 +1,5 @@
 # MSI MPG Coreliquid AIO coolers
-_Driver API and source code available in [`liquidctl.driver.msi`](../liquidctl/driver/msi)._
+_Driver API and source code available in [`liquidctl.driver.msi`](../liquidctl/driver/msi.py)._
 
 _Currently, only the K360 model is experimentally supported as more testing and feedback is needed._
 
