@@ -377,7 +377,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c1e", TAG+="uacc
 # Corsair HX1200i
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c08", TAG+="uaccess"
 
-# Corsair HX1200i ATX 3.1
+# Corsair HX1200i ATX 3.0
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1c23", TAG+="uaccess"
 
 # Corsair HX1500i
