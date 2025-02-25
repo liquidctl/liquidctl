@@ -152,6 +152,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
+| Fan/LED controller | [Lian-Li Uni SL, SLV2, AL, ALV2, SLI](docs/lianli-uni-guide.md) | <sup>_p_</sup> | git |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i, HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
