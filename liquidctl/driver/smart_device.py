@@ -643,7 +643,7 @@ class SmartDevice2(_BaseSmartDevice):
             for [g, r, b] in colors:
                 self._write([0x22, 0x10, cid])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid])  # clear out all independent LEDs
-                color_lists = [] * 3
+                color_lists = [0] * 3
                 color_lists[0] = [g, r, b] * 8
                 color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
                 color_lists[2] = [int(x // 4) for x in color_lists[1]]
@@ -653,7 +653,7 @@ class SmartDevice2(_BaseSmartDevice):
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
                             0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00])
-                    self._write(msg + color_lists[i % 4])
+                    self._write(msg + color_lists[i % 3])
                 self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
         else:
             byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
