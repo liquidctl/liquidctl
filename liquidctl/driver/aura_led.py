@@ -19,7 +19,7 @@ Limitations:
 This controller only supports 'effect' modes that are managed entirely by the
 controller. The other mode is 'direct' that is managed by software, but this
 requires the continuous transmission of command codes to control dynamic lighting
-effects (i.e. all lighting modes in which colors either change or the LED 
+effects (i.e. all lighting modes in which colors either change or the LED
 blinks/fades/pulses).
 
 In 'effect' mode, the software simply issues a  'fire-and-forget' command to the
