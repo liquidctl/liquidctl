@@ -21,7 +21,6 @@ _LOGGER = logging.getLogger(__name__)
 
 _USAGE_PAGE = 0xff89
 _RGB_CONTROL_USAGE = 0xcc
-_OTHER_USAGE = 0x10
 _REPORT_ID = 0xcc
 _REPORT_BYTE_LENGTH = 63
 _INIT_CMD = 0x60
@@ -113,15 +112,20 @@ class RgbFusion2(UsbHidDriver):
         handles matching other usages have to be ignored.
         """
 
-        # if usage_page/usage are not available due to hidapi limitations
-        # (version, platform or backend), they are unfortunately left
-        # uninitialized; because of this, we explicitly exclude the undesired
-        # usage_page/usage pair, and assume in all other cases that we either
-        # have the desired usage page/usage pair, or that on that system a
-        # single handle is returned for that device interface (see: 259)
+        # A complication is that if HID usage and usage page are not available
+        # to HIDAPI, a single handle is returned for the device interface, but
+        # the usage and usage page fields are unfortunately left uninitialized
+        # by the library (as opposed to in some well defined default value).
+        #
+        # Therefore, assume that a handle with an unknown usage page means that
+        # we're on system where usage and usage page aren't available, and
+        # there's only one handle for the device interface. Otherwise, check
+        # that the usage matches the desired value.
+        #
+        # See: #259 and #759.
 
         if (handle.hidinfo['usage_page'] == _USAGE_PAGE and
-                handle.hidinfo['usage'] == _OTHER_USAGE):
+                handle.hidinfo['usage'] != _RGB_CONTROL_USAGE):
             return
 
         yield from super().probe(handle, **kwargs)
