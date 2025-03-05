@@ -101,6 +101,7 @@ class RgbFusion2(UsbHidDriver):
 
     _MATCHES = [
         (0x048d, 0x5702, 'Gigabyte RGB Fusion 2.0 5702 Controller', {}),
+        (0x048d, 0x5711, 'Gigabyte RGB Fusion 2.0 5711 Controller', {}),
         (0x048d, 0x8297, 'Gigabyte RGB Fusion 2.0 8297 Controller', {}),
     ]
 
