@@ -1,8 +1,13 @@
 # Changelog
 
-## Unreleased – 2025-01-01
+## [1.15.0] – 2025-04-01
 
 ### Changes since 1.14.0
+
+Added:
+
+- Support for NZXT Kraken Elite 2024 RGB (liquidctl#746)
+- Support for Corsair HX1200i ATX 3.1 (liquidctl#763)
 
 Changed:
 
@@ -11,7 +16,7 @@ Changed:
 Fixed:
 
 - Permission errors when accessing driver data on Windows with Python 3.13
-
+- Read errors when setting Aquacomputer fan speeds in quick succession (liquidctl#766, liquidctl#767)
 
 ## [1.14.0] – 2025-01-01
 
@@ -23,7 +28,7 @@ Added:
 - Support for Corsair iCue Elite H100i RGB, white version (liquidctl#735)
 - Support for Corsair iCue Elite H115i RGB (liquidctl#678)
 - Support for Corsair iCue Elite H150i RGB, white version (liquidctl#725)
-- Support for Kraken 2023 standard and Elite models (liquidctl#605)
+- Support for NZXT Kraken 2023 standard and Elite models (liquidctl#605)
 - Support for MSI MPG Coreliquid K360 and two similar variants (liquidctl#564)
 - Support for NZXT RGB & Fan Controller with PID `201f` (liquidctl#733)
 - Support for NZXT RGB & Fan Controller with PID `2020` (liquidctl@a64e73e63eb3)
