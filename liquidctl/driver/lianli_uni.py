@@ -158,8 +158,9 @@ class LianLiUni(UsbHidDriver):
         # Check if PWM is on for the channel
         if self.pwm_channels[channel_index]:
             _LOGGER.warning(
-                f"Cannot set fixed speed for Channel {channel_index + 1}: PWM is enabled. "
-                "Please disable PWM first to set a fixed speed."
+                "Cannot set fixed speed for Channel %d: PWM is enabled. "
+                "Please disable PWM first to set a fixed speed.",
+                {channel_index + 1}
             )
             return
 
