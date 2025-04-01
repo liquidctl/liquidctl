@@ -484,6 +484,21 @@ class HidapiDevice:
             _LOGGER.debug('wrote %d total bytes, expected %d', res, len(data))
         return res
 
+    def get_input_report(self, report_id, length):
+        """Get input report that matches `report_id` from HID.
+
+        If the device does not use numbered reports, set `report_id` to 0.
+
+        Unlike `read`, the returned data follows semantics similar to `write`
+        and `get_input_report`: the first byte will always contain the
+        report ID (or 0), and the report data itself will being at the second
+        byte.
+        """
+        data = self.hiddev.get_input_report(report_id, length)
+        _LOGGER.debug('got input report 0x%02x with %d bytes: %r', data[0],
+                      len(data) - 1, LazyHexRepr(data, start=1))
+        return data
+
     def get_feature_report(self, report_id, length):
         """Get feature report that matches `report_id` from HID.
 
