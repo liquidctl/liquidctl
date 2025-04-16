@@ -330,3 +330,20 @@ def test_unsafe_core_liquid_set_hw_status(mpgCoreLiquidDeviceExperimental):
     mpgCoreLiquidDeviceExperimental.set_hardware_status(
         cpu_T, cpu_f=cpu_freq, unsafe=["experimental_coreliquid_cooler"]
     )
+
+
+@pytest.fixture
+def mpgCoreLiquidS360Device():
+    description = "Mock MEG CoreLiquid S360"
+    device = _MockCoreLiquid(vendor_id=0x0DB0, product_id=0x6A05)
+    dev = MpgCooler(device, description, fan_count=3)
+
+    dev.connect()
+    return dev
+
+
+def test_meg_coreliquid_s360_get_status(mpgCoreLiquidS360Device):
+    status = mpgCoreLiquidS360Device.get_status()
+    assert len(status) == 10
+    assert status[0][0] == "Fan 1 speed"
+    assert status[-1][0] == "Pump duty"
