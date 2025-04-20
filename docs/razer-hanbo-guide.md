@@ -23,10 +23,10 @@ temperature being provided in order traverse its curve. Without updates, the
 fans will continue using the duty cycle assigned to the previously sent
 reference temperature.
 
-A trait of the Razer Hanbo are that the temperature points in the curves are
-fixed. For this reason any temperatures provided to input curves will be
-ignored. Duty cycles will be processed in order and allocated to the
-following temperatures:
+A trait of the Razer Hanbo is that the curve temperature points are fixed.
+For this reason any temperatures provided to input curves will be ignored.
+Duty cycles will be processed in order and allocated to the following
+temperatures:
 
 20, 30, 40, 50, 60, 70 ,80, 90, 100.
 
@@ -53,9 +53,9 @@ Razer Hanbo Chroma
 
 ## Monitoring
 
-The device reports status on the pump and the fans. The fans are monitored
-collectively. The liquid temperature and currently active profile are also
-reported.
+The device reports status on the pump and the fans. Only one fan is monitored,
+which fan is based on how the AIO was assembled by the user. The liquid
+temperature and active curve profile are also reported.
 
 ```
 # liquidctl --match razer status
@@ -73,17 +73,17 @@ Razer Hanbo Chroma
 
 Like the OEM software, it is not possible to directly issue a PWM duty cycle
 or speed to the fan or pump. The user can select between three preset profiles
-or upload a custom fan profile. All of these utilise the Yoda API in the same
-manner as the MSI MPG Coreliquid.
+or upload a custom fan profile. All of these utilise the function named by
+the MSI MPG Coreliquid in the yoda script.
 
 `set_hardware_status()` - Upload reference temperature to AIO for fan curve use.
 
-`set_profiles()` - Upload a curve. Note that the expected format remains as per
-every other device, but the temperature bytes will be ignored as these are
-fixed values on the Hanbo. The curve does not take effect until custom mode
-is the selected profile.
+`set_profiles()` - Uploads a custom curve. Note that the expected format
+remains as per every other device, but the temperature bytes will be ignored
+as these are fixed values on the Hanbo. The curve does not take effect until
+`custom` mode is set per below.
 
-`set_speed_profile()` - Select a profile
+`set_speed_profile()` - Sets a rotor to a particular profile.
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
