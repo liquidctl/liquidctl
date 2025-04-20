@@ -163,16 +163,15 @@ class RazerHanbo(UsbHidDriver):
         * If hwmon does not exist, set the default CPU reference temperature
         * Print the firmware and serial number
         """
-
         self._write(_RazerHanboCommands.get_firmware.header)
         array = self._hanbo_hid_read_validate_report(_RazerHanboReplies.firmware)
 
         if not self._hwmon:
-            self.set_hardware_status(_DEFAULT_CPU_TEMP_DEGREES_C)
+            self.set_hardware_status(list(_HWMON_CTRL_MAPPING)[1], _DEFAULT_CPU_TEMP_DEGREES_C)
             self._hanbo_hid_read_validate_report(_RazerHanboReplies.ref_temp)
 
         return [
-            ("Serial number", (array[2:17]).decode('utf-8'), ""),
+            ("Serial number", (array[2:17]).decode("utf-8"), ""),
             ("Firmware version", list(array[26:34]), ""),
         ]
 
@@ -192,7 +191,7 @@ class RazerHanbo(UsbHidDriver):
             (
                 _STATUS_PUMP_PROFILE,
                 (
-                    list(_PROFILE_MAPPING.keys())[array[3] - 1]
+                    list(_PROFILE_MAPPING)[array[3] - 1]
                     if self._active_profile["pump"] != "custom"
                     else "custom"
                 ),
@@ -215,7 +214,7 @@ class RazerHanbo(UsbHidDriver):
             (
                 _STATUS_FAN_PROFILE,
                 (
-                    list(_PROFILE_MAPPING.keys())[array[4] - 1]
+                    list(_PROFILE_MAPPING)[array[4] - 1]
                     if self._active_profile["fan"] != "custom"
                     else "custom"
                 ),
@@ -231,14 +230,14 @@ class RazerHanbo(UsbHidDriver):
             (_STATUS_PUMP_DUTY, self._hwmon.read_int("pwm1"), "%"),
             (
                 _STATUS_PUMP_PROFILE,
-                list(_PROFILE_MAPPING.keys())[self._hwmon.read_int("pwm1_enable") - 1],
+                list(_PROFILE_MAPPING)[self._hwmon.read_int("pwm1_enable") - 1],
                 "",
             ),
             (_STATUS_FAN_SPEED, self._hwmon.read_int("fan2_input"), "rpm"),
             (_STATUS_FAN_DUTY, self._hwmon.read_int("pwm2"), "%"),
             (
                 _STATUS_FAN_PROFILE,
-                list(_PROFILE_MAPPING.keys())[self._hwmon.read_int("pwm2_enable") - 1],
+                list(_PROFILE_MAPPING)[self._hwmon.read_int("pwm2_enable") - 1],
                 "",
             ),
         ]
@@ -265,7 +264,14 @@ class RazerHanbo(UsbHidDriver):
                 )
             return self._get_status_directly()
 
-    def set_hardware_status(self, T, direct_access=True, **kwargs):
+    def set_hardware_status(self, channels, T, direct_access=True, **kwargs):
+        if channels != list(_HWMON_CTRL_MAPPING)[1]:
+            _LOGGER.info(f"{channels} is invalid for this operation")
+            raise ValueError(f"{channels} is invalid for this operation")
+
+        if type(T) == list:
+            T = T[0]
+
         if self._hwmon and not direct_access:
             _LOGGER.info(
                 "bound to %s kernel driver, writing reference temp to hwmon", self._hwmon.driver
@@ -291,8 +297,14 @@ class RazerHanbo(UsbHidDriver):
         temperature via device.set_cpu_status() to function.
         Pump curves are autonomous.
         """
-
-        for ch, prof in zip(channels, profiles):
+        args = ((channels, profiles),)
+        if isinstance(channels, tuple) and isinstance(profiles, tuple):
+            if len(channels) == len(profiles):
+                args = zip(channels, profiles)
+            else:
+                _LOGGER.warning("Unbalanced channel/profile arguments")
+                return
+        for ch, prof in args:
             if (
                 ch in self._custom_profiles and prof in _PROFILE_MAPPING
             ):  # Which happens to have all channels, so a good sanity checker
