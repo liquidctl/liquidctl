@@ -6,8 +6,10 @@ Usage:
   liquidctl [options] status
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
+  liquidctl [options] set <channel> tref <temperature>
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl [options] set <channel> screen <mode> [<value>]
+  liquidctl [options] switch <channel> <profile>
   liquidctl --help
   liquidctl --version
 
@@ -106,6 +108,7 @@ _PARSE_ARG = {
     '--pick': int,
 
     '--speed': str.lower,
+    '--switch': str.lower,
     '--time-per-color': int,
     '--time-off': int,
     '--alert-threshold': int,
@@ -293,6 +296,11 @@ def _device_set_speed(dev, args, **opts):
     else:
         dev.set_fixed_speed(args['<channel>'].lower(), int(args['<percentage>'][0]), **opts)
 
+def _device_set_temp(dev, args, **opts):
+    dev.set_hardware_status(args["<channel>"], args["<temperature>"], **opts)
+
+def _device_switch_mode(dev, args, **opts):
+    dev.set_profiles(args["<channel>"], args["<profile>"], **opts)
 
 def _make_opts(args):
     opts = {}
@@ -472,6 +480,10 @@ def main():
                     _device_set_color(dev, args, **opts)
                 elif args['set'] and args['screen']:
                     _device_set_screen(dev, args, **opts)
+                elif args['set'] and args['tref']:
+                    _device_set_temp(dev, args, **opts)
+                elif args['switch']:
+                    _device_switch_mode(dev, args, **opts)
                 else:
                     assert False, 'unreachable'
         except LiquidctlError as err:
