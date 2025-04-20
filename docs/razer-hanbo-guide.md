@@ -11,23 +11,22 @@ This driver supports
 - Fan profile support
 - Hwmon read offloading with direct-mode fallback
 
-All configuration is done through USB, and persists as long as the device is
-powered, even if the system has gone to Soft Off (S5) state.
+All configuration is done through USB. In the event of a power cycle the
+AIO firmware will automatically restore to its previously commanded state.
 
-This driver is intended to be driven in a Yoda-like manner as there are no
-direct PWM modes. The fan and pump can select from three built-in profiles
-and one custom profile. The fan and pump operate independently and
-have separate custom profiles. All pump profiles use the coolant temperature
-measured internally as a reference and do not need user interaction once
-triggered. Fan profiles however rely on an external reference temperature
-being provided to it in order traverse the curve. Without it the AIO will
-continue using whatever duty cycle is allocated to the default CPU temperature
-which is nominated to be 30°C.
+The Razer Hanbo is a profile driven device, there are no direct PWM modes.
+The fan and pump can select from three built-in (fixed) profiles and one custom
+profile. The fan and pump operate independently and have independent profile
+sets. The pump profiles use the internal coolant temperature as its reference
+and traverses autonomously. Fan profiles rely on an external reference
+temperature being provided in order traverse its curve. Without updates, the
+fans will continue using the duty cycle assigned to the previously sent
+reference temperature.
 
-When setting a custom profile, a trait of the Razer Hanbo are that the
-temperature points in the curve are fixed. For this reason any temperatures
-provided to input curves will be ignored. Duty cycles will be processed in
-order and allocated to the following temperatures
+A trait of the Razer Hanbo are that the temperature points in the curves are
+fixed. For this reason any temperatures provided to input curves will be
+ignored. Duty cycles will be processed in order and allocated to the
+following temperatures:
 
 20, 30, 40, 50, 60, 70 ,80, 90, 100.
 
@@ -77,12 +76,14 @@ or speed to the fan or pump. The user can select between three preset profiles
 or upload a custom fan profile. All of these utilise the Yoda API in the same
 manner as the MSI MPG Coreliquid.
 
-set_hardware_status() - Upload reference temperature to AIO for fan curve use.
-set_profiles() - Upload a curve. Note that the expected format remains as per
+`set_hardware_status()` - Upload reference temperature to AIO for fan curve use.
+
+`set_profiles()` - Upload a curve. Note that the expected format remains as per
 every other device, but the temperature bytes will be ignored as these are
-fixed values on the Hanbo. Curve does not take effect until custom mode
+fixed values on the Hanbo. The curve does not take effect until custom mode
 is the selected profile.
-set_speed_profile() - Select a profile
+
+`set_speed_profile()` - Select a profile
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
