@@ -48,7 +48,7 @@ fan curve temperature to 30°C.
 # liquidctl --match razer initialize
 Razer Hanbo Chroma
 ├── Serial number                    123456789ABCDEF
-└── Firmware version    [128, 0, 1, 1, 32, 0, 2, 16]
+└── Firmware version                          V1.2.0
 ```
 
 ## Monitoring

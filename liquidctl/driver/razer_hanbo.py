@@ -170,9 +170,11 @@ class RazerHanbo(UsbHidDriver):
             self.set_hardware_status(list(_HWMON_CTRL_MAPPING)[1], _DEFAULT_CPU_TEMP_DEGREES_C)
             self._hanbo_hid_read_validate_report(_RazerHanboReplies.ref_temp)
 
+        firmware_version = "V{}.{}.{}".format(array[29], array[30] >> 4 & 0x0F, array[30] & 0x0F)
+
         return [
             ("Serial number", (array[2:17]).decode("utf-8"), ""),
-            ("Firmware version", list(array[26:34]), ""),
+            ("Firmware version", firmware_version, ""),
         ]
 
     def _get_status_directly(self):
