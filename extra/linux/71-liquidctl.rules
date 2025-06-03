@@ -482,6 +482,27 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uacc
 # Gigabyte RGB Fusion 2.0 8297 Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="8297", TAG+="uaccess"
 
+# Lian Li Uni AL
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a101", TAG+="uaccess"
+
+# Lian Li Uni AL V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a104", TAG+="uaccess"
+
+# Lian Li Uni SL
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="7750", TAG+="uaccess"
+
+# Lian Li Uni SL
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a100", TAG+="uaccess"
+
+# Lian Li Uni SL V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a103", TAG+="uaccess"
+
+# Lian Li Uni SL V2
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a105", TAG+="uaccess"
+
+# Lian Li Uni SL-Infinity
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a102", TAG+="uaccess"
+
 # MSI MPG Coreliquid K360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="b130", TAG+="uaccess"
 
