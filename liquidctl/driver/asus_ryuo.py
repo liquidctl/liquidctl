@@ -1,3 +1,9 @@
+"""liquidctl driver for the ASUS Ryuo liquid coolers.
+
+Copyright Bloodhundur and contributors
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
+
 import logging
 from typing import List
 
@@ -19,7 +25,7 @@ class AsusRyuoTest(UsbHidDriver):
     """Driver for ASUS ROG Ryuo I 240 (fan control only)."""
 
     _MATCHES = [
-        (0x0B05, 0x1887, "ASUS ROG Ryuo I 240 (Test Driver)", {}),
+        (0x0B05, 0x1887, "ASUS ROG Ryuo I 240", {}),
     ]
 
     feature_set_fixed_speed = True
@@ -56,4 +62,3 @@ class AsusRyuoTest(UsbHidDriver):
 
     def _write(self, data: List[int]):
         self.device.write(rpadlist(data, _REPORT_LENGTH, 0))
-
