@@ -42,6 +42,8 @@ from liquidctl.driver import msi
 from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
+from liquidctl.driver import ga2_lcd
+
 if sys.platform == 'linux':
     from liquidctl.driver import ddr4
     from liquidctl.driver import nvidia
