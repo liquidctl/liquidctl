@@ -41,7 +41,7 @@ _MAX_READ_ATTEMPTS = 12
 _LCD_TOTAL_MEMORY = 24320
 _PUMP_RPM_MAX = 3600
 
-_STATUS_TEMPERATURE = "Coolant temperature"
+_STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
 _STATUS_PUMP_DUTY = "Pump duty"
 _STATUS_FAN_SPEED = "Fan speed"
