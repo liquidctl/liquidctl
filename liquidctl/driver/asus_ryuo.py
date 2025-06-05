@@ -21,16 +21,14 @@ _REQUEST_GET_FIRMWARE = (0x82, 0x02)
 _STATUS_FIRMWARE = "Firmware version"
 
 
-class AsusRyuoTest(UsbHidDriver):
+class AsusRyuo(UsbHidDriver):
     """Driver for ASUS ROG Ryuo I 240 (fan control only)."""
 
     _MATCHES = [
         (0x0B05, 0x1887, "ASUS ROG Ryuo I 240", {}),
     ]
 
-    feature_set_fixed_speed = True
-
-    def initialize(self, **kwargs):
+    def initialize(self, **kwargs:
         _LOGGER.info("No initialization required")
 
     def get_status(self, **kwargs):
