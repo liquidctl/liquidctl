@@ -1,6 +1,4 @@
-# ASUS ROG Ryuo I 240 liquid cooler protocol
-
-_New in git: added support for the ASUS ROG Ryuo I 240 AIO with fixed fan speed control and firmware version reporting._
+# ASUS ROG Ryuo I 240 Liquid Cooler Protocol
 
 The data of all USB packets is 65 bytes long and prefixed with `0xEC`.
 
@@ -13,7 +11,7 @@ The data of all USB packets is 65 bytes long and prefixed with `0xEC`.
 - Response:
     - Header: `0xEC 0x02`
     - Data:
-        - Byte 2–18: ASCII-encoded firmware version (null-terminated)
+        - Byte 2–18: firmware-version (ASCII)
 
 ## Cooling Operations
 
@@ -28,6 +26,6 @@ The data of all USB packets is 65 bytes long and prefixed with `0xEC`.
 
 ## Notes
 
-- Only the `"fans"`/`"fan"` channel is supported.
-- No real-time status or telemetry (e.g. fan RPM, temperature) is available for this device.
+- Only the `"fans"`/`"fan"` channel is supported as of this driver.
+- No real-time status or telemetry (e.g. fan RPM, temperature) is available for this device as of this driver.
 
