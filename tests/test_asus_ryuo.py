@@ -1,13 +1,15 @@
 import pytest
 
-from _testutils import MockHidapiDevice 
+from _testutils import MockHidapiDevice
 from liquidctl.driver.asus_ryuo import AsusRyuo
+
 
 @pytest.fixture
 def mockRyuo():
     device = AsusRyuo(_MockRyuoDevice(), "Mock Asus Ryuo I")
     device.connect()
-    return device 
+    return device
+
 
 class _MockRyuoDevice(MockHidapiDevice):
     def __init__(self):
@@ -40,19 +42,21 @@ class _MockRyuoDevice(MockHidapiDevice):
 
         return buf[:length]
 
+
 def test_initialize(mockRyuo):
     (firmware_status,) = mockRyuo.initialize()
 
     assert firmware_status[1] == "AURO0-S452-0205"
 
+
 @pytest.mark.skip(reason="TODO: implement expected status values")
 def test_status(mockRyuo):
     actual = mockRyuo.get_status()
 
-    expected = [
-   ]
+    expected = []
 
     assert sorted(actual) == sorted(expected)
+
 
 def test_set_fixed_speeds(mockRyuo):
     mockRyuo.set_fixed_speed(channel="fans", duty=40)
