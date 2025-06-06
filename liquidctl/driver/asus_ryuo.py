@@ -28,16 +28,17 @@ class AsusRyuo(UsbHidDriver):
         (0x0B05, 0x1887, "ASUS ROG Ryuo I 240", {}),
     ]
 
-    def initialize(self, **kwargs:
-        _LOGGER.info("No initialization required")
-
-    def get_status(self, **kwargs):
+    def initialize(self, **kwargs):
         msg = self._request(*_REQUEST_GET_FIRMWARE)
         fw_string = bytes(msg[2:]).split(b'\x00')[0].decode('ascii', errors='ignore')
         return [
             (_STATUS_FIRMWARE, fw_string, ''),
         ]
 
+    def get_status(self, **kwargs):
+        _LOGGER.info("No status available")
+
+       
     def set_fixed_speed(self, channel, duty, **kwargs):
         if channel not in ("fans", "fan"):
             raise ValueError("Only 'fans' channel is supported")
