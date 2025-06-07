@@ -56,10 +56,10 @@ _LCD_SCREEN_FPS = 24
 _LCD_FRAMEBUFFER_SIZE = 921600
 
 _LIGHTING_DIRECTIONS = {
-    'down': 0x02,
-    'up': 0x03,
-    'left': 0x04,
-    'right': 0x05,
+    "down": 0x02,
+    "up": 0x03,
+    "left": 0x04,
+    "right": 0x05,
 }
 
 _PUMP_LIGHTING_SPEEDS = {
@@ -71,37 +71,38 @@ _PUMP_LIGHTING_SPEEDS = {
 }
 
 _PUMP_LIGHTING_SCOPES = {
-    'all': 0x00,
-    'outer': 0x01,
-    'inner': 0x02,
+    "all": 0x00,
+    "outer": 0x01,
+    "inner": 0x02,
 }
 
 _PUMP_LIGHTING_MODES = {
-    'bounce': 0x10,
-    'color-morph': 0x0f,
-    'burst': 0x0e,
-    'big-bang': 0x0d,
-    'static-starry-night': 0x0b,
-    'colorful-starry-night': 0x0a,
-    'transmit': 0x09,
-    'fluctuation': 0x08,
-    'ticker-tape': 0x07,
-    'meteor': 0x06,
-    'runway': 0x05,
-    'breathing': 0x04,
-    'static': 0x03,
-    'rainbow-move': 0x02,
-    'rainbow': 0x01,
+    "bounce": 0x10,
+    "color-morph": 0x0F,
+    "burst": 0x0E,
+    "big-bang": 0x0D,
+    "static-starry-night": 0x0B,
+    "colorful-starry-night": 0x0A,
+    "transmit": 0x09,
+    "fluctuation": 0x08,
+    "ticker-tape": 0x07,
+    "meteor": 0x06,
+    "runway": 0x05,
+    "breathing": 0x04,
+    "static": 0x03,
+    "rainbow-move": 0x02,
+    "rainbow": 0x01,
 }
 
 _FAN_LIGHTING_MODES = {
-    'meteor': 0x00,
-    'runway': 0x01,
-    'breathing': 0x02,
-    'static': 0x03,
-    'rainbow-move': 0x04,
-    'rainbow': 0x05,
+    "meteor": 0x00,
+    "runway": 0x01,
+    "breathing": 0x02,
+    "static": 0x03,
+    "rainbow-move": 0x04,
+    "rainbow": 0x05,
 }
+
 
 class GA2LCD(UsbHidDriver):
     _status = []
@@ -110,7 +111,7 @@ class GA2LCD(UsbHidDriver):
             0x0416,  # Winbond Electronics Corp.
             0x7395,  # LianLi-GA_II-LCD_v1.4
             "Lian Li GA II LCD",
-            {}
+            {},
         )
     ]
 
@@ -120,12 +121,10 @@ class GA2LCD(UsbHidDriver):
         # version must contain "CA_II-Vision" somewhere in middle. Yep it's a C.
         if not ("CA_II-Vision" in version):
             raise NotSupportedByDevice(
-                "Device firmware version does not match expected GA_II format: "
-                f"{version}"
+                "Device firmware version does not match expected GA_II format: " f"{version}"
             )
 
-        self._status.append(
-            ("Firmware version", version, ""))
+        self._status.append(("Firmware version", version, ""))
 
         self.supports_lighting = False
         self.supports_cooling = True
@@ -166,8 +165,7 @@ class GA2LCD(UsbHidDriver):
         raise NotSupportedByDevice()
 
     def _set_fixed_speed_directly(self, channel, duty):
-        self.set_speed_profile(
-            channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
+        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
 
     def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         """Set channel to a fixed speed duty."""
@@ -188,32 +186,34 @@ class GA2LCD(UsbHidDriver):
     def _get_a_cmd_bytes(self, cmd, data):
         # return empty list if data is empty
         if not data:
-            return [[
-                1,  # report type
-                cmd,  # command
-                0,  # reserved
-                0,  # number_a (2 bytes)
-                0,  # number_b (2 bytes)
-                0,
-            ]]
+            return [
+                [
+                    1,  # report type
+                    cmd,  # command
+                    0,  # reserved
+                    0,  # number_a (2 bytes)
+                    0,  # number_b (2 bytes)
+                    0,
+                ]
+            ]
 
         num = 0
         offset = 0
 
         cmd_pas = []
 
-        while (offset < len(data)):
+        while offset < len(data):
             data_len = min(len(data) - offset, 58)
 
             cmd_pa = [0] * 64
             cmd_pa[0] = 1
             cmd_pa[1] = cmd
             cmd_pa[2] = 0
-            num_bytes = num.to_bytes(2, byteorder='big')
+            num_bytes = num.to_bytes(2, byteorder="big")
             cmd_pa[3] = num_bytes[0]
             cmd_pa[4] = num_bytes[1]
             cmd_pa[5] = data_len
-            cmd_pa[6:6 + data_len] = data[offset:offset + data_len]
+            cmd_pa[6 : 6 + data_len] = data[offset : offset + data_len]
 
             dlog = f"Command: {cmd}, Num: {num}, Offset: {offset}, Data Length: {data_len}\n"
             for i in range(len(cmd_pa)):
@@ -249,19 +249,20 @@ class GA2LCD(UsbHidDriver):
     def _read_a_cmd(self):
         r = self.device.read(64)
         _LOGGER.info(
-            f"Read command: report type: ${r[0]:02X}, command: {r[1]:02X}, number_a: {r[3]:02X},  number_b: {r[4]:02X}, length: {r[5]:02X}")
+            f"Read command: report type: ${r[0]:02X}, command: {r[1]:02X}, number_a: {r[3]:02X},  number_b: {r[4]:02X}, length: {r[5]:02X}"
+        )
 
         if r[0] != 1:
             raise ValueError("Invalid response from device")
 
         command = r[1]
-        number = int.from_bytes(r[3:5], byteorder='big')
+        number = int.from_bytes(r[3:5], byteorder="big")
         length = r[5]
         current_length = min(length, 58)
         packet_count = math.ceil(length / 58)
-        data = r[6:6 + current_length]
+        data = r[6 : 6 + current_length]
 
-        if (packet_count > 1):
+        if packet_count > 1:
             for i in range(packet_count - 1):
                 r = self.device.read(64)
                 if r[0] != 1:
@@ -269,13 +270,13 @@ class GA2LCD(UsbHidDriver):
                 if r[1] != command:
                     raise ValueError("Unexpected command in response")
 
-                number = int.from_bytes(r[3:5], byteorder='big')
+                number = int.from_bytes(r[3:5], byteorder="big")
                 if number != i + 1:
                     raise ValueError("Unexpected response number")
 
                 length_remaining = length - len(data)
                 current_length = min(length_remaining, 58)
-                data += r[6:6 + current_length]
+                data += r[6 : 6 + current_length]
 
         dlog = ""
         for i in range(len(data)):
@@ -289,11 +290,7 @@ class GA2LCD(UsbHidDriver):
         dlog += "\n"
         _LOGGER.info(dlog)
 
-        return {
-            "command": command,
-            "number": number,
-            "length": length,
-            "data": data}
+        return {"command": command, "number": number, "length": length, "data": data}
 
     def _read_firmware_version(self):
         """Read the firmware version from the device."""
@@ -303,16 +300,14 @@ class GA2LCD(UsbHidDriver):
         p1 = self._read_a_cmd()
 
         # copy until first 0
-        p1_data = p1["data"][:p1["data"].index(
-            0)] if 0 in p1["data"] else p1["data"]
+        p1_data = p1["data"][: p1["data"].index(0)] if 0 in p1["data"] else p1["data"]
         string_data = bytes(p1_data)
-        ascii_string_p1 = string_data.decode('ascii', errors='ignore')
+        ascii_string_p1 = string_data.decode("ascii", errors="ignore")
 
         p2 = self._read_a_cmd()
-        p2_data = p2["data"][:p2["data"].index(
-            0)] if 0 in p2["data"] else p2["data"]
+        p2_data = p2["data"][: p2["data"].index(0)] if 0 in p2["data"] else p2["data"]
         string_data = bytes(p2_data)
-        ascii_string_p2 = string_data.decode('ascii', errors='ignore')
+        ascii_string_p2 = string_data.decode("ascii", errors="ignore")
         ascii_string = ascii_string_p1.strip() + ascii_string_p2.strip()
 
         return ascii_string
@@ -331,15 +326,16 @@ class GA2LCD(UsbHidDriver):
         if r["length"] != 0x07:
             raise ValueError("Unexpected handshake response length")
 
-        fan_rpm = int.from_bytes(r["data"][0:2], byteorder='big')
-        pump_rpm = int.from_bytes(r["data"][2:4], byteorder='big')
+        fan_rpm = int.from_bytes(r["data"][0:2], byteorder="big")
+        pump_rpm = int.from_bytes(r["data"][2:4], byteorder="big")
         temp_valid = r["data"][4] & 0x01
         temp_int = r["data"][5]
         temp_frac = r["data"][6]
         temperature = temp_int + temp_frac / 10.0 if temp_valid else None
 
         _LOGGER.info(
-            f"Handshake response: fan_rpm={fan_rpm}, pump_rpm={pump_rpm}, temperature={temperature}")
+            f"Handshake response: fan_rpm={fan_rpm}, pump_rpm={pump_rpm}, temperature={temperature}"
+        )
 
         return {
             "fan_rpm": fan_rpm,
@@ -351,43 +347,49 @@ class GA2LCD(UsbHidDriver):
         """Set the pump speed in %."""
         # clip speed to 0-100%
         speed = max(0, min(100, speed))
-        self._write_a_cmd_with_data(0x8a, [0, speed])
+        self._write_a_cmd_with_data(0x8A, [0, speed])
 
     def _set_fan_speed(self, speed):
         """Set the fan speed in %."""
         # clip speed to 0-100%
         speed = max(0, min(100, speed))
-        self._write_a_cmd_with_data(0x8b, [0, speed])
+        self._write_a_cmd_with_data(0x8B, [0, speed])
 
     def _set_pump_lighting(self, mode, colors, speed, direction, **kwargs):
-        req = [0] * 19;
+        req = [0] * 19
 
         if mode not in _PUMP_LIGHTING_MODES:
-            raise ValueError(f'unknown pump lighting mode, should be one of: {_quoted(*_PUMP_LIGHTING_MODES)}')
+            raise ValueError(
+                f"unknown pump lighting mode, should be one of: {_quoted(*_PUMP_LIGHTING_MODES)}"
+            )
 
         if speed not in _PUMP_LIGHTING_SPEEDS:
-            raise ValueError(f'unknown pump lighting speed, should be one of: {_quoted(*_PUMP_LIGHTING_SPEEDS)}')
+            raise ValueError(
+                f"unknown pump lighting speed, should be one of: {_quoted(*_PUMP_LIGHTING_SPEEDS)}"
+            )
 
         if direction not in _LIGHTING_DIRECTIONS:
-            raise ValueError(f'unknown lighting direction, should be one of: {_quoted(*_LIGHTING_DIRECTIONS)}')
+            raise ValueError(
+                f"unknown lighting direction, should be one of: {_quoted(*_LIGHTING_DIRECTIONS)}"
+            )
 
         pass_colors = [0] * (3 * 4)
 
-        req[0] = _PUMP_LIGHTING_SCOPES['all']
+        req[0] = _PUMP_LIGHTING_SCOPES["all"]
         req[1] = _PUMP_LIGHTING_MODES[mode]
-        req[2] = 4 # brightness 0-4
+        req[2] = 4  # brightness 0-4
         req[3] = _PUMP_LIGHTING_SPEEDS[speed]
         req[16] = _LIGHTING_DIRECTIONS[direction]
-        req[17] = 0 # disabled
-        req[18] = 0 # source
+        req[17] = 0  # disabled
+        req[18] = 0  # source
 
         colors = list(colors)
         if len(colors) > 0:
-            req[4] = colors[0][0] 
+            req[4] = colors[0][0]
             req[5] = colors[0][1]
             req[6] = colors[0][2]
         if len(colors) > 1:
-            req[7] = colors[1][0]  
+            req[7] = colors[1][0]
             req[8] = colors[1][1]
             req[9] = colors[1][2]
         if len(colors) > 2:
@@ -395,7 +397,7 @@ class GA2LCD(UsbHidDriver):
             req[11] = colors[2][1]
             req[12] = colors[2][2]
         if len(colors) > 3:
-            req[13] = colors[3][0] 
+            req[13] = colors[3][0]
             req[14] = colors[3][1]
             req[15] = colors[3][2]
 
@@ -405,28 +407,34 @@ class GA2LCD(UsbHidDriver):
         req = [8] * 20
 
         if mode not in _FAN_LIGHTING_MODES:
-            raise ValueError(f'unknown fan lighting mode, should be one of: {_quoted(*_FAN_LIGHTING_MODES)}')
+            raise ValueError(
+                f"unknown fan lighting mode, should be one of: {_quoted(*_FAN_LIGHTING_MODES)}"
+            )
         if speed not in _PUMP_LIGHTING_SPEEDS:
-            raise ValueError(f'unknown fan lighting speed, should be one of: {_quoted(*_PUMP_LIGHTING_SPEEDS)}')
+            raise ValueError(
+                f"unknown fan lighting speed, should be one of: {_quoted(*_PUMP_LIGHTING_SPEEDS)}"
+            )
         if direction not in _LIGHTING_DIRECTIONS:
-            raise ValueError(f'unknown lighting direction, should be one of: {_quoted(*_LIGHTING_DIRECTIONS)}')
+            raise ValueError(
+                f"unknown lighting direction, should be one of: {_quoted(*_LIGHTING_DIRECTIONS)}"
+            )
 
         req[0] = _FAN_LIGHTING_MODES[mode]
         req[1] = 4
         req[2] = _PUMP_LIGHTING_SPEEDS[speed]
         req[15] = _LIGHTING_DIRECTIONS[direction]
-        req[16] = 0 # disable
-        req[17] = 0 # source
-        req[18] = 0 # syncs with pump ?
-        req[19] = 24 # led count ?
+        req[16] = 0  # disable
+        req[17] = 0  # source
+        req[18] = 0  # syncs with pump ?
+        req[19] = 24  # led count ?
 
         colors = list(colors)
         if len(colors) > 0:
-            req[4] = colors[0][0] 
+            req[4] = colors[0][0]
             req[5] = colors[0][1]
             req[6] = colors[0][2]
         if len(colors) > 1:
-            req[7] = colors[1][0]  
+            req[7] = colors[1][0]
             req[8] = colors[1][1]
             req[9] = colors[1][2]
         if len(colors) > 2:
@@ -434,7 +442,7 @@ class GA2LCD(UsbHidDriver):
             req[11] = colors[2][1]
             req[12] = colors[2][2]
         if len(colors) > 3:
-            req[13] = colors[3][0] 
+            req[13] = colors[3][0]
             req[14] = colors[3][1]
             req[15] = colors[3][2]
 
