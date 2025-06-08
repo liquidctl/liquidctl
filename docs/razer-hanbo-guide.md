@@ -14,36 +14,12 @@ This driver supports
 All configuration is done through USB. In the event of a power cycle the
 AIO firmware will automatically restore to its previously commanded state.
 
-The Razer Hanbo is a profile driven device, there are no direct PWM modes.
-The fan and pump can select from three built-in (fixed) profiles and one custom
-profile. The fan and pump operate independently and have independent profile
-sets. The pump profiles use the internal coolant temperature as its reference
-and traverses autonomously. Fan profiles rely on an external reference
-temperature being provided in order traverse its curve. Without updates, the
-fans will continue using the duty cycle assigned to the previously sent
-reference temperature. It is expected that a program external to liquidctl
-will provide these updates.
-
-The temperature points in the curves are fixed. For this reason any
-temperatures provided to input curves will be ignored but must be
-present for the purposes of parsing. Duty cycles will be processed
-in order and allocated to the following temperatures:
-
-20, 30, 40, 50, 60, 70 ,80, 90, 100.
-
-The four profile names for the purposes of the driver are
-- quiet
-- balanced
-- extreme
-- custom
-
 ## Initialization
 [Initialization]: #initialization
 
 No initialization is required for the Razer Hanbo. Calling this function
 returns the unit serial number, firmware version and presets the reference
 fan curve temperature to 30°C.
-
 
 ```
 # liquidctl --match razer initialize
@@ -54,9 +30,10 @@ Razer Hanbo Chroma
 
 ## Monitoring
 
-The device reports status on the pump and the fans. Only one fan is monitored,
-which fan is based on how the AIO was assembled by the user. The liquid
-temperature and active curve profile are also reported.
+The device reports status on the pump and the fans. For fans, only one is
+monitored for the purposes of RPM measurement. The specific fan is based
+on how the AIO was assembled by the user. The liquid temperature and active
+curve profile for each channel are also reported.
 
 ```
 # liquidctl --match razer status
@@ -72,10 +49,32 @@ Razer Hanbo Chroma
 
 ## Fan and pump profiles
 
-Like the OEM software, it is not possible to directly issue a PWM duty cycle
-or speed to the fan or pump. The user can select between three preset profiles
-or upload a custom fan profile. All of these utilise the function named by
-the MSI MPG Coreliquid in the yoda script.
+The Razer Hanbo is a profile driven device, there are no direct PWM modes.
+The fan and pump can select from three built-in (fixed) profiles and one custom
+profile. The fan and pump operate independently and have independent profile
+sets.
+
+The four profile names for the purposes of the driver are
+- quiet
+- balanced
+- extreme
+- custom
+
+The custom curve is defined by 9 points. Each point is associated with a fixed
+temperature: 20C, 30C, 40C, 50C, 60C, 70C ,80C, 90C & 100C. The user can
+associate a PWM duty cycle with each point, the firmware will interpolate as
+required. PWM duty cycles must be equal to or monotonically increasing the
+previous value, the first value sets the baseline.
+
+The pump profiles use the internal coolant temperature as its reference
+and traverses its curve autonomously. Fan profiles rely on updates
+to the reference temperature in order traverse its curve. Without updates,
+the fans will remain on the duty cycle assigned to its location on the curve.
+It must be noted that this applies to all fan profiles not just the custom
+curve. It is expected that a program external to liquidctl will provide
+these updates.
+
+The following functions implement fan and pump profile control:
 
 `set_hardware_status()` - Upload reference temperature to AIO for fan curve use.
 This is mapped to `set <channel> reftemp <temp>` on the CLI. Temperature is
@@ -102,3 +101,5 @@ liquidctl automatically detects when a kernel driver is bound to the device and,
 whenever possible, uses it instead of directly accessing the device. This will
 happen for all read operations. Write operations will remain managed by liquidctl.
 Alternatively, direct access to the device can be forced with `--direct-access`.
+
+[liquidtux]: https://github.com/liquidctl/liquidtux
