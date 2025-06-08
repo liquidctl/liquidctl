@@ -6,8 +6,10 @@ Usage:
   liquidctl [options] status
   liquidctl [options] set <channel> speed (<temperature> <percentage>) ...
   liquidctl [options] set <channel> speed <percentage>
+  liquidctl [options] set <channel> reftemp <temperature>
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl [options] set <channel> screen <mode> [<value>]
+  liquidctl [options] set <channel> tprofile <profile>
   liquidctl --help
   liquidctl --version
 
@@ -293,6 +295,11 @@ def _device_set_speed(dev, args, **opts):
     else:
         dev.set_fixed_speed(args['<channel>'].lower(), int(args['<percentage>'][0]), **opts)
 
+def _device_set_reftemp(dev, args, **opts):
+    dev.set_hardware_status(args["<channel>"], args["<temperature>"], **opts)
+
+def _device_set_tprofile(dev, args, **opts):
+    dev.set_profiles(args["<channel>"], args["<profile>"], **opts)
 
 def _make_opts(args):
     opts = {}
@@ -472,6 +479,10 @@ def main():
                     _device_set_color(dev, args, **opts)
                 elif args['set'] and args['screen']:
                     _device_set_screen(dev, args, **opts)
+                elif args['set'] and args['reftemp']:
+                    _device_set_reftemp(dev, args, **opts)
+                elif args['set'] and args['tprofile']:
+                    _device_set_tprofile(dev, args, **opts)
                 else:
                     assert False, 'unreachable'
         except LiquidctlError as err:
