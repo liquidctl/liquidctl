@@ -113,7 +113,7 @@ class GA2LCD(UsbHidDriver):
         version = self._read_firmware_version()
         # version must contain "CA_II-Vision" somewhere in middle. Yep it's a C.
         if not ("CA_II-Vision" in version):
-            raise NotSupportedByDevice(
+            raise NotSupportedByDriver(
                 "Device firmware version does not match expected GA_II format: " f"{version}"
             )
 
@@ -155,7 +155,7 @@ class GA2LCD(UsbHidDriver):
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
-        raise NotSupportedByDevice()
+        raise NotSupportedByDriver()
 
     def _set_fixed_speed_directly(self, channel, duty):
         self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
@@ -232,6 +232,13 @@ class GA2LCD(UsbHidDriver):
 
     def _read_a_cmd(self):
         r = self.device.read(64)
+
+        if not r:
+            raise ValueError("Device not responding")
+
+        if len(r) < 6:
+            raise ValueError("Unexpected response from device")
+
         _LOGGER.debug(
             "Read command: type: 0x%02X, command: 0x%02X, number_a: 0x%02X,  number_b: 0x%02X, length: 0x%02X", r[0], r[1], r[3], r[4], r[5]
         )
