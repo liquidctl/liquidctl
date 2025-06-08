@@ -13,20 +13,20 @@ Supported features
 - Fan profile support
 - Hwmon offloading with direct-mode fallback
 
-This driver is intended to be driven in a Yoda-like manner as there are no
-direct PWM modes. The fan and pump can select from three built-in profiles
-and one custom profile. The fan and pump operate independently and
-have separate custom profiles. All pump profiles use the coolant temperature
-measured internally as a reference and do not need user interaction once
-triggered. Fan profiles however rely on an external reference temperature
-being provided to it in order traverse the curve. Without it the AIO will
-continue using whatever duty cycle is allocated to the default CPU temperature
-which is nominated to be 30°C.
+A defining feature of the Razer Hanbo is the lack of direct PWM modes.
+Instead the fan and pump can select from a set of three built-in
+profiles and one custom profile - the fan and pump profiles operate
+independently. All pump profiles use the coolant temperature measured
+internally as a reference and do not need user interaction once enabled.
+Fan profiles however rely on an external reference temperature being
+updated in order traverse its curve. Without it the AIO will
+continue using whatever duty cycle is allocated to the default CPU
+temperature which is nominated to be 30°C.
 
-When setting a custom profile, a trait of the Razer Hanbo are that the
-temperature points in the curve are fixed. For this reason any temperatures
-provided to input curves will be ignored. Duty cycles will be processed in
-order and allocated to the following temperatures
+When setting a custom profile, be aware that the temperature points in the
+curve are fixed. For this reason any temperatures provided to input curves
+will be ignored but must be present for the purposes of parsing. Duty cycles
+will be processed in order and allocated to the following temperatures
 
 20, 30, 40, 50, 60, 70 ,80, 90, 100.
 
@@ -57,9 +57,9 @@ _MAX_READ_RETRIES = 5
 _HWMON_CTRL_MAPPING = {"pump": 1, "fan": 2}
 _CUSTOM_PROFILE_ID = 4
 _PROFILE_MAPPING = {
-    "silent": (0x01, 0x14),
-    "balance": (0x02, 0x32),
-    "performance": (0x03, 0x50),
+    "quiet": (0x01, 0x14),
+    "balanced": (0x02, 0x32),
+    "extreme": (0x03, 0x50),
     "custom": (_CUSTOM_PROFILE_ID,),
 }
 
@@ -133,12 +133,13 @@ class RazerHanbo(UsbHidDriver):
 
     def _hanbo_hid_read_validate_report(self, signature):
         """For a received packet, validate the format before
-        returning. As there could be multiple users of the
-        we could be receiving a report destined for someone
-        else. In which case we ignore it and continue looking.
-        This is limited to _MAX_READ_RETRIES as there shouldn't
-        many concurrent users and the HidapiDevice class
-        manages timeouts on the bus.
+        returning. As there could be multiple users of the AIO
+        (e.g. ARGB) we could be receiving a report triggered by
+        someone else. In such case we ignore it and wait until
+        the reply to our request is seen. This is limited to
+        _MAX_READ_RETRIES as there shouldn't many concurrent
+        users and the HidapiDevice class manages timeouts on
+        the bus.
         """
 
         # Generate the expected header
