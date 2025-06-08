@@ -208,7 +208,7 @@ class GA2LCD(UsbHidDriver):
             cmd_pa[5] = data_len
             cmd_pa[6 : 6 + data_len] = data[offset : offset + data_len]
 
-            _LOGGER.debug(f"Command: {cmd}, Num: {num}, Offset: {offset}, Data Length: {data_len}\n")
+            _LOGGER.debug("Command: %s, Num: %s, Offset: %s, Data Length: %s\n", cmd, num, offset, data_len)
 
             num += 1
             offset += data_len
@@ -222,7 +222,7 @@ class GA2LCD(UsbHidDriver):
 
     def _write_a_cmd_with_data(self, cmd, data):
         packets = self._get_a_cmd_bytes(cmd, data)
-        _LOGGER.debug(f"Writing command: {cmd}, data: {bytes}")
+        _LOGGER.debug("Writing command: %s, data: %s", cmd, bytes)
         for packet in packets:
             self._write(packet)
 
@@ -232,7 +232,7 @@ class GA2LCD(UsbHidDriver):
     def _read_a_cmd(self):
         r = self.device.read(64)
         _LOGGER.debug(
-            f"Read command: report type: ${r[0]:02X}, command: {r[1]:02X}, number_a: {r[3]:02X},  number_b: {r[4]:02X}, length: {r[5]:02X}"
+            "Read command: report type: %02X, command: %02X, number_a: %02X,  number_b: %02X, length: %02X", r[0], r[1], r[3], r[4], r[5]
         )
 
         if r[0] != 1:
@@ -304,7 +304,7 @@ class GA2LCD(UsbHidDriver):
         temperature = temp_int + temp_frac / 10.0
 
         _LOGGER.debug(
-            f"Handshake response: fan_rpm={fan_rpm}, pump_rpm={pump_rpm}, temperature={temperature}"
+            "Handshake response: fan_rpm=%s, pump_rpm=%s, temperature=%s", fan_rpm, pump_rpm, temperature
         )
 
         return {
