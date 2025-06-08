@@ -172,7 +172,7 @@ def test_ga2_lcd_set_pump_lighting_mode(mockGA2LCD):
         mode="static",
         colors=[(0xFF, 0x00, 0x00), (0x00, 0xFF, 0x00), (0x00, 0x00, 0xFF), (0xFF, 0x00, 0xFF)],
         speed="faster",
-        direction="up",
+        direction="forward",
     )
     report = mockGA2LCD.device.sent[0]
     assert report[0] == 0x01  # report ID
@@ -199,7 +199,7 @@ def test_ga2_lcd_set_pump_lighting_mode(mockGA2LCD):
     assert report.data[19] == 0x00
     assert report.data[20] == 0xFF
 
-    assert report.data[21] == 0x03  # up
+    assert report.data[21] == 0x00  # direction
     assert report.data[22] == 0x00
     assert report.data[23] == 0x00
     assert report.data[24] == 0x00
@@ -211,7 +211,7 @@ def test_ga2_lcd_set_fan_lighting_mode(mockGA2LCD):
         mode="rainbow",
         colors=[(0x00, 0x00, 0xFF), (0xFF, 0x00, 0xFF), (0xFF, 0x00, 0x00), (0x00, 0xFF, 0x00)],
         speed="slower",
-        direction="down",
+        direction="backward",
     )
     report = mockGA2LCD.device.sent[0]
     assert report[0] == 0x01  # report ID
@@ -237,7 +237,7 @@ def test_ga2_lcd_set_fan_lighting_mode(mockGA2LCD):
     assert report.data[18] == 0xFF
     assert report.data[19] == 0x00
 
-    assert report.data[20] == 0x02  # down
+    assert report.data[20] == 0x01  # backward
     assert report.data[21] == 0x00
     assert report.data[22] == 0x00
     assert report.data[23] == 0x00
