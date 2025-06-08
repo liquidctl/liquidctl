@@ -37,7 +37,7 @@ def test_ga2_lcd_initialize(mockGA2LCD):
     assert inq.data[2] == 0x00
     assert inq.data[3] == 0x00
     assert status[0][0] == "Firmware version"
-    assert status[0][1] == "N9,01,HS,SQ,CA_II-Vision,V2.01.02E,1.4Oct 22 2024,10:39:15"
+    assert status[0][1] == "N9,01,HS,SQ,CA_II-Vision,V2.01.02E,1.4 Oct 22 2024,10:39:15"
 
 
 def test_ga2_lcd_initialize_bad_version(mockGA2LCD):
@@ -77,15 +77,17 @@ def test_ga2_lcd_get_status(mockGA2LCD):
     assert inq.data[2] == 0x00
     assert inq.data[3] == 0x00
 
-    assert len(status) == 4
+    assert len(status) == 5
     assert status[1][0] == "Fan speed"
     assert status[1][1] == 1440
-    assert status[2][0] == "Pump speed"
-    assert status[2][1] == 2670
+    assert status[2][0] == "Fan duty"
+    assert status[2][1] == pytest.approx(57.1, 57.2)
+    assert status[3][0] == "Pump speed"
+    assert status[3][1] == 2670
     assert status[0][0] == "Liquid temperature"
     assert status[0][1] == 37.8
-    assert status[3][0] == "Pump duty"
-    assert status[3][1] == pytest.approx(74.1, 74.2)
+    assert status[4][0] == "Pump duty"
+    assert status[4][1] == pytest.approx(74.1, 74.2)
 
 
 def test_ga2_lcd_fan_speed(mockGA2LCD):
