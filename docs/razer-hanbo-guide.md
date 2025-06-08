@@ -21,7 +21,8 @@ sets. The pump profiles use the internal coolant temperature as its reference
 and traverses autonomously. Fan profiles rely on an external reference
 temperature being provided in order traverse its curve. Without updates, the
 fans will continue using the duty cycle assigned to the previously sent
-reference temperature.
+reference temperature. It is expected that a program external to liquidctl
+will provide these updates.
 
 The temperature points in the curves are fixed. For this reason any
 temperatures provided to input curves will be ignored but must be
@@ -77,13 +78,19 @@ or upload a custom fan profile. All of these utilise the function named by
 the MSI MPG Coreliquid in the yoda script.
 
 `set_hardware_status()` - Upload reference temperature to AIO for fan curve use.
+This is mapped to `set <channel> reftemp <temp>` on the CLI. Temperature is
+resolved in degrees Celsius in 1 degree steps, clamped to values between 0
+and 100.
 
-`set_profiles()` - Uploads a custom curve. Note that the expected format
-remains as per every other device, but the temperature bytes will be ignored
-as these are fixed values on the Hanbo. The curve does not take effect until
-`custom` mode is set per below.
+`set_speed_profile()` - Defines a custom curve. Note that the format remains as
+per every other device, but the temperature values will be ignored as these are
+fixed in firmware. The curve does not take effect until `custom` mode is set in
+`set_profiles()`. Each curve has 9 points, all need be defined and must be equal
+to the previous value, if not increasing monotonically.
+This is mapped to `set <channel> speed (<temperature> <percentage>)` on the CLI.
 
-`set_speed_profile()` - Sets a rotor to a particular profile.
+`set_profiles()` - Sets a rotor to a particular profile.
+This is mapped to `set <channel> tprofile <profile>` on the CLI.
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers
@@ -92,5 +99,6 @@ These devices are supported by the [liquidtux] `razer_hanbo` driver, and status
 data is provided through a standard hwmon sysfs interface.
 
 liquidctl automatically detects when a kernel driver is bound to the device and,
-whenever possible, uses it instead of directly accessing the device.
+whenever possible, uses it instead of directly accessing the device. This will
+happen for all read operations. Write operations will remain managed by liquidctl.
 Alternatively, direct access to the device can be forced with `--direct-access`.
