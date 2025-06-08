@@ -40,6 +40,7 @@ _MAX_READ_ATTEMPTS = 12
 
 _LCD_TOTAL_MEMORY = 24320
 _PUMP_RPM_MAX = 3600
+_FAN_RPM_MAX = 2520
 
 _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
@@ -129,6 +130,7 @@ class GA2LCD(UsbHidDriver):
         return [
             (_STATUS_TEMPERATURE, handshake["temperature"], "°C"),
             (_STATUS_FAN_SPEED, handshake["fan_rpm"], "rpm"),
+            (_STATUS_FAN_DUTY, min(handshake["fan_rpm"] / _FAN_RPM_MAX * 100, 100), "%"),
             (_STATUS_PUMP_SPEED, handshake["pump_rpm"], "rpm"),
             (_STATUS_PUMP_DUTY, handshake["pump_rpm"] / _PUMP_RPM_MAX * 100, "%"),
         ]
