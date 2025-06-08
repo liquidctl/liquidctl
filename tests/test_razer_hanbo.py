@@ -136,11 +136,15 @@ class _MockHanbo(MockHidapiDevice):
     def create_sysfs_status_nodes(self, tmp_path):
         (tmp_path / "temp1_input").write_text(str(int(self._liquid_temp_val * 1000)) + "\n")
         (tmp_path / "fan1_input").write_text(str(list(unpack(">h", self._pump_rpm))[0]) + "\n")
-        (tmp_path / "pwm1").write_text(str(int.from_bytes(self._pump_duty)) + "\n")
-        (tmp_path / "pwm1_enable").write_text(str(int.from_bytes(self._active_pump_profile)) + "\n")
+        (tmp_path / "pwm1").write_text(str(int.from_bytes(self._pump_duty, byteorder="big")) + "\n")
+        (tmp_path / "pwm1_enable").write_text(
+            str(int.from_bytes(self._active_pump_profile, byteorder="big")) + "\n"
+        )
         (tmp_path / "fan2_input").write_text(str(list(unpack(">h", self._fan_rpm))[0]) + "\n")
-        (tmp_path / "pwm2").write_text(str(int.from_bytes(self._fan_duty)) + "\n")
-        (tmp_path / "pwm2_enable").write_text(str(int.from_bytes(self._active_fan_profile)) + "\n")
+        (tmp_path / "pwm2").write_text(str(int.from_bytes(self._fan_duty, byteorder="big")) + "\n")
+        (tmp_path / "pwm2_enable").write_text(
+            str(int.from_bytes(self._active_fan_profile, byteorder="big")) + "\n"
+        )
 
 
 """ Fetch a status report
@@ -170,13 +174,14 @@ def test_razerhanbo_get_status(razerHanboChromaDevice, has_hwmon, direct_access,
         )
         assert pump_duty == (
             "Pump duty",
-            int.from_bytes(razerHanboChromaDevice.device._pump_duty),
+            int.from_bytes(razerHanboChromaDevice.device._pump_duty, byteorder="big"),
             "%",
         )
         assert pump_profile == (
             "Pump profile",
             list(_PROFILE_MAPPING.keys())[
-                int.from_bytes(razerHanboChromaDevice.device._active_pump_profile) - 1
+                int.from_bytes(razerHanboChromaDevice.device._active_pump_profile, byteorder="big")
+                - 1
             ],
             "",
         )
@@ -187,13 +192,14 @@ def test_razerhanbo_get_status(razerHanboChromaDevice, has_hwmon, direct_access,
         )
         assert fan_duty == (
             "Fan duty",
-            int.from_bytes(razerHanboChromaDevice.device._fan_duty),
+            int.from_bytes(razerHanboChromaDevice.device._fan_duty, byteorder="big"),
             "%",
         )
         assert fan_profile == (
             "Fan profile",
             list(_PROFILE_MAPPING.keys())[
-                int.from_bytes(razerHanboChromaDevice.device._active_fan_profile) - 1
+                int.from_bytes(razerHanboChromaDevice.device._active_fan_profile, byteorder="big")
+                - 1
             ],
             "",
         )
