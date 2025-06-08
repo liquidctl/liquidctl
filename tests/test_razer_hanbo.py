@@ -24,7 +24,7 @@ from liquidctl.driver.razer_hanbo import (
 )
 from liquidctl.driver.usb import _DEFAULT_TIMEOUT_MS
 
-_FIRMWARE_RESPONSE = bytes.fromhex(
+_FIRMWARE_RESPONSE_PAYLOAD = bytes.fromhex(
     "313233343536373839414243444546" "000000000000000000800001012000" "0210"
 )
 
@@ -43,8 +43,8 @@ def razerHanboChromaDevice():
 class _MockHanbo(MockHidapiDevice):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._active_pump_profile = bytearray([_PROFILE_MAPPING["balance"][0]])
-        self._active_fan_profile = bytearray([_PROFILE_MAPPING["balance"][0]])
+        self._active_pump_profile = bytearray([_PROFILE_MAPPING["balanced"][0]])
+        self._active_fan_profile = bytearray([_PROFILE_MAPPING["balanced"][0]])
         self._fan_rpm = pack(">h", random.randint(200, 2000))
         self._fan_duty = bytearray([random.randint(0, 100)])
         self._pump_rpm = pack(">h", random.randint(200, 1000))
@@ -80,7 +80,7 @@ class _MockHanbo(MockHidapiDevice):
                 + self._pump_duty
             )
         if self._packet_reply == "firmware":
-            reply += bytearray(_FIRMWARE_RESPONSE)
+            reply += bytearray(_FIRMWARE_RESPONSE_PAYLOAD)
         if self._packet_reply == "fan_status":
             reply += (
                 self._active_fan_profile
@@ -268,40 +268,40 @@ def test_razerhanbo_set_profiles(razerHanboChromaDevice, has_hwmon, direct_acces
         razerHanboChromaDevice.device.create_sysfs_status_nodes(tmp_path)
 
     channels = ("fan", "pump")
-    profiles = ("silent", "performance")
+    profiles = ("quiet", "extreme")
     razerHanboChromaDevice.set_profiles(channels, profiles, direct_access)
 
     if has_hwmon:
         # Python driver doesn't update sysfs, do that manually
         razerHanboChromaDevice.device._active_pump_profile = bytearray(
-            [_PROFILE_MAPPING["performance"][0]]
+            [_PROFILE_MAPPING["extreme"][0]]
         )
         razerHanboChromaDevice.device._active_fan_profile = bytearray(
-            [_PROFILE_MAPPING["silent"][0]]
+            [_PROFILE_MAPPING["quiet"][0]]
         )
         razerHanboChromaDevice.device.create_sysfs_status_nodes(tmp_path)
 
     temperature, pump_speed, pump_duty, pump_profile, fan_speed, fan_duty, fan_profile = (
         razerHanboChromaDevice.get_status(direct_access)
     )
-    assert pump_profile[1] == "performance"
-    assert fan_profile[1] == "silent"
+    assert pump_profile[1] == "extreme"
+    assert fan_profile[1] == "quiet"
 
     channels = "fan"
-    profiles = "balance"
+    profiles = "balanced"
     razerHanboChromaDevice.set_profiles(channels, profiles, direct_access)
 
     if has_hwmon:
         # Python driver doesn't update sysfs, do that manually
         razerHanboChromaDevice.device._active_fan_profile = bytearray(
-            [_PROFILE_MAPPING["balance"][0]]
+            [_PROFILE_MAPPING["balanced"][0]]
         )
         razerHanboChromaDevice.device.create_sysfs_status_nodes(tmp_path)
 
     temperature, pump_speed, pump_duty, pump_profile, fan_speed, fan_duty, fan_profile = (
         razerHanboChromaDevice.get_status(direct_access)
     )
-    assert fan_profile[1] == "balance"
+    assert fan_profile[1] == "balanced"
 
 
 """ Fetch firmware report
@@ -312,8 +312,13 @@ CPU reference temperature has been set
 
 def test_razerhanbo_initialize(razerHanboChromaDevice):
     s_report, f_report = razerHanboChromaDevice.initialize()
-    assert s_report == ("Serial number", _FIRMWARE_RESPONSE[0:15].decode("utf-8"), "")
-    assert f_report == ("Firmware version", list(_FIRMWARE_RESPONSE[24:32]), "")
+    firmware_version = "V{}.{}.{}".format(
+        _FIRMWARE_RESPONSE_PAYLOAD[27],
+        _FIRMWARE_RESPONSE_PAYLOAD[28] >> 4 & 0x0F,
+        _FIRMWARE_RESPONSE_PAYLOAD[28] & 0x0F,
+    )
+    assert s_report == ("Serial number", _FIRMWARE_RESPONSE_PAYLOAD[0:15].decode("utf-8"), "")
+    assert f_report == ("Firmware version", firmware_version, "")
     assert razerHanboChromaDevice.device._cpu_temp == _DEFAULT_CPU_TEMP_DEGREES_C
 
 

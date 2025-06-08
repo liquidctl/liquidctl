@@ -297,23 +297,68 @@ _liquidctl_set_fan ()
 {
     local i=1 found=0
 
-    # find the sub command (either a fan or an led to set)
+    # find the sub command
     while [[ $i -lt $COMP_CWORD ]]; do
         local s="${COMP_WORDS[i]}"
-
-        if [[ "$s" = "speed" ]]; then
-            found=1
-            break
-        fi
-
+        case "$s" in
+            speed)
+                found=1
+                break
+                ;;
+            reftemp)
+                found=1
+                break
+                ;;
+            tprofile)
+                _liquidctl_set_profile
+                found=1
+                break
+                ;;
+        esac
         (( i++ ))
     done
 
-    # check if it is a fan or an LED that is being set
+    # Show completions where a match is not found
+    if [[ $found  =  0 ]]; then
+        local cur="${COMP_WORDS[COMP_CWORD]}"
+        COMPREPLY=($(compgen -W "speed reftemp tprofile" -- "$cur"))
+    fi
+}
+
+_liquidctl_set_profile ()
+{
+    local i=1 found=0
+
+    # find the sub command
+    while [[ $i -lt $COMP_CWORD ]]; do
+        local s="${COMP_WORDS[i]}"
+        case "$s" in
+            quiet)
+                found=1
+                break
+                ;;
+            balanced)
+                found=1
+                break
+                ;;
+            extreme)
+                found=1
+                break
+                ;;
+            custom)
+                found=1
+                break
+                ;;
+        esac
+        (( i++ ))
+    done
+
+    # Show completions where a match is not found
     if [[ $found  =  1 ]]; then
         COMPREPLY=""
     else
-        COMPREPLY="speed"
+        local cur="${COMP_WORDS[COMP_CWORD]}"
+        COMPREPLY=($(compgen -W "quiet balanced extreme custom" -- "$cur"))
     fi
 }
 

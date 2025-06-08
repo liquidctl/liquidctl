@@ -23,17 +23,17 @@ temperature being provided in order traverse its curve. Without updates, the
 fans will continue using the duty cycle assigned to the previously sent
 reference temperature.
 
-A trait of the Razer Hanbo is that the curve temperature points are fixed.
-For this reason any temperatures provided to input curves will be ignored.
-Duty cycles will be processed in order and allocated to the following
-temperatures:
+The temperature points in the curves are fixed. For this reason any
+temperatures provided to input curves will be ignored but must be
+present for the purposes of parsing. Duty cycles will be processed
+in order and allocated to the following temperatures:
 
 20, 30, 40, 50, 60, 70 ,80, 90, 100.
 
 The four profile names for the purposes of the driver are
-- silent
-- balance
-- performance
+- quiet
+- balanced
+- extreme
 - custom
 
 ## Initialization
@@ -63,10 +63,10 @@ Razer Hanbo Chroma
 ├── Liquid temperature       30.6  °C
 ├── Pump speed               1680  rpm
 ├── Pump duty                  49  %
-├── Pump profile          balance
+├── Pump profile          balanced
 ├── Fan speed                1290  rpm
 ├── Fan duty                   50  %
-└── Fan profile           balance
+└── Fan profile           balanced
 ```
 
 ## Fan and pump profiles
