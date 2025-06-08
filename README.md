@@ -179,6 +179,7 @@ _x: Only supported on Linux._<br>
 [#847]: https://github.com/liquidctl/liquidctl/issues/847
 [#848]: https://github.com/liquidctl/liquidctl/issues/848
 
+
 ## Installation
 [Installation]: #installation
 
