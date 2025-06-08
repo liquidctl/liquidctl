@@ -56,9 +56,8 @@ _LCD_SCREEN_FPS = 24
 _LCD_FRAMEBUFFER_SIZE = 921600
 
 _LIGHTING_DIRECTIONS = {
-    "default": 0x00,
-    "down": 0x02,
-    "up": 0x03,
+    "forward": 0x00,
+    "backward": 0x01,
 }
 
 _PUMP_LIGHTING_SPEEDS = {
@@ -95,7 +94,6 @@ _FAN_LIGHTING_MODES = {
     "rainbow-morph": 0x04,
     "rainbow": 0x05,
 }
-
 
 class GA2LCD(UsbHidDriver):
     _status = []
@@ -141,7 +139,7 @@ class GA2LCD(UsbHidDriver):
         """
         return self._get_status_directly()
 
-    def set_color(self, channel, mode, colors, speed="normal", direction="default", **kwargs):
+    def set_color(self, channel, mode, colors, speed="normal", direction="forward", **kwargs):
         """Set the color mode for a specific channel."""
 
         if channel == "pump":
