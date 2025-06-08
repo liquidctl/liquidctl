@@ -771,6 +771,41 @@ Mode	#colors
 \fIrainbow\fR	0
 .TE
 .
+.
+.SS Lian Li GA II LCD
+Cooling channels: \fIpump\fR, \fIfan\fR.
+.PP
+Lighting channels: \fIpump\fR, \fIfan\fR.
+.TS
+l c c c
+----
+l c c c .
+Mode	pump	fan	#colors
+\fIrainbow\fR	yes	yes	0
+\fIrainbow\-morph\fR	yes	yes	0
+\fIstatic\fR	yes	yes	1
+\fIbreathing\fR	yes	yes	1
+\fIrunway\fR	yes	yes	2
+\fImeteor\fR	yes	yes	4
+\fIticker\-tape\fR	yes	no	4
+\fIfluctuation\fR	yes	no	4
+\fItransmit\fR	yes	no	2
+\fIcolorful\-starry\-night\fR	yes	no	0
+\fIstatic\-starry\-night\fR	yes	no	1
+\fIbig\-bang\fR	yes	no	4
+\fIburst\fR	yes	no	1
+\fIcolor\-morph\fR	yes	no	0
+\fIbounce\fR	yes	no	4
+.TE
+.PP
+When applicable the animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
+The animation direction can be set with
+.BI \-\-direction= value ,
+where the allowed values are: \fIdown\fR or \fIup\fR.
+.
 .SH SEE ALSO
 The complete documentation is available in
 the project's sources and
