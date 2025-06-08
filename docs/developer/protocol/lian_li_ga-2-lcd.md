@@ -11,8 +11,8 @@ All bytes are big endian.
 ```txt
 1     :  Fixed 0x01
 2     :  Command ID
-3-5   :  Unknown
-5     :  PDU number
+3     :  Unknown
+4-5   :  PDU number
 6     :  Payload size
 rest  :  Payload
 ```
