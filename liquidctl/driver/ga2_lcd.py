@@ -181,11 +181,11 @@ class GA2LCD(UsbHidDriver):
         if not data:
             return [
                 [
-                    1,  # report type
+                    1,    # type
                     cmd,  # command
-                    0,  # reserved
-                    0,  # number_a (2 bytes)
-                    0,  # number_b (2 bytes)
+                    0,    # reserved
+                    0,    # number_a (2 bytes)
+                    0,    # number_b (2 bytes)
                     0,
                 ]
             ]
@@ -195,6 +195,7 @@ class GA2LCD(UsbHidDriver):
 
         cmd_pas = []
 
+        # take chunks of data and send them in packets until all data is sent
         while offset < len(data):
             data_len = min(len(data) - offset, 58)
 
@@ -208,7 +209,7 @@ class GA2LCD(UsbHidDriver):
             cmd_pa[5] = data_len
             cmd_pa[6 : 6 + data_len] = data[offset : offset + data_len]
 
-            _LOGGER.debug("Command: %s, Num: %s, Offset: %s, Data Length: %s\n", cmd, num, offset, data_len)
+            _LOGGER.debug("Command: 0x%02x, PDU Number: %d, Offset: %d, Data Length: %d\n", cmd, num, offset, data_len)
 
             num += 1
             offset += data_len
@@ -222,7 +223,7 @@ class GA2LCD(UsbHidDriver):
 
     def _write_a_cmd_with_data(self, cmd, data):
         packets = self._get_a_cmd_bytes(cmd, data)
-        _LOGGER.debug("Writing command: %s, data: %s", cmd, bytes)
+        _LOGGER.debug("Writing command: 0x%02x", cmd)
         for packet in packets:
             self._write(packet)
 
@@ -232,7 +233,7 @@ class GA2LCD(UsbHidDriver):
     def _read_a_cmd(self):
         r = self.device.read(64)
         _LOGGER.debug(
-            "Read command: report type: %02X, command: %02X, number_a: %02X,  number_b: %02X, length: %02X", r[0], r[1], r[3], r[4], r[5]
+            "Read command: type: 0x%02X, command: 0x%02X, number_a: 0x%02X,  number_b: 0x%02X, length: 0x%02X", r[0], r[1], r[3], r[4], r[5]
         )
 
         if r[0] != 1:
@@ -304,7 +305,7 @@ class GA2LCD(UsbHidDriver):
         temperature = temp_int + temp_frac / 10.0
 
         _LOGGER.debug(
-            "Handshake response: fan_rpm=%s, pump_rpm=%s, temperature=%s", fan_rpm, pump_rpm, temperature
+            "Handshake response: fan_rpm=%d, pump_rpm=%d, temperature=%f", fan_rpm, pump_rpm, temperature
         )
 
         return {
