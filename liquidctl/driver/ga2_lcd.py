@@ -208,17 +208,7 @@ class GA2LCD(UsbHidDriver):
             cmd_pa[5] = data_len
             cmd_pa[6 : 6 + data_len] = data[offset : offset + data_len]
 
-            dlog = f"Command: {cmd}, Num: {num}, Offset: {offset}, Data Length: {data_len}\n"
-            for i in range(len(cmd_pa)):
-                if i == 0:
-                    dlog += f"{i:08X} "
-
-                if i % 16 == 0:
-                    dlog += "\n"
-
-                dlog += f"{cmd_pa[i]:02X} "
-            dlog += "\n"
-            _LOGGER.info(dlog)
+            _LOGGER.debug(f"Command: {cmd}, Num: {num}, Offset: {offset}, Data Length: {data_len}\n")
 
             num += 1
             offset += data_len
@@ -232,7 +222,7 @@ class GA2LCD(UsbHidDriver):
 
     def _write_a_cmd_with_data(self, cmd, data):
         packets = self._get_a_cmd_bytes(cmd, data)
-        _LOGGER.info(f"Writing command: {cmd}, data: {bytes}")
+        _LOGGER.debug(f"Writing command: {cmd}, data: {bytes}")
         for packet in packets:
             self._write(packet)
 
@@ -241,7 +231,7 @@ class GA2LCD(UsbHidDriver):
 
     def _read_a_cmd(self):
         r = self.device.read(64)
-        _LOGGER.info(
+        _LOGGER.debug(
             f"Read command: report type: ${r[0]:02X}, command: {r[1]:02X}, number_a: {r[3]:02X},  number_b: {r[4]:02X}, length: {r[5]:02X}"
         )
 
@@ -270,18 +260,6 @@ class GA2LCD(UsbHidDriver):
                 length_remaining = length - len(data)
                 current_length = min(length_remaining, 58)
                 data += r[6 : 6 + current_length]
-
-        dlog = ""
-        for i in range(len(data)):
-            if i == 0:
-                dlog += f"{i:08X} "
-
-            if i % 16 == 0:
-                dlog += "\n"
-
-            dlog += f"{data[i]:02X} "
-        dlog += "\n"
-        _LOGGER.info(dlog)
 
         return {"command": command, "number": number, "length": length, "data": data}
 
@@ -325,7 +303,7 @@ class GA2LCD(UsbHidDriver):
         temp_frac = r["data"][6]
         temperature = temp_int + temp_frac / 10.0
 
-        _LOGGER.info(
+        _LOGGER.debug(
             f"Handshake response: fan_rpm={fan_rpm}, pump_rpm={pump_rpm}, temperature={temperature}"
         )
 
