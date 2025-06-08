@@ -299,7 +299,7 @@ class GA2LCD(UsbHidDriver):
         p2_data = p2["data"][: p2["data"].index(0)] if 0 in p2["data"] else p2["data"]
         string_data = bytes(p2_data)
         ascii_string_p2 = string_data.decode("ascii", errors="ignore")
-        ascii_string = ascii_string_p1.strip() + ascii_string_p2.strip()
+        ascii_string = ascii_string_p1.strip() + " " + ascii_string_p2.strip()
 
         return ascii_string
 
