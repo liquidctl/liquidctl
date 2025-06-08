@@ -359,7 +359,7 @@ class RazerHanbo(UsbHidDriver):
                     self._custom_profiles[channel] = new_curve
                 else:
                     _LOGGER.warning(
-                        "Curve is not monotonically increasing or has"
+                        "Curve values are not constantly increasing or contain"
                         "values outside valid range of 20-100 duty. Not applying"
                     )
 
