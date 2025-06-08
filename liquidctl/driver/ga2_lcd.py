@@ -56,10 +56,9 @@ _LCD_SCREEN_FPS = 24
 _LCD_FRAMEBUFFER_SIZE = 921600
 
 _LIGHTING_DIRECTIONS = {
+    "default": 0x00,
     "down": 0x02,
     "up": 0x03,
-    "left": 0x04,
-    "right": 0x05,
 }
 
 _PUMP_LIGHTING_SPEEDS = {
@@ -68,12 +67,6 @@ _PUMP_LIGHTING_SPEEDS = {
     "normal": 0x2,
     "faster": 0x3,
     "fastest": 0x4,
-}
-
-_PUMP_LIGHTING_SCOPES = {
-    "all": 0x00,
-    "outer": 0x01,
-    "inner": 0x02,
 }
 
 _PUMP_LIGHTING_MODES = {
@@ -90,7 +83,7 @@ _PUMP_LIGHTING_MODES = {
     "runway": 0x05,
     "breathing": 0x04,
     "static": 0x03,
-    "rainbow-move": 0x02,
+    "rainbow-morph": 0x02,
     "rainbow": 0x01,
 }
 
@@ -99,7 +92,7 @@ _FAN_LIGHTING_MODES = {
     "runway": 0x01,
     "breathing": 0x02,
     "static": 0x03,
-    "rainbow-move": 0x04,
+    "rainbow-morph": 0x04,
     "rainbow": 0x05,
 }
 
@@ -148,7 +141,7 @@ class GA2LCD(UsbHidDriver):
         """
         return self._get_status_directly()
 
-    def set_color(self, channel, mode, colors, speed="normal", direction="down", **kwargs):
+    def set_color(self, channel, mode, colors, speed="normal", direction="default", **kwargs):
         """Set the color mode for a specific channel."""
 
         if channel == "pump":
@@ -328,10 +321,9 @@ class GA2LCD(UsbHidDriver):
 
         fan_rpm = int.from_bytes(r["data"][0:2], byteorder="big")
         pump_rpm = int.from_bytes(r["data"][2:4], byteorder="big")
-        temp_valid = r["data"][4] & 0x01
         temp_int = r["data"][5]
         temp_frac = r["data"][6]
-        temperature = temp_int + temp_frac / 10.0 if temp_valid else None
+        temperature = temp_int + temp_frac / 10.0
 
         _LOGGER.info(
             f"Handshake response: fan_rpm={fan_rpm}, pump_rpm={pump_rpm}, temperature={temperature}"
@@ -375,13 +367,13 @@ class GA2LCD(UsbHidDriver):
 
         pass_colors = [0] * (3 * 4)
 
-        req[0] = _PUMP_LIGHTING_SCOPES["all"]
+        req[0] = 0
         req[1] = _PUMP_LIGHTING_MODES[mode]
         req[2] = 4  # brightness 0-4
         req[3] = _PUMP_LIGHTING_SPEEDS[speed]
         req[16] = _LIGHTING_DIRECTIONS[direction]
-        req[17] = 0  # disabled
-        req[18] = 0  # source
+        req[17] = 0
+        req[18] = 0
 
         colors = list(colors)
         if len(colors) > 0:
@@ -423,27 +415,27 @@ class GA2LCD(UsbHidDriver):
         req[1] = 4
         req[2] = _PUMP_LIGHTING_SPEEDS[speed]
         req[15] = _LIGHTING_DIRECTIONS[direction]
-        req[16] = 0  # disable
-        req[17] = 0  # source
-        req[18] = 0  # syncs with pump ?
-        req[19] = 24  # led count ?
+        req[16] = 0
+        req[17] = 0
+        req[18] = 0
+        req[19] = 24
 
         colors = list(colors)
         if len(colors) > 0:
-            req[4] = colors[0][0]
-            req[5] = colors[0][1]
-            req[6] = colors[0][2]
+            req[3] = colors[0][0]
+            req[4] = colors[0][1]
+            req[5] = colors[0][2]
         if len(colors) > 1:
-            req[7] = colors[1][0]
-            req[8] = colors[1][1]
-            req[9] = colors[1][2]
+            req[6] = colors[1][0]
+            req[7] = colors[1][1]
+            req[8] = colors[1][2]
         if len(colors) > 2:
-            req[10] = colors[2][0]
-            req[11] = colors[2][1]
-            req[12] = colors[2][2]
+            req[9] = colors[2][0]
+            req[10] = colors[2][1]
+            req[11] = colors[2][2]
         if len(colors) > 3:
-            req[13] = colors[3][0]
-            req[14] = colors[3][1]
-            req[15] = colors[3][2]
+            req[12] = colors[3][0]
+            req[13] = colors[3][1]
+            req[14] = colors[3][2]
 
-        self._write_a_cmd_with_data(0x84, req)
+        self._write_a_cmd_with_data(0x85, req)
