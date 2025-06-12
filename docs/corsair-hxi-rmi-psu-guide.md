@@ -3,6 +3,7 @@ _Driver API and source code available in [`liquidctl.driver.corsair_hid_psu`](..
 
 _Changed in 1.12.0: HX1500i and HX1000i 2022 re-issue are now also supported._<br>
 _Changed in 1.15.0: HX1200i ATX 3.1 (CP-9020281-NA) refresh is now supported._<br>
+_Changed in git: HX1200i ATX 3.1 #2 (CP-9020307-NA) refresh is now supported._<br>
 
 ## Initialization
 

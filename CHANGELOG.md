@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.15.0] – 2025-04-01
+## [1.15.0] – 2025-04-13
 
 ### Changes since 1.14.0
 
@@ -17,6 +17,14 @@ Fixed:
 
 - Permission errors when accessing driver data on Windows with Python 3.13
 - Read errors when setting Aquacomputer fan speeds in quick succession (liquidctl#766, liquidctl#767)
+
+### BLAKE3 checksums
+
+```
+$ b3sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}
+3baab12124f478ef73d787ed39a4ca5fe0955307f1ea74aa9ea74338f25c8c01  dist/liquidctl-1.15.0.tar.gz
+19139a38e6b9f2645000ea53ce861a2830920272c4429e19403da3e4c5d31dc0  dist/liquidctl-1.15.0-py3-none-any.whl
+```
 
 ## [1.14.0] – 2025-01-01
 
