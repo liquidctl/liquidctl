@@ -80,6 +80,7 @@ _COLOR_CHANNELS_KRAKENX = {"external": 0b001, "ring": 0b010, "logo": 0b100, "syn
 _COLOR_CHANNELS_KRAKENZ = {
     "external": 0b001,
 }
+
 _COLOR_CHANNELS_KRAKEN2023 = {"ring": 0b001, "external": 0b010, "sync": 0b111}
 
 _HWMON_CTRL_MAPPING_KRAKENX = {"pump": 1}
