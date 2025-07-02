@@ -67,6 +67,9 @@ class CorsairHidPsu(UsbHidDriver):
 
     # support for hwmon: corsair-psu, Linux 5.11 (5.13 recommended)
 
+    # note: quadratic equation coefficients calculated with the following script:
+    # https://github.com/liquidctl/collected-device-data/blob/master/psu-efficiency/interpolate
+
     _MATCHES = [
         (0x1b1c, 0x1c05, 'Corsair HX750i', {
             'fpowin115': (0.00013153276902318052, 1.0118732314945875, 9.783796618886313),
@@ -83,6 +86,24 @@ class CorsairHidPsu(UsbHidDriver):
         (0x1b1c, 0x1c08, 'Corsair HX1200i', {
             'fpowin115': (6.244705156199815e-05,  1.0234738310580973, 15.293509559389241),
             'fpowin230': (5.9413179794350966e-05, 1.0023670927127724, 15.886126793547152),
+        }),
+        (0x1b1c, 0x1c23, 'Corsair HX1200i ATX 3.1', {
+            # CP-9020281-NA
+            # Certification is source for efficiency numbers https://www.cybenetics.com/evaluations/psus/2510/
+            #        10%    20%    50%    100%
+            # 115v: .8877  .91774 .92095 .88146
+            # 230v: .89881 .92956 .93047 .91292
+            'fpowin115': (9.930197967499293e-05, 1.003634953854399, 13.956713659543981),
+            'fpowin230': (4.716701557627399e-05, 1.031689131040792, 8.562560345390088),
+        }),
+        (0x1b1c, 0x1c27, 'Corsair HX1200i ATX 3.1 #2', {
+            # CP-9020307-NA
+            # Certification is source for efficiency numbers https://www.cybenetics.com/evaluations/psus/2733/
+            #        10%    20%    50%    100%
+            # 115v: .88875 .91886 .92168 .88731
+            # 230v: .89954 .93143 .93185 .92003
+            'fpowin115': (8.701178559061476e-05, 1.0119502460041445, 12.725770701505295),
+            'fpowin230': (3.4692421780176756e-05, 1.0391630676290817, 7.429785098514605),
         }),
         (0x1b1c, 0x1c0a, 'Corsair RM650i', {
             'fpowin115': (0.00017323493381072683, 1.0047044721686030, 12.376592422281606),
@@ -113,6 +134,11 @@ class CorsairHidPsu(UsbHidDriver):
     ]
 
     def __init__(self, *args, fpowin115=None, fpowin230=None, **kwargs):
+        """
+        Args:
+            fpowin115: coefficients of a quadratic function that maps from output power to input power at 115V
+            fpowin230: coefficients of a quadratic function that maps from output power to input power at 230V
+        """
         assert fpowin115 and fpowin230
 
         super().__init__(*args, **kwargs)
@@ -270,7 +296,7 @@ class CorsairHidPsu(UsbHidDriver):
         _LOGGER.debug('input power estimates: %.3f W @ 115 V; %.3f W @ 230 V', for_in115v, for_in230v)
 
         # linearly interpolate for input_voltage
-        return for_in115v + (for_in230v - for_in115v) / 115 * (input_voltage - 115)
+        return for_in115v + (for_in230v - for_in115v) * (input_voltage - 115) / 115
 
     def _write(self, data):
         assert len(data) <= _REPORT_LENGTH
