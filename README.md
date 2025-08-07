@@ -137,7 +137,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken X53, X63, X73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.14.0 |
-| AIO liquid cooler  | [NZXT Kraken 2024 Elite RGB](docs/kraken-x3-z3-guide.md) | <sup>__</sup> | 1.15.0 |
+| AIO liquid cooler  | [NZXT Kraken 2024 Elite RGB](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.15.0 |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.15.0 |

@@ -26,12 +26,12 @@ In addition to this, Kraken Z coolers restore the embedded fan controller that i
 
 ## NZXT Kraken 2023 Standard, Elite
 
-Kraken 2023 AIOs use the same pump and as their Z3 predecessor but the integrated led controller has been removed. The LCD resolution is 240x240 for the standard version and 640x640 for the elite one.
+Kraken 2023 AIOs use the same pump and as their Z3 predecessor but the integrated LED controller has been removed. The LCD resolution is 240x240 for the standard version and 640x640 for the Elite variant, which also features a light ring on the pump housing. **Controlling the light ring is not yet supported**.
 
 
 ## NZXT Kraken 2024 Elite RGB
 
-The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining the 640x640 LCD. There's now a light ring on the pump housing. As of the 1.2.1 firmware, it's still able to use GIF and static modes.
+The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining the 640x640 LCD. As of the 1.2.1 firmware, it's still able to use GIF and static modes. **Controlling the light ring is not yet supported**.
 
 
 ## Initialization
