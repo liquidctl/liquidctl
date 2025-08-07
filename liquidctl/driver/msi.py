@@ -335,6 +335,12 @@ class MpgCooler(UsbHidDriver):
             "Suspected MSI MPG Coreliquid",
             {"_unsafe": ["experimental_coreliquid_cooler"]},
         ),
+        (
+            0x0DB0,
+            0x6A05,
+            "MSI MEG CoreLiquid S360",
+            {"fan_count": 3},
+        ),
     ]
     HAS_AUTOCONTROL = True
 
@@ -391,7 +397,12 @@ class MpgCooler(UsbHidDriver):
         self._aprom_firmware_version = aprom_hi << 4 + aprom_lo
         ldrom_hi, ldrom_lo = self.get_firmware_version_ldrom()
         self._ldrom_firmware_version = ldrom_hi << 4 + ldrom_lo
-        self._oled_firmware_version = self.get_oled_firmware_version()
+
+        try:
+            self._display_firmware_version = self.get_display_firmware_version()
+        except Exception:
+            _LOGGER.warning("Display not responding, skipping firmware version check.")
+            self._display_firmware_version = "unknown"
 
         return ret
 
