@@ -36,6 +36,7 @@ from liquidctl.driver import hydro_platinum
 from liquidctl.driver import kraken2
 from liquidctl.driver import kraken3
 from liquidctl.driver import msi
+from liquidctl.driver import nzxt_control_hub
 from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
