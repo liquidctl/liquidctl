@@ -1024,6 +1024,18 @@ class ControlHub(SmartDevice2):
             
             self._write(data)
             self._apply_color_settings(channel_byte)
+            
+    def _apply_color_settings(self, channel_byte):
+        """Apply/commit the color settings to the device."""
+        # Based on USB capture analysis:
+        # Format: 26 06 [channel] 00 01 00 00 18 00 00 80 00 32 00 00 01 00 00...
+        data = [0x26, 0x06, channel_byte, 0x00, 0x01, 0x00, 0x00, 0x18, 0x00, 0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01, 0x00, 0x00]
+        
+        # Pad to full packet size
+        padding = [0x00] * (self._WRITE_LENGTH - len(data))
+        data.extend(padding)
+        
+        self._write(data)
 
 
 
