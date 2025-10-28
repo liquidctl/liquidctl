@@ -42,7 +42,7 @@ class AsusRyujin(UsbHidDriver):
 
     _MATCHES = [
         (0x0B05, 0x1988, "ASUS Ryujin II 360", {}),
-	(0x0B05, 0x1AA2, "ASUS ROG Ryujin III", {}),
+	    (0x0B05, 0x1AA2, "ASUS ROG Ryujin III", {}),
     ]
 
     def initialize(self, **kwargs):
