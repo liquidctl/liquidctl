@@ -681,6 +681,58 @@ class ControlHub(SmartDevice2):
     _MAX_READ_ATTEMPTS = 12
     _READ_LENGTH = 64
     _WRITE_LENGTH = 64
+    
+    # Color modes with extended packet configuration
+    # Format: (mode_byte, variant_byte, moving_byte, min_colors, max_colors, packet_config)
+    # packet_config only needs to specify overrides; defaults are applied in _build_mode_packet
+    _COLOR_MODES = {
+        'off': (0x00, 0x00, 0x00, 0, 0, {'type': 'fixed'}),
+        'fixed': (0x00, 0x00, 0x00, 1, 1, {'type': 'fixed'}),
+        'fading': (0x01, 0x00, 0x00, 1, 8, {
+            'speed_map': 'fading',
+            'has_colors': True,
+            'color_count_pos': 56,
+            'footer': [0x08, 0x18, 0x03, 0x00, 0x00]
+        }),
+        'spectrum-wave': (0x02, 0x00, 0x00, 0, 0, {
+            'has_direction': True,
+            'footer': [0x00, 0x00, 0x12, 0x03, 0x00, 0x00]
+        }),
+        'covering-marquee': (0x04, 0x00, 0x00, 1, 8, {
+            'has_direction': True,
+            'has_colors': True,
+            'pad_to': 55,
+            'direction_pos': 55,
+            'color_count_pos': 56,
+            'footer': [0x00, 0x18, 0x03, 0x00, 0x00]
+        }),
+        'super-rainbow': (0x0c, 0x00, 0x00, 0, 0, {
+            'has_direction': True,
+            'header_padding': [0x00, 0x00],
+            'footer': [0x00, 0x18, 0x03, 0x00, 0x00]
+        }),
+    }
+    
+    # Speed mappings for different mode types
+    _SPEED_MAPS = {
+        'standard': {  # Used by spectrum-wave, marquee, rainbow modes
+            'slowest': [0x5e, 0x01],
+            'slower': [0x2c, 0x01],
+            'normal': [0xfa, 0x00],
+            'faster': [0x96, 0x00],
+            'fastest': [0x50, 0x00]
+        },
+        'fading': {  # Used by fading mode
+            'slowest': [0x50, 0x00],
+            'slower': [0x3c, 0x00],
+            'normal': [0x28, 0x00],
+            'faster': [0x14, 0x00],
+            'fastest': [0x0a, 0x00]
+        }
+    }
+    
+    # Channel ID to byte mapping
+    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x04, 2: 0x06, 3: 0x08, 4: 0x10}
 
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
@@ -772,63 +824,16 @@ class ControlHub(SmartDevice2):
         self._read_until({b'\x67\x02': parse_fan_info})
         return sorted(ret)
 
-
-    def _write_colors(self, cid, mode, colors, sval, direction='forward',):
-        mval, mod3, mod4, mincolors, maxcolors = self._COLOR_MODES[mode]
-
-        assert self._color_channels, "color channels should be available and enabled"
-
-        color_count = len(colors)
-        if maxcolors == 40:
-            led_padding = [0x00, 0x00, 0x00]*(maxcolors - color_count)  # turn off remaining LEDs
-            leds = list(itertools.chain(*colors)) + led_padding
-            self._write([0x22, 0x10, cid, 0x00] + leds[0:60])  # send first 20 colors to device (3 bytes per color)
-            self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
-            self._write([0x22, 0xa0, cid, 0x00, mval, mod3, 0x00, 0x00, 0x00,
-                         0x00, 0x64, 0x00, 0x32, 0x00, 0x00, 0x01])
-        elif mode == 'wings':  # wings requires special handling
-            for [g, r, b] in colors:
-                self._write([0x22, 0x10, cid])  # clear out all independent LEDs
-                self._write([0x22, 0x11, cid])  # clear out all independent LEDs
-                color_lists = [] * 3
-                color_lists[0] = [g, r, b] * 8
-                color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
-                color_lists[2] = [int(x // 4) for x in color_lists[1]]
-                for i in range(8):   # send color scheme first, before enabling wings mode
-                    mod = 0x05 if i in [3, 7] else 0x01
-                    msg = ([0x22, 0x20, cid, i, 0x04, 0x39, 0x00, mod,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
-                            0x05, 0x85, 0x05, 0x85, 0x05, 0x85, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00])
-                    self._write(msg + color_lists[i % 4])
-                self._write([0x22, 0x03, cid, 0x08])   # this actually enables wings mode
-        else:
-            byte7 = (mod4 & 0x10) >> 4  # sets 'moving' flag for moving alternating modes
-            byte8 = map_direction(direction, 0, 1)  # sets 'backward' flag
-            byte9 = mod3 if mval == 0x03 else color_count  # specifies 'marquee' LED size
-            byte10 = mod3 if mval == 0x05 else 0x00  # specifies LED size for 'alternating' modes
-            header = [0x28, 0x03, cid, 0x00, mval, sval, byte7, byte8, byte9, byte10]
-            self._write(header + list(itertools.chain(*colors)))
-
     def set_color(self, channel, mode, colors, speed='normal', direction='forward', **kwargs):
         """Set the color mode for a specific channel.
 
         Supported modes:
         - off: Turn off the channel
         - fixed: Set a fixed color
-        - super-fixed: Set independent colors for each LED
         - fading: Fade between colors
         - spectrum-wave: Spectrum wave effect
-        - marquee-3/4/5/6: Marquee effect with different sizes
         - covering-marquee: Covering marquee effect
-        - alternating: Alternating colors
-        - moving-alternating: Moving alternating colors
-        - pulse: Pulsing effect
-        - breathing: Breathing effect
-        - super-breathing: Super breathing with independent LEDs
-        - candle: Candle effect
-        - wings: Wings effect
-        - super-wave: Super wave with independent LEDs
+        - super-rainbow: Super rainbow effect
         """
         if channel not in self._color_channels:
             raise ValueError(f"Invalid channel: {channel}")
@@ -836,8 +841,8 @@ class ControlHub(SmartDevice2):
         if mode not in self._COLOR_MODES:
             raise ValueError(f"Invalid mode: {mode}. Supported modes: {list(self._COLOR_MODES.keys())}")
 
-        # Get mode parameters
-        mode_byte, variant_byte, moving_byte, min_colors, max_colors = self._COLOR_MODES[mode]
+        # Unpack mode configuration (extended format with config dict)
+        mode_byte, variant_byte, moving_byte, min_colors, max_colors, packet_config = self._COLOR_MODES[mode]
 
         # Convert colors to list if it's a map object
         colors_list = list(colors) if hasattr(colors, '__iter__') and not isinstance(colors, (list, tuple)) else colors
@@ -861,169 +866,102 @@ class ControlHub(SmartDevice2):
         # Set color mode and data
         if cid == 0xFF:  # sync mode - set all channels
             for ch_id in range(len(self._color_channels) - 1):  # -1 to exclude 'sync'
-                self._set_channel_color_mode(ch_id, mode_byte, variant_byte, moving_byte, colors_list, speed, direction)
+                self._set_channel_color_mode(ch_id, mode_byte, variant_byte, moving_byte, colors_list, speed, direction, packet_config)
         else:
-            self._set_channel_color_mode(cid, mode_byte, variant_byte, moving_byte, colors_list, speed, direction)
+            self._set_channel_color_mode(cid, mode_byte, variant_byte, moving_byte, colors_list, speed, direction, packet_config)
 
-    def _set_channel_color_mode(self, channel_id, mode_byte, variant_byte, moving_byte, colors, speed, direction):
+    def _set_channel_color_mode(self, channel_id, mode_byte, variant_byte, moving_byte, colors, speed, direction, packet_config):
         """Set color mode for a specific channel."""
-        # Based on USB capture analysis:
-        # Format: 26 04 [channel] 00 [color_data]
-        # Channel mapping: led1=02, led2=04, led3=06, led4=08, led5=10
-        channel_byte_map = {0: 0x02, 1: 0x04, 2: 0x06, 3: 0x08, 4: 0x10}
-        channel_byte = channel_byte_map.get(channel_id, 0x08)
+        channel_byte = self._CHANNEL_BYTE_MAP.get(channel_id, 0x08)
         _LOGGER.info('setting %s channel %s to mode %s with %d colors speed %s direction %s', 
                      self.description, channel_id, mode_byte, len(colors), speed, direction)
-        # Build the command packet - fixed mode for now
-        if mode_byte != 0x00:
-            # Handle spectrum wave mode (0x02) with speed and direction
-            if mode_byte == 0x02:  # spectrum-wave
-                # Speed mapping from capture analysis (microsecond delays)
-                speed_map = {
-                    'slowest': [0x5e, 0x01],  # 24065 microseconds (slowest)
-                    'slower': [0x2c, 0x01],   # 11265 microseconds (slow)
-                    'normal': [0xfa, 0x00],   # 64000 microseconds (normal)
-                    'faster': [0x96, 0x00],   # 38400 microseconds (fast)
-                    'fastest': [0x50, 0x00]   # 20480 microseconds (fastest)
-                }
-                speed_bytes = speed_map.get(speed, [0xfa, 0x00])
-                
-                # Direction: 0x00 = forward, 0x02 = backward
-                direction_byte = 0x02 if direction == 'backward' else 0x00
-                
-                # Build the spectrum wave packet with proper structure
-                data = [0x2a, 0x04, channel_byte, channel_byte, mode_byte]
-                
-                # Add speed bytes (16-bit value, little-endian)
-                data.extend(speed_bytes)
-                
-                # Add padding zeros until position 56 (28 in hex)
-                data.extend([0x00] * (56 - len(data) -1))
-                
-                # Add direction byte at position 56
-                data.append(direction_byte)
-                
-                # Add the remaining structure bytes (12 03 00 00...)
-                data.extend([0x00, 0x00, 0x12, 0x03, 0x00, 0x00])
-            elif mode_byte == 0x01:  # fading mode
-                # Speed mapping for fading mode (different from spectrum wave)
-                speed_map = {
-                    'slowest': [0x50, 0x00],  # slowest
-                    'slower': [0x3c, 0x00],   # slow
-                    'normal': [0x28, 0x00],   # normal
-                    'faster': [0x14, 0x00],   # fast
-                    'fastest': [0x0a, 0x00]   # fastest
-                }
-                speed_bytes = speed_map.get(speed, [0x14, 0x00])
-                
-                # Build fading packet: 2a 04 08 08 01 [speed] 00 00 [colors] [count] 08 18 03...
-                data = [0x2a, 0x04, channel_byte, channel_byte, mode_byte]
-                data.extend(speed_bytes)
-                
-                # Add color data (GRB format)
-                if colors:
-                    for r, g, b in colors:
-                        data.extend([g, r, b])  # GRB order
-                    # Add padding to align with structure
-                    while len(data) < 56:
-                        data.append(0x00)
-                    
-                    # Add color count at position 56
-                    data.append(len(colors))
-                    
-                    # Add structure bytes
-                    data.extend([0x08, 0x18, 0x03, 0x00, 0x00])
-                else:
-                    # No colors - just padding
-                    data.extend([0x00] * (61 - len(data)))
-            elif mode_byte == 0x04:  # covering-marquee mode
-                # Speed mapping for covering marquee (different from other modes)
-                speed_map = {
-                    'slowest': [0x5e, 0x01],  # slowest
-                    'slow': [0x2c, 0x01],  # slow
-                    'normal': [0xfa, 0x00],   # normal
-                    'faster': [0x96, 0x00],   # fast
-                    'fastest': [0x50, 0x00]   # fastest
-                }
-                speed_bytes = speed_map.get(speed, [0xfa, 0x00])
-                
-                # Build covering marquee packet: 2a 04 08 08 04 [speed] 00 00 [colors] [direction] [count] 00 18 03...
-                data = [0x2a, 0x04, channel_byte, channel_byte, mode_byte]
-                data.extend(speed_bytes)
-                
-                # Add color data (GRB format)
-                if colors:
-                    for r, g, b in colors:
-                        data.extend([g, r, b])  # GRB order
-                    # Add padding to align with structure
-                    while len(data) < 56 - 1:
-                        data.append(0x00)
-                    
-                    # Add direction byte at position 56
-                    direction_byte = 0x02 if direction == 'backward' else 0x00
-                    data.append(direction_byte)
-                    
-                    # Add color count at position 57
-                    data.append(len(colors))
-                    
-                    # Add structure bytes
-                    data.extend([0x00, 0x18, 0x03, 0x00, 0x00])
-                else:
-                    # No colors - just padding
-                    data.extend([0x00] * (61 - len(data)))
-            elif mode_byte == 0x0c:  # super-rainbow mode
-                # Speed mapping for super rainbow (same as covering marquee)
-                speed_map = {
-                    'slowest': [0x5e, 0x01],  # slowest
-                    'slow': [0x2c, 0x01],     # slow
-                    'normal': [0xfa, 0x00],   # normal
-                    'faster': [0x96, 0x00],   # fast
-                    'fastest': [0x50, 0x00]   # fastest
-                }
-                speed_bytes = speed_map.get(speed, [0xfa, 0x00])
-                
-                # Build super rainbow packet: 2a 04 08 08 0c [speed] 00 00 [padding] [direction] 00 18 03...
-                data = [0x2a, 0x04, channel_byte, channel_byte, mode_byte]
-                data.extend(speed_bytes)
-                data.extend([0x00, 0x00])
-                
-                # Add padding zeros until position 56
-                while len(data) < 56:
-                    data.append(0x00)
-                
-                # Add direction byte at position 56
-                direction_byte = 0x02 if direction == 'backward' else 0x00
-                data.append(direction_byte)
-                
-                # Add structure bytes
-                data.extend([0x00, 0x18, 0x03, 0x00, 0x00])
-            else:
-                # Other modes use the standard format
-                data = [0x2a, 0x04, channel_byte, channel_byte, mode_byte, variant_byte, moving_byte]
+        
+        # Use packet_config to build the data
+        data = self._build_mode_packet(channel_byte, mode_byte, colors, speed, direction, packet_config)
+        
+        # Pad and write
+        padding = [0x00] * (self._WRITE_LENGTH - len(data))
+        data.extend(padding)
+        self._write(data)
+        
+        # Apply settings if required
+        if packet_config.get('type') == 'fixed':
+            self._apply_color_settings(channel_byte)
+    
+    def _build_mode_packet(self, channel_byte, mode_byte, colors, speed, direction, config):
+        """Build packet based on mode configuration from _COLOR_MODES.
+        
+        Applies sensible defaults for common fields:
+        - type: 'animated' (unless specified as 'fixed')
+        - base_cmd: [0x2a, 0x04] for animated, [0x26, 0x04] for fixed
+        - speed_map: 'standard'
+        - pad_to: 56
+        - direction_pos: 56 (when has_direction is True)
+        - led_count: 24 (for fixed type)
+        """
+        # Apply defaults
+        packet_type = config.get('type', 'animated')
+        
+        if packet_type == 'fixed':
+            # Fixed color mode defaults
+            base_cmd = config.get('base_cmd', [0x26, 0x04])
+            led_count = config.get('led_count', 24)
             
-            # Pad to full packet size
-            padding = [0x00] * (self._WRITE_LENGTH - len(data))
-            data.extend(padding)
-            
-            self._write(data)
-            
-        else:
-            data = [0x26, 0x04, channel_byte, 0x00]
-            # Add color data - repeat GRB for each LED (24 LEDs based on capture)
+            data = base_cmd + [channel_byte, 0x00]
             if colors:
                 r, g, b = colors[0]
-                # Pattern from capture: GG RR BB repeated for each LED (GRB order)
-                for _ in range(24):  # 24 LEDs based on capture analysis
-                    data.extend([g, r, b])  # GRB order instead of RGB
+                for _ in range(led_count):
+                    data.extend([g, r, b])  # GRB order
             else:
-                data.extend([0x00] * (24 * 3))  # 24 LEDs * 3 bytes each
+                data.extend([0x00] * (led_count * 3))
         
-            # Pad to full packet size
-            padding = [0x00] * (self._WRITE_LENGTH - len(data))
-            data.extend(padding)
+        else:  # animated
+            # Animated mode defaults
+            base_cmd = config.get('base_cmd', [0x2a, 0x04])
+            speed_map_name = config.get('speed_map', 'standard')
+            pad_to = config.get('pad_to', 56)
+            direction_pos = config.get('direction_pos', 56)
             
-            self._write(data)
-            self._apply_color_settings(channel_byte)
+            data = base_cmd + [channel_byte, channel_byte, mode_byte]
+            
+            # Add speed bytes if speed_map is specified
+            if speed_map_name:
+                speed_map = self._SPEED_MAPS[speed_map_name]
+                speed_bytes = speed_map.get(speed, speed_map['normal'])
+                data.extend(speed_bytes)
+            
+            # Add header padding if specified
+            if 'header_padding' in config:
+                data.extend(config['header_padding'])
+            
+            # Add colors if mode supports them
+            if config.get('has_colors') and colors:
+                for r, g, b in colors:
+                    data.extend([g, r, b])  # GRB order
+            
+            # Pad to specified position
+            while len(data) < pad_to:
+                data.append(0x00)
+            
+            # Add direction byte if needed
+            if config.get('has_direction'):
+                direction_byte = 0x02 if direction == 'backward' else 0x00
+                data.append(direction_byte)
+            
+            # Add color count if needed
+            if config.get('has_colors') and 'color_count_pos' in config and colors:
+                data.append(len(colors))
+            
+            # Add footer bytes if specified
+            if 'footer' in config:
+                data.extend(config['footer'])
+            
+            # Pad to minimum length if no colors provided
+            if not colors and config.get('has_colors'):
+                while len(data) < 61:
+                    data.append(0x00)
+        
+        return data
             
     def _apply_color_settings(self, channel_byte):
         """Apply/commit the color settings to the device."""
@@ -1036,11 +974,6 @@ class ControlHub(SmartDevice2):
         data.extend(padding)
         
         self._write(data)
-
-
-
-
-
 
     def _write_fixed_duty(self, cid, duty):
         msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00]  # fan channel passed as bitflag in last 3 bits of 3rd byte
