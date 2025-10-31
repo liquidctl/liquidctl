@@ -737,7 +737,8 @@ class ControlHub(SmartDevice2):
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
-        _LOGGER.info(f"Initializing Control Hub with {speed_channel_count} speed channels and {color_channel_count} color channels")
+        _LOGGER.info('initializing Control Hub with %d speed channels and %d color channels',
+                     speed_channel_count, color_channel_count)
         speed_channels = {f'fan{i + 1}': (i, _MIN_DUTY, _MAX_DUTY)
                                 for i in range(speed_channel_count)}
         color_channels = {f'led{i + 1}': i for i in range(color_channel_count)}
@@ -785,12 +786,12 @@ class ControlHub(SmartDevice2):
 
         def parse_led_info(msg):
             channel_count = msg[14]
-            _LOGGER.info(f"LED channel count: {channel_count}")
+            _LOGGER.info('LED channel count: %d', channel_count)
             offset = 15  # offset of first channel/first accessory
             for c in range(channel_count):
                 for a in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
                     accessory_id = msg[offset + c * HUE2_MAX_ACCESSORIES_IN_CHANNEL + a]
-                    _LOGGER.info(f"Accessory ID: {accessory_id} (0x{accessory_id:02x})")
+                    _LOGGER.info('accessory ID: %d (0x%02x)', accessory_id, accessory_id)
                     if accessory_id == 0:
                         break
                     ret.append((f'LED {c + 1} accessory {a + 1}',
@@ -836,10 +837,10 @@ class ControlHub(SmartDevice2):
         - super-rainbow: Super rainbow effect
         """
         if channel not in self._color_channels:
-            raise ValueError(f"Invalid channel: {channel}")
+            raise ValueError(f'invalid channel: {channel}')
 
         if mode not in self._COLOR_MODES:
-            raise ValueError(f"Invalid mode: {mode}. Supported modes: {list(self._COLOR_MODES.keys())}")
+            raise ValueError(f'invalid mode: {mode}, supported modes: {list(self._COLOR_MODES.keys())}')
 
         # Unpack mode configuration (extended format with config dict)
         mode_byte, variant_byte, moving_byte, min_colors, max_colors, packet_config = self._COLOR_MODES[mode]
@@ -849,9 +850,9 @@ class ControlHub(SmartDevice2):
 
         # Validate color count
         if len(colors_list) < min_colors:
-            raise ValueError(f"Mode '{mode}' requires at least {min_colors} colors")
+            raise ValueError(f'mode {mode!r} requires at least {min_colors} colors')
         if len(colors_list) > max_colors:
-            raise ValueError(f"Mode '{mode}' supports at most {max_colors} colors")
+            raise ValueError(f'mode {mode!r} supports at most {max_colors} colors')
 
         # Handle off mode
         if mode == 'off':
@@ -873,7 +874,7 @@ class ControlHub(SmartDevice2):
     def _set_channel_color_mode(self, channel_id, mode_byte, variant_byte, moving_byte, colors, speed, direction, packet_config):
         """Set color mode for a specific channel."""
         channel_byte = self._CHANNEL_BYTE_MAP.get(channel_id, 0x08)
-        _LOGGER.info('setting %s channel %s to mode %s with %d colors speed %s direction %s', 
+        _LOGGER.info('setting %s channel %d to mode 0x%02x with %d colors speed %s direction %s',
                      self.description, channel_id, mode_byte, len(colors), speed, direction)
         
         # Use packet_config to build the data
