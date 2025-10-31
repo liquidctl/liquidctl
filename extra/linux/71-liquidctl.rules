@@ -337,6 +337,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18f3", TAG+="uacc
 # ASUS Ryujin II 360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1988", TAG+="uaccess"
 
+# ASUS ROG Ryujin III
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1aa2", TAG+="uaccess"
+
 # Aquacomputer D5 Next
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00e", TAG+="uaccess"
 
