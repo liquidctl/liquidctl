@@ -14,14 +14,14 @@ body:
       description: We are not currently taking new device. Please send a pull request instead.
       options:
       - label: This is not a new device request
-      required: true
+        required: true
   - type: checkboxes
     attributes:
       label: Is this a support request?
       description: Please use the "Discussions" tab for discussions.
       options:
       - label: This is not a support request
-      required: true
+        required: true
   - type: textarea
     attributes:
       label: Description
