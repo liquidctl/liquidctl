@@ -13,7 +13,7 @@ body:
     attributes:
       label: Is this a request for support of a new device?
       description: >
-        We are not currently taking new device requests. instead. Please see
+        We are not currently taking new device requests. Please see
         [how](https://github.com/liquidctl/liquidctl/blob/main/CONTRIBUTING.md) you can help add
         support for that device and contribute your changes back to the project.
       options:
