@@ -1,0 +1,31 @@
+name: Other issue
+description: Report other types of problems or request new features.
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there already an issue for this?
+      description: Please search our open issues to see if one already exists for this.
+      options:
+      - label: There is not an open issue for this
+        required: true
+  - type: checkboxes
+    attributes:
+      label: Is this a request for support of a new device?
+      description: We are not currently taking new device. Please send a pull request instead.
+      options:
+      - label: This is not a new device request
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Is this a support request?
+      description: Please use the "Discussions" tab for discussions.
+      options:
+      - label: This is not a support request
+      required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: Please describe the issue or feature equest as clearly as possible.
+      render: markdown
+    validations:
+      required: true
