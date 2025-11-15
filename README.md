@@ -6,12 +6,6 @@ _Cross-platform tool and drivers for liquid coolers and other devices_
 [![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/main)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4949/badge)](https://bestpractices.coreinfrastructure.org/projects/4949)
 
----
-
-Notice: please check out our [open invitation for new team members](https://github.com/liquidctl/liquidctl/issues/569).
-
----
-
 ```
 $ liquidctl list
 Device #0: Corsair Vengeance RGB DIMM2
