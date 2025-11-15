@@ -12,7 +12,8 @@ body:
   - type: checkboxes
     attributes:
       label: Is this a request for support of a new device?
-      description: We are not currently taking new device. Please send a pull request instead.
+      description: We are not currently taking new device requests. Please send a pull request
+        instead.
       options:
       - label: This is not a new device request
         required: true
