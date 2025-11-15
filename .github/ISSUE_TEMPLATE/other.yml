@@ -6,7 +6,7 @@ body:
       label: Is there already an issue for this?
       description: Please search our open issues to see if one already exists for this.
       options:
-      - label: There is not an open issue for this
+      - label: There is no open issue for this
         required: true
   - type: checkboxes
     attributes:
