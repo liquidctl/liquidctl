@@ -20,14 +20,6 @@ body:
       - label: This is not a new device request
         required: true
   - type: input
-    id: affected-device
-    attributes:
-      label: Affected device
-      description: Which device is affected by this bug?
-      placeholder: e.g. Corsair Hydro H100i Pro XT
-    validations:
-      required: false
-  - type: input
     id: liquidctl-version
     attributes:
       label: Affected liquidctl version
@@ -39,6 +31,14 @@ body:
         e.g. liquidctl v1.15.0 (Linux-6.17.8-arch1-1-x86_64-with-glibc2.42)
     validations:
       required: true
+  - type: input
+    id: affected-device
+    attributes:
+      label: Affected device
+      description: Which device is affected by this bug?
+      placeholder: e.g. Corsair Hydro H100i Pro XT
+    validations:
+      required: false
   - type: checkboxes
     attributes:
       label: Is the device supported?
@@ -50,7 +50,7 @@ body:
         enough devices or features may require a newer version, or sometimes even a Git snapshot.
       options:
       - label: The device is listead in the README as supported by my liquidctl version
-        required: true
+        required: false
   - type: textarea
     id: description
     attributes:
@@ -68,7 +68,7 @@ body:
         You can use Markdown, in particular [code
         blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code).
     validations:
-      required: true
+      required: false
   - type: textarea
     id: commands-executed-with-debug
     attributes:
@@ -78,7 +78,7 @@ body:
         and output . You can use Markdown, in particular [code
         blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code).
     validations:
-      required: true
+      required: false
   - type: input
     id: installation-method
     attributes:
@@ -86,7 +86,7 @@ body:
       description: How did you install (or attempt to) liquidctl?
       placeholder: e.g. Official Arch Linux repository
     validations:
-      required: true
+      required: false
   - type: input
     id: operating-system
     attributes:
@@ -94,4 +94,4 @@ body:
       description: Which operating system and version are you using?
       placeholder: e.g. Windows 1125H2 or Arch Linux with kernel linux 6.17.8-arch1-1
     validations:
-      required: true
+      required: false
