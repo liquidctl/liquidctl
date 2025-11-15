@@ -3,7 +3,7 @@ contact_links:
   - name: My device isn't supported yet
     url: https://github.com/liquidctl/liquidctl/blob/main/CONTRIBUTING.md
     about: We are not currently taking new device requests. Please see how you can help add support
-      for that device and contribute your changes back to the project.
+      for your device and contribute your changes back to the project.
   - name: Engage with the community or ask for help
     url: https://discord.gg/GyCBjQhqCd
     about: Please visit our Discord server

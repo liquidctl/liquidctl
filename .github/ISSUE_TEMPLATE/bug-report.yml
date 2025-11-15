@@ -30,9 +30,9 @@ body:
   - type: input
     id: liquidctl-version
     attributes:
-      label: liquidctl version
+      label: Affected liquidctl version
       description: >
-        What is the output from `liquidctl --version` or what version did you tried to install? If
+        What is the output from `liquidctl --version`, or what version did you tried to install? If
         you are reporting an issue for a version other than the latest (currently 1.15.0), please
         first check that the problem has not already been fixed on the new version.
       placeholder: |
@@ -41,14 +41,13 @@ body:
       required: true
   - type: checkboxes
     attributes:
-      label: Does the above version of liquidctl support the device in question?
-      description: Please search our open issues to see if one already exists for this.
+      label: Is the device supported?
+      description: Does the above version of liquidctl support the device in question?
       description: >
         Please check the [Supported
         devices](https://github.com/liquidctl/liquidctl#supported-devices) section in the README to
-        verify if your version has support. Support for new enough devices or features may have have
-        made it to the liquidctl version you have, or may sometimes even require a recent Git
-        snapshot.
+        verify that the device is supported by the liquidctl version you are using. Support for new
+        enough devices or features may require a newer version, or sometimes even a Git snapshot.
       options:
       - label: The device is listead in the README as supported by my liquidctl version
         required: true
@@ -65,8 +64,8 @@ body:
     attributes:
       label: Commands executed
       description: >
-        List the executed commands, and describe their expected behavior and what was observed
-        instead. You can use Markdown, in particular [code
+        Report the commands you executed, their expected behavior, and what was observed instead.
+        You can use Markdown, in particular [code
         blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code).
     validations:
       required: true
@@ -75,8 +74,8 @@ body:
     attributes:
       label: Output of all relevant commands with `--debug` flag
       description: >
-        Re-run all previous commands with the `--debug` flag, and include their complete output. You
-        can use Markdown, in particular [code
+        Re-run all liquidctl commands with the `--debug` flag, and provide their complete arguments
+        and output . You can use Markdown, in particular [code
         blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code).
     validations:
       required: true
