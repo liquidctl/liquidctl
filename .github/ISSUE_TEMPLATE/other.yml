@@ -1,5 +1,5 @@
 name: Other issue
-description: Report other types of problems or request new features.
+description: Report other types of problems or request new features
 body:
   - type: checkboxes
     attributes:
@@ -11,8 +11,10 @@ body:
   - type: checkboxes
     attributes:
       label: Is this a request for support of a new device?
-      description: We are not currently taking new device requests. Please send a pull request
-        instead.
+      description: >
+        We are not currently taking new device requests. instead. Please see
+        [how](https://github.com/liquidctl/liquidctl/blob/main/CONTRIBUTING.md) you can help add
+        support for that device and contribute your changes back to the project.
       options:
       - label: This is not a new device request
         required: true
