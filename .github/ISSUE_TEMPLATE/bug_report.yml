@@ -29,13 +29,11 @@ body:
     attributes:
       label: liquidctl version
       description: >
-        What is the output from `liquidctl --version`? If the installation failed, what is the
-        version you tried to install?
-
-        If you are reporting an issue for a version other than the latest (currently 1.15.0), please
+        What is the output from `liquidctl --version` or what version did you tried to install? If
+        you are reporting an issue for a version other than the latest (currently 1.15.0), please
         first check that the problem has not already been fixed on the new version.
       placeholder: |
-        e.g. liquidctl v1.12.0.dev44+g12c1469909fd (Linux-6.0.10-arch2-1-x86_64-with-glibc2.36)
+        e.g. liquidctl v1.15.0 (Linux-6.17.8-arch1-1-x86_64-with-glibc2.42)
     validations:
       required: true
   - type: checkboxes
@@ -45,35 +43,38 @@ body:
       description: >
         Please check the [Supported
         devices](https://github.com/liquidctl/liquidctl#supported-devices) section in the README to
-        verify if your version has support.
-
-        Support for new enough devices or features may have have made it to the liquidctl version
-        you have, or may sometimes even require a recent Git snapshot.
+        verify if your version has support. Support for new enough devices or features may have have
+        made it to the liquidctl version you have, or may sometimes even require a recent Git
+        snapshot.
       options:
-      - label: The device should be supported by the liquidctl version above
+      - label: The device is listead in the README as supported by my liquidctl version
         required: true
   - type: textarea
     id: description
     attributes:
       label: Describe the bug
-      description: Please start by describing the bug in as much detail as possible.
-      placeholder: ex. "liquidctl fails to read the fan speed of the two attached fans"
+      description: Please start by describing the bug in as much detail as possible. You can use
+        [Markdown](https://docs.github.com/en/get-started/writing-on-github).
     validations:
       required: true
   - type: textarea
     id: commands-executed
     attributes:
       label: Commands executed
-      description: List the executed commands, and describe their expected behavior and what was
-        observed instead.
+      description: >
+        List the executed commands, and describe their expected behavior and what was observed
+        instead. You can use Markdown, in particular [code
+        blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code).
     validations:
       required: true
   - type: textarea
     id: commands-executed-with-debug
     attributes:
       label: Output of all relevant commands with `--debug` flag
-      description: Re-run all previous commands with the `--debug` flag, and include their complete
-        output.
+      description: >
+        Re-run all previous commands with the `--debug` flag, and include their complete output. You
+        can use Markdown, in particular [code
+        blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code).
     validations:
       required: true
   - type: input
