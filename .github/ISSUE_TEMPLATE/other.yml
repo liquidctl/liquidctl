@@ -18,14 +18,15 @@ body:
   - type: checkboxes
     attributes:
       label: Is this a support request?
-      description: Please use the "Discussions" tab for discussions.
+      description: Please use Discord for support requests.
       options:
       - label: This is not a support request
         required: true
   - type: textarea
     attributes:
       label: Description
-      description: Please describe the issue or feature equest as clearly as possible.
-      render: markdown
+      description: >
+        Describe the issue or feature request as clearly as possible. You can use
+        [Markdown](https://docs.github.com/en/get-started/writing-on-github).
     validations:
       required: true
