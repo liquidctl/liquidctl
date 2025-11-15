@@ -1,7 +1,9 @@
 blank_issues_enabled: false
 contact_links:
   - name: Support for new devices
-    about: We are not currently taking new device requests. Please send a pull request instead.
+    url: https://github.com/liquidctl/liquidctl/blob/main/CONTRIBUTING.md
+    about: We are not currently taking new device requests. Please contribute the necessary changes
+      instead.
   - name: Ask questions or support
     url: https://discord.gg/GyCBjQhqCd
     about: Engage in our community on Discord
