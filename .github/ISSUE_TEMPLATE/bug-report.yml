@@ -41,8 +41,8 @@ body:
       required: false
   - type: checkboxes
     attributes:
-      label: Is the device supported?
-      description: Does the above version of liquidctl support the device in question?
+      label: Is the device supported by that liquidctl version?
+      description: Does your liquidctl version support the device above?
       description: >
         Please check the [Supported
         devices](https://github.com/liquidctl/liquidctl#supported-devices) section in the README to
