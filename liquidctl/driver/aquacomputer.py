@@ -90,6 +90,7 @@ class Aquacomputer(UsbHidDriver):
     _DEVICE_FARBWERK360 = "Farbwerk 360"
     _DEVICE_OCTO = "Octo"
     _DEVICE_QUADRO = "Quadro"
+    _DEVICE_AQUAERO = "Aquaero"
 
     _DEVICE_INFO = {
         _DEVICE_D5NEXT: {
@@ -161,6 +162,28 @@ class Aquacomputer(UsbHidDriver):
                 )
             },
         },
+        _DEVICE_AQUAERO: {
+            "type": _DEVICE_AQUAERO,
+            "fan_sensors": [0x167, 0x173, 0x17F, 0x18B],
+            "temp_sensors": ([0x65 + offset * 2 for offset in range(0, 8)]),
+            "virt_temp_sensors": [0x85 + offset * 2 for offset in range(0, 8)],
+            "temp_sensors_label": [f"Sensor {i}" for i in range(1, 8 + 1)],
+            "virt_temp_sensors_label": [f"Soft. Sensor {num}" for num in range(1, 8 + 1)],
+            "fan_speed_label": [f"Fan {num} speed" for num in range(1, 4 + 1)],
+            "fan_power_label": [f"Fan {num} power" for num in range(1, 4 + 1)],
+            "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
+            "fan_current_label": [f"Fan {num} current" for num in range(1, 4 + 1)],
+            # TODO: Two flow sensors
+            "status_report_length": 0x387,
+            "ctrl_report_length": 0xA93,
+            "fan_ctrl": {
+                name: offset
+                for (name, offset) in zip(
+                    [f"fan{i}" for i in range(1, 4 + 1)],
+                    [0x20C, 0x220, 0x234, 0x248],
+                )
+            },
+        },
     }
 
     _MATCHES = [
@@ -187,6 +210,12 @@ class Aquacomputer(UsbHidDriver):
             0xF00D,
             "Aquacomputer Quadro",
             {"device_info": _DEVICE_INFO[_DEVICE_QUADRO]},
+        ),
+        (
+            0x0C70,
+            0xF001,
+            "Aquacomputer Aquaero",
+            {"device_info": _DEVICE_INFO[_DEVICE_AQUAERO]},
         ),
     ]
 
