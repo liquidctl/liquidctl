@@ -334,6 +334,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1939", TAG+="uacc
 # ASUS Aura LED Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18f3", TAG+="uaccess"
 
+# ASUS ROG Ryuo I 240
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1887", TAG+="uaccess"
+
 # ASUS Ryujin II 360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1988", TAG+="uaccess"
 

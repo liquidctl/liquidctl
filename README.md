@@ -2,15 +2,9 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
+[![Our Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
 [![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/main)
-[![Developer's Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4949/badge)](https://bestpractices.coreinfrastructure.org/projects/4949)
-
----
-
-Notice: please check out our [open invitation for new team members](https://github.com/liquidctl/liquidctl/issues/569).
-
----
 
 ```
 $ liquidctl list
@@ -120,6 +114,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
 | AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | 1.14.0 |
+| AIO liquid cooler  | [ASUS Ryuo I 240](docs/asus-ryuo-guide.md) | <sup>_p_</sup> | git |
 | AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
