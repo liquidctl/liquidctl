@@ -161,7 +161,7 @@ class AuraLed(UsbHidDriver):
         if data[1] == 0x02:
             status.append(("Firmware version", "".join(map(chr, data[2:17])), ""))
         else:
-            status.append("Unexpected reply for firmware", "", "")
+            status.append(("Unexpected reply for firmware", "", ""))
             return status
 
         # This stops Direct mode if it was previously applied
@@ -214,7 +214,7 @@ class AuraLed(UsbHidDriver):
                     start_index += num
                     count += 1
         else:
-            status.append("Unexpected reply for config", "", "")
+            status.append(("Unexpected reply for config", "", ""))
         return status
 
     def set_color(self, channel, mode, colors, speed="normal", **kwargs):

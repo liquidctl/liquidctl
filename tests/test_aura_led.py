@@ -45,6 +45,11 @@ def test_aura_led_19AF_device_get_status(mockAuraLed_19AFDevice):
     assert mockAuraLed_19AFDevice.get_status() != []
 
 
+def test_aura_led_unexpected_get_status(mockAuraLed_19AFDevice):
+    mockAuraLed_19AFDevice.device.preload_read(Report(bytes(0), _INIT_19AF_CONFIG_DATA[1:]))
+    assert mockAuraLed_19AFDevice.get_status() == [("Unexpected reply for config", "", "")]
+
+
 def test_aura_led_19AF_device_initialize_status(mockAuraLed_19AFDevice):
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_FIRMWARE)
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_CONFIG)
