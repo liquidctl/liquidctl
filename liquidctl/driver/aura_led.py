@@ -55,12 +55,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-import sys
 from collections import namedtuple
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import clamp
 
 _LOGGER = logging.getLogger(__name__)
 
