@@ -239,7 +239,6 @@ class AuraLed(UsbHidDriver):
             for chan in _COLOR_CHANNELS:
                 message += chan + " "
             raise KeyError(message) from None
-            return
 
         """
         This is experimental (it's an example of direct mode)
