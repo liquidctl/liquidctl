@@ -1,8 +1,6 @@
 import pytest
 from _testutils import MockHidapiDevice, Report
 
-from collections import deque
-
 from liquidctl.driver.aura_led import AuraLed
 
 # Sample data for Aura LED controller from ASUS ProArt Z690-Creator WiFi
@@ -46,8 +44,9 @@ def test_aura_led_19AF_device_get_status(mockAuraLed_19AFDevice):
 
 
 def test_aura_led_unexpected_get_status(mockAuraLed_19AFDevice):
-    mockAuraLed_19AFDevice.device.preload_read(Report(bytes(0), _INIT_19AF_CONFIG_DATA[1:]))
-    assert mockAuraLed_19AFDevice.get_status() == [("Unexpected reply for config", "", "")]
+    with pytest.raises(AssertionError):
+        mockAuraLed_19AFDevice.device.preload_read(Report(bytes(0), _INIT_19AF_CONFIG_DATA[1:]))
+        mockAuraLed_19AFDevice.get_status()
 
 
 def test_aura_led_19AF_device_initialize_status(mockAuraLed_19AFDevice):
