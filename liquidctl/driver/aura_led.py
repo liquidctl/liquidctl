@@ -150,6 +150,7 @@ class AuraLed(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples, containing the
         firmware version and other useful information provided by the hardware.
         """
+        self.device.clear_enqueued_reports()
         # Get firmware version
         self._write(_FUNCTION_CODE["firmware"])
 
@@ -183,6 +184,7 @@ class AuraLed(UsbHidDriver):
         """Get a status report."""
         status = []
         # Get config table
+        self.device.clear_enqueued_reports()
         self._write(_FUNCTION_CODE["config"])
         data = self.device.read(_READ_LENGTH)
 
