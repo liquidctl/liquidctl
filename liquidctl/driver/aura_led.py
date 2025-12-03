@@ -55,12 +55,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-import sys
 from collections import namedtuple
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -152,17 +150,15 @@ class AuraLed(UsbHidDriver):
         Returns a list of `(property, value, unit)` tuples, containing the
         firmware version and other useful information provided by the hardware.
         """
+        self.device.clear_enqueued_reports()
         # Get firmware version
         self._write(_FUNCTION_CODE["firmware"])
 
         # Build reply string
         status = []
         data = self.device.read(_READ_LENGTH)
-        if data[1] == 0x02:
-            status.append(("Firmware version", "".join(map(chr, data[2:17])), ""))
-        else:
-            status.append("Unexpected reply for firmware", "", "")
-            return status
+        assert data[1] == 0x02, "Unexpected reply for firmware"
+        status.append(("Firmware version", "".join(map(chr, data[2:17])), ""))
 
         # This stops Direct mode if it was previously applied
         self._write(_FUNCTION_CODE["end_direct"])
@@ -188,33 +184,33 @@ class AuraLed(UsbHidDriver):
         """Get a status report."""
         status = []
         # Get config table
+        self.device.clear_enqueued_reports()
         self._write(_FUNCTION_CODE["config"])
         data = self.device.read(_READ_LENGTH)
-        if data[1] == 0x30:
-            start_index = 4  # index of first record
 
-            argb_channels = data[start_index + 2]
-            rgb_channels = data[start_index + 3]
-            status.append(("ARGB channels: " + str(argb_channels), "", ""))
-            status.append((" RGB channels: " + str(rgb_channels), "", ""))
+        assert data[1] == 0x30, "Unexpected reply for config"
+        start_index = 4  # index of first record
 
-            if "debug" in kwargs and kwargs["debug"] == True:
-                num = 6  # number of bytes per record
-                count = 1
-                while start_index + num < _READ_LENGTH:
-                    status.append(
-                        (
-                            "Device Config: " + str(count),
-                            ", ".join(
-                                "0x{:02x}".format(x) for x in data[start_index : start_index + num]
-                            ),
-                            "",
-                        )
+        argb_channels = data[start_index + 2]
+        rgb_channels = data[start_index + 3]
+        status.append(("ARGB channels: " + str(argb_channels), "", ""))
+        status.append((" RGB channels: " + str(rgb_channels), "", ""))
+
+        if kwargs.get("debug", False):
+            num = 6  # number of bytes per record
+            count = 1
+            while start_index + num < _READ_LENGTH:
+                status.append(
+                    (
+                        "Device Config: " + str(count),
+                        ", ".join(
+                            "0x{:02x}".format(x) for x in data[start_index : start_index + num]
+                        ),
+                        "",
                     )
-                    start_index += num
-                    count += 1
-        else:
-            status.append("Unexpected reply for config", "", "")
+                )
+                start_index += num
+                count += 1
         return status
 
     def set_color(self, channel, mode, colors, speed="normal", **kwargs):
@@ -239,7 +235,6 @@ class AuraLed(UsbHidDriver):
             for chan in _COLOR_CHANNELS:
                 message += chan + " "
             raise KeyError(message) from None
-            return
 
         """
         This is experimental (it's an example of direct mode)
