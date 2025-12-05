@@ -33,9 +33,9 @@ _MAX_CHANNEL = 3
 
 # PWM commands mapped by device type
 _PWM_COMMANDS = {
-    "SL":   [224, 16, 49],
-    "AL":   [224, 16, 66],
-    "SLI":  [224, 16, 98],
+    "SL": [224, 16, 49],
+    "AL": [224, 16, 66],
+    "SLI": [224, 16, 98],
     "SLV2": [224, 16, 98],
     "ALV2": [224, 16, 98],
 }
@@ -61,15 +61,11 @@ class LianLiUni(UsbHidDriver):
         super().__init__(device, description, **kwargs)
         self.device_type = kwargs.get("device_type")
         if not self.device_type:
-            raise NotSupportedByDevice(
-                f"Unknown device with PID: {hex(self.device.product_id)}"
-            )
+            raise NotSupportedByDevice(f"Unknown device with PID: {hex(self.device.product_id)}")
         # Variables for CoolerControl support
         self.speed_channels = ["channel1", "channel2", "channel3", "channel4"]
         self.channel_speeds = {}
-        self.pwm_channels = {
-            channel: False for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1)
-        }
+        self.pwm_channels = {channel: False for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1)}
         self.supports_cooling = True
 
     def initialize(self, **kwargs):
@@ -104,9 +100,7 @@ class LianLiUni(UsbHidDriver):
                                             If None, toggle the current state.
         """
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(
-                f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
-            )
+            raise ValueError(f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)")
 
         # Determine the desired action
         if desired_state is None:
@@ -123,14 +117,10 @@ class LianLiUni(UsbHidDriver):
         # Construct the command to toggle PWM synchronization
         command_prefix = _PWM_COMMANDS.get(self.device_type)
         if not command_prefix:
-            raise NotSupportedByDevice(
-                f"Unsupported device type for PWM sync: {self.device_type}"
-            )
+            raise NotSupportedByDevice(f"Unsupported device type for PWM sync: {self.device_type}")
 
         command = command_prefix + [channel_byte]
-        _LOGGER.debug(
-            "%s PWM sync for channel %d: command %s", debug_string, channel, command
-        )
+        _LOGGER.debug("%s PWM sync for channel %d: command %s", debug_string, channel, command)
 
         try:
             self.device.write(command)
@@ -160,7 +150,7 @@ class LianLiUni(UsbHidDriver):
             _LOGGER.warning(
                 "Cannot set fixed speed for Channel %d: PWM is enabled. "
                 "Please disable PWM first to set a fixed speed.",
-                {channel_index + 1}
+                {channel_index + 1},
             )
             return
 
@@ -181,7 +171,7 @@ class LianLiUni(UsbHidDriver):
 
         self.channel_speeds[channel_index] = duty
 
-        _LOGGER.info('setting %s PWM duty to %d%%', channel_index + 1, duty)
+        _LOGGER.info("setting %s PWM duty to %d%%", channel_index + 1, duty)
 
     def query_current_speed(self, channel):
         """
@@ -227,7 +217,7 @@ class LianLiUni(UsbHidDriver):
         start_index = offset + channel * 2
         _LOGGER.debug("start_index: %s", start_index)
         # Extract the 2 bytes corresponding to this channel.
-        speed_bytes = report[start_index:start_index + 2]
+        speed_bytes = report[start_index : start_index + 2]
         if len(speed_bytes) < 2:
             _LOGGER.error("Report is too short for channel %d: %s", channel, report)
             return None
@@ -267,9 +257,7 @@ class LianLiUni(UsbHidDriver):
             else:
                 speed_byte = int((200 + (19 * speed)) / 21) & 0xFF
         else:
-            raise NotSupportedByDevice(
-                f"Unsupported device type: {self.device_type}"
-            )
+            raise NotSupportedByDevice(f"Unsupported device type: {self.device_type}")
         return speed_byte
 
     def _extract_channel_index(self, channel):
