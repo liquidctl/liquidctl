@@ -18,12 +18,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
-import re
 import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import clamp
+from liquidctl.util import clamp,extract_channel_index
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,11 +68,11 @@ class LianLiUni(UsbHidDriver):
         self.supports_cooling = True
 
     def initialize(self, **kwargs):
-        """Initialize the device and disable PWM synchronization on all channels."""
+        """Initialize the device and enable PWM synchronization on all channels."""
 
-        # Disable PWM synchronization on all channels
+        # Enable PWM synchronization on all channels
         for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1):
-            self.toggle_pwm_sync(channel, desired_state=False)
+            self.toggle_pwm_sync(channel, desired_state=True)
             time.sleep(0.2)  # Delay to prevent race conditions
 
         return None
@@ -100,7 +99,9 @@ class LianLiUni(UsbHidDriver):
                                             If None, toggle the current state.
         """
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)")
+            raise ValueError(
+                f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
+            )
 
         # Determine the desired action
         if desired_state is None:
@@ -136,7 +137,7 @@ class LianLiUni(UsbHidDriver):
             duty: int or float - The desired speed percentage (0-100)
         """
         if isinstance(channel, str):
-            channel_index = self._extract_channel_index(channel)
+            channel_index = extract_channel_index(channel)
         else:
             channel_index = channel
 
@@ -147,12 +148,12 @@ class LianLiUni(UsbHidDriver):
 
         # Check if PWM is on for the channel
         if self.pwm_channels[channel_index]:
-            _LOGGER.warning(
-                "Cannot set fixed speed for Channel %d: PWM is enabled. "
-                "Please disable PWM first to set a fixed speed.",
+            _LOGGER.debug(
+                "Channel %d: PWM is enabled. "
+                "Disabling PWM synchronization.",
                 {channel_index + 1},
             )
-            return
+            self.toggle_pwm_sync(channel, desired_state=False)
 
         duty = clamp(duty, 0, 100)
         speed_byte = self._calculate_speed_byte(duty)
@@ -259,24 +260,6 @@ class LianLiUni(UsbHidDriver):
         else:
             raise NotSupportedByDevice(f"Unsupported device type: {self.device_type}")
         return speed_byte
-
-    def _extract_channel_index(self, channel):
-        """Extract the channel index from the channel name.
-
-        Parameters:
-            channel: str - The name of the channel (e.g., 'channel1')
-
-        Returns:
-            int - The zero-based index of the channel
-        """
-        match = re.search(r"(\d+)$", channel)
-        if match:
-            channel_number = int(match.group(1))
-            if 1 <= channel_number <= (_MAX_CHANNEL + 1):
-                return channel_number - 1
-        raise ValueError(
-            f"Invalid channel '{channel}'. Must be 'channel1' to 'channel{_MAX_CHANNEL + 1}'"
-        )
 
     def disconnect(self, **kwargs):
         """Disconnect from the device."""

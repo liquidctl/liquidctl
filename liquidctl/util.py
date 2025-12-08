@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import colorsys
 import logging
+import re
 from ast import literal_eval
 from enum import Enum, EnumMeta, unique
 from typing import Optional
@@ -533,3 +534,24 @@ def mkCrcFun(crc_name):
     """
 
     return crcmod.predefined.mkCrcFun(crc_name)
+
+def extract_channel_index(channel, max_channel=4):
+    """Extract the channel index from the channel name.
+
+    Unstable.
+
+    Parameters:
+        channel: str - The name of the channel (e.g., 'channel1')
+        max_channel: int - The maximum number of channels possible.
+
+    Returns:
+        int - The zero-based index of the channel
+    """
+    match = re.search(r"(\d+)$", channel)
+    if match:
+        channel_number = int(match.group(1))
+        if 1 <= channel_number <= max_channel:
+            return channel_number - 1
+    raise ValueError(
+        f"Invalid channel '{channel}'. Must be 'channel1' to 'channel{max_channel}'"
+    )
