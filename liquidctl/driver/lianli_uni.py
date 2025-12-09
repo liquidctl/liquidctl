@@ -85,8 +85,8 @@ class LianLiUni(UsbHidDriver):
             current_speed = self.query_current_speed(channel)
             duty_name = f"Channel {channel + 1}"
             if current_speed is None:
-                current_speed = 0.0
-            status.append((duty_name, float(current_speed), "rpm"))
+                current_speed = 0
+            status.append((duty_name, int(current_speed), "rpm"))
 
         return status
 
@@ -133,7 +133,7 @@ class LianLiUni(UsbHidDriver):
         """Set a fixed speed for the specified channel.
 
         Parameters:
-            channel: str or int - The name of the channel (e.g., 'channel1') or the zero-based index of the channel
+            channel: str or int - The name of the channel (e.g., '0') or the zero-based index of the channel
             duty: int or float - The desired speed percentage (0-100)
         """
         if isinstance(channel, str):
@@ -189,7 +189,7 @@ class LianLiUni(UsbHidDriver):
             channel (int): Zero-based index of the channel (0 to 3).
 
         Returns:
-            float: The fan speed value as reported by the device, or None if the read fails.
+            int: The fan speed value as reported by the device, or raises an Assert if the read fails.
         """
         # Validate channel index
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
@@ -197,7 +197,7 @@ class LianLiUni(UsbHidDriver):
                 f"Channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
             )
 
-        # Determine offset based on device type.
+        # Determine offset based on the device type.
         if self.device_type in ["SL", "AL", "SLI"]:
             offset = 1
         elif self.device_type in ["SLV2", "ALV2"]:
@@ -211,8 +211,7 @@ class LianLiUni(UsbHidDriver):
             report = self.device.get_input_report(224, 65)
             _LOGGER.debug("Received speed report: %s", report)
         except Exception as e:
-            _LOGGER.error("Error reading speed report: %s", e)
-            return None
+            raise AssertionError(f"Error reading speed report {e}")
 
         # # Calculate the starting index for this channel's speed value.
         start_index = offset + channel * 2
@@ -220,8 +219,7 @@ class LianLiUni(UsbHidDriver):
         # Extract the 2 bytes corresponding to this channel.
         speed_bytes = report[start_index : start_index + 2]
         if len(speed_bytes) < 2:
-            _LOGGER.error("Report is too short for channel %d: %s", channel, report)
-            return None
+            raise AssertionError(f"Report is too short for channel {channel}: {report}")
 
         speed_value = int.from_bytes(speed_bytes, byteorder="big")
         _LOGGER.debug(
@@ -231,7 +229,7 @@ class LianLiUni(UsbHidDriver):
             speed_value,
         )
 
-        return float(speed_value)
+        return int(speed_value)
 
     def _calculate_speed_byte(self, speed):
         """Calculate the speed byte based on the device type and desired speed.
@@ -258,9 +256,5 @@ class LianLiUni(UsbHidDriver):
             else:
                 speed_byte = int((200 + (19 * speed)) / 21) & 0xFF
         else:
-            raise NotSupportedByDevice(f"Unsupported device type: {self.device_type}")
+            raise AssertionError(f"unsupported device type: {self.device_type}")
         return speed_byte
-
-    def disconnect(self, **kwargs):
-        """Disconnect from the device."""
-        self.device.close()

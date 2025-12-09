@@ -16,13 +16,13 @@ This is a driver for supporting multiple Lian Li Uni fan hubs.
 
 ### Features
 
-- **Fixed Speed Control**: Set fixed speed (in percentage) for individual channels after disabling PWM synchronization.
-- **Channel Status Reporting**: Provides the last set duty percentage of each fan channel. (resets after disconnect)
-- **PWM Synchronization Toggle (in code)**: Allows toggling PWM synchronization on each fan channels via direct code usage.
+- **Fixed Speed Control**: Set a fixed speed (in percentage) for individual channels.
+- **Channel Status Reporting**: Provides the current RPM of each fan channel queried directly from the controller.
+- **Fan mode control toggle (in code)**: Allows toggling between Auto and fixed speed on each fan channel.
 
 ## Initialization
 
-It is recommended to initialize before usage. During initialization, PWM synchronization is explicitly disabled on all fan channels, allowing for fixed speed adjustments.
+It is recommended to initialize before usage. During initialization, automatic fan control is explicitly enabled on all fan channels. When setting a fixed fan speed, automatic control is disabled for that channel.
 
 ```sh
 # liquidctl initialize
@@ -31,42 +31,37 @@ Lian Li Uni SL Controller
 └── Firmware version              N/A
 ```
 
-This initialization ensures that the device is ready for manual fan control operations.
-
 ## Monitoring
 
-The device can report the last set fan speed for each fan channel. Do note, this resets when `disconnect` is triggered, so it will not work in the terminal, for example.
-This has mainly been implemented for programs like CoolerControl.
+The device can report the current speed, in RPM, for each fan channel.
 
 ```sh
 # liquidctl status
 Lian Li Uni SL Controller
-├── Channel 1                      0 %
-├── Channel 2                      0 %
-├── Channel 3                      0 %
-└── Channel 4                      0 %
+├── Channel 1                      1320 rpm
+├── Channel 2                      1335 rpm
+├── Channel 3                      1320 rpm
+└── Channel 4                      1320 rpm
 ```
 
 ## Fan Speeds
 
-Fan speeds can be manually set to fixed duty values for each available channel. The channel name can be anything, as long as it ends with the channel number you want to adjust.
+Fan speeds can be manually set to fixed duty values for each available channel. The channel number is zero-based and must be between 0 and 3.
 
 ```sh
-# liquidctl set channel1 speed 80
-# liquidctl set fan2 speed 40
+# liquidctl set 0 speed 80
+# liquidctl set 2 speed 40
 # liquidctl set 3 speed 20
 ```
 
-| Channel  | Minimum Duty | Maximum Duty |
-|----------|--------------|--------------|
-| channel1 | 0%           | 100%         |
-| channel2 | 0%           | 100%         |
-| channel3 | 0%           | 100%         |
-| channel4 | 0%           | 100%         |
+| Channel | Minimum Duty | Maximum Duty |
+|---------|--------------|--------------|
+| 0       | 0%           | 100%         |
+| 1       | 0%           | 100%         |
+| 2       | 0%           | 100%         |
+| 3       | 0%           | 100%         |
 
-**Important**: Always ensure that PWM synchronization is disabled on the desired channel before attempting to set a fixed speed. If PWM is enabled, the fixed speed command will not take effect, and an appropriate log message will indicate this.
-
-## Toggling PWM Synchronization
+## Toggling Control Mode (PWM Sync)
 
 The driver supports toggling PWM synchronization on a per-channel basis, **via direct code usage**. The command line interface does not support toggling PWM synchronization.
 
@@ -92,7 +87,7 @@ for dev in devices:
 
 ### Example Usage
 
-#### Disable PWM Sync on All Channels
+#### Reset Auto mode on All Channels
 
 ```sh
 # liquidctl initialize
@@ -101,30 +96,23 @@ Initializing Lian Li Uni SL Controller
 └── Firmware version                            N/A
 ```
 
-#### Set Fixed Speed for Channel 2
+#### Set Fixed Speed for Channel 1
 
 ```sh
-# liquidctl -n 0 set channel1 speed 50 -v
-INFO: Initialized LianLiUni driver for device type: SLV2
-INFO: Fan speed for Channel 1 set to 50%
-INFO: Disconnecting from device
+# liquidctl -n 0 set 0 speed 50 -v
+INFO: setting 1 PWM duty to 50%
 ```
 
 #### Check Device Status
 
 ```sh
 # liquidctl status
-Lian Li Uni SL Controller
-├── Channel 1                      0 %
-├── Channel 2                      0 %
-├── Channel 3                      0 %
-└── Channel 4                      0 %
+Lian Li Uni SL-Infinity
+├── Channel 1    1365  rpm
+├── Channel 2    1350  rpm
+├── Channel 3    1350  rpm
+└── Channel 4    1335  rpm
 ```
-
-## Notes
-
-- If PWM sync is enabled on a channel, manual speed adjustments will not take effect. Use the `toggle_pwm_sync` function in code to disable it first or use `initialize` to disable PWM on all channels.
-- The reported speed values reset once the device disconnects, which happens automatically when using terminal commands.
 
 ## Acknowledgements
 
