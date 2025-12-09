@@ -22,7 +22,7 @@ import time
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
-from liquidctl.util import clamp,extract_channel_index
+from liquidctl.util import clamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +62,6 @@ class LianLiUni(UsbHidDriver):
         if not self.device_type:
             raise NotSupportedByDevice(f"Unknown device with PID: {hex(self.device.product_id)}")
         # Variables for CoolerControl support
-        self.speed_channels = ["channel1", "channel2", "channel3", "channel4"]
         self.channel_speeds = {}
         self.pwm_channels = {channel: False for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1)}
         self.supports_cooling = True
@@ -78,14 +77,15 @@ class LianLiUni(UsbHidDriver):
         return None
 
     def get_status(self, **kwargs):
-        """Returns last set fan speed, resets if disconnected"""
+        """Returns queried speed from controller,
+        if nothing is returned, returns 0"""
         status = []
 
         for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1):
             current_speed = self.query_current_speed(channel)
             duty_name = f"Channel {channel + 1}"
             if current_speed is None:
-                current_speed = self.channel_speeds.get(channel, 0.0)
+                current_speed = 0.0
             status.append((duty_name, float(current_speed), "rpm"))
 
         return status
@@ -137,7 +137,7 @@ class LianLiUni(UsbHidDriver):
             duty: int or float - The desired speed percentage (0-100)
         """
         if isinstance(channel, str):
-            channel_index = extract_channel_index(channel)
+            channel_index = int(channel)
         else:
             channel_index = channel
 
@@ -153,7 +153,7 @@ class LianLiUni(UsbHidDriver):
                 "Disabling PWM synchronization.",
                 {channel_index + 1},
             )
-            self.toggle_pwm_sync(channel, desired_state=False)
+            self.toggle_pwm_sync(channel_index, desired_state=False)
 
         duty = clamp(duty, 0, 100)
         speed_byte = self._calculate_speed_byte(duty)
