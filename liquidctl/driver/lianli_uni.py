@@ -120,7 +120,7 @@ class LianLiUni(UsbHidDriver):
         """Set a fixed speed for the specified channel.
 
         Parameters:
-            channel: str or int - The name of the channel (e.g., '0') or the zero-based index of the channel
+            channel: str or int - The zero-based index of the channel
             duty: int - The desired speed percentage (0-100)
         """
         if isinstance(channel, str):
