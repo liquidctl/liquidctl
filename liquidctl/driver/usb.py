@@ -490,7 +490,7 @@ class HidapiDevice:
         If the device does not use numbered reports, set `report_id` to 0.
 
         Unlike `read`, the returned data follows semantics similar to `write`
-        and `get_input_report`: the first byte will always contain the
+        and `get_feature_report`: the first byte will always contain the
         report ID (or 0), and the report data itself will being at the second
         byte.
         """
