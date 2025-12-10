@@ -59,9 +59,8 @@ class LianLiUni(UsbHidDriver):
         """Initialize the Lian Li Uni driver."""
         super().__init__(device, description, **kwargs)
         self.device_type = kwargs.get("device_type")
-       assert self.device_type, f"unexpected device with PID {hex(self.device.product_id)}"
+        assert self.device_type, f"unexpected device with PID {hex(self.device.product_id)}"
         # Variables for CoolerControl support
-        self.channel_speeds = {}
         self.pwm_channels = {channel: False for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1)}
         self.supports_cooling = True
 
@@ -70,7 +69,7 @@ class LianLiUni(UsbHidDriver):
 
         # Enable PWM synchronization on all channels
         for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1):
-            self.toggle_pwm_sync(channel, desired_state=True)
+            self.set_fan_control_mode(channel, desired_state=True)
             time.sleep(0.2)  # Delay to prevent race conditions
 
         return None
@@ -81,7 +80,7 @@ class LianLiUni(UsbHidDriver):
         status = []
 
         for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1):
-            current_speed = self.query_current_speed(channel)
+            current_speed = self._query_current_speed(channel)
             duty_name = f"Channel {channel + 1}"
             if current_speed is None:
                 current_speed = 0
@@ -89,8 +88,10 @@ class LianLiUni(UsbHidDriver):
 
         return status
 
-    def toggle_pwm_sync(self, channel, desired_state=None):
+    def set_fan_control_mode(self, channel, desired_state=None):
         """Toggles or explicitly sets PWM synchronization for manual speed control.
+
+        Unstable
 
         Parameters:
             channel: int - The zero-based index of the channel
@@ -101,11 +102,6 @@ class LianLiUni(UsbHidDriver):
             raise ValueError(
                 f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
             )
-
-        # Determine the desired action
-        if desired_state is None:
-            # Toggle the current state
-            desired_state = not self.pwm_channels[channel]
 
         if desired_state:
             debug_string = "Enabling"
@@ -121,18 +117,15 @@ class LianLiUni(UsbHidDriver):
         command = command_prefix + [channel_byte]
         _LOGGER.debug("%s PWM sync for channel %d: command %s", debug_string, channel, command)
 
-        try:
-            self.device.write(command)
-            self.pwm_channels[channel] = desired_state  # Update state
-        except Exception as e:
-            _LOGGER.warning("Error writing to device: %s", e)
+        self.device.write(command)
+        self.pwm_channels[channel] = desired_state  # Update state
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set a fixed speed for the specified channel.
 
         Parameters:
             channel: str or int - The name of the channel (e.g., '0') or the zero-based index of the channel
-            duty: int or float - The desired speed percentage (0-100)
+            duty: int - The desired speed percentage (0-100)
         """
         if isinstance(channel, str):
             channel_index = int(channel)
@@ -144,35 +137,23 @@ class LianLiUni(UsbHidDriver):
                 f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
             )
 
-        # Check if PWM is on for the channel
-        if self.pwm_channels[channel_index]:
-            _LOGGER.debug(
-                "Channel %d: PWM is enabled. "
-                "Disabling PWM synchronization.",
-                {channel_index + 1},
-            )
-            self.toggle_pwm_sync(channel_index, desired_state=False)
+        self.set_fan_control_mode(channel_index, desired_state=False)
 
         duty = clamp(duty, 0, 100)
         speed_byte = self._calculate_speed_byte(duty)
         command = [224, channel_index + 32, 0, speed_byte]
         _LOGGER.debug(
-            "Setting fixed speed for channel %d: duty %.1f%%, command %s",
+            "Setting fixed speed for channel %d: duty %d%%, command %s",
             channel_index,
             duty,
             command,
         )
-        try:
-            self.device.write(command)
-        except Exception as e:
-            _LOGGER.error("Error writing to device: %s", e)
+        self.device.write(command)
         time.sleep(0.1)  # Delay to prevent race conditions
-
-        self.channel_speeds[channel_index] = duty
 
         _LOGGER.info("setting %s PWM duty to %d%%", channel_index + 1, duty)
 
-    def query_current_speed(self, channel):
+    def _query_current_speed(self, channel):
         """
         Query the actual fan speed from the device for a given channel by reading the
         controller's input report.
@@ -205,11 +186,7 @@ class LianLiUni(UsbHidDriver):
                 f"unsupported device type for reading speed: {self.device_type}"
             )
 
-        try:
-            report = self.device.get_input_report(224, 65)
-            _LOGGER.debug("Received speed report: %s", report)
-        except Exception as e:
-            raise AssertionError(f"Error reading speed report {e}")
+        report = self.device.get_input_report(224, 65)
 
         # # Calculate the starting index for this channel's speed value.
         start_index = offset + channel * 2

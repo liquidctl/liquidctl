@@ -63,7 +63,7 @@ Fan speeds can be manually set to fixed duty values for each available channel. 
 
 ## Toggling Control Mode (PWM Sync)
 
-The driver supports toggling PWM synchronization on a per-channel basis, **via direct code usage**. The command line interface does not support toggling PWM synchronization.
+The driver supports toggling PWM synchronization on a per-channel basis, as an alternative to reinitializing the device, **via direct code usage**. The command line interface does not support toggling PWM synchronization.
 
 To toggle PWM synchronization in code:
 
@@ -79,7 +79,7 @@ for dev in devices:
         # Connect to fan hub
         with dev.connect():
             # Set the PWM Sync (example: enabling PWM sync for channel 0)
-            dev.toggle_pwm_sync(0, True)
+            dev.set_fan_control_mode(0, True)
 ```
 
 - The first argument is the zero-based index for the channel (0-3 for channels 1-4).
