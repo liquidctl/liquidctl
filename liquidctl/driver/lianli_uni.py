@@ -60,8 +60,6 @@ class LianLiUni(UsbHidDriver):
         super().__init__(device, description, **kwargs)
         self.device_type = kwargs.get("device_type")
         assert self.device_type, f"unexpected device with PID {hex(self.device.product_id)}"
-        # Variables for CoolerControl support
-        self.pwm_channels = {channel: False for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1)}
         self.supports_cooling = True
 
     def initialize(self, **kwargs):
@@ -95,8 +93,7 @@ class LianLiUni(UsbHidDriver):
 
         Parameters:
             channel: int - The zero-based index of the channel
-            desired_state: bool, optional - Set True to enable PWM, False to disable PWM.
-                                            If None, toggle the current state.
+            desired_state: bool - Set True to enable PWM, False to disable PWM.
         """
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
             raise ValueError(
@@ -118,7 +115,6 @@ class LianLiUni(UsbHidDriver):
         _LOGGER.debug("%s PWM sync for channel %d: command %s", debug_string, channel, command)
 
         self.device.write(command)
-        self.pwm_channels[channel] = desired_state  # Update state
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set a fixed speed for the specified channel.
@@ -204,7 +200,7 @@ class LianLiUni(UsbHidDriver):
             speed_value,
         )
 
-        return int(speed_value)
+        return speed_value
 
     def _calculate_speed_byte(self, speed):
         """Calculate the speed byte based on the device type and desired speed.
