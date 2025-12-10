@@ -41,6 +41,9 @@ _PWM_COMMANDS = {
 
 _REPORT_LENGTH = 65
 
+class ChannelMode(Enum):
+    AUTO = "auto"
+    FIXED = "fixed"
 
 class LianLiUni(UsbHidDriver):
     """Driver for Lian Li Uni fan controllers."""
@@ -67,7 +70,7 @@ class LianLiUni(UsbHidDriver):
 
         # Enable PWM synchronization on all channels
         for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1):
-            self.set_fan_control_mode(channel, desired_state=True)
+            self.set_fan_control_mode(channel, ChannelMode.AUTO)
             time.sleep(0.2)  # Delay to prevent race conditions
 
         return None
@@ -86,21 +89,21 @@ class LianLiUni(UsbHidDriver):
 
         return status
 
-    def set_fan_control_mode(self, channel, desired_state=None):
+    def set_fan_control_mode(self, channel, desired_state):
         """Toggles or explicitly sets PWM synchronization for manual speed control.
 
         Unstable
 
         Parameters:
             channel: int - The zero-based index of the channel
-            desired_state: bool - Set True to enable PWM, False to disable PWM.
+            desired_state: ChannelMode - Set AUTO to enable Auto PWM mode, FIXED to set be able to set fixed/manual speed.
         """
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
             raise ValueError(
                 f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
             )
 
-        if desired_state:
+        if desired_state is ChannelMode.FIXED:
             debug_string = "Enabling"
             channel_byte = 0x11 << channel  # enables PWM
         else:
@@ -133,7 +136,7 @@ class LianLiUni(UsbHidDriver):
                 f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
             )
 
-        self.set_fan_control_mode(channel_index, desired_state=False)
+        self.set_fan_control_mode(channel_index, ChannelMode.FIXED)
 
         duty = clamp(duty, 0, 100)
         speed_byte = self._calculate_speed_byte(duty)
@@ -206,7 +209,7 @@ class LianLiUni(UsbHidDriver):
         """Calculate the speed byte based on the device type and desired speed.
 
         Parameters:
-            speed: int or float - The desired speed percentage (0-100)
+            speed: int - The desired speed percentage (0-100)
 
         Returns:
             int - The calculated speed byte to send to the device
