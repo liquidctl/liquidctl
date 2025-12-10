@@ -13,7 +13,7 @@ Acknowledgements:
 - EightB1ts for finding IDs, PWM Commands and speed byte calculation
   https://github.com/EightB1ts/uni-sync
 
-Copyright Jonas Malaco and contributors
+Copyright BlafKing and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -59,8 +59,7 @@ class LianLiUni(UsbHidDriver):
         """Initialize the Lian Li Uni driver."""
         super().__init__(device, description, **kwargs)
         self.device_type = kwargs.get("device_type")
-        if not self.device_type:
-            raise NotSupportedByDevice(f"Unknown device with PID: {hex(self.device.product_id)}")
+       assert self.device_type, f"unexpected device with PID {hex(self.device.product_id)}"
         # Variables for CoolerControl support
         self.channel_speeds = {}
         self.pwm_channels = {channel: False for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1)}
@@ -117,8 +116,7 @@ class LianLiUni(UsbHidDriver):
 
         # Construct the command to toggle PWM synchronization
         command_prefix = _PWM_COMMANDS.get(self.device_type)
-        if not command_prefix:
-            raise NotSupportedByDevice(f"Unsupported device type for PWM sync: {self.device_type}")
+        assert command_prefix
 
         command = command_prefix + [channel_byte]
         _LOGGER.debug("%s PWM sync for channel %d: command %s", debug_string, channel, command)
@@ -203,8 +201,8 @@ class LianLiUni(UsbHidDriver):
         elif self.device_type in ["SLV2", "ALV2"]:
             offset = 2
         else:
-            raise NotSupportedByDevice(
-                f"Unsupported device type for reading speed: {self.device_type}"
+            raise AssertionError(
+                f"unsupported device type for reading speed: {self.device_type}"
             )
 
         try:
