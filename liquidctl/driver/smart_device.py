@@ -702,6 +702,125 @@ class H1V2(SmartDevice2):
         return sorted(ret)
 
 
+class ControlHub(SmartDevice2):
+    """NZXT Control Hub fan controller.
+
+    The NZXT Control Hub is a fan controller that ships with newer NZXT cases
+    (2024+). It provides five independent fan channels with standard 4-pin
+    connectors. Both PWM and DC control is supported.
+
+    Unlike the Smart Device V2, the Control Hub uses 512-byte HID reports and
+    has 5 fan channels instead of 3. The command protocol is otherwise similar
+    to Smart Device V2.
+
+    LED control is available but uses a different protocol that is not yet
+    fully documented.
+    """
+
+    _MATCHES = [
+        (0x1e71, 0x2022, 'NZXT Control Hub', {
+            'speed_channel_count': 5,
+            'color_channel_count': 0  # LED protocol differs, not yet implemented
+        }),
+    ]
+
+    _MAX_READ_ATTEMPTS = 12
+    _READ_LENGTH = 512
+    _WRITE_LENGTH = 512
+
+    def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
+        """Instantiate a driver with a device handle."""
+        # Control Hub has 5 fan channels (0-4)
+        # Channel mapping (for reference, varies by case/user config):
+        #   Channel 0: typically bottom intake
+        #   Channel 1: (may be unused)
+        #   Channel 2: (may be unused)
+        #   Channel 3: typically GPU radiator or front fans
+        #   Channel 4: typically rear exhaust
+        speed_channels = {f'fan{i + 1}': (i, _MIN_DUTY, _MAX_DUTY)
+                          for i in range(speed_channel_count)}
+        # Skip SmartDevice2.__init__ and call _BaseSmartDevice directly
+        _BaseSmartDevice.__init__(self, device, description, speed_channels, {}, **kwargs)
+
+    def initialize(self, direct_access=False, **kwargs):
+        """Initialize the device and the driver.
+
+        This method should be called every time the system boots, resumes from
+        a suspended state, or if the device has just been (re)connected.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        self.device.clear_enqueued_reports()
+
+        # Initialize fan reporting with V2-style command
+        self._write([0x60, 0x03])
+
+        # Request firmware info
+        self._write([0x10, 0x01])
+
+        ret = []
+
+        def parse_firm_info(msg):
+            # Firmware version at different offset for Control Hub
+            fw = f'{msg[0x11]}.{msg[0x12]}.{msg[0x13]}'
+            ret.append(('Firmware version', fw, ''))
+
+        self._read_until({b'\x11\x01': parse_firm_info})
+        return sorted(ret)
+
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
+        ret = []
+
+        def parse_fan_info(msg):
+            # Control Hub status message format (512 bytes):
+            # Offset 15-19: mode per channel (0xff = auto, 0x00 = fixed, 0x02 = PWM)
+            # Offset 24-28: RPM values (needs verification)
+            # Offset 40-44: duty percentages per channel
+            mode_offset = 15
+            duty_offset = 40
+            raw_modes = {0xff: 'Auto', 0x00: 'DC', 0x02: 'PWM'}
+
+            for i in range(len(self._speed_channels)):
+                mode = raw_modes.get(msg[mode_offset + i], 'Unknown')
+                duty = msg[duty_offset + i]
+                ret.append((f'Fan {i + 1} duty', duty, '%'))
+                ret.append((f'Fan {i + 1} control mode', mode, ''))
+
+        self.device.clear_enqueued_reports()
+        self._read_until({b'\x67\x02': parse_fan_info})
+        return sorted(ret)
+
+    def _write_fixed_duty(self, cid, duty):
+        """Set fixed duty for a single fan channel."""
+        # Control Hub uses same format as Smart Device V2 but with 5 channels
+        # Format: [0x62, 0x01, channel_mask, duty0, duty1, duty2, duty3, duty4]
+        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00, 0x00, 0x00]
+        msg[cid + 3] = duty
+        self._write(msg)
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        """Set channel(s) to a fixed speed duty.
+
+        Valid channels: fan1, fan2, fan3, fan4, fan5, or sync (all channels).
+        """
+        if channel == 'sync':
+            # Set all channels at once
+            duty = clamp(duty, _MIN_DUTY, _MAX_DUTY)
+            _LOGGER.info('setting all fans to %d%%', duty)
+            msg = [0x62, 0x01, 0x1f, duty, duty, duty, duty, duty]
+            self._write(msg)
+        else:
+            selected_channels = {channel: self._speed_channels[channel]}
+            for cname, (cid, dmin, dmax) in selected_channels.items():
+                duty = clamp(duty, dmin, dmax)
+                _LOGGER.info('setting %s duty to %d%%', cname, duty)
+                self._write_fixed_duty(cid, duty)
+
+
 # backward compatibility
 NzxtSmartDeviceDriver = SmartDevice
 SmartDeviceDriver = SmartDevice
