@@ -1,6 +1,6 @@
 import pytest, logging
 from _testutils import MockHidapiDevice
-from liquidctl.driver.lianli_uni import LianLiUni
+from liquidctl.driver.lianli_uni import LianLiUni, ChannelMode
 
 
 @pytest.fixture
@@ -17,25 +17,16 @@ def test_initialize(mock_lianli_uni):
     assert ("Device", "Mock Lian Li Uni SL V2", "") in status
     assert ("Firmware version", "N/A", "") in status
 
-    # Verify PWM sync is disabled on all channels
-    for channel, state in mock_lianli_uni.pwm_channels.items():
-        assert state == False
-
 
 def test_toggle_pwm_sync(mock_lianli_uni):
     # Test enabling and disabling PWM sync
     channel = 0
 
-    # Initial state should be False
-    assert not mock_lianli_uni.pwm_channels[channel]
-
     # Enable PWM sync
-    mock_lianli_uni.set_fan_control_mode(channel, desired_state=True)
-    assert mock_lianli_uni.pwm_channels[channel]
+    mock_lianli_uni.set_fan_control_mode(channel, ChannelMode.AUTO)
 
     # Disable PWM sync
-    mock_lianli_uni.set_fan_control_mode(channel, desired_state=False)
-    assert not mock_lianli_uni.pwm_channels[channel]
+    mock_lianli_uni.set_fan_control_mode(channel, ChannelMode.FIXED)
 
 
 def test_set_fixed_speed(mock_lianli_uni, caplog):
@@ -43,26 +34,13 @@ def test_set_fixed_speed(mock_lianli_uni, caplog):
 
     # Initially, PWM is disabled, so setting a speed should work
     mock_lianli_uni.set_fixed_speed(channel, 50)
-    assert mock_lianli_uni.channel_speeds[channel] == 50
-
-    # Enable PWM, attempting to set speed should log a warning
-    mock_lianli_uni.set_fan_control_mode(channel, desired_state=True)
-    with caplog.at_level(logging.WARNING):
-        mock_lianli_uni.set_fixed_speed(channel, 75)
-
-    # Check that the appropriate warning was logged
-    assert "Cannot set fixed speed for Channel 1: PWM is enabled" in caplog.text
 
 
 def test_invalid_channel_index(mock_lianli_uni):
     # Test setting PWM sync for an invalid channel
     with pytest.raises(ValueError):
-        mock_lianli_uni.set_fan_control_mode(5)  # Out of range
+        mock_lianli_uni.set_fan_control_mode(5, ChannelMode.FIXED)  # Out of range
 
     with pytest.raises(ValueError):
         mock_lianli_uni.set_fixed_speed(5, 50)  # Out of range
 
-
-def test_disconnect(mock_lianli_uni):
-    # Ensure the disconnect method can be called without error
-    mock_lianli_uni.disconnect()

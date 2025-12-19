@@ -181,9 +181,7 @@ class LianLiUni(UsbHidDriver):
         elif self.device_type in ["SLV2", "ALV2"]:
             offset = 2
         else:
-            raise AssertionError(
-                f"unsupported device type for reading speed: {self.device_type}"
-            )
+            raise AssertionError(f"unsupported device type for reading speed: {self.device_type}")
 
         report = self.device.get_input_report(224, 65)
 
