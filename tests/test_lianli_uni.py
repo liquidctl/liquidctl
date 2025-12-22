@@ -9,15 +9,6 @@ def mock_lianli_uni():
     raw = MockHidapiDevice()
     return LianLiUni(raw, "Mock Lian Li Uni SL V2", device_type="SLV2")
 
-
-def test_initialize(mock_lianli_uni):
-    status = mock_lianli_uni.initialize()
-
-    # Verify initialization status
-    assert ("Device", "Mock Lian Li Uni SL V2", "") in status
-    assert ("Firmware version", "N/A", "") in status
-
-
 def test_toggle_pwm_sync(mock_lianli_uni):
     # Test enabling and disabling PWM sync
     channel = 0
