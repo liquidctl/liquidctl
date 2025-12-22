@@ -41,9 +41,11 @@ _PWM_COMMANDS = {
 
 _REPORT_LENGTH = 65
 
+
 class ChannelMode(Enum):
     AUTO = "auto"
     FIXED = "fixed"
+
 
 class LianLiUni(UsbHidDriver):
     """Driver for Lian Li Uni fan controllers."""

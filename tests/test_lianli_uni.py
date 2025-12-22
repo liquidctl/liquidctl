@@ -9,6 +9,7 @@ def mock_lianli_uni():
     raw = MockHidapiDevice()
     return LianLiUni(raw, "Mock Lian Li Uni SL V2", device_type="SLV2")
 
+
 def test_toggle_pwm_sync(mock_lianli_uni):
     # Test enabling and disabling PWM sync
     channel = 0
@@ -34,4 +35,3 @@ def test_invalid_channel_index(mock_lianli_uni):
 
     with pytest.raises(ValueError):
         mock_lianli_uni.set_fixed_speed(5, 50)  # Out of range
-
