@@ -642,7 +642,7 @@ class SmartDevice2(_BaseSmartDevice):
             for [g, r, b] in colors:
                 self._write([0x22, 0x10, cid])  # clear out all independent LEDs
                 self._write([0x22, 0x11, cid])  # clear out all independent LEDs
-                color_lists = [] * 3
+                color_lists = [[]] * 4
                 color_lists[0] = [g, r, b] * 8
                 color_lists[1] = [int(x // 2.5) for x in color_lists[0]]
                 color_lists[2] = [int(x // 4) for x in color_lists[1]]
