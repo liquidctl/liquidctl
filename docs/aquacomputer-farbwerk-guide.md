@@ -1,7 +1,7 @@
 # Aquacomputer Farbwerk RGB controller
 _Driver API and source code available in [`liquidctl.driver.aquacomputer`](../liquidctl/driver/aquacomputer.py)._
 
-_New in 1.13.1._<br>
+_New in git._<br>
 
 ## Initialization
 
