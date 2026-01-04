@@ -106,6 +106,8 @@ elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
 
 
 devices_sensors = None
+
+
 def read_sensors(device, sensors_to_read, **kwargs):
     global devices_sensors
     if not devices_sensors:
