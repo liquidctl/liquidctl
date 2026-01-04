@@ -343,6 +343,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1988", TAG+="uacc
 # Aquacomputer D5 Next
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00e", TAG+="uaccess"
 
+# Aquacomputer Farbwerk
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00a", TAG+="uaccess"
+
 # Aquacomputer Farbwerk 360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f010", TAG+="uaccess"
 
