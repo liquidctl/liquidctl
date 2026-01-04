@@ -527,6 +527,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="300c", TAG+="uacc
 # NZXT Kraken 2024 Elite RGB
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3012", TAG+="uaccess"
 
+# NZXT Kraken 2024 Plus
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="3014", TAG+="uaccess"
+
 # NZXT Kraken M22
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1715", TAG+="uaccess"
 
