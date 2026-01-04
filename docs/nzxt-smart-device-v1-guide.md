@@ -15,10 +15,6 @@ All configuration is done through USB, and persists as long as the device still 
 
 All capabilities available at the hardware level are supported, but other features offered by CAM, like noise level optimization and presets based on CPU/GPU temperatures, have not been implemented.
 
-# NZXT 2023 RGB Controller
-
-This device is a controller for RGB **only**, i.e., the fan speed is controlled externally. The control of the LEDs is similar to the NZXT smart devices. It is shipped with the NZXT Kraken 2023 and with 3-Fan sets. The controller can connect to up to three F120/F140 RGB fans.
-
 ## Initialization
 [Initialization]: #initialization
 
