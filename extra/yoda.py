@@ -105,12 +105,21 @@ elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
         psutil = None
 
 
-def read_sensors(device, **kwargs):
+devices_sensors = None
+
+
+def read_sensors(device, sensors_to_read, **kwargs):
+    global devices_sensors
+    if not devices_sensors:
+        devices_sensors = {}
     sensors = {}
-    for k, v, u in device.get_status(**kwargs):
-        if u == "°C":
-            sensor_name = k.lower().replace(" ", "_").replace("_temperature", "")
-            sensors[f"{INTERNAL_CHIP_NAME}.{sensor_name}"] = v
+    # Only read device sensors when required
+    if device in devices_sensors and sensors_to_read in devices_sensors[device]:
+        for k, v, u in device.get_status(**kwargs):
+            if u == "°C":
+                sensor_name = k.lower().replace(" ", "_").replace("_temperature", "")
+                sensors[f"{INTERNAL_CHIP_NAME}.{sensor_name}"] = v
+        devices_sensors[device] = sensors
     if sys.platform == "darwin":
         istats_stdout = subprocess.check_output(["istats"]).decode("utf-8")
         for line in istats_stdout.split("\n"):
@@ -267,9 +276,10 @@ def control(device, channels, profiles, sensors, update_interval, **kwargs):
 
     LOGGER.info("starting...")
     failures = 0
+    last_duty = {}
     while True:
         try:
-            sensor_data = read_sensors(device, **kwargs)
+            sensor_data = read_sensors(device, sensors, **kwargs)
             for i, (channel, profile, sensor) in enumerate(zip(channels, profiles, sensors)):
                 # compute the exponential moving average (ema), used as a low-pass filter (lpf)
                 ema = averages[i]
@@ -290,7 +300,13 @@ def control(device, channels, profiles, sensors, update_interval, **kwargs):
                     ema,
                     duty,
                 )
+                if channel not in last_duty:
+                    last_duty[channel] = duty
+                # Only reapply duty when duty changed
+                if last_duty[channel] == duty:
+                    continue
                 apply_duty(channel, duty, **kwargs)
+                last_duty[channel] = duty
             if getattr(device, "NEEDS_TIME", False):
                 device.set_time(datetime.now(), **kwargs)
             if getattr(device, "NEEDS_HWSTATUS", False):

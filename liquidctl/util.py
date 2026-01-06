@@ -54,6 +54,7 @@ class Hue2Accessory(Enum):
     KRAKENX_GEN4_LOGO = (0x11, 'Kraken X (X53, X63 or X73) Pump Logo')
     F120_RGB = (0x13, 'F120 RGB')
     F140_RGB = (0x14, 'F140 RGB')
+    F140_RGB_CORE = (0x17, 'F140 RGB Core')
 
     def __new__(cls, value, pretty_name):
         member = object.__new__(cls)

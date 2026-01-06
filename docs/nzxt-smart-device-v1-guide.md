@@ -15,7 +15,6 @@ All configuration is done through USB, and persists as long as the device still 
 
 All capabilities available at the hardware level are supported, but other features offered by CAM, like noise level optimization and presets based on CPU/GPU temperatures, have not been implemented.
 
-
 ## Initialization
 [Initialization]: #initialization
 
@@ -91,7 +90,7 @@ Fan speeds can only be set to fixed duty values.
 
 ## RGB lighting
 
-_Only NZXT Smart Device (V1)_
+_Only NZXT Smart Device (V1) and NZXT 2023 RGB Controller_
 
 For lighting, the user can control up to 40 LEDs, if all four strips or five fans are connected.  They are chained in a single channel: `led`.
 
@@ -153,3 +152,4 @@ directly accessing the device.  Alternatively, direct access to the device can
 be forced with `--direct-access`.
 
 [liquidtux]: https://github.com/liquidctl/liquidtux
+

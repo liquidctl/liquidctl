@@ -34,6 +34,11 @@ Kraken 2023 AIOs use the same pump and as their Z3 predecessor but the integrate
 The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining the 640x640 LCD. As of the 1.2.1 firmware, it's still able to use GIF and static modes. **Controlling the light ring is not yet supported**.
 
 
+## NZXT Kraken 2024 Plus
+
+The functionality of the 2024 RGB AIO is identical to the 2023 Standard model, with a 240x240 LCD.
+
+
 ## Initialization
 
 Devices must be initialized being read or written to.  This is necessary after powering on from Mechanical Off, or if there has been hardware changes.  Only then monitoring, proper fan control and all lighting effects will be available.
