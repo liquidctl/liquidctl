@@ -1,24 +1,30 @@
-# ASUS Ryujin II liquid coolers
+# ASUS Ryujin II/III liquid coolers
+
 _Driver API and source code available in [`liquidctl.driver.asus_ryujin`](../liquidctl/driver/asus_ryujin.py)._
 
-_New in 1.14.0._<br>
+_New in x.x.x._
 
 ## Initialization
 
 Initialization is not required. It outputs the firmware version:
 
-```
+```shell
 # liquidctl initialize
 ASUS Ryujin II 360
 └── Firmware version    AURJ1-S750-0104
 ```
 
+```shell
+# liquidctl initialize
+ASUS ROG Ryujin III
+└── Firmware version    AURJ2-S750-0107
+```
 
 ## Monitoring
 
 The cooler reports the liquid temperature, the speeds and duties of all fans.
 
-```
+```shell
 # liquidctl status
 ASUS Ryujin II 360
 ├── Liquid temperature      26.0  °C
@@ -33,6 +39,22 @@ ASUS Ryujin II 360
 └── External fan 4 speed       0  rpm
 ```
 
+```shell
+# liquidctl status
+ASUS ROG Ryujin III
+├── Liquid temperature       0.0  °C
+├── Pump duty                 40  %
+├── Pump speed              1054  rpm
+├── Pump fan duty             30  %
+├── Pump fan speed          3060  rpm
+├── External fan duty          0  %
+├── External fan 1 speed       0  rpm
+├── External fan 2 speed       0  rpm
+├── External fan 3 speed       0  rpm
+└── External fan 4 speed       0  rpm
+```
+
+_Note: Ryujin III currently reports liquid temperature as 0°C due to a known firmware limitation. This issue also affects ASUS Armoury Crate and is being investigated by ASUS engineering._
 
 ## Speed control
 
@@ -40,25 +62,25 @@ ASUS Ryujin II 360
 
 Pump duty can be set using channel `pump`.
 
-```
+```shell
 # liquidctl set pump speed 90
 ```
 
 Use channel `fans` to set all fans at the same time:
 
-```
+```shell
 # liquidctl set fans speed 50
 ```
 
 Use channel `pump-fan` to set the duty of the embedded fan:
 
-```
+```shell
 # liquidctl set pump-fan speed 50
 ```
 
 Use channel `external-fans` to set the duty of the fans connected to the AIO fan controller:
 
-```
+```shell
 # liquidctl set external-fans speed 50
 ```
 
@@ -86,8 +108,6 @@ Pump impeller and embedded fan duty values approximately map to the following sp
 | 100 | 2800 | 4800 |
 
 Note the minimum speed of the embedded pump fan is 390 rpm, meaning the fan may not start spinning at duty values below 10%.
-
-
 
 ## Screen
 
