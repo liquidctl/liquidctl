@@ -583,3 +583,6 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="ca00", TAG+="uacc
 
 # Suspected MSI MPG Coreliquid
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="ca02", TAG+="uaccess"
+
+# Sudokoo SK700V
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="381c", ATTRS{idProduct}=="0003", TAG+="uaccess"
