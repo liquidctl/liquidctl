@@ -22,10 +22,10 @@ _STATUS_FIRMWARE = "Firmware version"
 
 
 class AsusRyuo(UsbHidDriver):
-    """Driver for ASUS ROG Ryuo I 240 (fan control only)."""
+    """Driver for ASUS Ryuo I 240 (fan control only)."""
 
     _MATCHES = [
-        (0x0B05, 0x1887, "ASUS ROG Ryuo I 240", {}),
+        (0x0B05, 0x1887, "ASUS Ryuo I 240", {}),
     ]
 
     def initialize(self, **kwargs):
