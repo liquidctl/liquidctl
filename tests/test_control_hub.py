@@ -3,8 +3,7 @@
 import pytest
 from _testutils import MockHidapiDevice, Report
 
-from liquidctl.driver.hwmon import HwmonDevice
-from liquidctl.driver.smart_device import ControlHub
+from liquidctl.driver.control_hub import ControlHub
 
 # Real capture data from NZXT Control Hub (device ID 0x1e71:0x2022)
 # Firmware info response (frame 71 from nzxt_cakm_startup.pcapng)
@@ -19,7 +18,7 @@ SAMPLE_LED_INFO = bytes.fromhex(
     "001d00000000001300000000000000000000000000000000000000000000000000"
 )
 
-# Status data (frame 89 from nzxt_cakm_startup.pcapng)  
+# Status data (frame 89 from nzxt_cakm_startup.pcapng)
 SAMPLE_STATUS = bytes.fromhex(
     "6701db51079a171b41508bbd781905ff000000010200000000000000000035056f"
     "020000000000001e1e1e1e1e0000001919191e1e000000000000000000000000"
@@ -40,11 +39,11 @@ class MockControlHub(MockHidapiDevice):
             reply = bytearray(SAMPLE_LED_INFO[:64])
             reply[14] = self.raw_led_channels
             if self.raw_led_channels > 0:
-                reply[15] = 0x1d
+                reply[15] = 0x1D
             if self.raw_led_channels > 1:
                 reply[15 + 1 * 6] = 0x13
             if self.raw_led_channels > 2:
-                reply[15 + 2 * 6] = 0x1d
+                reply[15 + 2 * 6] = 0x1D
         self.preload_read(Report(reply[0], reply[1:]))
         return super().write(data)
 
@@ -57,27 +56,16 @@ def mock_control_hub():
     return dev
 
 
-@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True), (True, False)])
-def test_initializes(mock_control_hub, has_hwmon, direct_access, tmp_path):
-    if has_hwmon:
-        mock_control_hub._hwmon = HwmonDevice("mock_module", tmp_path)
-
-    result = mock_control_hub.initialize(direct_access=direct_access)
+def test_initializes(mock_control_hub):
+    result = mock_control_hub.initialize()
 
     writes = len(mock_control_hub.device.sent)
-    if not has_hwmon or direct_access:
-        assert writes == 4
-    else:
-        assert writes == 2
+    assert writes == 4
 
     assert any("Firmware version" in str(item) for item in result)
 
 
-@pytest.mark.parametrize("has_hwmon,direct_access", [(False, False), (True, True)])
-def test_reads_status_directly(mock_control_hub, has_hwmon, direct_access):
-    if has_hwmon:
-        mock_control_hub._hwmon = HwmonDevice(None, None)
-
+def test_reads_status_directly(mock_control_hub):
     # ControlHub inherits SmartDevice2's _get_status_directly which expects 0x67 0x02
     # but real capture shows 0x67 0x01, so we need to modify the sample
     modified_status = bytearray(SAMPLE_STATUS)
@@ -85,31 +73,10 @@ def test_reads_status_directly(mock_control_hub, has_hwmon, direct_access):
     modified_status[1] = 0x02  # Change from 0x01 to 0x02 to match SmartDevice2 format
     mock_control_hub.device.preload_read(Report(0, bytes(modified_status)))
 
-    got = mock_control_hub.get_status(direct_access=direct_access)
+    got = mock_control_hub.get_status()
 
     assert len(got) > 0
     assert any("Fan" in str(item[0]) for item in got)
-
-
-def test_reads_status_from_hwmon(mock_control_hub, tmp_path):
-    mock_control_hub._hwmon = HwmonDevice("mock_module", tmp_path)
-
-    for i in range(1, 6):
-        (tmp_path / f"pwm{i}_mode").write_text("1\n")
-        (tmp_path / f"pwm{i}").write_text(f"{127 + i}\n")
-        (tmp_path / f"fan{i}_input").write_text(f"{1000 + i * 100}\n")
-
-    expected = []
-    for i in range(1, 6):
-        expected.extend([
-            (f"Fan {i} speed", 1000 + i * 100, "rpm"),
-            (f"Fan {i} duty", pytest.approx((127 + i) * 100.0 / 255, rel=1.0 / 255), "%"),
-            (f"Fan {i} control mode", "PWM", ""),
-        ])
-
-    got = mock_control_hub.get_status()
-
-    assert sorted(got) == sorted(expected)
 
 
 def test_constructor_sets_up_all_channels(mock_control_hub):
@@ -158,7 +125,9 @@ def test_set_color_fixed_mode(mock_control_hub):
     assert len(mock_control_hub.device.sent) > 2
     # ControlHub uses same color command as SmartDevice2 (0x26, 0x04)
     # Reports are stored as Report(number, data) so check number and first data byte
-    color_writes = [w for w in mock_control_hub.device.sent if w.number == 0x26 and w.data[0] == 0x04]
+    color_writes = [
+        w for w in mock_control_hub.device.sent if w.number == 0x26 and w.data[0] == 0x04
+    ]
     assert len(color_writes) >= 1
 
 
@@ -203,7 +172,9 @@ def test_set_color_covering_marquee(mock_control_hub):
     _ = mock_control_hub.initialize()
 
     colors = [[255, 128, 0]]
-    mock_control_hub.set_color(channel="led4", mode="covering-marquee", colors=colors, speed="slower")
+    mock_control_hub.set_color(
+        channel="led4", mode="covering-marquee", colors=colors, speed="slower"
+    )
 
     assert len(mock_control_hub.device.sent) > 2
 
@@ -273,7 +244,9 @@ def test_channel_byte_mapping(mock_control_hub):
             channel=f"led{i+1}", mode="fixed", colors=[[i * 50, i * 50, i * 50]]
         )
 
-    color_writes = [w for w in mock_control_hub.device.sent if w.number == 0x26 and w.data[0] == 0x04]
+    color_writes = [
+        w for w in mock_control_hub.device.sent if w.number == 0x26 and w.data[0] == 0x04
+    ]
     assert len(color_writes) >= 5
 
 
@@ -291,4 +264,3 @@ def test_not_totally_broken(mock_control_hub):
     mock_control_hub.set_color(
         channel="led3", mode="fading", colors=[[255, 0, 0], [0, 255, 0]], speed="normal"
     )
-
