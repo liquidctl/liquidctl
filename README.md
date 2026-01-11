@@ -2,15 +2,9 @@
 
 _Cross-platform tool and drivers for liquid coolers and other devices_
 
+[![Our Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
 [![Status of the tests](https://github.com/liquidctl/liquidctl/workflows/tests/badge.svg)](https://github.com/liquidctl/liquidctl/commits/main)
-[![Developer's Discord server](https://img.shields.io/discord/780568774964805672)](https://discord.gg/GyCBjQhqCd)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4949/badge)](https://bestpractices.coreinfrastructure.org/projects/4949)
-
----
-
-Notice: please check out our [open invitation for new team members](https://github.com/liquidctl/liquidctl/issues/569).
-
----
 
 ```
 $ liquidctl list
@@ -120,6 +114,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
 | AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | 1.14.0 |
+| AIO liquid cooler  | [ASUS Ryuo I 240](docs/asus-ryuo-guide.md) | <sup>_p_</sup> | git |
 | AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
 | AIO liquid cooler  | [Corsair Hydro H80i v2, H100i v2, H115i](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
@@ -138,7 +133,10 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [NZXT Kraken Z53, Z63, Z73](docs/kraken-x3-z3-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | AIO liquid cooler  | [NZXT Kraken 2023 Standard, Elite](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [NZXT Kraken 2024 Elite RGB](docs/kraken-x3-z3-guide.md) | <sup>_p_</sup> | 1.15.0 |
+| AIO liquid cooler  | [NZXT Kraken 2024 Plus](docs/kraken-x3-z3-guide.md) | | git |
 | Pump controller    | [Aquacomputer D5 Next](docs/aquacomputer-d5next-guide.md) | <sup>_hp_</sup> | 1.15.0 |
+| Fan/LED controller | [Aquacomputer Farbwerk](docs/aquacomputer-farbwerk-guide.md) | <sup>_hp_</sup> | git |
+| Fan/LED controller | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Aquacomputer Octo](docs/aquacomputer-octo-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | <sup>_h_</sup> | 1.11.1 |
@@ -146,19 +144,19 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | | 1.7.2 |
-| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
-| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
+| Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | | 1.7.2 |
 | Fan/LED controller | [NZXT Smart Device V2](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT H1 V2](docs/nzxt-hue2-guide.md) | | 1.10.0 |
+| Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
+| Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
+| Fan/LED controller | [NZXT 2023 RGB Controller](docs/nzxt-hue2-guide.md) | | git |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i, HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | Power supply       | [Corsair ATX 3.1 HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | git |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
-| LED controller     | [Aquacomputer Farbwerk 360](docs/aquacomputer-farbwerk360-guide.md) | <sup>_hp_</sup> | 1.15.0 |
 | Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
@@ -230,7 +228,7 @@ On FreeBSD and DragonFly BSD, liquidctl is maintained in the Ports Collections,
 and is available as a pre-built binary package.
 
 ```
-pkg install py39-liquidctl
+pkg install py311-liquidctl
 ```
 
 ### Manual installation
@@ -254,7 +252,7 @@ libraries already provided by the operating system.
 On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
-- Python 3.9 or later _(python3, python)_
+- Python 3.10 or later _(python3, python)_
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
@@ -275,7 +273,7 @@ needed:
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
 
-On macOS, Python (3.9 or later) and LibUSB 1.0 must be installed beforehand.
+On macOS, Python (3.10 or later) and LibUSB 1.0 must be installed beforehand.
 
 ```
 brew install python libusb
@@ -284,7 +282,7 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.9 or later) must be installed beforehand, which can be
+On Windows, Python (3.10 or later) must be installed beforehand, which can be
 done from the [official website][python.org].  It is recommended to select the
 option to add `python` and other tools to the `PATH`.
 

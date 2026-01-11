@@ -1,5 +1,9 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Ask a question or start a discussion
-    url: https://github.com/liquidctl/liquidctl/discussions
-    about: "Ask the maintainers and the community questions or start a discussion."
+  - name: My device isn't supported yet
+    url: https://github.com/liquidctl/liquidctl/blob/main/CONTRIBUTING.md
+    about: We are not currently taking new device requests. Please see how you can help add support
+      for your device and contribute your changes back to the project.
+  - name: Engage with the community or ask for help
+    url: https://discord.gg/GyCBjQhqCd
+    about: Please visit our Discord server

@@ -1,0 +1,35 @@
+name: Other issue
+description: Report other types of problems or request new features
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there already an issue for this?
+      description: Please search our open issues to see if one already exists for this.
+      options:
+      - label: There is no relevant open or closed issue for this
+        required: true
+  - type: checkboxes
+    attributes:
+      label: Is this a request for support of a new device?
+      description: >
+        We are not currently taking new device requests. Please see
+        [how](https://github.com/liquidctl/liquidctl/blob/main/CONTRIBUTING.md) you can help add
+        support for that device and contribute your changes back to the project.
+      options:
+      - label: This is not a new device request
+        required: true
+  - type: checkboxes
+    attributes:
+      label: Is this a support request?
+      description: Please use [Discord](https://discord.gg/GyCBjQhqCd) to ask for help.
+      options:
+      - label: This is not a support request
+        required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: >
+        Please describe the issue or feature request as clearly as possible. You can use
+        [Markdown](https://docs.github.com/en/get-started/writing-on-github).
+    validations:
+      required: true

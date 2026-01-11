@@ -87,6 +87,7 @@ def put_unaligned_be16(value, data, offset):
 
 class Aquacomputer(UsbHidDriver):
     _DEVICE_D5NEXT = "D5 Next"
+    _DEVICE_FARBWERK = "Farbwerk"
     _DEVICE_FARBWERK360 = "Farbwerk 360"
     _DEVICE_OCTO = "Octo"
     _DEVICE_QUADRO = "Quadro"
@@ -109,6 +110,12 @@ class Aquacomputer(UsbHidDriver):
             "ctrl_report_length": 0x329,
             "fan_ctrl": {"pump": 0x96, "fan": 0x41},
             "hwmon_ctrl_mapping": {"pump": "pwm1", "fan": "pwm2"},
+        },
+        _DEVICE_FARBWERK: {
+            "type": _DEVICE_FARBWERK,
+            "temp_sensors": [0x2F, 0x31, 0x33, 0x35],
+            "temp_sensors_label": ["Sensor 1", "Sensor 2", "Sensor 3", "Sensor 4"],
+            "status_report_length": 0xB6,
         },
         _DEVICE_FARBWERK360: {
             "type": _DEVICE_FARBWERK360,
@@ -172,6 +179,12 @@ class Aquacomputer(UsbHidDriver):
         ),
         (
             0x0C70,
+            0xF00A,
+            "Aquacomputer Farbwerk",
+            {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK]},
+        ),
+        (
+            0x0C70,
             0xF010,
             "Aquacomputer Farbwerk 360",
             {"device_info": _DEVICE_INFO[_DEVICE_FARBWERK360]},
@@ -220,7 +233,6 @@ class Aquacomputer(UsbHidDriver):
         def _read_temp_sensors(offsets_key, labels_key):
             for idx, temp_sensor_offset in enumerate(self._device_info.get(offsets_key, [])):
                 temp_sensor_value = u16be_from(msg, temp_sensor_offset)
-
                 if temp_sensor_value != _AQC_TEMP_SENSOR_DISCONNECTED:
                     temp_sensor_reading = (
                         self._device_info[labels_key][idx],
@@ -412,7 +424,7 @@ class Aquacomputer(UsbHidDriver):
         ):
             # Not yet reverse engineered / implemented
             raise NotSupportedByDriver()
-        elif self._device_info["type"] == self._DEVICE_FARBWERK360:
+        elif self._device_info["type"] in [self._DEVICE_FARBWERK360, self._DEVICE_FARBWERK]:
             raise NotSupportedByDevice()
 
     def _fan_name_to_hwmon_names(self, channel):
