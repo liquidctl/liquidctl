@@ -497,6 +497,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2012", TAG+="uacc
 # NZXT 2023 RGB Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2021", TAG+="uaccess"
 
+# NZXT Control Hub
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2022", TAG+="uaccess"
+
 # NZXT E500
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="7793", ATTRS{idProduct}=="5911", TAG+="uaccess"
 
@@ -565,9 +568,6 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="201f", TAG+="uacc
 
 # NZXT RGB & Fan Controller (3+6 channels)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2020", TAG+="uaccess"
-
-# NZXT Control Hub
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2022", TAG+="uaccess"
 
 # NZXT Smart Device (V1)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="1714", TAG+="uaccess"
