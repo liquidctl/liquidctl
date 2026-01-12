@@ -144,6 +144,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [Corsair Commander Core, Core XT, ST](docs/corsair-commander-core-guide.md) | <sup>_Bp_</sup> | 1.14.0 |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
+| Fan/LED controller | [Lian Li Uni SL, SL v2, AL, AL v2, SL-Infinity](docs/lianli-uni-guide.md) | | git |
 | Fan/LED controller | [NZXT Grid+ V3](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT Smart Device](docs/nzxt-smart-device-v1-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT HUE 2, HUE 2 Ambient](docs/nzxt-hue2-guide.md) | | 1.7.2 |
