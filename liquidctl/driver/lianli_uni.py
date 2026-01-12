@@ -27,8 +27,8 @@ from liquidctl.util import clamp
 _LOGGER = logging.getLogger(__name__)
 
 # Minimum and maximum channel, corresponds to channels 1-4
-_MIN_CHANNEL = 0
-_MAX_CHANNEL = 3
+_MIN_CHANNEL = 1
+_MAX_CHANNEL = 4
 
 # PWM commands mapped by device type
 _PWM_COMMANDS = {
@@ -84,7 +84,7 @@ class LianLiUni(UsbHidDriver):
 
         for channel in range(_MIN_CHANNEL, _MAX_CHANNEL + 1):
             current_speed = self._query_current_speed(channel)
-            duty_name = f"Channel {channel + 1}"
+            duty_name = f"Channel {channel}"
             if current_speed is None:
                 current_speed = 0
             status.append((duty_name, int(current_speed), "rpm"))
@@ -97,20 +97,20 @@ class LianLiUni(UsbHidDriver):
         Unstable
 
         Parameters:
-            channel: int - The zero-based index of the channel
-            desired_state: ChannelMode - Set AUTO to enable Auto PWM mode, FIXED to set be able to set fixed/manual speed.
+            channel: int - channel number;
+            desired_state: ChannelMode - set AUTO to enable Auto PWM mode, FIXED to set be able to set fixed/manual speed.
         """
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
             raise ValueError(
-                f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
+                f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}"
             )
 
         if desired_state is ChannelMode.FIXED:
-            debug_string = "Enabling"
-            channel_byte = 0x11 << channel  # enables PWM
+            debug_string = "enabling"
+            channel_byte = 0x11 << (channel - 1)  # enables auto mode
         else:
-            debug_string = "Disabling"
-            channel_byte = 0x10 << channel  # disables PWM
+            debug_string = "disabling"
+            channel_byte = 0x10 << (channel - 1)  # disables auto mode
 
         # Construct the command to toggle PWM synchronization
         command_prefix = _PWM_COMMANDS.get(self.device_type)
@@ -125,34 +125,26 @@ class LianLiUni(UsbHidDriver):
         """Set a fixed speed for the specified channel.
 
         Parameters:
-            channel: str or int - The zero-based index of the channel
-            duty: int - The desired speed percentage (0-100)
+            channel: str or int - channel name or number ([fan]1–4);
+            duty: int - the desired speed percentage (0-100).
         """
         if isinstance(channel, str):
-            channel_index = int(channel)
-        else:
-            channel_index = channel
+            channel = int(channel)
 
-        if not _MIN_CHANNEL <= channel_index <= _MAX_CHANNEL:
+        if not _MIN_CHANNEL <= channel + 1 <= _MAX_CHANNEL:
             raise ValueError(
-                f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
+                f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}"
             )
-
-        self.set_fan_control_mode(channel_index, ChannelMode.FIXED)
-
         duty = clamp(duty, 0, 100)
+
+        self.set_fan_control_mode(channel, ChannelMode.FIXED)
+
         speed_byte = self._calculate_speed_byte(duty)
-        command = [224, channel_index + 32, 0, speed_byte]
-        _LOGGER.debug(
-            "Setting fixed speed for channel %d: duty %d%%, command %s",
-            channel_index,
-            duty,
-            command,
-        )
+        command = [224, channel + 31, 0, speed_byte]
+        _LOGGER.info("setting fan%d PWM duty to %d%%", channel, duty)
         self.device.write(command)
         time.sleep(0.1)  # Delay to prevent race conditions
 
-        _LOGGER.info("setting %s PWM duty to %d%%", channel_index + 1, duty)
 
     def _query_current_speed(self, channel):
         """
@@ -166,7 +158,7 @@ class LianLiUni(UsbHidDriver):
         Each channel's speed occupies 2 bytes and is the current RPM
 
         Parameters:
-            channel (int): Zero-based index of the channel (0 to 3).
+            channel (int): channel number (1–4).
 
         Returns:
             int: The fan speed value as reported by the device, or raises an Assert if the read fails.
@@ -174,7 +166,7 @@ class LianLiUni(UsbHidDriver):
         # Validate channel index
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
             raise ValueError(
-                f"Channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL} (zero-based index)"
+                f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}"
             )
 
         # Determine offset based on the device type.
@@ -188,16 +180,16 @@ class LianLiUni(UsbHidDriver):
         report = self.device.get_input_report(224, 65)
 
         # # Calculate the starting index for this channel's speed value.
-        start_index = offset + channel * 2
+        start_index = offset + (channel - 1) * 2
         _LOGGER.debug("start_index: %s", start_index)
         # Extract the 2 bytes corresponding to this channel.
         speed_bytes = report[start_index : start_index + 2]
         if len(speed_bytes) < 2:
-            raise AssertionError(f"Report is too short for channel {channel}: {report}")
+            raise AssertionError(f"report is too short for channel {channel}: {report}")
 
         speed_value = int.from_bytes(speed_bytes, byteorder="big")
         _LOGGER.debug(
-            "Channel %d: extracted bytes %s -> speed value %d",
+            "channel %d: extracted bytes %s -> speed value %d",
             channel,
             speed_bytes,
             speed_value,

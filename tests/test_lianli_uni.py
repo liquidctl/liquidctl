@@ -12,7 +12,7 @@ def mock_lianli_uni():
 
 def test_toggle_pwm_sync(mock_lianli_uni):
     # Test enabling and disabling PWM sync
-    channel = 0
+    channel = 1
 
     # Enable PWM sync
     mock_lianli_uni.set_fan_control_mode(channel, ChannelMode.AUTO)
@@ -22,7 +22,7 @@ def test_toggle_pwm_sync(mock_lianli_uni):
 
 
 def test_set_fixed_speed(mock_lianli_uni, caplog):
-    channel = 0
+    channel = 1
 
     # Initially, PWM is disabled, so setting a speed should work
     mock_lianli_uni.set_fixed_speed(channel, 50)
@@ -31,7 +31,13 @@ def test_set_fixed_speed(mock_lianli_uni, caplog):
 def test_invalid_channel_index(mock_lianli_uni):
     # Test setting PWM sync for an invalid channel
     with pytest.raises(ValueError):
+        mock_lianli_uni.set_fan_control_mode(0, ChannelMode.FIXED)  # Out of range
+
+    with pytest.raises(ValueError):
         mock_lianli_uni.set_fan_control_mode(5, ChannelMode.FIXED)  # Out of range
+
+    with pytest.raises(ValueError):
+        mock_lianli_uni.set_fixed_speed(0, 50)  # Out of range
 
     with pytest.raises(ValueError):
         mock_lianli_uni.set_fixed_speed(5, 50)  # Out of range
