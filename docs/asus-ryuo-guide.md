@@ -9,7 +9,7 @@ Initialization is not required. It outputs the firmware version:
 
 ```
 # liquidctl initialize
-ASUS ROG Ryuo I 240
+ASUS Ryuo I 240
 └── Firmware version    AURO0-S452-0205
 ```
 
@@ -19,7 +19,7 @@ This driver does **not** report status information (e.g. temperature, fan RPM, o
 
 ```
 # liquidctl status
-ASUS ROG Ryuo I 240
+ASUS Ryuo I 240
 └── No status available
 ```
 

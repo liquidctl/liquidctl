@@ -114,6 +114,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Type               | Device family and specific documentation | Notes | MRLV |
 | :--                | :-- | --: | :-: |
 | AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | <sup>_p_</sup> | 1.14.0 |
+| AIO liquid cooler  | [ASUS Ryujin III EXTREME](docs/asus-ryujin3-guide.md) | <sup>_p_</sup> | git |
 | AIO liquid cooler  | [ASUS Ryuo I 240](docs/asus-ryuo-guide.md) | <sup>_p_</sup> | git |
 | AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | <sup>_p_</sup> | 1.14.0 |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | <sup>_Z_</sup> | 1.9.1 |
@@ -152,6 +153,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | <sup>_h_</sup> | 1.11.1 |
 | Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT 2023 RGB Controller](docs/nzxt-hue2-guide.md) | | git |
+| Fan/LED controller | NZXT Control Hub | | git |
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i, HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
@@ -229,7 +231,7 @@ On FreeBSD and DragonFly BSD, liquidctl is maintained in the Ports Collections,
 and is available as a pre-built binary package.
 
 ```
-pkg install py39-liquidctl
+pkg install py311-liquidctl
 ```
 
 ### Manual installation
@@ -253,7 +255,7 @@ libraries already provided by the operating system.
 On Linux, the following dependencies are required at runtime (common package
 names are listed in parenthesis):
 
-- Python 3.9 or later _(python3, python)_
+- Python 3.10 or later _(python3, python)_
 - pkg\_resources Python package _(python3-setuptools, python3-pkg-resources, python-setuptools)_
 - PyUSB _(python3-pyusb, python3-usb, python-pyusb)_
 - colorlog _(python3-colorlog, python-colorlog)_
@@ -274,7 +276,7 @@ needed:
 #### macOS system-level dependencies
 [macOS system dependencies]: #macos-system-level-dependencies
 
-On macOS, Python (3.9 or later) and LibUSB 1.0 must be installed beforehand.
+On macOS, Python (3.10 or later) and LibUSB 1.0 must be installed beforehand.
 
 ```
 brew install python libusb
@@ -283,7 +285,7 @@ brew install python libusb
 #### Windows system-level dependencies
 [Windows system dependencies]: #windows-system-level-dependencies
 
-On Windows, Python (3.9 or later) must be installed beforehand, which can be
+On Windows, Python (3.10 or later) must be installed beforehand, which can be
 done from the [official website][python.org].  It is recommended to select the
 option to add `python` and other tools to the `PATH`.
 

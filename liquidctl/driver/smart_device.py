@@ -1,4 +1,5 @@
-"""liquidctl drivers for NZXT Smart Device V1/V2, Grid+ V3, HUE 2 and HUE 2 Ambient.
+"""liquidctl drivers for NZXT Smart Device V1/V2, Grid+ V3, HUE 2/2 Ambient, H1 V2 and RGB & Fan
+Controller.
 
 Smart Device (V1)
 -----------------
