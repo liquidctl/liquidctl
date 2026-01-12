@@ -154,16 +154,16 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | <sup>_hp_</sup> | 1.12.1 |
 | Fan/LED controller | [NZXT 2023 RGB Controller](docs/nzxt-hue2-guide.md) | | git |
 | Fan/LED controller | NZXT Control Hub | | git |
-| DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.7.2 |
-| DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_Uax_</sup> | 1.8.1 |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i, HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | Power supply       | [Corsair ATX 3.1 HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | git |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | <sup>_h_</sup> | 1.14.0 |
 | Power supply       | [NZXT E500, E650, E850](docs/nzxt-e-series-psu-guide.md) | <sup>_p_</sup> | 1.7.2 |
-| Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
-| Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_Ux_</sup> | 1.9.1 |
 | Motherboard RGB    | [ASUS Aura LED motherboards](docs/asus-aura-led-guide.md) | | 1.10.0 |
 | Motherboard RGB    | [Gigabyte RGB Fusion 2.0 motherboards](docs/gigabyte-rgb-fusion2-guide.md) | | 1.5.2 |
+| Graphics card RGB  | [Select ASUS GTX and RTX cards](docs/nvidia-guide.md) | <sup>_[B][#848]Ux_</sup> | 1.9.1 |
+| Graphics card RGB  | [Select EVGA GTX 1070, 1070 Ti and 1080 cards](docs/nvidia-guide.md) | <sup>_[B][#848]Ux_</sup> | 1.9.1 |
+| DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | <sup>_[B][#847]Uax_</sup> | 1.7.2 |
+| DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | <sup>_[B][#847]Uax_</sup> | 1.8.1 |
 
 <sup>_B_</sup> _Broken in at least one significant way._<br>
 <sup>_L_</sup> _Requires the `--legacy-690lc` flag._<br>
@@ -173,6 +173,9 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 <sup>_h_</sup> _Can leverage hwmon driver._<br>
 <sup>_p_</sup> _Only partially supported._<br>
 <sup>_x_</sup> _Only supported on Linux._<br>
+
+[#847]: https://github.com/liquidctl/liquidctl/issues/847
+[#848]: https://github.com/liquidctl/liquidctl/issues/848
 
 
 ## Installation
