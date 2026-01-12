@@ -55,6 +55,7 @@ class Hue2Accessory(Enum):
     F120_RGB = (0x13, 'F120 RGB')
     F140_RGB = (0x14, 'F140 RGB')
     F140_RGB_CORE = (0x17, 'F140 RGB Core')
+    F240_RGB_CORE = (0x1a, 'F240 RGB Core')
     F360_RGB_CORE = (0x1d, 'F360 RGB Core')
 
     def __new__(cls, value, pretty_name):
