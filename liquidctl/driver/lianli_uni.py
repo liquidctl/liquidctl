@@ -101,9 +101,7 @@ class LianLiUni(UsbHidDriver):
             desired_state: ChannelMode - set AUTO to enable Auto PWM mode, FIXED to set be able to set fixed/manual speed.
         """
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(
-                f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}"
-            )
+            raise ValueError(f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
 
         if desired_state is ChannelMode.FIXED:
             debug_string = "enabling"
@@ -132,9 +130,7 @@ class LianLiUni(UsbHidDriver):
             channel = int(channel)
 
         if not _MIN_CHANNEL <= channel + 1 <= _MAX_CHANNEL:
-            raise ValueError(
-                f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}"
-            )
+            raise ValueError(f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
         duty = clamp(duty, 0, 100)
 
         self.set_fan_control_mode(channel, ChannelMode.FIXED)
@@ -144,7 +140,6 @@ class LianLiUni(UsbHidDriver):
         _LOGGER.info("setting fan%d PWM duty to %d%%", channel, duty)
         self.device.write(command)
         time.sleep(0.1)  # Delay to prevent race conditions
-
 
     def _query_current_speed(self, channel):
         """
@@ -165,9 +160,7 @@ class LianLiUni(UsbHidDriver):
         """
         # Validate channel index
         if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(
-                f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}"
-            )
+            raise ValueError(f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
 
         # Determine offset based on the device type.
         if self.device_type in ["SL", "AL", "SLI"]:
