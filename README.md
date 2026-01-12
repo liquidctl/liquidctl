@@ -165,14 +165,14 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | DDR4 memory        | [Corsair Vengeance RGB](docs/ddr4-guide.md) | [B][#847]Uax | 1.7.2 |
 | DDR4 memory        | [Generic DDR4 temperature sensor](docs/ddr4-guide.md) | [B][#847]Uax | 1.8.1 |
 
-**B** _Broken in at least one significant way._<br>
-**L** _Requires the `--legacy-690lc` flag._<br>
-**U** _Requires `--unsafe` features._<br>
-**Z** _Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
-**a** _Architecture-specific limitations._<br>
-**h** _Can leverage hwmon driver._<br>
-**p** _Only partially supported._<br>
-**x** _Only supported on Linux._<br>
+_B: Broken in at least one significant way._<br>
+_L: Requires the `--legacy-690lc` flag._<br>
+_U: Requires `--unsafe` features._<br>
+_Z: Requires replacing the device driver [on Windows][Windows system dependencies]._<br>
+_a: Architecture-specific limitations._<br>
+_h: Can leverage hwmon driver._<br>
+_p: Only partially supported._<br>
+_x: Only supported on Linux._<br>
 
 [#847]: https://github.com/liquidctl/liquidctl/issues/847
 [#848]: https://github.com/liquidctl/liquidctl/issues/848
