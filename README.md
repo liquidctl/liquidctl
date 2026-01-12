@@ -112,7 +112,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 -->
 
 | Type               | Device family and specific documentation | Notes | MRLV |
-| :--                | :-- | --: | :-: |
+| :--                | :-- | :-- | :-: |
 | AIO liquid cooler  | [ASUS Ryujin II 360](docs/asus-ryujin-guide.md) | p | 1.14.0 |
 | AIO liquid cooler  | [ASUS Ryujin III EXTREME](docs/asus-ryujin3-guide.md) | p | git |
 | AIO liquid cooler  | [ASUS Ryuo I 240](docs/asus-ryuo-guide.md) | p | git |
