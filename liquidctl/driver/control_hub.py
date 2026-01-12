@@ -382,19 +382,11 @@ class ControlHub(_BaseSmartDevice):
         self._write(data)
 
     def _write_fixed_duty(self, cid, duty):
-        msg = [
-            0x62,
-            0x01,
-            0x01 << cid,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00
-        ]  # fan channel passed as bitflag in last 3 bits of 3rd byte
-        msg[cid + 3] = (
-            duty  # duty percent in 4th, 5th, 6th, 7th and 8th bytes for, respectively, fan1, fan2, fan3, fan4 and fan5
-        )
+        # Fan channel passed as bitflag in last 3 bits of 3rd byte
+        msg = [0x62, 0x01, 0x01 << cid, 0x00, 0x00, 0x00, 0x00, 0x00]
+        # Duty percent in 4th, 5th, 6th, 7th and 8th bytes for, respectively, fan1, fan2, fan3, fan4
+        # and fan5
+        msg[cid + 3] = duty
         self._write(msg)
 
     def _read_until(self, parsers):
