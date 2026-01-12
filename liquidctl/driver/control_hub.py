@@ -389,9 +389,11 @@ class ControlHub(_BaseSmartDevice):
             0x00,
             0x00,
             0x00,
+            0x00,
+            0x00
         ]  # fan channel passed as bitflag in last 3 bits of 3rd byte
         msg[cid + 3] = (
-            duty  # duty percent in 4th, 5th, and 6th bytes for, respectively, fan1, fan2 and fan3
+            duty  # duty percent in 4th, 5th, 6th, 7th and 8th bytes for, respectively, fan1, fan2, fan3, fan4 and fan5
         )
         self._write(msg)
 

@@ -108,10 +108,7 @@ def test_set_fixed_speed_single_channel(mock_control_hub):
 def test_set_fixed_speed_sync_channel(mock_control_hub):
     _ = mock_control_hub.initialize()
 
-    # Note: ControlHub inherits _write_fixed_duty from SmartDevice2 which only supports 3 fans
-    # TODO: ControlHub should override _write_fixed_duty to support all 5 fans
-    # For now test only the first 3 fans
-    for i in range(1, 4):
+    for i in range(1, 6):
         mock_control_hub.set_fixed_speed(channel=f"fan{i}", duty=50)
 
     assert len(mock_control_hub.device.sent) > 5
