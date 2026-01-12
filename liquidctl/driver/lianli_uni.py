@@ -129,7 +129,7 @@ class LianLiUni(UsbHidDriver):
         if isinstance(channel, str):
             channel = int(channel)
 
-        if not _MIN_CHANNEL <= channel + 1 <= _MAX_CHANNEL:
+        if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
             raise ValueError(f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
         duty = clamp(duty, 0, 100)
 
