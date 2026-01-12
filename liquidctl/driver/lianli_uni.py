@@ -97,11 +97,10 @@ class LianLiUni(UsbHidDriver):
         Unstable
 
         Parameters:
-            channel: int - channel number;
+            channel: str or (unstable) int - channel name or number ([fan]1–4);
             desired_state: ChannelMode - set AUTO to enable Auto PWM mode, FIXED to set be able to set fixed/manual speed.
         """
-        if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
+        channel = _parse_channel(channel)
 
         if desired_state is ChannelMode.FIXED:
             debug_string = "enabling"
@@ -123,14 +122,10 @@ class LianLiUni(UsbHidDriver):
         """Set a fixed speed for the specified channel.
 
         Parameters:
-            channel: str or int - channel name or number ([fan]1–4);
+            channel: str or (unstable) int - channel name or number ([fan]1–4);
             duty: int - the desired speed percentage (0-100).
         """
-        if isinstance(channel, str):
-            channel = int(channel)
-
-        if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(f"channel number must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
+        channel = _parse_channel(channel)
         duty = clamp(duty, 0, 100)
 
         self.set_fan_control_mode(channel, ChannelMode.FIXED)
@@ -158,9 +153,7 @@ class LianLiUni(UsbHidDriver):
         Returns:
             int: The fan speed value as reported by the device, or raises an Assert if the read fails.
         """
-        # Validate channel index
-        if not _MIN_CHANNEL <= channel <= _MAX_CHANNEL:
-            raise ValueError(f"channel must be between {_MIN_CHANNEL} and {_MAX_CHANNEL}")
+        assert _MIN_CHANNEL <= channel <= _MAX_CHANNEL
 
         # Determine offset based on the device type.
         if self.device_type in ["SL", "AL", "SLI"]:
@@ -217,3 +210,46 @@ class LianLiUni(UsbHidDriver):
         else:
             raise AssertionError(f"unsupported device type: {self.device_type}")
         return speed_byte
+
+
+def _parse_channel(name_or_number):
+    """Parse a channel name-or-number spec into a channel number.
+
+    Note that passing channel numbers to the public driver APIs is an unstable feature, that may
+    very well be removed.
+
+    >>> _parse_channel("fan1")
+    1
+
+    >>> _parse_channel(1)
+    1
+
+    >>> _parse_channel("1")
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid channel '1', available channels are 'fan1'...'fan4'
+
+    >>> _parse_channel("fan5")
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid channel 'fan5', available channels are 'fan1'...'fan4'
+
+    >>> _parse_channel(5)
+    Traceback (most recent call last):
+        ...
+    ValueError: invalid channel 5, available channels are 'fan1'...'fan4'
+    """
+    channel = None
+
+    if isinstance(name_or_number, str) and name_or_number.startswith("fan"):
+        channel = int(name_or_number.removeprefix("fan"))
+    elif isinstance(name_or_number, int):
+        channel = name_or_number
+
+    if channel is None or not (_MIN_CHANNEL <= channel <= _MAX_CHANNEL):
+        raise ValueError(
+            f"invalid channel {name_or_number!r}, "
+            f"available channels are 'fan{_MIN_CHANNEL}'...'fan{_MAX_CHANNEL}'"
+        )
+
+    return channel
