@@ -102,7 +102,7 @@ class LianLiUni(UsbHidDriver):
         """
         channel = _parse_channel(channel)
 
-        if desired_state is ChannelMode.FIXED:
+        if desired_state is ChannelMode.AUTO:
             debug_string = "enabling"
             channel_byte = 0x11 << (channel - 1)  # enables auto mode
         else:
