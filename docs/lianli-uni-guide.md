@@ -35,10 +35,10 @@ The device can report the current speed, in RPM, for each fan channel.
 ```
 # liquidctl status
 Lian Li Uni SL Controller
-├── Channel 1    1365  rpm
-├── Channel 2    1350  rpm
-├── Channel 3    1350  rpm
-└── Channel 4    1335  rpm
+├── Fan 1 speed    1365  rpm
+├── Fan 2 speed    1350  rpm
+├── Fan 3 speed    1350  rpm
+└── Fan 4 speed    1335  rpm
 ```
 
 ## Fan speeds
@@ -105,10 +105,10 @@ INFO: setting fan1 PWM duty to 50%
 ```
 # liquidctl status
 Lian Li Uni SL Controller
-├── Channel 1    1365  rpm
-├── Channel 2    1350  rpm
-├── Channel 3    1350  rpm
-└── Channel 4    1335  rpm
+├── Fan 1 speed    1365  rpm
+├── Fan 2 speed    1350  rpm
+├── Fan 3 speed    1350  rpm
+└── Fan 4 speed    1335  rpm
 ```
 
 ## Acknowledgements
