@@ -64,6 +64,28 @@ DEVICE_CONFIGS = {
             ("Pump fan duty", 30, "%"),
         ],
     },
+    0x1ADE: {
+        "name": "Mock Ryujin III EVA EDITION",
+        "fan_count": 0,
+        "pump_speed_offset": 7,
+        "pump_fan_speed_offset": 10,
+        "temp_offset": 5,
+        "duty_channel": 1,
+        "responses": {
+            CMD_GET_FIRMWARE: "ec02004155524a322d533735302d30313039",
+            CMD_GET_STATUS: "ec1900000021002e0e644803",
+            CMD_GET_PUMP_DUTY: "ec1a0001281e",
+            CMD_SET_PUMP_DUTY: "ec1a",
+        },
+        "expected_firmware": "AURJ2-S750-0109",
+        "expected_status": [
+            ("Liquid temperature", 33.0, "°C"),
+            ("Pump speed", 3630, "rpm"),
+            ("Pump fan speed", 840, "rpm"),
+            ("Pump duty", 40, "%"),
+            ("Pump fan duty", 30, "%"),
+        ],
+    },
 }
 
 
@@ -128,7 +150,7 @@ def mock_ryujin3():
     )
 
 
-@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB])
+@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE])
 def test_initialize(product_id):
     config = DEVICE_CONFIGS[product_id]
     device = AsusRyujin(
@@ -146,7 +168,7 @@ def test_initialize(product_id):
         assert firmware_status[1] == config["expected_firmware"]
 
 
-@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB])
+@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE])
 def test_status(product_id):
     config = DEVICE_CONFIGS[product_id]
     device = AsusRyujin(
