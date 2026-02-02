@@ -26,7 +26,6 @@ from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profile
 
-
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64

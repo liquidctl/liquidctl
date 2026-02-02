@@ -55,7 +55,7 @@ def _runtime_version():
 #
 # (_version_tuple is kept private as it's only available in some cases and
 # don't want to commit to it yet)
-(version, _version_tuple) = _build_version() or _runtime_version() or ("0.0.0-unknown", None)
+version, _version_tuple = _build_version() or _runtime_version() or ("0.0.0-unknown", None)
 
 # old field name (liquidctl.__version__ is preferred now)
 __version__ = version

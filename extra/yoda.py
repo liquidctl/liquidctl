@@ -74,7 +74,6 @@ Copyright Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-
 import ast
 import logging
 import math
