@@ -1,8 +1,7 @@
-# ASUS Ryujin III EXTREME liquid cooler
+# ASUS Ryujin III liquid coolers
 _Driver API and source code available in [`liquidctl.driver.asus_ryujin`](../liquidctl/driver/asus_ryujin.py)._
 
-_New in 1.16.0._<br>
-_Changed in git: support added for ASUS Ryujin III EVA EDITION_<br>
+_New in git._<br>
 
 ## Initialization
 
