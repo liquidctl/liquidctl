@@ -3,7 +3,6 @@ from _testutils import MockHidapiDevice
 
 from liquidctl.driver.lianli_uni import LianLiUni, ChannelMode
 
-
 _STABLE_NAMES = [f"fan{i}" for i in range(1, 5)]
 _UNSTABLE_NAMES = list(range(1, 5))
 _VALID_CHANNELS = _STABLE_NAMES + _UNSTABLE_NAMES

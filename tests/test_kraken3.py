@@ -20,7 +20,6 @@ from test_krakenz3_response import krakenz3_response
 from liquidctl.util import HUE2_MAX_ACCESSORIES_IN_CHANNEL as MAX_ACCESSORIES
 from liquidctl.util import Hue2Accessory
 
-
 # https://github.com/liquidctl/liquidctl/issues/160#issuecomment-664044103
 X3_SAMPLE_STATUS = bytes.fromhex(
     "7502200036000B51535834353320012101A80635350000000000000000000000"
