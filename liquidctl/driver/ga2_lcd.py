@@ -8,27 +8,12 @@ Copyright Tom Frey, Jonas Malaco, Shady Nawara, Ilia Khubuluri and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-import itertools
-import io
 import math
 import logging
 import sys
-import time
-
-if sys.platform == "win32":
-    from winusbcdc import WinUsbPy
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
-from liquidctl.util import (
-    LazyHexRepr,
-    normalize_profile,
-    interpolate_profile,
-    clamp,
-    Hue2Accessory,
-    HUE2_MAX_ACCESSORIES_IN_CHANNEL,
-    map_direction,
-)
 
 _LOGGER = logging.getLogger(__name__)
 
