@@ -26,8 +26,6 @@ _STATUS_PUMP_DUTY = "Pump duty"
 _STATUS_FAN_SPEED = "Fan speed"
 _STATUS_FAN_DUTY = "Fan duty"
 
-_CRITICAL_TEMPERATURE = 59
-
 _LIGHTING_DIRECTIONS = {
     "forward": 0x00,
     "backward": 0x01,
