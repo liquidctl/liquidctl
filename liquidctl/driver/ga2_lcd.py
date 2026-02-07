@@ -71,6 +71,8 @@ _SPEED_CHANNELS = {
     "pump": 0x8A,
 }
 
+def _quoted(*names):
+    return ', '.join(map(repr, names))
 
 class GA2LCD(UsbHidDriver):
     _status = []
