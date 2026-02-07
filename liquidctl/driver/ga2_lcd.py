@@ -4,7 +4,7 @@ Supported devices:
 
 - GA II LCD
 
-Copyright Tom Frey, Jonas Malaco, Shady Nawara and contributors
+Copyright Tom Frey, Jonas Malaco, Shady Nawara, Ilia Khubuluri and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
@@ -14,8 +14,6 @@ import math
 import logging
 import sys
 import time
-
-from PIL import Image, ImageSequence
 
 if sys.platform == "win32":
     from winusbcdc import WinUsbPy
@@ -34,11 +32,6 @@ from liquidctl.util import (
 
 _LOGGER = logging.getLogger(__name__)
 
-_READ_LENGTH = 58
-_WRITE_LENGTH = 58
-_MAX_READ_ATTEMPTS = 12
-
-_LCD_TOTAL_MEMORY = 24320
 _PUMP_RPM_MAX = 3600
 _FAN_RPM_MAX = 2520
 
@@ -49,12 +42,6 @@ _STATUS_FAN_SPEED = "Fan speed"
 _STATUS_FAN_DUTY = "Fan duty"
 
 _CRITICAL_TEMPERATURE = 59
-_HWMON_CTRL_MAPPING = {"pump": 1, "fan": 2}
-
-_LCD_SCREEN_WIDTH = 480
-_LCD_SCREEN_HEIGHT = 480
-_LCD_SCREEN_FPS = 24
-_LCD_FRAMEBUFFER_SIZE = 921600
 
 _LIGHTING_DIRECTIONS = {
     "forward": 0x00,
@@ -96,6 +83,11 @@ _FAN_LIGHTING_MODES = {
     "rainbow": 0x05,
 }
 
+_SPEED_CHANNELS = {
+    "fan": 0x8B,
+    "pump": 0x8A,
+}
+
 
 class GA2LCD(UsbHidDriver):
     _status = []
@@ -124,7 +116,11 @@ class GA2LCD(UsbHidDriver):
 
         return sorted(self._status)
 
-    def _get_status_directly(self):
+    def get_status(self, direct_access=False, **kwargs):
+        """Get a status report.
+
+        Returns a list of `(property, value, unit)` tuples.
+        """
         self.device.clear_enqueued_reports()
         handshake = self._get_handshake()
         return [
@@ -135,13 +131,6 @@ class GA2LCD(UsbHidDriver):
             (_STATUS_PUMP_DUTY, handshake["pump_rpm"] / _PUMP_RPM_MAX * 100, "%"),
         ]
 
-    def get_status(self, direct_access=False, **kwargs):
-        """Get a status report.
-
-        Returns a list of `(property, value, unit)` tuples.
-        """
-        return self._get_status_directly()
-
     def set_color(self, channel, mode, colors, speed="normal", direction="forward", **kwargs):
         """Set the color mode for a specific channel."""
 
@@ -150,32 +139,33 @@ class GA2LCD(UsbHidDriver):
         elif channel == "fan":
             self._set_fan_lighting(mode, colors, speed, direction, **kwargs)
         else:
-            raise NotSupportedByDriver(
+            raise NotSupportedByDevice(
                 f"lighting control for {channel} is not supported by this driver"
             )
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
-        raise NotSupportedByDriver()
-
-    def _set_fixed_speed_directly(self, channel, duty):
-        self.set_speed_profile(channel, [(0, duty), (_CRITICAL_TEMPERATURE - 1, duty)], True)
+        raise NotSupportedByDevice()
 
     def set_fixed_speed(self, channel, duty, direct_access=False, **kwargs):
         """Set channel to a fixed speed duty."""
 
-        if channel == "fan":
-            self._set_fan_speed(duty)
-        elif channel == "pump":
-            self._set_pump_speed(duty)
-        else:
-            raise NotSupportedByDriver(
+        if channel not in _SPEED_CHANNELS:
+            raise NotSupportedByDevice(
                 f"fixed speed control for {channel} is not supported by this driver"
             )
 
+        speed = max(0, min(100, duty))
+        self._write_a_cmd_with_data(_SPEED_CHANNELS[channel], [0, speed])
+
     def set_screen(self, channel, mode, value, **kwargs):
         """Not supported by this device."""
-        raise NotSupportedByDevice()
+
+        # This device has a screen but it appears that it does not
+        # support sending images to it, instead if relies on a
+        # computer software to stream H.264 video to it over USB.
+        # Liquidctl does not currently support this functionality.
+        raise NotSupportedByDriver()
 
     def _get_a_cmd_bytes(self, cmd, data):
         # return empty list if data is empty
@@ -336,17 +326,27 @@ class GA2LCD(UsbHidDriver):
             "temperature": temperature,
         }
 
-    def _set_pump_speed(self, speed):
-        """Set the pump speed in %."""
-        # clip speed to 0-100%
-        speed = max(0, min(100, speed))
-        self._write_a_cmd_with_data(0x8A, [0, speed])
+    def _write_colors(buffer, colors, offset, length):
+        """Write variable length 3-byte RGB color arrays
+        to a buffer at a specific offset."""
+        buffer[offset:offset + length] = [0] * length
 
-    def _set_fan_speed(self, speed):
-        """Set the fan speed in %."""
-        # clip speed to 0-100%
-        speed = max(0, min(100, speed))
-        self._write_a_cmd_with_data(0x8B, [0, speed])
+        if len(colors) > 0:
+            buffer[offset] = colors[0][0]
+            buffer[offset + 1] = colors[0][1]
+            buffer[offset + 2] = colors[0][2]
+        if len(colors) > 1:
+            buffer[offset + 3] = colors[1][0]
+            buffer[offset + 4] = colors[1][1]
+            buffer[offset + 5] = colors[1][2]
+        if len(colors) > 2:
+            buffer[offset + 6] = colors[2][0]
+            buffer[offset + 7] = colors[2][1]
+            buffer[offset + 8] = colors[2][2]
+        if len(colors) > 3:
+            buffer[offset + 9] = colors[3][0]
+            buffer[offset + 10] = colors[3][1]
+            buffer[offset + 11] = colors[3][2]
 
     def _set_pump_lighting(self, mode, colors, speed, direction, **kwargs):
         req = [0] * 19
@@ -366,33 +366,16 @@ class GA2LCD(UsbHidDriver):
                 f"unknown lighting direction, should be one of: {_quoted(*_LIGHTING_DIRECTIONS)}"
             )
 
-        pass_colors = [0] * (3 * 4)
+        colors = list(colors)
 
         req[0] = 0
         req[1] = _PUMP_LIGHTING_MODES[mode]
         req[2] = 4  # brightness 0-4
         req[3] = _PUMP_LIGHTING_SPEEDS[speed]
+        GA2LCD._write_colors(req, colors, 4, 12)
         req[16] = _LIGHTING_DIRECTIONS[direction]
         req[17] = 0
         req[18] = 0
-
-        colors = list(colors)
-        if len(colors) > 0:
-            req[4] = colors[0][0]
-            req[5] = colors[0][1]
-            req[6] = colors[0][2]
-        if len(colors) > 1:
-            req[7] = colors[1][0]
-            req[8] = colors[1][1]
-            req[9] = colors[1][2]
-        if len(colors) > 2:
-            req[10] = colors[2][0]
-            req[11] = colors[2][1]
-            req[12] = colors[2][2]
-        if len(colors) > 3:
-            req[13] = colors[3][0]
-            req[14] = colors[3][1]
-            req[15] = colors[3][2]
 
         self._write_a_cmd_with_data(0x83, req)
 
@@ -415,28 +398,11 @@ class GA2LCD(UsbHidDriver):
         req[0] = _FAN_LIGHTING_MODES[mode]
         req[1] = 4
         req[2] = _PUMP_LIGHTING_SPEEDS[speed]
+        GA2LCD._write_colors(req, colors, 3, 12)
         req[15] = _LIGHTING_DIRECTIONS[direction]
         req[16] = 0
         req[17] = 0
         req[18] = 0
         req[19] = 24
-
-        colors = list(colors)
-        if len(colors) > 0:
-            req[3] = colors[0][0]
-            req[4] = colors[0][1]
-            req[5] = colors[0][2]
-        if len(colors) > 1:
-            req[6] = colors[1][0]
-            req[7] = colors[1][1]
-            req[8] = colors[1][2]
-        if len(colors) > 2:
-            req[9] = colors[2][0]
-            req[10] = colors[2][1]
-            req[11] = colors[2][2]
-        if len(colors) > 3:
-            req[12] = colors[3][0]
-            req[13] = colors[3][1]
-            req[14] = colors[3][2]
 
         self._write_a_cmd_with_data(0x85, req)
