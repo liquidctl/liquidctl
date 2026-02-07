@@ -1,6 +1,8 @@
 # Lian Li GA II LCD AIO Liquid Cooler
 _Driver API and source code available in [`liquidctl.driver.ga2_lcd`](../liquidctl/driver/ga2_lcd.py)
 
+_New in git._<br>
+
 ## Initialization
 [Initialization]: #initialization
 
