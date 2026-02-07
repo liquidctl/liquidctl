@@ -74,6 +74,29 @@ _SPEED_CHANNELS = {
 def _quoted(*names):
     return ', '.join(map(repr, names))
 
+
+def _write_colors(buffer, colors, offset, length):
+    """Write variable length 3-byte RGB color arrays
+    to a buffer at a specific offset."""
+    buffer[offset : offset + length] = [0] * length
+
+    if len(colors) > 0:
+        buffer[offset] = colors[0][0]
+        buffer[offset + 1] = colors[0][1]
+        buffer[offset + 2] = colors[0][2]
+    if len(colors) > 1:
+        buffer[offset + 3] = colors[1][0]
+        buffer[offset + 4] = colors[1][1]
+        buffer[offset + 5] = colors[1][2]
+    if len(colors) > 2:
+        buffer[offset + 6] = colors[2][0]
+        buffer[offset + 7] = colors[2][1]
+        buffer[offset + 8] = colors[2][2]
+    if len(colors) > 3:
+        buffer[offset + 9] = colors[3][0]
+        buffer[offset + 10] = colors[3][1]
+        buffer[offset + 11] = colors[3][2]
+
 class GA2LCD(UsbHidDriver):
     _status = []
     _MATCHES = [
@@ -311,28 +334,6 @@ class GA2LCD(UsbHidDriver):
             "temperature": temperature,
         }
 
-    def _write_colors(buffer, colors, offset, length):
-        """Write variable length 3-byte RGB color arrays
-        to a buffer at a specific offset."""
-        buffer[offset : offset + length] = [0] * length
-
-        if len(colors) > 0:
-            buffer[offset] = colors[0][0]
-            buffer[offset + 1] = colors[0][1]
-            buffer[offset + 2] = colors[0][2]
-        if len(colors) > 1:
-            buffer[offset + 3] = colors[1][0]
-            buffer[offset + 4] = colors[1][1]
-            buffer[offset + 5] = colors[1][2]
-        if len(colors) > 2:
-            buffer[offset + 6] = colors[2][0]
-            buffer[offset + 7] = colors[2][1]
-            buffer[offset + 8] = colors[2][2]
-        if len(colors) > 3:
-            buffer[offset + 9] = colors[3][0]
-            buffer[offset + 10] = colors[3][1]
-            buffer[offset + 11] = colors[3][2]
-
     def _set_pump_lighting(self, mode, colors, speed, direction, **kwargs):
         req = [0] * 19
 
@@ -357,7 +358,7 @@ class GA2LCD(UsbHidDriver):
         req[1] = _PUMP_LIGHTING_MODES[mode]
         req[2] = 4  # brightness 0-4
         req[3] = _PUMP_LIGHTING_SPEEDS[speed]
-        GA2LCD._write_colors(req, colors, 4, 12)
+        _write_colors(req, colors, 4, 12)
         req[16] = _LIGHTING_DIRECTIONS[direction]
         req[17] = 0
         req[18] = 0
@@ -383,7 +384,7 @@ class GA2LCD(UsbHidDriver):
         req[0] = _FAN_LIGHTING_MODES[mode]
         req[1] = 4
         req[2] = _PUMP_LIGHTING_SPEEDS[speed]
-        GA2LCD._write_colors(req, colors, 3, 12)
+        _write_colors(req, colors, 3, 12)
         req[15] = _LIGHTING_DIRECTIONS[direction]
         req[16] = 0
         req[17] = 0

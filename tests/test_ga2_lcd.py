@@ -4,7 +4,7 @@ from _testutils import MockHidapiDevice, Report
 from collections import deque
 
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
-from liquidctl.driver.ga2_lcd import GA2LCD
+from liquidctl.driver.ga2_lcd import GA2LCD, _write_colors
 
 
 @pytest.fixture
@@ -252,7 +252,7 @@ def test_ga2_write_colors_four_twelve():
     buffer[13] = 0xAB
     colors = [(0xFF, 0x00, 0x00), (0x00, 0xFF, 0x00), (0x00, 0x00, 0xFF), (0xFF, 0xFF, 0x00)]
 
-    GA2LCD._write_colors(buffer, colors, 1, 12)
+    _write_colors(buffer, colors, 1, 12)
     assert buffer[0] == 0x35
 
     assert buffer[1] == 0xFF
@@ -276,7 +276,7 @@ def test_ga2_write_colors_three_twelve():
     buffer[13] = 0xAE
     colors = [(0xFF, 0xFF, 0xFF), (0xFF, 0xFF, 0xFF), (0xFF, 0xFF, 0xFF)]
 
-    GA2LCD._write_colors(buffer, colors, 1, 12)
+    _write_colors(buffer, colors, 1, 12)
     assert buffer[0] == 0x45
 
     assert buffer[1] == 0xFF
@@ -300,7 +300,7 @@ def test_ga2_write_colors_two_eight():
     buffer[9] = 0xAF
     colors = [(0xFF, 0xFF, 0xFF), (0xFF, 0xFF, 0xFF)]
 
-    GA2LCD._write_colors(buffer, colors, 1, 8)
+    _write_colors(buffer, colors, 1, 8)
     assert buffer[0] == 0x55
 
     assert buffer[1] == 0xFF
