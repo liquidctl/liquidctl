@@ -314,7 +314,7 @@ class GA2LCD(UsbHidDriver):
     def _write_colors(buffer, colors, offset, length):
         """Write variable length 3-byte RGB color arrays
         to a buffer at a specific offset."""
-        buffer[offset:offset + length] = [0] * length
+        buffer[offset : offset + length] = [0] * length
 
         if len(colors) > 0:
             buffer[offset] = colors[0][0]

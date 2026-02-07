@@ -245,18 +245,14 @@ def test_ga2_lcd_set_fan_lighting_mode(mockGA2LCD):
     assert report.data[23] == 0x00
     assert report.data[24] == 24
 
+
 def test_ga2_write_colors_four_twelve():
     buffer = [0] * 14
     buffer[0] = 0x35
     buffer[13] = 0xAB
-    colors = [
-        (0xFF, 0x00, 0x00), 
-        (0x00, 0xFF, 0x00),
-        (0x00, 0x00, 0xFF),
-        (0xFF, 0xFF, 0x00)
-    ]
+    colors = [(0xFF, 0x00, 0x00), (0x00, 0xFF, 0x00), (0x00, 0x00, 0xFF), (0xFF, 0xFF, 0x00)]
 
-    GA2LCD._write_colors(buffer, colors, 1, 12);
+    GA2LCD._write_colors(buffer, colors, 1, 12)
     assert buffer[0] == 0x35
 
     assert buffer[1] == 0xFF
@@ -273,17 +269,14 @@ def test_ga2_write_colors_four_twelve():
     assert buffer[12] == 0x00
     assert buffer[13] == 0xAB
 
+
 def test_ga2_write_colors_three_twelve():
     buffer = [0] * 14
     buffer[0] = 0x45
     buffer[13] = 0xAE
-    colors = [
-        (0xFF, 0xFF, 0xFF), 
-        (0xFF, 0xFF, 0xFF),
-        (0xFF, 0xFF, 0xFF)
-    ]
+    colors = [(0xFF, 0xFF, 0xFF), (0xFF, 0xFF, 0xFF), (0xFF, 0xFF, 0xFF)]
 
-    GA2LCD._write_colors(buffer, colors, 1, 12);
+    GA2LCD._write_colors(buffer, colors, 1, 12)
     assert buffer[0] == 0x45
 
     assert buffer[1] == 0xFF
@@ -300,16 +293,14 @@ def test_ga2_write_colors_three_twelve():
     assert buffer[12] == 0x00
     assert buffer[13] == 0xAE
 
+
 def test_ga2_write_colors_two_eight():
     buffer = [0] * 10
     buffer[0] = 0x55
     buffer[9] = 0xAF
-    colors = [
-        (0xFF, 0xFF, 0xFF), 
-        (0xFF, 0xFF, 0xFF)
-    ]
+    colors = [(0xFF, 0xFF, 0xFF), (0xFF, 0xFF, 0xFF)]
 
-    GA2LCD._write_colors(buffer, colors, 1, 8);
+    GA2LCD._write_colors(buffer, colors, 1, 8)
     assert buffer[0] == 0x55
 
     assert buffer[1] == 0xFF
