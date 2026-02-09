@@ -71,8 +71,9 @@ _SPEED_CHANNELS = {
     "pump": 0x8A,
 }
 
+
 def _quoted(*names):
-    return ', '.join(map(repr, names))
+    return ", ".join(map(repr, names))
 
 
 def _write_colors(buffer, colors, offset, length):
@@ -96,6 +97,7 @@ def _write_colors(buffer, colors, offset, length):
         buffer[offset + 9] = colors[3][0]
         buffer[offset + 10] = colors[3][1]
         buffer[offset + 11] = colors[3][2]
+
 
 class GA2LCD(UsbHidDriver):
     _status = []
