@@ -1,0 +1,15 @@
+pkgname=indicator-860-udev
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="Test for influence of udev rules in issue 860"
+arch=('any')
+url=""
+license=('GPL')
+depends=()
+conflicts=('indicator-860-hidapi' 'indicator-860-pyusb' 'liquidctl'{,-git} 'coolercontrol'{,-bin})
+source=('71-indicator-860.rules')
+sha256sums=('SKIP')
+
+package() {
+    install -Dm644 "$srcdir/71-indicator-860.rules" "$pkgdir/usr/lib/udev/rules.d/71-indicator-860.rules"
+}

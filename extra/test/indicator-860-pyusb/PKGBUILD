@@ -1,0 +1,15 @@
+pkgname=indicator-860-pyusb
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="Test for influence of pyusb in issue 860"
+arch=('any')
+url=""
+license=('GPL')
+depends=('python' 'python-pyusb')
+conflicts=('indicator-860-udev' 'indicator-860-hidapi' 'liquidctl'{,-git} 'coolercontrol'{,-bin})
+source=('indicator-860-pyusb')
+sha256sums=('SKIP')
+
+package() {
+    install -Dm755 "$srcdir/indicator-860-pyusb" "$pkgdir/usr/bin/indicator-860-pyusb"
+}

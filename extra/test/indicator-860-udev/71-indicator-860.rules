@@ -1,0 +1,2 @@
+# Add uaccess tag to Corsair USB devices
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", TAG+="uaccess"
