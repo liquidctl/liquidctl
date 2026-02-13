@@ -1,2 +1,5 @@
 # Add uaccess tag to Corsair USB devices
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", TAG+="uaccess"
+
+# NZXT Kraken X (X42, X52, X62 or X72)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="170e", TAG+="uaccess"

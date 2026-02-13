@@ -1,5 +1,5 @@
 pkgname=indicator-860-udev
-pkgver=0.0.1
+pkgver=0.0.2
 pkgrel=1
 pkgdesc="Test for influence of udev rules in issue 860"
 arch=('any')
