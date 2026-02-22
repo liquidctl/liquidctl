@@ -40,6 +40,7 @@ import logging
 
 from collections import namedtuple
 from functools import reduce
+from docopt import docopt
 
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.driver.usb import UsbHidDriver
@@ -103,7 +104,17 @@ class _RazerHanboReplies:
 
 
 class RazerHanbo(UsbHidDriver):
-    """liquidctl driver for the Razer Hanbo Chroma cooler"""
+    """Razer Hanbo Chroma device specific functions
+    Usage:
+        liquidctl [options] set <channel> tprofile <profile>
+        liquidctl [options] set <channel> reftemp <temperature>
+        liquidctl [options] set <channel> speed (<temperature> <percentage>) ... (x9)
+
+        <channel>       = fan | pump
+        <profile>       = quiet | [balanced] | extreme | custom
+        <temperature>   = Any whole value from 0-100
+        <percentage>    = Any whole value from 0-100
+    """
 
     _custom_profiles = {
         "pump": [0x14, 0x28, 0x3C, 0x50, 0x64, 0x64, 0x64, 0x64, 0x64],
@@ -137,7 +148,7 @@ class RazerHanbo(UsbHidDriver):
         (e.g. ARGB) we could be receiving a report triggered by
         someone else. In such case we ignore it and wait until
         the reply to our request is seen. This is limited to
-        _MAX_READ_RETRIES as there shouldn't many concurrent
+        _MAX_READ_RETRIES as there shouldn't be many concurrent
         users and the HidapiDevice class manages timeouts on
         the bus.
         """
@@ -180,6 +191,7 @@ class RazerHanbo(UsbHidDriver):
 
     def _get_status_directly(self):
 
+        # Status is acquired from two commands, the pump and fan respectively.
         self._write(_RazerHanboCommands.get_pump_status.header)
         array = self._hanbo_hid_read_validate_report(_RazerHanboReplies.pump_status)
         if array == None:
@@ -202,7 +214,6 @@ class RazerHanbo(UsbHidDriver):
             ),
         ]
 
-        # Status is acquired from two commands, the pump and fan respectively.
         self._write(_RazerHanboCommands.get_fan_status.header)
         array = self._hanbo_hid_read_validate_report(_RazerHanboReplies.fan_status)
 
@@ -269,11 +280,19 @@ class RazerHanbo(UsbHidDriver):
 
     def set_hardware_status(self, channels, T, direct_access=True, **kwargs):
         if channels != list(_HWMON_CTRL_MAPPING)[1]:
-            _LOGGER.info(f"{channels} is invalid for this operation")
-            raise ValueError(f"{channels} is invalid for this operation")
+            _LOGGER.info(
+                f"Only profile <{list(_HWMON_CTRL_MAPPING)[1]}> can be used for this function"
+            )
+            raise ValueError(
+                f"Only profile <{list(_HWMON_CTRL_MAPPING)[1]}> can be used for this function"
+            )
 
         if type(T) == list:
             T = T[0]
+
+        if not T.isdigit():
+            _LOGGER.info(f"Temperature value must be a digit between 0 and 100")
+            raise ValueError(f"Temperature value must be a digit between 0 and 100")
 
         if self._hwmon and not direct_access:
             _LOGGER.info(
@@ -342,6 +361,17 @@ class RazerHanbo(UsbHidDriver):
                         command += _PROFILE_MAPPING[prof]
                         self._active_profile[ch] = prof
                     self._write(command)
+            else:
+                error_msg = ""
+                if not ch in self._custom_profiles:
+                    error_msg += f"<channel> must be one of {list(self._custom_profiles.keys())} "
+                if not prof in _PROFILE_MAPPING:
+                    error_msg += f"<profile> must be one of {list(_PROFILE_MAPPING.keys())}"
+
+                error_msg.strip()
+                _LOGGER.info(f"{error_msg}")
+                print(self.__doc__[self.__doc__.find("Usage:") :])
+                raise ValueError(f"""{error_msg}""")
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Sets and sanity checks a curve profile. It does not
@@ -362,6 +392,13 @@ class RazerHanbo(UsbHidDriver):
                         "Curve values are not constantly increasing or contain"
                         "values outside valid range of 20-100 duty. Not applying"
                     )
+
+    def set_property(self, argv, **kwargs):
+        subopts = docopt(self.__doc__, argv=argv)
+        if subopts["reftemp"]:
+            self.set_hardware_status(subopts["<channel>"], subopts["<temperature>"])
+        elif subopts["tprofile"]:
+            self.set_profiles(subopts["<channel>"], subopts["<profile>"])
 
     @staticmethod
     def _make_buffer(array, fill=0, total_size=_REPORT_LENGTH):
