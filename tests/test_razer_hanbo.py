@@ -247,6 +247,26 @@ def test_razerhanbo_set_hardware_status(razerHanboChromaDevice, has_hwmon, direc
     if direct_access:
         assert razerHanboChromaDevice.device._cpu_temp == _MAXIMUM_THERMAL_UNIT
 
+    testval = "7465144"
+
+    razerHanboChromaDevice.set_hardware_status("fan", testval, direct_access)
+
+    if not direct_access and has_hwmon:
+        assert (tmp_path / "temp2_input").read_text() == str((_MAXIMUM_THERMAL_UNIT * 1000))
+
+    if direct_access:
+        assert razerHanboChromaDevice.device._cpu_temp == _MAXIMUM_THERMAL_UNIT
+
+    testval = ["27"]
+
+    razerHanboChromaDevice.set_hardware_status("fan", testval, direct_access)
+
+    if not direct_access and has_hwmon:
+        assert (tmp_path / "temp2_input").read_text() == str((int(testval[0]) * 1000))
+
+    if direct_access:
+        assert razerHanboChromaDevice.device._cpu_temp == int(testval[0])
+
     testval = [36]
 
     razerHanboChromaDevice.set_hardware_status("fan", testval, direct_access)
@@ -259,6 +279,10 @@ def test_razerhanbo_set_hardware_status(razerHanboChromaDevice, has_hwmon, direc
 
     with pytest.raises(ValueError):
         razerHanboChromaDevice.set_hardware_status("pump", testval, direct_access)
+
+    with pytest.raises(ValueError):
+        testval = "test"
+        razerHanboChromaDevice.set_hardware_status("fan", testval, direct_access)
 
 
 """ Apply a set profile to the driver
