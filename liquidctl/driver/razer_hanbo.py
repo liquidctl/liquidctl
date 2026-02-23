@@ -290,7 +290,9 @@ class RazerHanbo(UsbHidDriver):
         if type(T) == list:
             T = T[0]
 
-        if not T.isdigit():
+        try:
+            T = int(T)
+        except ValueError:
             _LOGGER.info(f"Temperature value must be a digit between 0 and 100")
             raise ValueError(f"Temperature value must be a digit between 0 and 100")
 
