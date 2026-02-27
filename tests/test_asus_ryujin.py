@@ -172,7 +172,7 @@ def mock_ryujin3():
     )
 
 
-@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE])
+@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE, 0x1AA2])
 def test_initialize(product_id):
     config = DEVICE_CONFIGS[product_id]
     device = AsusRyujin(
@@ -190,7 +190,7 @@ def test_initialize(product_id):
         assert firmware_status[1] == config["expected_firmware"]
 
 
-@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE])
+@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE, 0x1AA2])
 def test_status(product_id):
     config = DEVICE_CONFIGS[product_id]
     device = AsusRyujin(

@@ -260,7 +260,7 @@ _liquidctl_set_command ()
   while [[ $i -lt $COMP_CWORD ]]; do
       local s="${COMP_WORDS[i]}"
       case "$s" in
-          fan[0-9] | fan | pump)
+          fan[0-9] | fan | pump | pump-fan)
               subcommand_index=$i
               _liquidctl_set_fan
               handled=1
