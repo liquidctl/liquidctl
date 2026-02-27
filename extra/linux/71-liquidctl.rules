@@ -337,6 +337,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18f3", TAG+="uacc
 # ASUS Ryujin II 360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1988", TAG+="uaccess"
 
+# ASUS Ryujin III 360
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1aa2", TAG+="uaccess"
+
 # ASUS Ryujin III EVA EDITION
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1ade", TAG+="uaccess"
 
@@ -494,6 +497,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", TAG+="uacc
 # Gigabyte RGB Fusion 2.0 8297 Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="8297", TAG+="uaccess"
 
+# Lian Li GA II LCD
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="7395", TAG+="uaccess"
+
 # Lian Li Uni AL
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a101", TAG+="uaccess"
 
@@ -607,9 +613,6 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200d", TAG+="uacc
 
 # NZXT Smart Device V2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="200f", TAG+="uaccess"
-
-# Lian Li GA II LCD
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="7395", TAG+="uaccess"
 
 # Suspected MSI MPG Coreliquid
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="ca00", TAG+="uaccess"
