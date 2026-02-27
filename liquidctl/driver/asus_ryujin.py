@@ -67,6 +67,18 @@ class AsusRyujin(UsbHidDriver):
         ),
         (
             0x0B05,
+            0x1AA2,
+            "ASUS Ryujin III 360",
+            {
+                "fan_count": 0,
+                "pump_speed_offset": 7,
+                "pump_fan_speed_offset": 10,
+                "temp_offset": 5,
+                "duty_channel": 1,
+            },
+        ),
+        (
+            0x0B05,
             0x1ADE,
             "ASUS Ryujin III EVA EDITION",
             {
