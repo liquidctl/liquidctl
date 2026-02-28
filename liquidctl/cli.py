@@ -8,6 +8,7 @@ Usage:
   liquidctl [options] set <channel> speed <percentage>
   liquidctl [options] set <channel> color <mode> [<color>] ...
   liquidctl [options] set <channel> screen <mode> [<value>]
+  liquidctl [-h|--help] [options] set <channel> <devcmd> [<args>...]
   liquidctl --help
   liquidctl --version
 
@@ -82,7 +83,7 @@ from numbers import Number
 from traceback import format_exception
 
 import colorlog
-from docopt import docopt
+from docopt import docopt, DocoptExit
 
 from liquidctl import __version__
 from liquidctl.driver import *
@@ -293,7 +294,6 @@ def _device_set_speed(dev, args, **opts):
     else:
         dev.set_fixed_speed(args['<channel>'].lower(), int(args['<percentage>'][0]), **opts)
 
-
 def _make_opts(args):
     opts = {}
     for arg, val in args.items():
@@ -352,7 +352,18 @@ class _ErrorAcc:
 
 
 def main():
-    args = docopt(__doc__)
+    try:
+        args = docopt(__doc__, help=False)
+    except DocoptExit as e:
+        if "-h" in sys.argv or "--help" in sys.argv:
+            print(__doc__)
+        else:
+            print(e.usage)
+        sys.exit(0)
+    
+    if not args['<devcmd>'] and args['--help']:
+        print(__doc__)
+        sys.exit(0)
 
     if args['--version']:
         print(f'liquidctl v{__version__} ({platform.platform()})')
@@ -472,6 +483,13 @@ def main():
                     _device_set_color(dev, args, **opts)
                 elif args['set'] and args['screen']:
                     _device_set_screen(dev, args, **opts)
+                elif args['set']:
+                    argv = ['set'] + [args['<channel>']] + [args['<devcmd>']] + args['<args>']
+                    if args['--help'] or args['-h']:
+                        argv += ['--help']
+                    # Used to sanity check that functions exist as defined
+                    _check = docopt(dev.__doc__, argv=argv)
+                    dev.set_property(argv, **opts)
                 else:
                     assert False, 'unreachable'
         except LiquidctlError as err:
