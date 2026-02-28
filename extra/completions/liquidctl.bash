@@ -260,7 +260,7 @@ _liquidctl_set_command ()
   while [[ $i -lt $COMP_CWORD ]]; do
       local s="${COMP_WORDS[i]}"
       case "$s" in
-          fan[0-9] | fan | pump)
+          fan[0-9] | fan | pump | pump-fan)
               subcommand_index=$i
               _liquidctl_set_fan
               handled=1
@@ -289,7 +289,7 @@ _liquidctl_set_command ()
     compopt -o nospace
     # possibly use some command here to get a list of all the possible channels from liquidctl
     local cur="${COMP_WORDS[COMP_CWORD]}"
-    COMPREPLY=($(compgen -W "fan fan1 fan2 fan3 fan4 fan5 fan6 led led1 led2 led3 led4 led5 led6 pump sync ring logo external lcd" -- "$cur"))
+    COMPREPLY=($(compgen -W "fan fan1 fan2 fan3 fan4 fan5 fan6 led led1 led2 led3 led4 led5 led6 pump pump-fan sync ring logo external lcd" -- "$cur"))
   fi
 }
 

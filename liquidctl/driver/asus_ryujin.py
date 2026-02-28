@@ -1,4 +1,4 @@
-"""liquidctl driver for the ASUS Ryujin II and Ryujin III EXTREME liquid coolers.
+"""liquidctl driver for the ASUS Ryujin II and Ryujin III EXTREME / 360 liquid coolers.
 
 Copyright Florian Freudiger and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -38,7 +38,7 @@ _STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
 
 
 class AsusRyujin(UsbHidDriver):
-    """ASUS Ryujin II & Ryujin III Extreme liquid coolers."""
+    """ASUS Ryujin II & Ryujin III Extreme / 360 liquid coolers."""
 
     _MATCHES = [
         (
@@ -57,6 +57,18 @@ class AsusRyujin(UsbHidDriver):
             0x0B05,
             0x1BCB,
             "ASUS Ryujin III EXTREME",
+            {
+                "fan_count": 0,
+                "pump_speed_offset": 7,
+                "pump_fan_speed_offset": 10,
+                "temp_offset": 5,
+                "duty_channel": 1,
+            },
+        ),
+        (
+            0x0B05,
+            0x1AA2,
+            "ASUS Ryujin III 360",
             {
                 "fan_count": 0,
                 "pump_speed_offset": 7,

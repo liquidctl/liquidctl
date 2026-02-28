@@ -86,6 +86,28 @@ DEVICE_CONFIGS = {
             ("Pump fan duty", 30, "%"),
         ],
     },
+    0x1AA2: {
+        "name": "Mock Ryujin III 360",
+        "fan_count": 0,
+        "pump_speed_offset": 7,
+        "pump_fan_speed_offset": 10,
+        "temp_offset": 5,
+        "duty_channel": 1,
+        "responses": {
+            CMD_GET_FIRMWARE: "ec02004155524a332d533546392d30313034",
+            CMD_GET_STATUS: "ec190000001d09ec041e6603",
+            CMD_GET_PUMP_DUTY: "ec1a00011e1e",
+            CMD_SET_PUMP_DUTY: "ec1a",
+        },
+        "expected_firmware": "AURJ3-S5F9-0104",
+        "expected_status": [
+            ("Liquid temperature", 29.9, "°C"),
+            ("Pump speed", 1260, "rpm"),
+            ("Pump fan speed", 870, "rpm"),
+            ("Pump duty", 30, "%"),
+            ("Pump fan duty", 30, "%"),
+        ],
+    },
 }
 
 
@@ -150,7 +172,7 @@ def mock_ryujin3():
     )
 
 
-@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE])
+@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE, 0x1AA2])
 def test_initialize(product_id):
     config = DEVICE_CONFIGS[product_id]
     device = AsusRyujin(
@@ -168,7 +190,7 @@ def test_initialize(product_id):
         assert firmware_status[1] == config["expected_firmware"]
 
 
-@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE])
+@pytest.mark.parametrize("product_id", [0x1988, 0x1BCB, 0x1ADE, 0x1AA2])
 def test_status(product_id):
     config = DEVICE_CONFIGS[product_id]
     device = AsusRyujin(
