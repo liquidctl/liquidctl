@@ -38,7 +38,7 @@ _STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
 
 
 class AsusRyujin(UsbHidDriver):
-    """ASUS Ryujin II & Ryujin III Extreme / 360 liquid coolers."""
+    """ASUS Ryujin II & Ryujin III Extreme / 360 / White Edition liquid coolers."""
 
     _MATCHES = [
         (
