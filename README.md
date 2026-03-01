@@ -117,6 +117,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [ASUS Ryujin III 360](docs/asus-ryujin3-guide.md) | p | git |
 | AIO liquid cooler  | [ASUS Ryujin III EVA EDITION](docs/asus-ryujin3-guide.md) | p | git |
 | AIO liquid cooler  | [ASUS Ryujin III EXTREME](docs/asus-ryujin3-guide.md) | p | git |
+| AIO liquid cooler  | [ASUS Ryujin III White Edition](docs/asus-ryujin3-guide.md) | p | git |
 | AIO liquid cooler  | [ASUS Ryuo I 240](docs/asus-ryuo-guide.md) | p | git |
 | AIO liquid cooler  | [Corsair Hydro H110i GT](docs/coolit-guide.md) | p | 1.14.0 |
 | AIO liquid cooler  | [Corsair Hydro H80i GT, H100i GTX, H110i GTX](docs/asetek-690lc-guide.md) | Z | 1.9.1 |
