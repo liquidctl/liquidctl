@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.16.0] – 2026-03-03
+
+### Changes since 1.15.0
+
+Added:
+
+- Support for ASUS Ryujin III 360, EVA, Extreme, and White (liquidctl#829, liquidctl#857,
+  liquidctl#865, liquidctl#866)
+- Support for ASUS Ryuo I 240 (liquidctl#794)
+- Support for Aquacomputer Farbwerk (liquidctl#749)
+- Support for Corsair HX1200i ATX 3.1 variant (liquidctl#791)
+- Support for Lian Li GA II LCD (liquidctl#795)
+- Support for Lian Li Uni Fan controllers (liquidctl#837)
+- Support for NZXT 2023 RGB controllers (liquidctl#690)
+- Support for NZXT Control Hub (liquidctl#827, liquidctl#849)
+- Support for NZXT Kraken 2024 Plus (liquidctl#825)
+
+Changed:
+
+- Drop Python 3.9 support after it reached end of life
+- Lian Li Uni: rename status output fields to match other drivers (liquidctl#855)
+
+Fixed:
+
+- NZXT Smart Device 2: fix wings lighting mode (liquidctl#769)
+- Aura LED: reduce and improve handling of unexpected responses (liquidctl#838)
+- Lian Li Uni: fix speed stuck at 100% (liquidctl#853, liquidctl#854)
+- Lian Li Uni: fix off-by-one error in channel validity check and channel name handling
+  (liquidctl#850)
+- extra/yoda: avoid excessive reads/writes (liquidctl#715)
+
 ## [1.15.0] – 2025-04-13
 
 ### Changes since 1.14.0
