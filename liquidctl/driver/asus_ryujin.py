@@ -38,7 +38,7 @@ _STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
 
 
 class AsusRyujin(UsbHidDriver):
-    """ASUS Ryujin II & Ryujin III Extreme / 360 liquid coolers."""
+    """ASUS Ryujin II & Ryujin III Extreme / 360 / White Edition liquid coolers."""
 
     _MATCHES = [
         (
@@ -81,6 +81,18 @@ class AsusRyujin(UsbHidDriver):
             0x0B05,
             0x1ADE,
             "ASUS Ryujin III EVA EDITION",
+            {
+                "fan_count": 0,
+                "pump_speed_offset": 7,
+                "pump_fan_speed_offset": 10,
+                "temp_offset": 5,
+                "duty_channel": 1,
+            },
+        ),
+        (
+            0x0B05,
+            0x1ADA,
+            "ASUS Ryujin III WHITE EDITION",
             {
                 "fan_count": 0,
                 "pump_speed_offset": 7,
