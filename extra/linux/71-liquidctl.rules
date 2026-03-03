@@ -340,11 +340,14 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1988", TAG+="uacc
 # ASUS Ryujin III 360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1aa2", TAG+="uaccess"
 
-# ASUS Ryujin III EVA EDITION
+# ASUS Ryujin III EVA
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1ade", TAG+="uaccess"
 
-# ASUS Ryujin III EXTREME
+# ASUS Ryujin III Extreme
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1bcb", TAG+="uaccess"
+
+# ASUS Ryujin III White
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1ada", TAG+="uaccess"
 
 # ASUS Ryuo I 240
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1887", TAG+="uaccess"

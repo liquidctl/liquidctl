@@ -56,7 +56,7 @@ class AsusRyujin(UsbHidDriver):
         (
             0x0B05,
             0x1BCB,
-            "ASUS Ryujin III EXTREME",
+            "ASUS Ryujin III Extreme",
             {
                 "fan_count": 0,
                 "pump_speed_offset": 7,
@@ -80,7 +80,7 @@ class AsusRyujin(UsbHidDriver):
         (
             0x0B05,
             0x1ADE,
-            "ASUS Ryujin III EVA EDITION",
+            "ASUS Ryujin III EVA",
             {
                 "fan_count": 0,
                 "pump_speed_offset": 7,
@@ -92,7 +92,7 @@ class AsusRyujin(UsbHidDriver):
         (
             0x0B05,
             0x1ADA,
-            "ASUS Ryujin III WHITE EDITION",
+            "ASUS Ryujin III White",
             {
                 "fan_count": 0,
                 "pump_speed_offset": 7,

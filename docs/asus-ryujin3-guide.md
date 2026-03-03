@@ -9,7 +9,7 @@ Initialization is not required. It outputs the firmware version:
 
 ```
 # liquidctl initialize
-ASUS Ryujin III EXTREME
+ASUS Ryujin III Extreme
 └── Firmware version    AURJ3-S5F9-0104
 ```
 
@@ -19,7 +19,7 @@ The cooler reports the liquid temperature, the speeds and duties of pump and int
 
 ```
 # liquidctl status
-ASUS Ryujin III EXTREME
+ASUS Ryujin III Extreme
 ├── Liquid temperature    29.9  °C
 ├── Pump duty               30  %
 ├── Pump speed            1260  rpm
