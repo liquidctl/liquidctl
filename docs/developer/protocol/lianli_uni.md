@@ -1,7 +1,4 @@
-
 # Lian Li Uni Fan Controller Protocol
-
-_New in git_<br>
 
 ## Compatible Devices
 

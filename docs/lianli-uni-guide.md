@@ -1,7 +1,7 @@
 # Lian Li Uni Fan controllers
 _Driver API and source code available in [`liquidctl.driver.lianli_uni`](../liquidctl/driver/lianli_uni.py)._
 
-_New in git_<br>
+_New in 1.16.0<br>
 
 This is a driver for supporting multiple Lian Li Uni fan hubs.
 

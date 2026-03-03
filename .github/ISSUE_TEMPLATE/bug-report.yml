@@ -25,10 +25,10 @@ body:
       label: Affected liquidctl version
       description: >
         What is the output from `liquidctl --version`, or what version did you tried to install? If
-        you are reporting an issue for a version other than the latest (currently 1.15.0), please
+        you are reporting an issue for a version other than the latest (currently 1.16.0), please
         first check that the problem has not already been fixed on the new version.
       placeholder: |
-        e.g. liquidctl v1.15.0 (Linux-6.17.8-arch1-1-x86_64-with-glibc2.42)
+        e.g. liquidctl v1.16.0 (Linux-6.17.8-arch1-1-x86_64-with-glibc2.42)
     validations:
       required: true
   - type: input

@@ -1,7 +1,7 @@
 # ASUS Ryuo I Liquid Coolers
 _Driver API and source code available in [`liquidctl.driver.asus_ryuo`](../liquidctl/driver/asus_ryuo.py)._
 
-_New in git._<br>
+_New in 1.16.0._<br>
 
 ## Initialization
 
