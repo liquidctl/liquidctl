@@ -30,6 +30,7 @@ Fixed:
 - Lian Li Uni: fix off-by-one error in channel validity check and channel name handling
   (liquidctl#850)
 - extra/yoda: avoid excessive reads/writes (liquidctl#715)
+
 ### BLAKE3 checksums
 
 ```
