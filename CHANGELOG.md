@@ -30,6 +30,13 @@ Fixed:
 - Lian Li Uni: fix off-by-one error in channel validity check and channel name handling
   (liquidctl#850)
 - extra/yoda: avoid excessive reads/writes (liquidctl#715)
+### BLAKE3 checksums
+
+```
+$ b3sum dist/liquidctl-$VERSION{.tar.gz,-py3-none-any.whl}
+12ceafcb8c342ff15d869c6ed493fc927a73188d387d1bf37711553a13334339  dist/liquidctl-1.16.0.tar.gz
+8beb263a1134fd5b3194a08d1315a20b2e546865335b81d21c1172628288aa10  dist/liquidctl-1.16.0-py3-none-any.whl
+```
 
 ## [1.15.0] – 2025-04-13
 
