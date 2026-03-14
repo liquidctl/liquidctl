@@ -67,4 +67,75 @@ Pump impeller and embedded fan duty values approximately map to the following sp
 
 ## Screen
 
-The screen of the cooler is not yet supported.
+_New in git._
+
+The Ryujin III has a 320x240 LCD. The screen can be controlled via the `lcd` channel.
+
+### Display a static image
+
+```
+# liquidctl set lcd screen static /path/to/image.png
+```
+
+Any image format supported by Pillow (PNG, JPEG, BMP, etc.) will be automatically
+resized to 320x240 and displayed. Requires `Pillow` (`pip install Pillow`).
+
+### Built-in animation
+
+Switch back to the default ROG animation:
+
+```
+# liquidctl set lcd screen liquid
+```
+
+### Clock mode
+
+Display a clock synced to the system time:
+
+```
+# liquidctl set lcd screen clock 24h
+# liquidctl set lcd screen clock 12h
+```
+
+### Hardware monitor
+
+Display live sensor readings (liquid temperature, pump RPM, fan RPM):
+
+```
+# liquidctl set lcd screen monitor
+```
+
+### Turn off the display
+
+```
+# liquidctl set lcd screen off
+```
+
+### Set brightness
+
+```
+# liquidctl set lcd screen brightness 50
+```
+
+Values range from 0 (off) to 100 (maximum).
+
+### Set orientation
+
+```
+# liquidctl set lcd screen orientation 0
+# liquidctl set lcd screen orientation 1
+```
+
+Where `0` is horizontal (default) and `1` is vertical (rotated). Values `2` and `3` are 180° and 270°.
+
+### Standby / Wake
+
+Put the display to sleep (for system suspend) or wake it back up:
+
+```
+# liquidctl set lcd screen standby
+# liquidctl set lcd screen wake
+```
+
+The standby command sends `EC 5C 20` which the firmware uses for ACPI sleep.
+Wake sends `EC 5C 10` (display reset).
