@@ -2,6 +2,7 @@ import pytest
 
 from _testutils import MockHidapiDevice
 from liquidctl.driver.asus_ryujin import AsusRyujin
+from liquidctl.error import NotSupportedByDriver
 
 PROTOCOL_HEADER = 0xEC
 CMD_GET_FIRMWARE = 0x82
@@ -19,6 +20,7 @@ DEVICE_CONFIGS = {
         "pump_fan_speed_offset": 7,
         "temp_offset": 3,
         "duty_channel": 0,
+        "has_lcd": False,
         "responses": {
             CMD_GET_FIRMWARE: "ec02004155524a312d533735302d30313034",
             CMD_GET_STATUS: "ec19001b056405100e",
@@ -49,6 +51,7 @@ DEVICE_CONFIGS = {
         "pump_fan_speed_offset": 10,
         "temp_offset": 5,
         "duty_channel": 1,
+        "has_lcd": True,
         "responses": {
             CMD_GET_FIRMWARE: "ec02004155524a332d533546392d30313034",
             CMD_GET_STATUS: "ec190000001d09ec041e6603",
@@ -71,6 +74,7 @@ DEVICE_CONFIGS = {
         "pump_fan_speed_offset": 10,
         "temp_offset": 5,
         "duty_channel": 1,
+        "has_lcd": True,
         "responses": {
             CMD_GET_FIRMWARE: "ec02004155524a322d533735302d30313039",
             CMD_GET_STATUS: "ec1900000021002e0e644803",
@@ -93,6 +97,7 @@ DEVICE_CONFIGS = {
         "pump_fan_speed_offset": 10,
         "temp_offset": 5,
         "duty_channel": 1,
+        "has_lcd": True,
         "responses": {
             CMD_GET_FIRMWARE: "ec02004155524a332d533546392d30313034",
             CMD_GET_STATUS: "ec190000001d09ec041e6603",
@@ -115,6 +120,7 @@ DEVICE_CONFIGS = {
         "pump_fan_speed_offset": 10,
         "temp_offset": 5,
         "duty_channel": 1,
+        "has_lcd": True,
         "responses": {
             CMD_GET_FIRMWARE: "ec02004155524a332d533546392d30313034",
             CMD_GET_STATUS: "ec190000001d09ec041e6603",
@@ -176,6 +182,7 @@ def mock_ryujin():
         pump_fan_speed_offset=config["pump_fan_speed_offset"],
         temp_offset=config["temp_offset"],
         duty_channel=config["duty_channel"],
+        has_lcd=config["has_lcd"],
     )
 
 
@@ -191,6 +198,7 @@ def mock_ryujin3():
         pump_fan_speed_offset=config["pump_fan_speed_offset"],
         temp_offset=config["temp_offset"],
         duty_channel=config["duty_channel"],
+        has_lcd=config["has_lcd"],
     )
 
 
@@ -205,6 +213,7 @@ def test_initialize(product_id):
         pump_fan_speed_offset=config["pump_fan_speed_offset"],
         temp_offset=config["temp_offset"],
         duty_channel=config["duty_channel"],
+        has_lcd=config["has_lcd"],
     )
 
     with device.connect():
@@ -223,6 +232,7 @@ def test_status(product_id):
         pump_fan_speed_offset=config["pump_fan_speed_offset"],
         temp_offset=config["temp_offset"],
         duty_channel=config["duty_channel"],
+        has_lcd=config["has_lcd"],
     )
 
     with device.connect():
@@ -266,3 +276,80 @@ def test_set_fixed_speeds_ryujin3(mock_ryujin3):
         mock_ryujin3.set_fixed_speed(channel="pump-fan", duty=50)
         assert mock_ryujin3.device.requests[-1][2] == 0x01
         assert mock_ryujin3.device.requests[-1][4] == 0x32
+
+
+def test_set_screen_liquid(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "liquid", None)
+        sent = mock_ryujin3.device.requests[-1]
+        assert sent[0] == PROTOCOL_HEADER
+        assert sent[1] == 0x51
+        assert sent[2] == 0x04
+
+
+def test_set_screen_off(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "off", None)
+        sent = mock_ryujin3.device.requests[-1]
+        assert sent[0] == PROTOCOL_HEADER
+        assert sent[1] == 0x51
+        assert sent[2] == 0x00
+
+
+def test_set_screen_clock_24h(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "clock", "24h")
+        cmds = [r for r in mock_ryujin3.device.requests if r[0] == PROTOCOL_HEADER]
+        cmd_bytes = [r[1] for r in cmds]
+        assert 0x5D in cmd_bytes  # clock config
+        assert 0x11 in cmd_bytes  # set time
+        assert 0x51 in cmd_bytes  # mode switch
+        mode_cmd = [r for r in cmds if r[1] == 0x51][-1]
+        assert mode_cmd[2] == 0x08  # clock mode
+        time_cmd = [r for r in cmds if r[1] == 0x11][-1]
+        assert time_cmd[6] == 0x00  # hr_fmt 0x00 = 24h
+
+
+def test_set_screen_brightness(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "brightness", "75")
+        sent = mock_ryujin3.device.requests[-1]
+        assert sent[0] == PROTOCOL_HEADER
+        assert sent[1] == 0x5C
+        assert sent[2] == 0x01
+        assert sent[7] == 75
+
+
+def test_set_screen_standby(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "standby", None)
+        sent = mock_ryujin3.device.requests[-1]
+        assert sent[0] == PROTOCOL_HEADER
+        assert sent[1] == 0x5C
+        assert sent[2] == 0x20
+
+
+def test_set_screen_wake(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "wake", None)
+        sent = mock_ryujin3.device.requests[-1]
+        assert sent[0] == PROTOCOL_HEADER
+        assert sent[1] == 0x5C
+        assert sent[2] == 0x10
+
+
+def test_set_screen_release(mock_ryujin3):
+    with mock_ryujin3.connect():
+        mock_ryujin3.set_screen("lcd", "release", None)
+        sent = mock_ryujin3.device.requests[-1]
+        assert sent[0] == PROTOCOL_HEADER
+        assert sent[1] == 0x1A
+        assert sent[2] == 0x00
+        assert sent[3] == 0x00
+        assert sent[4] == 0x00
+
+
+def test_set_screen_not_supported_ryujin2(mock_ryujin):
+    with mock_ryujin.connect():
+        with pytest.raises(NotSupportedByDriver):
+            mock_ryujin.set_screen("lcd", "liquid", None)

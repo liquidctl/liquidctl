@@ -228,6 +228,7 @@ class AsusRyujin(UsbHidDriver):
         """Release the raw USB device and reattach kernel drivers."""
         if self._bulk_device is not None:
             import usb.util
+
             for i in range(2):
                 try:
                     usb.util.release_interface(self._bulk_device, i)
@@ -422,13 +423,13 @@ class AsusRyujin(UsbHidDriver):
             if value is None:
                 raise ValueError("brightness mode requires a value (0-100)")
             brightness = clamp(int(value), 0, 100)
-            self._write([_PREFIX, _CMD_SET_DISPLAY_OPTION,
-                         0x01, 0x00, 0x00, 0x00, 0x00, brightness])
+            self._write(
+                [_PREFIX, _CMD_SET_DISPLAY_OPTION, 0x01, 0x00, 0x00, 0x00, 0x00, brightness]
+            )
         elif mode == "orientation":
             if value is None:
                 raise ValueError("orientation requires 0-3 (0°, 90°, 180°, 270°)")
-            self._write([_PREFIX, _CMD_SET_DISPLAY_OPTION,
-                         0x01, 0x00, 0x00, int(value)])
+            self._write([_PREFIX, _CMD_SET_DISPLAY_OPTION, 0x01, 0x00, 0x00, int(value)])
         elif mode == "release":
             self._release_cooler_control()
         else:
@@ -497,9 +498,9 @@ class AsusRyujin(UsbHidDriver):
         pixels = img.tobytes()
         bgr = bytearray(_LCD_FRAME_SIZE)
         for i in range(0, len(pixels), 3):
-            bgr[i] = pixels[i + 2]      # B
+            bgr[i] = pixels[i + 2]  # B
             bgr[i + 1] = pixels[i + 1]  # G
-            bgr[i + 2] = pixels[i]      # R
+            bgr[i + 2] = pixels[i]  # R
 
         self._switch_display_mode(_DISPLAY_MODE_FRAMEBUFFER)
         time.sleep(0.1)
@@ -517,21 +518,35 @@ class AsusRyujin(UsbHidDriver):
 
         # Sync RTC
         t = time.localtime()
+
         def bcd(val):
             return ((val // 10) << 4) | (val % 10)
+
         hour = t.tm_hour
         pm = 0x00
         if not fmt_24h:
             pm = 0x01 if hour >= 12 else 0x00
             hour = hour % 12 or 12
-        self._write([_PREFIX, _CMD_SET_CLOCK,
-                     0x00, 0x00, 0x08, 0x00, hr_fmt,
-                     bcd(hour), bcd(t.tm_min), bcd(t.tm_sec), pm, 0x01])
+        self._write(
+            [
+                _PREFIX,
+                _CMD_SET_CLOCK,
+                0x00,
+                0x00,
+                0x08,
+                0x00,
+                hr_fmt,
+                bcd(hour),
+                bcd(t.tm_min),
+                bcd(t.tm_sec),
+                pm,
+                0x01,
+            ]
+        )
         time.sleep(0.05)
 
         # Switch to clock mode
-        self._write([_PREFIX, _CMD_SWITCH_DISPLAY_MODE,
-                     _DISPLAY_MODE_CLOCK, 0x00, hr_fmt])
+        self._write([_PREFIX, _CMD_SWITCH_DISPLAY_MODE, _DISPLAY_MODE_CLOCK, 0x00, hr_fmt])
 
     def _set_screen_hw_monitor_hid(self, **kwargs):
         """Switch to HW monitor mode via hidapi (no pyusb needed)."""
@@ -544,13 +559,36 @@ class AsusRyujin(UsbHidDriver):
         style = _HW_MONITOR_STYLES.get(kwargs.get("style", "custom"), 0x02)
 
         # Layout (EC 52)
-        self._write([_PREFIX, _CMD_SET_HW_MONITOR_LAYOUT,
-                     style, 0x02, 0x02, 0x00,
-                     0, 0, 0, 0xFF,
-                     255, 255, 255, 0xFF,
-                     255, 255, 255, 0xFF,
-                     255, 255, 255, 0xFF,
-                     255, 255, 255, 0xFF])
+        self._write(
+            [
+                _PREFIX,
+                _CMD_SET_HW_MONITOR_LAYOUT,
+                style,
+                0x02,
+                0x02,
+                0x00,
+                0,
+                0,
+                0,
+                0xFF,
+                255,
+                255,
+                255,
+                0xFF,
+                255,
+                255,
+                255,
+                0xFF,
+                255,
+                255,
+                255,
+                0xFF,
+                255,
+                255,
+                255,
+                0xFF,
+            ]
+        )
 
         # Switch mode (EC 51)
         self._write([_PREFIX, _CMD_SWITCH_DISPLAY_MODE, _DISPLAY_MODE_HW_MONITOR])
@@ -608,11 +646,21 @@ class AsusRyujin(UsbHidDriver):
             if hour == 0:
                 hour = 12
 
-        self._raw_hid_write([
-            _CMD_SET_CLOCK,
-            0x00, 0x00, 0x08, 0x00, hr_fmt,
-            bcd(hour), bcd(t.tm_min), bcd(t.tm_sec), pm, 0x01,
-        ])
+        self._raw_hid_write(
+            [
+                _CMD_SET_CLOCK,
+                0x00,
+                0x00,
+                0x08,
+                0x00,
+                hr_fmt,
+                bcd(hour),
+                bcd(t.tm_min),
+                bcd(t.tm_sec),
+                pm,
+                0x01,
+            ]
+        )
         _LOGGER.debug("synced RTC to %02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec)
 
     def _set_screen_hw_monitor(self, **kwargs):
@@ -636,15 +684,35 @@ class AsusRyujin(UsbHidDriver):
         style_byte = _HW_MONITOR_STYLES.get(style, 0x02)
 
         # Set HW monitor layout (EC 52)
-        self._raw_hid_write([
-            _CMD_SET_HW_MONITOR_LAYOUT,
-            style_byte, 0x02, 0x02, 0x00,
-            bg_r, bg_g, bg_b, 0xFF,
-            txt_r, txt_g, txt_b, 0xFF,
-            txt_r, txt_g, txt_b, 0xFF,
-            txt_r, txt_g, txt_b, 0xFF,
-            txt_r, txt_g, txt_b, 0xFF,
-        ])
+        self._raw_hid_write(
+            [
+                _CMD_SET_HW_MONITOR_LAYOUT,
+                style_byte,
+                0x02,
+                0x02,
+                0x00,
+                bg_r,
+                bg_g,
+                bg_b,
+                0xFF,
+                txt_r,
+                txt_g,
+                txt_b,
+                0xFF,
+                txt_r,
+                txt_g,
+                txt_b,
+                0xFF,
+                txt_r,
+                txt_g,
+                txt_b,
+                0xFF,
+                txt_r,
+                txt_g,
+                txt_b,
+                0xFF,
+            ]
+        )
 
         # Switch to HW monitor mode
         self._switch_display_mode(_DISPLAY_MODE_HW_MONITOR)
@@ -668,11 +736,7 @@ class AsusRyujin(UsbHidDriver):
         value_bytes = value.encode("utf-8", errors="replace")[:12]
         value_padded = list(value_bytes) + [0] * (12 - len(value_bytes))
 
-        self._raw_hid_write(
-            [_CMD_SET_HW_MONITOR_STRING, index]
-            + label_padded
-            + value_padded
-        )
+        self._raw_hid_write([_CMD_SET_HW_MONITOR_STRING, index] + label_padded + value_padded)
 
     def _set_brightness(self, brightness: int):
         """Set LCD brightness (0-100%)."""
@@ -694,11 +758,17 @@ class AsusRyujin(UsbHidDriver):
         brt = brightness if brightness is not None else 30
         orient = orientation if orientation is not None else 0
 
-        self._raw_hid_write([
-            _CMD_SET_DISPLAY_OPTION,
-            0x01, 0x00, 0x00, orient, 0x00,
-            brt,
-        ])
+        self._raw_hid_write(
+            [
+                _CMD_SET_DISPLAY_OPTION,
+                0x01,
+                0x00,
+                0x00,
+                orient,
+                0x00,
+                brt,
+            ]
+        )
 
     def _request(self, request_header: int, response_header: int) -> List[int]:
         self.device.clear_enqueued_reports()
