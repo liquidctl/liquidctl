@@ -249,7 +249,13 @@ Cooling channels: \fIpump\fR, \fIfans\fR, \fIpump\-fan\fR, \fIexternal\-fans\fR.
 .SS ASUS Ryujin III 360, EVA, Extreme, White
 Cooling channels: \fIpump\fR, \fIpump\-fan\fR.
 .PP
-Screen: not yet supported.
+Screen channel: \fIlcd\fR.
+Screen modes: \fIstatic\fR, \fIliquid\fR, \fIclock\fR, \fImonitor\fR, \fIoff\fR,
+\fIstandby\fR, \fIwake\fR, \fIbrightness\fR, \fIorientation\fR, \fIrelease\fR.
+.PP
+\fIstatic\fR requires a path to an image file and the Pillow package.
+\fIrelease\fR returns pump control to the internal Asetek controller;
+the embedded fan has no internal controller and must always be host\-driven.
 .SS ASUS Ryuo II 240
 Cooling channels: \fIfans\fR, \fIfan\fR. There is only a single fan channel.
 .SS Corsair iCUE Elite Capellix H100i, H115i, H150i
