@@ -136,6 +136,8 @@ class Aquacomputer(UsbHidDriver):
             "fan_power_label": [f"Fan {num} power" for num in range(1, 8 + 1)],
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 8 + 1)],
             "fan_current_label": [f"Fan {num} current" for num in range(1, 8 + 1)],
+            "flow_sensor_offset": 0x7B,
+            "flow_hwmon_sensor": "fan9_input",
             "status_report_length": 0x147,
             "ctrl_report_length": 0x65F,
             "fan_ctrl": {
@@ -158,6 +160,7 @@ class Aquacomputer(UsbHidDriver):
             "fan_voltage_label": [f"Fan {num} voltage" for num in range(1, 4 + 1)],
             "fan_current_label": [f"Fan {num} current" for num in range(1, 4 + 1)],
             "flow_sensor_offset": 0x6E,
+            "flow_hwmon_sensor": "fan5_input",
             "status_report_length": 0xDC,
             "ctrl_report_length": 0x3C1,
             "fan_ctrl": {
@@ -298,7 +301,7 @@ class Aquacomputer(UsbHidDriver):
                 "V",
             )
             sensor_readings.append(plus_12v_voltage)
-        elif self._device_info["type"] == self._DEVICE_QUADRO:
+        elif self._device_info["type"] in {self._DEVICE_QUADRO, self._DEVICE_OCTO}:
             # Read flow sensor value
             flow_sensor_value = (
                 "Flow sensor",
@@ -392,9 +395,13 @@ class Aquacomputer(UsbHidDriver):
                 _LOGGER.warning(
                     "+12V voltage cannot be read from %s kernel driver", self._hwmon.driver
                 )
-        elif self._device_info["type"] == self._DEVICE_QUADRO:
+        elif self._device_info["type"] in {self._DEVICE_QUADRO, self._DEVICE_OCTO}:
             # Read flow sensor value
-            flow_sensor_value = ("Flow sensor", self._hwmon.read_int("fan5_input"), "dL/h")
+            flow_sensor_value = (
+                "Flow sensor",
+                self._hwmon.read_int(self._device_info["flow_hwmon_sensor"]),
+                "dL/h",
+            )
             sensor_readings.append(flow_sensor_value)
 
         return sensor_readings
