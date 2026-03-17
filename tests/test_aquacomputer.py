@@ -54,7 +54,7 @@ OCTO_SAMPLE_STATUS_REPORT = bytes.fromhex(
     "00023A92C9EA03E80001006503FB000000010000010DB4000000C5003C3EA4010"
     "00200000000000000000000000000059EDCFFDCFFDDFFDDA7A65BF80AC60ACF0B"
     "150D600EC87FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FF"
-    "F7FFF0300000000000000000000000000000004B9000300030000055D04B90001"
+    "F7FFF0300000000000000000000000000000004B900030003025B055D04B90001"
     "00010000000008138804B9015E006702400000000000000000000000000000000"
     "00000000000000000000000000000000000000000000000000000000000000000"
     "0000000000000000000000000000000000000000213B04B900020002000000000"
@@ -579,6 +579,7 @@ def test_octo_get_status_directly(mockOctoDevice, has_hwmon, direct_access):
         ("Fan 8 power", pytest.approx(0.02, 0.1), "W"),
         ("Fan 8 voltage", pytest.approx(12.09, 0.1), "V"),
         ("Fan 8 current", pytest.approx(0.002, 0.1), "A"),
+        ("Flow sensor", pytest.approx(603, 0.1), "dL/h"),
     ]
 
     assert sorted(got) == sorted(expected)
@@ -622,6 +623,7 @@ def test_octo_get_status_from_hwmon(mockOctoDevice, tmp_path):
     (tmp_path / "power8_input").write_text("20000\n")
     (tmp_path / "in7_input").write_text("12090\n")
     (tmp_path / "curr8_input").write_text("2\n")
+    (tmp_path / "fan9_input").write_text("603\n")
     (tmp_path / "temp5_input").write_text("50000\n")  # Soft. Sensor 1 temperature
     (tmp_path / "temp6_input").write_text("60000\n")  # Soft. Sensor 2 temperature
     (tmp_path / "temp7_input").write_text("50000\n")  # Soft. Sensor 3 temperature
@@ -678,6 +680,7 @@ def test_octo_get_status_from_hwmon(mockOctoDevice, tmp_path):
         ("Fan 8 power", pytest.approx(0.02, 0.1), "W"),
         ("Fan 8 voltage", pytest.approx(12.09, 0.1), "V"),
         ("Fan 8 current", pytest.approx(0.002, 0.1), "A"),
+        ("Flow sensor", pytest.approx(603, 0.1), "dL/h"),
         ("Soft. Sensor 1", pytest.approx(50, 0.1), "°C"),
         ("Soft. Sensor 2", pytest.approx(60, 0.1), "°C"),
         ("Soft. Sensor 3", pytest.approx(50, 0.1), "°C"),
