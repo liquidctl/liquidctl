@@ -97,7 +97,10 @@ class ControlHub(_BaseSmartDevice):
     }
 
     # Channel ID to byte mapping
-    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x04, 2: 0x06, 3: 0x08, 4: 0x10}
+    # Fixed: Corrected LED channel mapping per issue #874
+    # Previous mapping had channel 2 (0x04) affecting physical channel 3,
+    # and channel 3 (0x06) affecting multiple channels due to incorrect bit flags
+    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x04, 2: 0x08, 3: 0x10, 4: 0x20}
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
