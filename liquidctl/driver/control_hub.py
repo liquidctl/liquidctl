@@ -97,7 +97,7 @@ class ControlHub(_BaseSmartDevice):
     }
 
     # Channel ID to byte mapping
-    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x04, 2: 0x06, 3: 0x08, 4: 0x10}
+    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x01, 2: 0x04, 3: 0x08, 4: 0x10}
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""

@@ -154,7 +154,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [NZXT RGB & Fan Controller](docs/nzxt-hue2-guide.md) | h | 1.11.1 |
 | Fan/LED controller | [NZXT RGB & Fan Controller (3+6 channels)](docs/nzxt-hue2-guide.md) | hp | 1.12.1 |
 | Fan/LED controller | [NZXT 2023 RGB Controller](docs/nzxt-hue2-guide.md) | | 1.16.0 |
-| Fan/LED controller | NZXT Control Hub | | 1.16.0 |
+| Fan/LED controller | NZXT Control Hub | | git |
 | Power supply       | [Corsair HX750i, HX850i, HX1000i, HX1200i, HX1500i](docs/corsair-hxi-rmi-psu-guide.md) | h | 1.14.0 |
 | Power supply       | [Corsair ATX 3.1 HX1200i](docs/corsair-hxi-rmi-psu-guide.md) | h | 1.16.0 |
 | Power supply       | [Corsair RM650i, RM750i, RM850i, RM1000i](docs/corsair-hxi-rmi-psu-guide.md) | h | 1.14.0 |
