@@ -87,11 +87,11 @@ _COLOR_MODES = {
         _ColorMode('pulse', 0x02, pulses=True, flash_count=0, cycle_count=0,
                    max_brightness=90, takes_color=True, speed_values=_PULSE_SPEEDS),
         _ColorMode('flash', 0x03, pulses=True, flash_count=1, cycle_count=0,
-                   max_brightness=100, takes_color=True, speed_values=_FLASH_SPEEDS),
+                   max_brightness=255, takes_color=True, speed_values=_FLASH_SPEEDS),
         _ColorMode('double-flash', 0x03, pulses=True, flash_count=2, cycle_count=0,
-                   max_brightness=100, takes_color=True, speed_values=_DOUBLE_FLASH_SPEEDS),
+                   max_brightness=255, takes_color=True, speed_values=_DOUBLE_FLASH_SPEEDS),
         _ColorMode('color-cycle', 0x04, pulses=False, flash_count=0, cycle_count=7,
-                   max_brightness=100, takes_color=False, speed_values=_COLOR_CYCLE_SPEEDS),
+                   max_brightness=255, takes_color=False, speed_values=_COLOR_CYCLE_SPEEDS),
     ]
 }
 
