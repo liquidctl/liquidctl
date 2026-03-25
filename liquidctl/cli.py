@@ -441,7 +441,8 @@ def main():
         return
 
     if len(selected) > 1 and not (args['status'] or args['all']):
-        errors.log('multiple devices available, use filters to select one (see: liquidctl --help)')
+        devices = ', '.join([f'{i}: {d.description}' for i, d in enumerate(selected)])
+        errors.log(f'multiple devices available: [{devices}]; use filters to select one (see: liquidctl --help)')
         return errors.exit_code()
     elif len(selected) == 0:
         errors.log('no device matches available drivers and selection criteria')
