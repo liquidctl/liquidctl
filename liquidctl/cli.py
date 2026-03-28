@@ -361,8 +361,11 @@ def main():
             print(e.usage)
         sys.exit(0)
     
-    if not args['<devcmd>'] and args['--help']:
-        print(__doc__)
+    if args['<devcmd>'] in ("screen", "speed", "color"):
+        if args['--help']:
+            print(__doc__)
+        else:
+            print(docopt(__doc__, args, help=False))
         sys.exit(0)
 
     if args['--version']:

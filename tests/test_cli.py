@@ -24,7 +24,7 @@ def main(monkeypatch, capsys):
 
 
 def test_json_list(main):
-    code, out, _ = main('test', '--bus', 'virtual', '--json', 'list')
+    code, out, _ = main('test', '--bus', 'virtual', 'list', '--json')
     assert code == 0
 
     got = json.loads(out)
@@ -46,7 +46,7 @@ def test_json_list(main):
 
 
 def test_json_initialize(main):
-    code, out, _ = main('test', '--bus', 'virtual', '--json', 'initialize')
+    code, out, _ = main('test', '--bus', 'virtual', 'initialize', '--json')
     assert code == 0
 
     got = json.loads(out)
@@ -64,7 +64,7 @@ def test_json_initialize(main):
 
 
 def test_json_status(main):
-    code, out, _ = main('test', '--bus', 'virtual', '--json', 'status')
+    code, out, _ = main('test', '--bus', 'virtual', 'status', '--json')
     assert code == 0
 
     got = json.loads(out)
