@@ -12,6 +12,8 @@ from liquidctl.driver.kraken3 import (
     _SPEED_CHANNELS_KRAKENX,
     _COLOR_CHANNELS_KRAKENZ,
     _SPEED_CHANNELS_KRAKENZ,
+    _COLOR_CHANNELS_KRAKEN2024_ELITE,
+    _SPEED_CHANNELS_KRAKEN2023,
     _HWMON_CTRL_MAPPING_KRAKENX,
     _HWMON_CTRL_MAPPING_KRAKENZ,
 )
@@ -112,10 +114,29 @@ def mock_krakenz3():
     return dev
 
 
+@pytest.fixture
+def mock_kraken2024elite():
+    raw = MockKraken(raw_led_channels=1, ring_only=True)
+    dev = MockKrakenZ3(
+        raw,
+        "Mock Kraken 2024 Elite RGB",
+        speed_channels=_SPEED_CHANNELS_KRAKEN2023,
+        color_channels=_COLOR_CHANNELS_KRAKEN2024_ELITE,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+        bulk_buffer_size=1024 * 1024 * 2,
+        lcd_resolution=(640, 640),
+        hue2_direct_ring=True,
+    )
+
+    dev.connect()
+    return dev
+
+
 class MockKraken(MockHidapiDevice):
-    def __init__(self, raw_led_channels):
+    def __init__(self, raw_led_channels, ring_only=False):
         super().__init__()
         self.raw_led_channels = raw_led_channels
+        self.ring_only = ring_only
 
     def write(self, data):
         reply = bytearray(64)
@@ -124,7 +145,10 @@ class MockKraken(MockHidapiDevice):
         elif data[0:2] == [0x20, 0x03]:
             reply[0:2] = [0x21, 0x03]
             reply[14] = self.raw_led_channels
-            if self.raw_led_channels > 1:
+            if self.ring_only:
+                # Kraken 2024 Elite: ring-only device, 0x1E accessory at channel 0, slot 0
+                reply[15] = Hue2Accessory.KRAKEN_2024_ELITE_RING.value
+            elif self.raw_led_channels > 1:
                 reply[15 + 1 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_RING.value
                 reply[15 + 2 * MAX_ACCESSORIES] = Hue2Accessory.KRAKENX_GEN4_LOGO.value
         elif data[0:2] == [0x30, 0x01]:
@@ -558,3 +582,46 @@ def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )
+
+
+# ── Kraken 2024 Elite RGB Tests ──
+
+
+def test_kraken2024elite_initialize_reports_ring(mock_kraken2024elite):
+    """Initialization detects and reports the pump ring LEDs."""
+    status = mock_kraken2024elite.initialize()
+
+    status_dict = {k: v for k, v, _ in status}
+    assert "Pump Ring LEDs" in status_dict
+    assert status_dict["Pump Ring LEDs"] == "detected"
+
+
+def test_kraken2024elite_set_color_ring_fixed(mock_kraken2024elite):
+    """Fixed on ring redirects to super-fixed via Hue 2 direct protocol (0x22)."""
+    mock_kraken2024elite.initialize()
+    mock_kraken2024elite.device.sent.clear()
+    mock_kraken2024elite.set_color("ring", "fixed", colors=iter([[0xFF, 0x00, 0x00]]))
+
+    # Verify writes used 0x22 (Hue 2 direct), not 0x2A (animation)
+    sent_reports = [report.number for report in mock_kraken2024elite.device.sent]
+    assert 0x22 in sent_reports, "expected 0x22 (Hue 2 direct) writes for ring fixed mode"
+    assert 0x2A not in sent_reports, "0x2A (animation) should not be used for ring fixed mode"
+
+
+def test_kraken2024elite_set_color_ring_spectrum_wave(mock_kraken2024elite):
+    """Setting spectrum-wave on the ring channel does not raise."""
+    mock_kraken2024elite.initialize()
+    mock_kraken2024elite.set_color("ring", "spectrum-wave", colors=iter([]))
+
+
+def test_kraken2024elite_set_color_ring_breathing(mock_kraken2024elite):
+    """Setting breathing mode with a color on the ring channel does not raise."""
+    mock_kraken2024elite.initialize()
+    mock_kraken2024elite.set_color("ring", "breathing", colors=iter([[0x00, 0xFF, 0x00]]))
+
+
+def test_kraken2024elite_set_color_invalid_channel(mock_kraken2024elite):
+    """Setting color on a non-existent channel raises KeyError."""
+    mock_kraken2024elite.initialize()
+    with pytest.raises(KeyError):
+        mock_kraken2024elite.set_color("logo", "fixed", colors=iter([[0xFF, 0x00, 0x00]]))
