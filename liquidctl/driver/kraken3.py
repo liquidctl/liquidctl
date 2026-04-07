@@ -81,8 +81,14 @@ _COLOR_CHANNELS_KRAKENZ = {
     "external": 0b001,
 }
 
-# Available color channels and IDs for model Z coolers
+# Available color channels and IDs for 2023 models (no RGB support)
 _COLOR_CHANNELS_KRAKEN2023 = {}
+
+# Available color channels and IDs for 2024 Elite models (ring on external channel, no logo)
+_COLOR_CHANNELS_KRAKEN2024_ELITE = {"ring": 0b001}
+
+# Ring LED count for 2024 Elite pump ring accessory
+_KRAKEN2024_ELITE_RING_LEDS = 24
 
 _HWMON_CTRL_MAPPING_KRAKENX = {"pump": 1}
 
@@ -213,6 +219,7 @@ class KrakenX3(UsbHidDriver):
         self._speed_channels = speed_channels
         self._color_channels = color_channels
         self._hwmon_ctrl_mapping = hwmon_ctrl_mapping
+        self._hue2_direct_ring = kwargs.pop("hue2_direct_ring", False)
         self._fw = None
 
     def initialize(self, direct_access=False, **kwargs):
@@ -256,15 +263,21 @@ class KrakenX3(UsbHidDriver):
         self._fw = (msg[0x11], msg[0x12], msg[0x13])
 
     def parse_led_info(self, msg):
+        channels_without_sync = len(self._color_channels) - ("sync" in self._color_channels)
         channel_count = msg[14]
-        assert channel_count == len(self._color_channels) - (
-            "sync" in self._color_channels
-        ), f"Unexpected number of color channels received: {channel_count}"
 
         def find(channel, accessory):
             offset = 15  # offset of first channel/first accessory
             acc_id = msg[offset + channel * HUE2_MAX_ACCESSORIES_IN_CHANNEL + accessory]
             return Hue2Accessory(acc_id) if acc_id else None
+
+        if channels_without_sync == 0:
+            # device with no color support (e.g. Kraken 2023 non-Elite)
+            return
+
+        assert channel_count == channels_without_sync, (
+            f"Unexpected number of color channels received: {channel_count}"
+        )
 
         for i in range(HUE2_MAX_ACCESSORIES_IN_CHANNEL):
             accessory = find(0, i)
@@ -272,12 +285,23 @@ class KrakenX3(UsbHidDriver):
                 break
             self._status.append((f"LED accessory {i + 1}", accessory, ""))
 
-        if len(self._color_channels) > 1:
+        if "ring" in self._color_channels and "logo" in self._color_channels:
+            # multi-channel devices with ring + logo (Kraken X3)
             found_ring = find(1, 0) == Hue2Accessory.KRAKENX_GEN4_RING
             found_logo = find(2, 0) == Hue2Accessory.KRAKENX_GEN4_LOGO
             self._status.append(("Pump Ring LEDs", "detected" if found_ring else "missing", ""))
             self._status.append(("Pump Logo LEDs", "detected" if found_logo else "missing", ""))
             assert found_ring and found_logo, "Pump ring and/or logo were not detected"
+        elif "ring" in self._color_channels and "logo" not in self._color_channels:
+            # ring without logo (Kraken 2024 Elite — external + ring, no logo)
+            ring_acc = find(0, 0)
+            found_ring = ring_acc in (
+                Hue2Accessory.KRAKENX_GEN4_RING,
+                Hue2Accessory.KRAKEN_2024_ELITE_RING,
+            )
+            self._status.append(("Pump Ring LEDs", "detected" if found_ring else "missing", ""))
+            if not found_ring:
+                _LOGGER.warning("pump ring was not detected (got acc_id=%s)", ring_acc)
 
     def _get_status_directly(self):
         self.device.clear_enqueued_reports()
@@ -349,6 +373,14 @@ class KrakenX3(UsbHidDriver):
         elif len(colors) > maxcolors:
             _LOGGER.warning("too many colors for mode=%s, dropping to %d", mode, maxcolors)
             colors = colors[:maxcolors]
+
+        # Kraken 2024 Elite ring uses Hue 2 direct protocol (0x22), not the
+        # animation protocol (0x2A).  For single-color modes like "fixed", expand
+        # the color across all LEDs and use "super-fixed" which writes via 0x22.
+        if self._hue2_direct_ring and mode == "fixed" and channel == "ring":
+            _LOGGER.debug("redirecting fixed to super-fixed for Hue 2 ring device")
+            colors = colors * _KRAKEN2024_ELITE_RING_LEDS
+            mode = "super-fixed"
 
         sval = _ANIMATION_SPEEDS[speed]
         self._write_colors(cid, mode, colors, sval, direction)
@@ -600,10 +632,11 @@ class KrakenZ3(KrakenX3):
             "NZXT Kraken 2024 Elite RGB",
             {
                 "speed_channels": _SPEED_CHANNELS_KRAKEN2023,
-                "color_channels": _COLOR_CHANNELS_KRAKEN2023,
+                "color_channels": _COLOR_CHANNELS_KRAKEN2024_ELITE,
                 "hwmon_ctrl_mapping": _HWMON_CTRL_MAPPING_KRAKENZ,
                 "bulk_buffer_size": 1024 * 1024 * 2,  # 2 MB
                 "lcd_resolution": (640, 640),
+                "hue2_direct_ring": True,
             },
         ),
         (
