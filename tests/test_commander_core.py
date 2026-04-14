@@ -89,28 +89,53 @@ class MockCommanderCoreDevice:
                     else:
                         raise NotImplementedError(f'Read for {mode.hex(":")}')
                 elif mode[1] == 0x6d:
-                    if mode[0] == 0x60:
-                        data.extend([0x03, 0x00])
-                        data.append(len(self.speeds_mode))
-                        for i in self.speeds_mode:
-                            data.append(i)
-                    elif mode[0] == 0x61:
-                        data.extend([0x04, 0x00])
-                        data.append(len(self.fixed_speeds))
-                        for i in self.fixed_speeds:
-                            data.extend(int_to_le(i))
-                    elif mode[0] == 0x62:
-                        data.extend([0x05, 0x00]) # data type
-                        num_ports = len(self.curve_points_by_device)
-                        data.append(num_ports)
-                        for i in range(num_ports):
-                            data.append(0) # temp sensor
-                            data.append(len(self.curve_points_by_device[i])) # num curve points
-                            for (temp, duty) in self.curve_points_by_device[i]:
-                                data.extend(int_to_le(temp * 10)) # temperature
-                                data.extend(int_to_le(duty)) # duty
+                    fw_major = self.firmware_version[0]
+                    if fw_major >= 2:
+                        if mode[0] == 0x61:  # Speed mode (fw 2.x)
+                            data.extend([0x03, 0x00])
+                            data.append(len(self.speeds_mode))
+                            for i in self.speeds_mode:
+                                data.append(i)
+                        elif mode[0] == 0x62:  # Fixed speeds (fw 2.x)
+                            data.extend([0x04, 0x00])
+                            data.append(len(self.fixed_speeds))
+                            for i in self.fixed_speeds:
+                                data.extend(int_to_le(i))
+                        elif mode[0] == 0x64:  # Curve (fw 2.x)
+                            data.extend([0x05, 0x00])
+                            num_ports = len(self.curve_points_by_device)
+                            data.append(num_ports)
+                            for i in range(num_ports):
+                                data.append(0)  # temp sensor
+                                data.append(len(self.curve_points_by_device[i]))  # num curve points
+                                for (temp, duty) in self.curve_points_by_device[i]:
+                                    data.extend(int_to_le(temp * 10))
+                                    data.extend(int_to_le(duty))
+                        else:
+                            raise NotImplementedError(f'Read for {mode.hex(":")}')
                     else:
-                        raise NotImplementedError(f'Read for {mode.hex(":")}')
+                        if mode[0] == 0x60:  # Speed mode (fw 1.x)
+                            data.extend([0x03, 0x00])
+                            data.append(len(self.speeds_mode))
+                            for i in self.speeds_mode:
+                                data.append(i)
+                        elif mode[0] == 0x61:  # Fixed speeds (fw 1.x)
+                            data.extend([0x04, 0x00])
+                            data.append(len(self.fixed_speeds))
+                            for i in self.fixed_speeds:
+                                data.extend(int_to_le(i))
+                        elif mode[0] == 0x62:  # Curve (fw 1.x)
+                            data.extend([0x05, 0x00])
+                            num_ports = len(self.curve_points_by_device)
+                            data.append(num_ports)
+                            for i in range(num_ports):
+                                data.append(0)  # temp sensor
+                                data.append(len(self.curve_points_by_device[i]))  # num curve points
+                                for (temp, duty) in self.curve_points_by_device[i]:
+                                    data.extend(int_to_le(temp * 10))
+                                    data.extend(int_to_le(duty))
+                        else:
+                            raise NotImplementedError(f'Read for {mode.hex(":")}')
                 else:
                     raise NotImplementedError(f'Read for {mode.hex(":")}')
             elif self._last_write[2] == 0x09:  # Get more data
@@ -161,11 +186,15 @@ class MockCommanderCoreDevice:
 
             if data[2] == 0x06 or data[2] == 0x07:
                 if mode[1] == 0x6d:
-                    if mode[0] == 0x60 and list(self.written_data_type) == [0x03, 0x00]:
+                    fw_major = self.firmware_version[0]
+                    speed_mode_ep  = 0x61 if fw_major >= 2 else 0x60
+                    fixed_speed_ep = 0x62 if fw_major >= 2 else 0x61
+                    curve_ep       = 0x64 if fw_major >= 2 else 0x62
+                    if mode[0] == speed_mode_ep and list(self.written_data_type) == [0x03, 0x00]:
                         self.speeds_mode = tuple(self.written_data[i+1] for i in range(0, self.written_data[0]))
-                    elif mode[0] == 0x61 and list(self.written_data_type) == [0x04, 0x00]:
+                    elif mode[0] == fixed_speed_ep and list(self.written_data_type) == [0x04, 0x00]:
                         self.fixed_speeds = tuple(u16le_from(self.written_data[i*2+1:i*2+3]) for i in range(0, self.written_data[0]))
-                    elif mode[0] == 0x62 and list(self.written_data_type) == [0x05, 0x00]:
+                    elif mode[0] == curve_ep and list(self.written_data_type) == [0x05, 0x00]:
                         curve_index = 1
                         for port_index in range(0, self.written_data[0]):
                             self.curve_points_by_device[port_index] = []
@@ -402,3 +431,52 @@ def test_parse_channels_error_commander_core():
     core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core', True)
     with pytest.raises(ValueError):
         core._parse_channels('fan')
+
+
+@pytest.fixture
+def commander_core_device_fw2():
+    device = MockCommanderCoreDevice()
+    device.firmware_version = (0x02, 0x00, 0x13)  # fw 2.0.19 — matches Corsair Commander ST in the wild
+    core = CommanderCore(device, 'Corsair Commander ST', True)
+    core.connect()
+    return core
+
+
+def test_set_fixed_speed_fan2_commander_core_fw2(commander_core_device_fw2):
+    """Firmware 2.x: set_fixed_speed uses shifted endpoint IDs (0x61,6d) and (0x62,6d)"""
+    commander_core_device_fw2.device.speeds_mode = (1, 2, 3, 4, 5, 6, 7)
+    commander_core_device_fw2.device.fixed_speeds = (8, 9, 10, 11, 12, 13, 14)
+
+    commander_core_device_fw2.set_fixed_speed('fan2', 95)
+
+    assert commander_core_device_fw2.device.speeds_mode == (1, 2, 0, 4, 5, 6, 7)
+    assert commander_core_device_fw2.device.fixed_speeds == (8, 9, 95, 11, 12, 13, 14)
+    assert not commander_core_device_fw2.device._awake
+
+
+def test_set_fixed_speed_fans_commander_core_fw2(commander_core_device_fw2):
+    """Firmware 2.x: set_fixed_speed for all fans uses shifted endpoint IDs"""
+    commander_core_device_fw2.device.speeds_mode = (1, 2, 3, 4, 5, 6, 7)
+    commander_core_device_fw2.device.fixed_speeds = (8, 9, 10, 11, 12, 13, 14)
+
+    commander_core_device_fw2.set_fixed_speed('fans', 61)
+
+    assert commander_core_device_fw2.device.speeds_mode == (1, 0, 0, 0, 0, 0, 0)
+    assert commander_core_device_fw2.device.fixed_speeds == (8, 61, 61, 61, 61, 61, 61)
+    assert not commander_core_device_fw2.device._awake
+
+
+def test_set_speed_profile_fans_commander_core_fw2(commander_core_device_fw2):
+    """Firmware 2.x: set_speed_profile uses shifted endpoint IDs (0x61,6d) and (0x64,6d)"""
+    commander_core_device_fw2.device.speeds_mode = (0, 0, 0, 0, 0, 0, 0)
+
+    commander_core_device_fw2.set_speed_profile('fans', [
+        (22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)
+    ])
+
+    assert commander_core_device_fw2.device.speeds_mode == (0, 2, 2, 2, 2, 2, 2)
+    for i in range(1, 7):
+        assert commander_core_device_fw2.device.curve_points_by_device[i] == [
+            (22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)
+        ]
+    assert not commander_core_device_fw2.device._awake

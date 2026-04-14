@@ -43,6 +43,12 @@ _MODE_HW_SPEED_MODE = (0x60, 0x6d)
 _MODE_HW_FIXED_PERCENT = (0x61, 0x6d)
 _MODE_HW_CURVE_PERCENT = (0x62, 0x6d)
 
+# Firmware 2.x shifted the hardware-profile endpoint IDs by one position.
+# Data types and payload formats are unchanged between firmware versions.
+_MODE_HW_SPEED_MODE_V2    = (0x61, 0x6d)
+_MODE_HW_FIXED_PERCENT_V2 = (0x62, 0x6d)
+_MODE_HW_CURVE_PERCENT_V2 = (0x64, 0x6d)
+
 _DATA_TYPE_SPEEDS = (0x06, 0x00)
 _DATA_TYPE_LED_COUNT = (0x0f, 0x00)
 _DATA_TYPE_TEMPS = (0x10, 0x00)
@@ -67,6 +73,7 @@ class CommanderCore(UsbHidDriver):
     def __init__(self, device, description, has_pump, **kwargs):
         super().__init__(device, description, **kwargs)
         self._has_pump = has_pump
+        self._fw_major = None
 
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
@@ -75,6 +82,7 @@ class CommanderCore(UsbHidDriver):
             # Get Firmware
             res = self._send_command(_CMD_GET_FIRMWARE)
             fw_version = (res[3], res[4], res[5])
+            self._fw_major = fw_version[0]
 
             status = [('Firmware version', '{}.{}.{}'.format(*fw_version), '')]
 
@@ -144,6 +152,12 @@ class CommanderCore(UsbHidDriver):
     def set_color(self, channel, mode, colors, **kwargs):
         raise NotSupportedByDriver
 
+    def _ensure_fw_version(self):
+        """Fetch and cache firmware major version. Must be called inside a wake context."""
+        if self._fw_major is None:
+            res = self._send_command(_CMD_GET_FIRMWARE)
+            self._fw_major = res[3]
+
     def set_speed_profile(self, channel, profile, **kwargs):
         channels = self._parse_channels(channel)
         curve_points = list(profile)
@@ -153,18 +167,22 @@ class CommanderCore(UsbHidDriver):
             ValueError('a maximum of 7 speed curve points may be configured.')
 
         with self._wake_device_context():
+            self._ensure_fw_version()
+            mode_ep  = _MODE_HW_SPEED_MODE_V2   if self._fw_major >= 2 else _MODE_HW_SPEED_MODE
+            curve_ep = _MODE_HW_CURVE_PERCENT_V2 if self._fw_major >= 2 else _MODE_HW_CURVE_PERCENT
+
             # Set hardware speed mode
-            res = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
+            res = self._read_data(mode_ep, _DATA_TYPE_HW_SPEED_MODE)
             device_count = res[0]
 
             data = bytearray(res[0:device_count + 1])
             for chan in channels:
                 data[chan + 1] = _FAN_MODE_CURVE_PERCENT
-            self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
+            self._write_data(mode_ep, _DATA_TYPE_HW_SPEED_MODE, data)
 
 
             # Read in data and split by device
-            res = self._read_data(_MODE_HW_CURVE_PERCENT, _DATA_TYPE_HW_CURVE_PERCENT)
+            res = self._read_data(curve_ep, _DATA_TYPE_HW_CURVE_PERCENT)
             device_count = res[0]
             data_by_device = []
 
@@ -195,30 +213,34 @@ class CommanderCore(UsbHidDriver):
                 data_by_device[chan] = b''.join(new_data)
 
             out = bytes([device_count]) + b''.join(data_by_device)
-            self._write_data(_MODE_HW_CURVE_PERCENT, _DATA_TYPE_HW_CURVE_PERCENT, out)
+            self._write_data(curve_ep, _DATA_TYPE_HW_CURVE_PERCENT, out)
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         channels = self._parse_channels(channel)
 
         with self._wake_device_context():
+            self._ensure_fw_version()
+            mode_ep  = _MODE_HW_SPEED_MODE_V2   if self._fw_major >= 2 else _MODE_HW_SPEED_MODE
+            fixed_ep = _MODE_HW_FIXED_PERCENT_V2 if self._fw_major >= 2 else _MODE_HW_FIXED_PERCENT
+
             # Set hardware speed mode
-            res = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
+            res = self._read_data(mode_ep, _DATA_TYPE_HW_SPEED_MODE)
             device_count = res[0]
 
             data = bytearray(res[0:device_count + 1])
             for chan in channels:
                 data[chan + 1] = _FAN_MODE_FIXED_PERCENT
-            self._write_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE, data)
+            self._write_data(mode_ep, _DATA_TYPE_HW_SPEED_MODE, data)
 
             # Set speed
-            res = self._read_data(_MODE_HW_FIXED_PERCENT, _DATA_TYPE_HW_FIXED_PERCENT)
+            res = self._read_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT)
             device_count = res[0]
             data = bytearray(res[0:device_count * 2 + 1])
             duty_le = int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False)
             for chan in channels:
                 i = chan * 2 + 1
                 data[i: i + 2] = duty_le  # Update the device speed
-            self._write_data(_MODE_HW_FIXED_PERCENT, _DATA_TYPE_HW_FIXED_PERCENT, data)
+            self._write_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT, data)
 
     @classmethod
     def probe(cls, handle, **kwargs):
