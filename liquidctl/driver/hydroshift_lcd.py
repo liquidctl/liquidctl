@@ -14,6 +14,8 @@ import io
 import logging
 import math
 import re
+import subprocess
+import time
 
 from PIL import Image, ImageSequence
 
@@ -304,13 +306,17 @@ class HydroShiftLCD(UsbHidDriver):
         elif mode == "gif":
             self._send_gif(value)
 
+        elif mode == "video":
+            self._send_video(value)
+
         elif mode == "lcd":
             self._send_lcd_control(lcd_mode=_LCD_MODE_APPLICATION)
 
         else:
             raise ValueError(
                 f"unknown screen mode: {mode}, "
-                f"should be one of: 'static', 'gif', 'brightness', 'orientation', 'lcd'"
+                f"should be one of: 'static', 'gif', 'video', 'brightness', "
+                f"'orientation', 'lcd'"
             )
 
     def disconnect(self, **kwargs):
@@ -546,24 +552,105 @@ class HydroShiftLCD(UsbHidDriver):
         self._send_jpeg_frame(jpeg_data)
 
     def _send_gif(self, gif_path):
-        """Send GIF frames to the LCD screen.
+        """Send GIF frames to the LCD screen in a loop.
 
-        Sends the first frame as a static image. For continuous animation,
-        a daemon process would be needed to loop frames at the target FPS.
+        Loops continuously until interrupted (Ctrl+C).
         """
         _LOGGER.info("sending GIF: %s", gif_path)
 
         self._send_lcd_control(lcd_mode=_LCD_MODE_APPLICATION, fps=24)
 
         img = Image.open(gif_path)
-        frame = img.convert("RGB").resize((_LCD_WIDTH, _LCD_HEIGHT), Image.LANCZOS)
-        jpeg_data = self._encode_jpeg(frame)
-        self._send_jpeg_frame(jpeg_data)
-
         n_frames = getattr(img, "n_frames", 1)
-        if n_frames > 1:
-            _LOGGER.info(
-                "GIF has %d frames; only the first frame was sent. "
-                "Use an external loop to animate.",
-                n_frames,
-            )
+
+        # Pre-encode all frames as JPEG
+        rotation = getattr(self, "_rotation", 0)
+        frames = []
+        for i in range(n_frames):
+            img.seek(i)
+            frame = img.convert("RGB").resize((_LCD_WIDTH, _LCD_HEIGHT), Image.LANCZOS)
+            if rotation:
+                frame = frame.rotate(rotation, expand=False)
+            frames.append(self._encode_jpeg(frame))
+
+        if n_frames == 1:
+            self._send_jpeg_frame(frames[0])
+            return
+
+        # Get frame duration from GIF (default 40ms = 25fps)
+        duration_ms = img.info.get("duration", 40)
+        frame_interval = max(duration_ms / 1000.0, 1.0 / 30)
+
+        _LOGGER.info("GIF: %d frames, %.0fms interval, looping", n_frames, duration_ms)
+        try:
+            while True:
+                for jpeg_data in frames:
+                    start = time.monotonic()
+                    self._send_jpeg_frame(jpeg_data)
+                    elapsed = time.monotonic() - start
+                    sleep_time = frame_interval - elapsed
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+        except KeyboardInterrupt:
+            _LOGGER.info("GIF playback stopped")
+
+    def _send_video(self, video_path):
+        """Stream video frames to the LCD screen in a loop.
+
+        Uses ffmpeg to decode the video. Loops continuously until
+        interrupted (Ctrl+C).
+        """
+        _LOGGER.info("streaming video: %s", video_path)
+
+        self._send_lcd_control(lcd_mode=_LCD_MODE_APPLICATION, fps=24)
+
+        rotation = getattr(self, "_rotation", 0)
+        vf_parts = [f"scale={_LCD_WIDTH}:{_LCD_HEIGHT}", "fps=24"]
+        if rotation == 90:
+            vf_parts.append("transpose=2")
+        elif rotation == 180:
+            vf_parts.append("transpose=1,transpose=1")
+        elif rotation == 270:
+            vf_parts.append("transpose=1")
+        vf = ",".join(vf_parts)
+
+        frame_size = _LCD_WIDTH * _LCD_HEIGHT * 3
+        frame_interval = 1.0 / 24
+
+        try:
+            while True:
+                proc = subprocess.Popen(
+                    [
+                        "ffmpeg", "-i", video_path,
+                        "-vf", vf,
+                        "-pix_fmt", "rgb24",
+                        "-f", "rawvideo",
+                        "-v", "quiet",
+                        "-",
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                )
+
+                try:
+                    while True:
+                        start = time.monotonic()
+                        raw = proc.stdout.read(frame_size)
+                        if len(raw) < frame_size:
+                            break
+
+                        img = Image.frombytes("RGB", (_LCD_WIDTH, _LCD_HEIGHT), raw)
+                        jpeg_data = self._encode_jpeg(img)
+                        self._send_jpeg_frame(jpeg_data)
+
+                        elapsed = time.monotonic() - start
+                        sleep_time = frame_interval - elapsed
+                        if sleep_time > 0:
+                            time.sleep(sleep_time)
+                finally:
+                    proc.terminate()
+                    proc.wait()
+
+                _LOGGER.debug("video loop restart")
+        except KeyboardInterrupt:
+            _LOGGER.info("video playback stopped")
