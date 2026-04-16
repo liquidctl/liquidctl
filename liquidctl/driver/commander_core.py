@@ -125,6 +125,21 @@ class CommanderCore(UsbHidDriver):
 
                 status += [(label, connected, '')]
 
+            # fw2.x: bootstrap speed-mode endpoint if uninitialized.
+            # On a fresh device or after USB reset, (0x61, 0x6d) returns (0x00, 0x00)
+            # inside a wake context. _write_data's guard would refuse to write to it;
+            # use _write_data_bootstrap instead.  Default: all channels in fixed-percent
+            # mode (0x00).  set_fixed_speed() and set_speed_profile() flip individual
+            # channels as needed on each call.
+            if self._fw_major >= 2:
+                try:
+                    self._read_data(_MODE_HW_SPEED_MODE_V2, _DATA_TYPE_HW_SPEED_MODE)
+                except ExpectationNotMet:
+                    n_ch = _FAN_COUNT + (1 if self._has_pump else 0)
+                    bootstrap = bytes([n_ch] + [_FAN_MODE_FIXED_PERCENT] * n_ch)
+                    self._write_data_bootstrap(
+                        _MODE_HW_SPEED_MODE_V2, _DATA_TYPE_HW_SPEED_MODE, bootstrap)
+
         return status
 
     def get_status(self, **kwargs):
@@ -535,6 +550,28 @@ class CommanderCore(UsbHidDriver):
                 self._send_command(_CMD_WRITE_MORE, data[data_start_index:data_start_index + packet_data_len])
                 data_start_index += packet_data_len
 
+        self._send_command(_CMD_CLOSE_ENDPOINT)
+
+    def _write_data_bootstrap(self, mode, data_type, data):
+        """Write to an endpoint without the read-verify guard in _write_data.
+        Only safe during initialize() when an endpoint is known to be uninitialized."""
+        self._send_command(_CMD_OPEN_ENDPOINT, mode)
+        data_len = len(data)
+        data_start_index = 0
+        while data_start_index < data_len:
+            if data_start_index == 0:
+                packet_data_len = min(data_len, _REPORT_LENGTH - 9)
+                buf = bytearray(2 + 2 + len(data_type) + packet_data_len)
+                buf[0:2] = int.to_bytes(data_len + len(data_type), 2, 'little')
+                buf[4:4 + len(data_type)] = data_type
+                buf[4 + len(data_type):] = data[0:packet_data_len]
+                self._send_command(_CMD_WRITE, buf)
+                data_start_index += packet_data_len
+            else:
+                packet_data_len = min(data_len - data_start_index, _REPORT_LENGTH - 3)
+                self._send_command(_CMD_WRITE_MORE,
+                                   data[data_start_index:data_start_index + packet_data_len])
+                data_start_index += packet_data_len
         self._send_command(_CMD_CLOSE_ENDPOINT)
 
     def _fan_to_channel(self, fan):
