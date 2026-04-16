@@ -21,6 +21,7 @@ from PIL import Image, ImageSequence
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
+from liquidctl.keyval import RuntimeStorage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -154,6 +155,16 @@ class HydroShiftLCD(UsbHidDriver):
         ),
     ]
 
+    def connect(self, runtime_storage=None, **kwargs):
+        ret = super().connect(**kwargs)
+        if runtime_storage:
+            self._data = runtime_storage
+        else:
+            ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
+            loc = f'bus{self.bus}_address{self.address}'
+            self._data = RuntimeStorage(key_prefixes=[ids, loc])
+        return ret
+
     def initialize(self, direct_access=False, **kwargs):
         """Initialize the device and return firmware version and status.
 
@@ -161,7 +172,7 @@ class HydroShiftLCD(UsbHidDriver):
         firmware version and initial sensor readings.
         """
         self.device.clear_enqueued_reports()
-        self._rotation = 0
+        self._rotation = self._data.load('rotation', of_type=int, default=0)
 
         fw_version = self._read_firmware_version()
         _LOGGER.info("firmware version: %s", fw_version)
@@ -278,6 +289,11 @@ class HydroShiftLCD(UsbHidDriver):
             orientation <0|90|180|270> -- set LCD rotation
             lcd -- switch to application (streaming) mode
         """
+        if not hasattr(self, "_use_c_cmd"):
+            self._use_c_cmd = False
+        if not hasattr(self, "_rotation"):
+            self._rotation = self._data.load('rotation', of_type=int, default=0)
+
         if channel != "lcd":
             raise NotSupportedByDevice(
                 f"screen control for {channel} is not supported, use 'lcd'"
@@ -298,6 +314,7 @@ class HydroShiftLCD(UsbHidDriver):
                     f"should be one of: {_quoted(*_LCD_ROTATIONS)}"
                 )
             self._rotation = rotation
+            self._data.store('rotation', rotation)
             _LOGGER.info("LCD rotation set to %d degrees (applied on next image send)", rotation)
 
         elif mode == "static":
