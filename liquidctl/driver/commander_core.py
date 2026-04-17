@@ -137,6 +137,9 @@ class CommanderCore(UsbHidDriver):
         self._anim_stop     = None  # threading.Event to signal thread stop
         self._anim_params   = None  # (zones, colors, rot_secs) for restart
         self._anim_offset   = 0.0   # current gradient offset; preserved across restarts
+        self._anim_lock     = threading.Lock()  # serializes HID access between animation
+                                                # thread and main thread; prevents concurrent
+                                                # reads from stealing each other's responses
 
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
@@ -380,24 +383,42 @@ class CommanderCore(UsbHidDriver):
         if self._anim_thread is not None:
             if self._anim_thread.is_alive():
                 self._anim_stop.set()
-                self._anim_thread.join(timeout=2.0)
+                # Acquire the lock to wait for the current frame to finish sending.
+                # Once we hold the lock, the animation thread is either sleeping in
+                # stop_event.wait() or about to see stop_event is set and break.
+                # We release immediately; the thread then closes the endpoint and exits.
+                with self._anim_lock:
+                    pass
+                # Join without timeout: thread exits within one frame (~42ms at 24fps).
+                self._anim_thread.join()
             self._anim_thread = None
             self._anim_params = None
 
     def _animation_loop(self, zones, colors, rot_secs, stop_event, initial_offset=0.0):
-        """Background thread: streams gradient frames with the endpoint held open."""
+        """Background thread: streams gradient frames with the endpoint held open.
+
+        _anim_lock is held for the duration of each frame write (WRITE + WRITE_MORE
+        packets).  _wake_device_context() acquires the lock before proceeding with
+        fan ops, which guarantees the current frame is fully sent before the main
+        thread touches the HID device.  This prevents the two threads from issuing
+        overlapping HID commands and stealing each other's responses.
+        """
         nc = len(colors)
         frame_dt = 1.0 / _COLOR_CYCLE_FPS
         step = nc / (rot_secs * _COLOR_CYCLE_FPS)
         off = initial_offset  # resume from where we left off
 
-        self._send_command(_CMD_WAKE)
-        self._send_led_command(_CMD_OPEN_ENDPOINT, _MODE_LED_COLORS)
+        with self._anim_lock:
+            self._send_command(_CMD_WAKE)
+            self._send_led_command(_CMD_OPEN_ENDPOINT, _MODE_LED_COLORS)
         try:
             while not stop_event.is_set():
                 t0 = time.monotonic()
                 payload = self._build_cycle_payload(zones, colors, off)
-                self._stream_led_frame(payload)
+                with self._anim_lock:
+                    if stop_event.is_set():
+                        break
+                    self._stream_led_frame(payload)
                 self._led_payload = payload  # snapshot for re-apply after fan ops
                 off = (off + step) % nc
                 self._anim_offset = off  # persist for seamless restart
@@ -405,7 +426,8 @@ class CommanderCore(UsbHidDriver):
                 if rem > 0:
                     stop_event.wait(rem)  # interruptible sleep
         finally:
-            self._send_led_command(_CMD_CLOSE_ENDPOINT)
+            with self._anim_lock:
+                self._send_led_command(_CMD_CLOSE_ENDPOINT)
 
     def _stream_led_frame(self, data):
         """Send WRITE+WRITE_MORE packets into an already-open LED endpoint."""
