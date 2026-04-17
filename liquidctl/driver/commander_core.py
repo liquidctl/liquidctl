@@ -66,6 +66,16 @@ _DATA_TYPE_HW_SPEED_MODE = (0x03, 0x00)
 _DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
 _DATA_TYPE_HW_CURVE_PERCENT = (0x05, 0x00)
 
+# fw2.x write-mode endpoint — fan speed direct control (no SLEEP required).
+# All four command variants confirmed via iCUE usbmon capture (2026-04-17).
+_CMD_OPEN_ENDPOINT_WRITE  = (0x0d, 0x01)        # write-mode open  (vs read 0x0d,0x00)
+_CMD_PREP_WRITE           = (0x09, 0x01)        # required pre-write command
+_CMD_WRITE_DIRECT         = (0x06, 0x01)        # write variant for write-mode endpoints
+_CMD_CLOSE_ENDPOINT_WRITE = (0x05, 0x01, 0x01)  # write-mode close (vs read 0x05,0x01,0x00)
+
+_MODE_FAN_DIRECT          = (0x18, 0x00)        # fan speed direct control endpoint
+_DATA_TYPE_FAN_DIRECT     = (0x07, 0x00)        # data type tag for (0x18,0x00) writes
+
 # LED endpoints — fw2.x only (Commander ST, 0x0c32)
 # Packet size: device uses USB FS 64-byte interrupt reports for LED writes.
 # Fan speed writes fit in 64 bytes, so _REPORT_LENGTH=96 works for those.
@@ -140,11 +150,14 @@ class CommanderCore(UsbHidDriver):
         self._anim_lock     = threading.Lock()  # serializes HID access between animation
                                                 # thread and main thread; prevents concurrent
                                                 # reads from stealing each other's responses
+        self._committed_duties = {}           # {channel_index: duty} last written to device;
+                                              # skip redundant writes when coolercontrold
+                                              # re-sends same duty on each poll
 
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
 
-        with self._wake_device_context():
+        with self._wake_device_context(commit_speed=True):
             # Get Firmware
             res = self._send_command(_CMD_GET_FIRMWARE)
             fw_version = (res[3], res[4], res[5])
@@ -548,7 +561,7 @@ class CommanderCore(UsbHidDriver):
         if len(curve_points) > 7:
             ValueError('a maximum of 7 speed curve points may be configured.')
 
-        with self._wake_device_context():
+        with self._wake_device_context(commit_speed=True):
             self._ensure_fw_version()
 
             if self._fw_major >= 2:
@@ -625,33 +638,22 @@ class CommanderCore(UsbHidDriver):
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         channels = self._parse_channels(channel)
+        clamped = clamp(duty, 0, 100)
 
-        with self._wake_device_context():
+        # Duty-change guard: skip USB write entirely if every target channel is
+        # already at this duty.  coolercontrold re-sends the same duty on every
+        # poll when temp is stable — without this guard each poll incurs a USB
+        # round-trip for no effect.
+        if all(self._committed_duties.get(ch) == clamped for ch in channels):
+            return
+
+        with self._wake_device_context(commit_speed=False):
             self._ensure_fw_version()
             if self._fw_major >= 2:
-                # fw2.x: use fixed-percent mode (0x00) on the speed-mode endpoint,
-                # then write duties to the fixed-percent endpoint.  This mirrors the
-                # fw1.x path exactly, using the shifted fw2.x endpoint IDs.
-                # Writing a flat curve to _MODE_HW_CURVE_PERCENT_V2 does NOT work
-                # because 1-pt / flat 2-pt entries are ignored by the device at
-                # temperatures above the reference point (confirmed empirically).
-                mode_ep = _MODE_HW_SPEED_MODE_V2
-                res = self._read_data(mode_ep, _DATA_TYPE_HW_SPEED_MODE)
-                device_count = res[0]
-                data = bytearray(res[0:device_count + 1])
-                for chan in channels:
-                    data[chan + 1] = _FAN_MODE_FIXED_PERCENT
-                self._write_data(mode_ep, _DATA_TYPE_HW_SPEED_MODE, data)
-
-                fixed_ep = _MODE_HW_FIXED_PERCENT_V2
-                res = self._read_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT)
-                device_count = res[0]
-                data = bytearray(res[0:device_count * 2 + 1])
-                duty_le = int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False)
-                for chan in channels:
-                    i = chan * 2 + 1
-                    data[i: i + 2] = duty_le
-                self._write_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT, data)
+                # fw2.x: write directly to (0x18,0x00) using write-mode protocol.
+                # Commits immediately on CLOSE_WRITE — no SLEEP required.
+                # Device stays in WAKE mode; LED colors never revert.
+                self._write_fan_direct({ch: clamped for ch in channels})
             else:
                 # Firmware 1.x: select fixed mode, then write the fixed-percent table.
                 mode_ep = _MODE_HW_SPEED_MODE
@@ -667,11 +669,14 @@ class CommanderCore(UsbHidDriver):
                 res = self._read_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT)
                 device_count = res[0]
                 data = bytearray(res[0:device_count * 2 + 1])
-                duty_le = int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False)
+                duty_le = int.to_bytes(clamped, length=2, byteorder="little", signed=False)
                 for chan in channels:
                     i = chan * 2 + 1
                     data[i: i + 2] = duty_le
                 self._write_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT, data)
+
+        for ch in channels:
+            self._committed_duties[ch] = clamped
 
     def disconnect(self, **kwargs):
         """Stop animation thread before closing the HID connection."""
@@ -765,10 +770,10 @@ class CommanderCore(UsbHidDriver):
         return buf
 
     @contextmanager
-    def _wake_device_context(self):
-        # Load persisted LED state on first use so that status polls and fan
-        # speed writes re-apply the correct color even after liqctld restarts
-        # or fresh device connections where self._led_payload is None.
+    def _wake_device_context(self, commit_speed=False):
+        # Load persisted LED state on first use so that fan speed writes
+        # re-apply the correct color even after liqctld restarts or fresh
+        # device connections where self._led_payload is None.
         if self._led_payload is None:
             self._led_payload = self._load_led_state()
 
@@ -781,13 +786,6 @@ class CommanderCore(UsbHidDriver):
         # release the lock.  This eliminates the "stop → fan op → restart" overhead
         # (which could exceed liqctld's 550ms get_status timeout) while still
         # preventing concurrent HID access from two threads.
-        #
-        # SLEEP is intentionally NOT sent when LED is active: coolercontrold uses
-        # software speed tracking (set_fixed_speed every ~1s based on current water
-        # temp, confirmed by commander_core.rs extension=None → GraphProfileCommander
-        # path).  Sending SLEEP would revert fan speed to NVRAM, undoing the last
-        # set_fixed_speed call.  Keeping the device in WAKE mode lets the explicitly
-        # written speed persist until the next update cycle.
         with self._anim_lock:
             # Always WAKE: the device must be in software mode for fan ops and LED
             # writes.  Idempotent — safe even if animation already WAKEd it.
@@ -795,19 +793,24 @@ class CommanderCore(UsbHidDriver):
             try:
                 yield
             finally:
-                # SLEEP commits fan speed: the Commander ST only reads and applies
-                # speed endpoint values when transitioning to SLEEP mode. In WAKE
-                # mode all speed writes are silently ignored by the fan controller.
-                self._send_command(_CMD_SLEEP)
-                # SLEEP reverts LED display to NVRAM. Re-enter WAKE immediately
-                # and reapply the color payload to restore the software color.
-                # Doing WAKE unconditionally here means the animation thread can
-                # write its next frame without needing to re-check first_frame.
-                self._send_command(_CMD_WAKE)
-                if not was_animating and self._led_payload is not None:
-                    self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS,
-                                         self._led_payload)
-                # If animating: thread resumes from WAKE state on next frame.
+                if commit_speed:
+                    # SLEEP commits fan speed: the Commander ST only reads and
+                    # applies speed endpoint values when transitioning from WAKE
+                    # to SLEEP.  In WAKE mode all speed writes are silently ignored
+                    # by the fan controller.  Only write-path callers (set_fixed_speed,
+                    # set_speed_profile, initialize) pass commit_speed=True.
+                    self._send_command(_CMD_SLEEP)
+                    # SLEEP reverts LED display to NVRAM. Re-enter WAKE immediately
+                    # and reapply the color payload to restore the software color.
+                    # Doing WAKE unconditionally here means the animation thread can
+                    # write its next frame without needing to re-check first_frame.
+                    self._send_command(_CMD_WAKE)
+                    if not was_animating and self._led_payload is not None:
+                        self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS,
+                                             self._led_payload)
+                    # If animating: thread resumes from WAKE state on next frame.
+                # commit_speed=False (e.g. get_status): device stays in WAKE —
+                # no SLEEP, no LED blink.  Read-only ops don't need a fan commit.
 
     def _save_led_state(self):
         """Persist current LED payload to disk for cross-session continuity."""
@@ -890,6 +893,36 @@ class CommanderCore(UsbHidDriver):
                                    data[data_start_index:data_start_index + packet_data_len])
                 data_start_index += packet_data_len
         self._send_command(_CMD_CLOSE_ENDPOINT)
+
+    def _write_fan_direct(self, duties):
+        """Write fan duties to (0x18,0x00) using write-mode endpoint protocol.
+
+        duties: dict {channel_index: duty_pct}
+
+        Commits immediately on CLOSE_WRITE — no SLEEP required.  Device must be in
+        WAKE mode (call inside _wake_device_context).
+
+        Protocol per iCUE usbmon capture (2026-04-17):
+          OPEN_WRITE(0x18,0x00) → CMD_PREP_WRITE → WRITE_DIRECT(payload) → CLOSE_WRITE
+        Payload: count(1) + count × [ch_id_le(2) + duty_%(2)]
+        """
+        ch_list = sorted(duties.keys())
+        fan_payload = bytearray([len(ch_list)])
+        for ch in ch_list:
+            fan_payload += int.to_bytes(ch, 2, 'little')
+            fan_payload += int.to_bytes(clamp(duties[ch], 0, 100), 2, 'little')
+
+        self._send_command(_CMD_OPEN_ENDPOINT_WRITE, _MODE_FAN_DIRECT)
+        self._send_command(_CMD_PREP_WRITE)
+
+        data_len = len(fan_payload) + len(_DATA_TYPE_FAN_DIRECT)
+        buf = bytearray(2 + 2 + len(_DATA_TYPE_FAN_DIRECT) + len(fan_payload))
+        buf[0:2] = int.to_bytes(data_len, 2, 'little')
+        buf[4:4 + len(_DATA_TYPE_FAN_DIRECT)] = _DATA_TYPE_FAN_DIRECT
+        buf[4 + len(_DATA_TYPE_FAN_DIRECT):] = fan_payload
+        self._send_command(_CMD_WRITE_DIRECT, buf)
+
+        self._send_command(_CMD_CLOSE_ENDPOINT_WRITE)
 
     def _write_led_data(self, mode, data_type, data):
         """Write to an LED endpoint using 64-byte HID packets.
