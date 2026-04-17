@@ -795,16 +795,19 @@ class CommanderCore(UsbHidDriver):
             try:
                 yield
             finally:
-                if not was_animating:
-                    # No animation: re-apply static color to keep LED visible, or
-                    # SLEEP if there is nothing to show.
-                    if self._led_payload is not None:
-                        self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS,
-                                             self._led_payload)
-                    else:
-                        self._send_command(_CMD_SLEEP)
-                # If animation was running, releasing the lock lets it write the
-                # next frame immediately — no restart needed.
+                # SLEEP commits fan speed: the Commander ST only reads and applies
+                # speed endpoint values when transitioning to SLEEP mode. In WAKE
+                # mode all speed writes are silently ignored by the fan controller.
+                self._send_command(_CMD_SLEEP)
+                # SLEEP reverts LED display to NVRAM. Re-enter WAKE immediately
+                # and reapply the color payload to restore the software color.
+                # Doing WAKE unconditionally here means the animation thread can
+                # write its next frame without needing to re-check first_frame.
+                self._send_command(_CMD_WAKE)
+                if not was_animating and self._led_payload is not None:
+                    self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS,
+                                         self._led_payload)
+                # If animating: thread resumes from WAKE state on next frame.
 
     def _save_led_state(self):
         """Persist current LED payload to disk for cross-session continuity."""
