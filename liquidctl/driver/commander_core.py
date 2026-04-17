@@ -8,7 +8,11 @@ Copyright ParkerMc and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import json
 import logging
+import os
+import threading
+import time
 from contextlib import contextmanager
 
 from liquidctl.driver.usb import UsbHidDriver
@@ -23,6 +27,11 @@ _RESPONSE_LENGTH = 96
 _INTERFACE_NUMBER = 0
 
 _FAN_COUNT = 6
+
+# Persist LED state across liqctld restarts / fresh device connections.
+# Stored in /run (tmpfs) so it survives service restarts but not reboots.
+_LED_STATE_DIR  = '/run/liquidctl'
+_LED_STATE_FILE = '/run/liquidctl/commander_core_led_state.json'
 
 _CMD_WAKE = (0x01, 0x03, 0x00, 0x02)
 _CMD_SLEEP = (0x01, 0x03, 0x00, 0x01)
@@ -57,8 +66,52 @@ _DATA_TYPE_HW_SPEED_MODE = (0x03, 0x00)
 _DATA_TYPE_HW_FIXED_PERCENT = (0x04, 0x00)
 _DATA_TYPE_HW_CURVE_PERCENT = (0x05, 0x00)
 
+# LED endpoints — fw2.x only (Commander ST, 0x0c32)
+# Packet size: device uses USB FS 64-byte interrupt reports for LED writes.
+# Fan speed writes fit in 64 bytes, so _REPORT_LENGTH=96 works for those.
+# LED writes span multiple packets; 96-byte buffers silently truncate to 64,
+# corrupting color data. Use _LED_REPORT_LENGTH=64 for all LED commands.
+_LED_REPORT_LENGTH    = 64
+
+_MODE_LED_COLORS      = (0x22, 0x00)
+_MODE_LED_TYPE        = (0x1e, 0x00)
+_DATA_TYPE_LED_COLORS = (0x12, 0x00)
+_DATA_TYPE_LED_TYPE   = (0x0d, 0x00)
+
+_AIO_LED_COUNT  = 29   # pump head LED slots (confirmed)
+_FAN_LED_SLOTS  = 34   # always 34 slots per fan port (QL mode, confirmed)
+                       # device fills first N LEDs; extra slots are zero-padded
+
+# Fan type payload: forces all 6 fan ports to QL mode (0x06, 34 slots).
+# Mirrors OpenRGB SetFanMode(false). Works for both QL and SP physical fans.
+# Must be written BEFORE WAKE (hardware mode). WAKE after reinitializes device.
+_LED_TYPE_PAYLOAD = bytes([
+    0x07,
+    0x01, 0x08,   # ch0: AIO pump head
+    0x01, 0x06,   # ch1–ch6: QL fan (34 slots each) — confirmed working
+    0x01, 0x06,
+    0x01, 0x06,
+    0x01, 0x06,
+    0x01, 0x06,
+    0x01, 0x06,
+])
+
 _FAN_MODE_FIXED_PERCENT = 0x00
 _FAN_MODE_CURVE_PERCENT = 0x02
+
+_COLOR_CYCLE_FPS = 24  # hardware sustains ~27fps; 24 keeps step<1 down to 0.125s/rotation
+
+# Rotation period in seconds for each named speed.
+# Constraint: rot_secs > n_colors / FPS so gradient offset advances < 1 color/frame
+# (keeps rotation visually coherent and directional rather than strobing).
+_COLOR_CYCLE_SPEEDS = {
+    'slow':      20.0,
+    'medium':     8.0,
+    'fast':       3.0,
+    'faster':     1.0,
+    'ludicrous':  0.5,
+    'plaid':      0.15,
+}
 
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
@@ -78,6 +131,12 @@ class CommanderCore(UsbHidDriver):
         # USB FS packet limit when all 7 channels have 2-pt curves (71 bytes).
         self._curve_cache = {}      # channel index -> [(temp, duty), ...]
         self._pump_duty_1pt = 70    # pump fixed duty for the fw2.x 1-pt entry
+        self._led_payload   = None  # cached color payload; None = LED not set
+        self._led_type_sent = False # fan type write done once per session
+        self._anim_thread   = None  # background color-cycle thread
+        self._anim_stop     = None  # threading.Event to signal thread stop
+        self._anim_params   = None  # (zones, colors, rot_secs) for restart
+        self._anim_offset   = 0.0   # current gradient offset; preserved across restarts
 
     def initialize(self, **kwargs):
         """Initialize the device and get the fan modes."""
@@ -169,13 +228,205 @@ class CommanderCore(UsbHidDriver):
         return status
 
     def set_color(self, channel, mode, colors, **kwargs):
-        raise NotSupportedByDriver
+        """Set LED color for the specified channel.
+
+        Valid channels:
+          'pump'         pump head only (zone 0, 29 LEDs)  ['aio' accepted as alias]
+          'led'/'sync'   all zones (pump head + all fan ports)
+          'led1'–'led6'  individual fan ports (zone 1–6, 34 slots each)
+
+        Valid modes: 'static', 'off'
+
+        Only supported on firmware 2.x (Commander ST, 0x0c32).
+        """
+        if self._fw_major is not None and self._fw_major < 2:
+            raise NotSupportedByDevice()
+
+        # Stop any running animation before switching modes.
+        self._stop_animation()
+
+        mode = mode.lower()
+        colors = list(colors)
+
+        # Resolve channel → set of zone indices (0=pump head, 1-6=fan ports)
+        if channel in ('pump', 'aio', 'led0'):
+            zones = {0}
+        elif channel in ('led', 'sync'):
+            zones = set(range(7))
+        elif channel.startswith('led') and channel[3:].isdigit():
+            z = int(channel[3:])
+            if z < 1 or z > _FAN_COUNT:
+                raise ValueError(f'unknown channel, should be pump, led, sync, or led1–led{_FAN_COUNT}')
+            zones = {z}
+        else:
+            raise ValueError(f'unknown channel, should be pump, led, sync, or led1–led{_FAN_COUNT}')
+
+        # color-cycle: start gradient animation thread and return immediately.
+        if mode == 'color-cycle':
+            if len(colors) < 2:
+                raise ValueError('color-cycle mode requires at least 2 colors')
+            if len(colors) > 8:
+                raise ValueError('color-cycle mode supports at most 8 colors')
+            speed = kwargs.get('speed', 'medium')
+            if speed not in _COLOR_CYCLE_SPEEDS:
+                valid = ', '.join(_COLOR_CYCLE_SPEEDS)
+                raise ValueError(f'unknown speed {speed!r}; valid: {valid}')
+            rot_secs = _COLOR_CYCLE_SPEEDS[speed]
+            if not self._led_type_sent:
+                self._send_command(_CMD_SLEEP)
+                self._write_led_data(_MODE_LED_TYPE, _DATA_TYPE_LED_TYPE, _LED_TYPE_PAYLOAD)
+                self._led_type_sent = True
+            self._anim_offset = 0.0  # start fresh on explicit set_color call
+            self._start_animation(zones, colors, rot_secs)
+            return
+
+        # Resolve mode → (r, g, b) per zone
+        if mode == 'off':
+            zone_color = {z: (0, 0, 0) for z in zones}
+        elif mode == 'static':
+            if not colors:
+                raise ValueError('static mode requires at least one color')
+            r, g, b = colors[0]
+            zone_color = {z: (r, g, b) for z in zones}
+        else:
+            raise NotSupportedByDriver(f'unsupported mode {mode!r}; valid: static, color-cycle, off')
+
+        # Build 699-byte payload.
+        # Zone 0 (AIO pump): _AIO_LED_COUNT × 3 bytes.
+        # Zones 1–6 (fan ports): _FAN_LED_SLOTS × 3 bytes each, zero-padded for
+        # slots beyond the physically connected LED count.
+        if self._led_payload is not None:
+            payload = bytearray(self._led_payload)
+        else:
+            payload = bytearray(_AIO_LED_COUNT * 3 + _FAN_COUNT * _FAN_LED_SLOTS * 3)
+
+        if 0 in zone_color:
+            r, g, b = zone_color[0]
+            for i in range(_AIO_LED_COUNT):
+                payload[i*3], payload[i*3+1], payload[i*3+2] = r, g, b
+
+        offset = _AIO_LED_COUNT * 3
+        for z in range(1, _FAN_COUNT + 1):
+            if z in zone_color:
+                r, g, b = zone_color[z]
+                for i in range(_FAN_LED_SLOTS):
+                    payload[offset + i*3]   = r
+                    payload[offset + i*3+1] = g
+                    payload[offset + i*3+2] = b
+            offset += _FAN_LED_SLOTS * 3
+
+        self._led_payload = bytes(payload)
+        self._save_led_state()
+        if not self._led_type_sent:
+            # Fan type write must happen while device is in HARDWARE mode (before WAKE).
+            # OpenRGB: "Wake up device, needs to be done after setting fan mode to
+            # reinitialize device if fan mode has changed."
+            self._send_command(_CMD_SLEEP)   # ensure hardware mode
+            self._write_led_data(_MODE_LED_TYPE, _DATA_TYPE_LED_TYPE, _LED_TYPE_PAYLOAD)
+            self._led_type_sent = True
+        self._send_command(_CMD_WAKE)
+        self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, self._led_payload)
+        # No SLEEP — device stays in WAKE mode showing the new color.
 
     def _ensure_fw_version(self):
         """Fetch and cache firmware major version. Must be called inside a wake context."""
         if self._fw_major is None:
             res = self._send_command(_CMD_GET_FIRMWARE)
             self._fw_major = res[3]
+
+    # ---- color-cycle animation -----------------------------------------------
+
+    @staticmethod
+    def _build_gradient(colors, led_count, offset):
+        """Linear gradient across led_count LEDs, rotated by offset (in color units)."""
+        nc = len(colors)
+        result = bytearray(led_count * 3)
+        for i in range(led_count):
+            pos = ((i * nc) / led_count + offset) % nc
+            ci = int(pos) % nc
+            ni = (ci + 1) % nc
+            t = pos - int(pos)
+            result[i*3]   = int(colors[ci][0] * (1-t) + colors[ni][0] * t)
+            result[i*3+1] = int(colors[ci][1] * (1-t) + colors[ni][1] * t)
+            result[i*3+2] = int(colors[ci][2] * (1-t) + colors[ni][2] * t)
+        return result
+
+    def _build_cycle_payload(self, zones, colors, offset):
+        """Build 699-byte payload with a rotating gradient on the specified zones."""
+        payload = bytearray(_AIO_LED_COUNT * 3 + _FAN_COUNT * _FAN_LED_SLOTS * 3)
+        if 0 in zones:
+            payload[0:_AIO_LED_COUNT*3] = self._build_gradient(
+                colors, _AIO_LED_COUNT, offset)
+        for z in range(1, _FAN_COUNT + 1):
+            start = _AIO_LED_COUNT * 3 + (z - 1) * _FAN_LED_SLOTS * 3
+            if z in zones:
+                payload[start:start + _FAN_LED_SLOTS*3] = self._build_gradient(
+                    colors, _FAN_LED_SLOTS, offset)
+        return bytes(payload)
+
+    def _start_animation(self, zones, colors, rot_secs):
+        """Start the color-cycle background thread."""
+        self._anim_params = (zones, list(colors), rot_secs)
+        self._anim_stop = threading.Event()
+        self._anim_thread = threading.Thread(
+            target=self._animation_loop,
+            args=(zones, list(colors), rot_secs, self._anim_stop, self._anim_offset),
+            daemon=True,
+        )
+        self._anim_thread.start()
+
+    def _stop_animation(self):
+        """Signal the animation thread to stop and wait for it to exit."""
+        if self._anim_thread is not None:
+            if self._anim_thread.is_alive():
+                self._anim_stop.set()
+                self._anim_thread.join(timeout=2.0)
+            self._anim_thread = None
+            self._anim_params = None
+
+    def _animation_loop(self, zones, colors, rot_secs, stop_event, initial_offset=0.0):
+        """Background thread: streams gradient frames with the endpoint held open."""
+        nc = len(colors)
+        frame_dt = 1.0 / _COLOR_CYCLE_FPS
+        step = nc / (rot_secs * _COLOR_CYCLE_FPS)
+        off = initial_offset  # resume from where we left off
+
+        self._send_command(_CMD_WAKE)
+        self._send_led_command(_CMD_OPEN_ENDPOINT, _MODE_LED_COLORS)
+        try:
+            while not stop_event.is_set():
+                t0 = time.monotonic()
+                payload = self._build_cycle_payload(zones, colors, off)
+                self._stream_led_frame(payload)
+                self._led_payload = payload  # snapshot for re-apply after fan ops
+                off = (off + step) % nc
+                self._anim_offset = off  # persist for seamless restart
+                rem = frame_dt - (time.monotonic() - t0)
+                if rem > 0:
+                    stop_event.wait(rem)  # interruptible sleep
+        finally:
+            self._send_led_command(_CMD_CLOSE_ENDPOINT)
+
+    def _stream_led_frame(self, data):
+        """Send WRITE+WRITE_MORE packets into an already-open LED endpoint."""
+        n = len(data)
+        pos = 0
+        dt = _DATA_TYPE_LED_COLORS
+        while pos < n:
+            if pos == 0:
+                ch = min(n, _LED_REPORT_LENGTH - 9)
+                buf = bytearray(2 + 2 + len(dt) + ch)
+                buf[0:2] = int.to_bytes(n + len(dt), 2, 'little')
+                buf[4:4 + len(dt)] = dt
+                buf[4 + len(dt):] = data[:ch]
+                self._send_led_command(_CMD_WRITE, buf)
+                pos += ch
+            else:
+                ch = min(n - pos, _LED_REPORT_LENGTH - 3)
+                self._send_led_command(_CMD_WRITE_MORE, data[pos:pos + ch])
+                pos += ch
+
+    # --------------------------------------------------------------------------
 
     # ---- fw2.x curve-payload helpers -----------------------------------------
 
@@ -419,6 +670,11 @@ class CommanderCore(UsbHidDriver):
                     data[i: i + 2] = duty_le
                 self._write_data(fixed_ep, _DATA_TYPE_HW_FIXED_PERCENT, data)
 
+    def disconnect(self, **kwargs):
+        """Stop animation thread before closing the HID connection."""
+        self._stop_animation()
+        return super().disconnect(**kwargs)
+
     @classmethod
     def probe(cls, handle, **kwargs):
         """Ensure we get the right interface"""
@@ -507,11 +763,53 @@ class CommanderCore(UsbHidDriver):
 
     @contextmanager
     def _wake_device_context(self):
+        # Load persisted LED state on first use so that status polls and fan
+        # speed writes re-apply the correct color even after liqctld restarts
+        # or fresh device connections where self._led_payload is None.
+        if self._led_payload is None:
+            self._led_payload = self._load_led_state()
+
+        # Pause any running animation to avoid HID conflicts during fan ops.
+        # The thread closes the endpoint before exiting; we restart it after.
+        anim_params = self._anim_params
+        was_animating = (self._anim_thread is not None and self._anim_thread.is_alive())
+        if was_animating:
+            self._stop_animation()
+
         try:
             self._send_command(_CMD_WAKE)
             yield
         finally:
-            self._send_command(_CMD_SLEEP)
+            if was_animating and anim_params is not None:
+                # Restart animation — thread re-opens the endpoint itself.
+                zones, colors, rot_secs = anim_params
+                self._start_animation(zones, colors, rot_secs)
+            elif self._led_payload is not None:
+                # Keep device in WAKE mode while a static LED color is active.
+                self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, self._led_payload)
+            else:
+                self._send_command(_CMD_SLEEP)
+
+    def _save_led_state(self):
+        """Persist current LED payload to disk for cross-session continuity."""
+        try:
+            os.makedirs(_LED_STATE_DIR, exist_ok=True)
+            with open(_LED_STATE_FILE, 'w') as f:
+                json.dump({'payload': list(self._led_payload)}, f)
+        except OSError as e:
+            _LOGGER.warning('could not save LED state: %s', e)
+
+    def _load_led_state(self):
+        """Load persisted LED payload from disk, or return None if not found."""
+        try:
+            with open(_LED_STATE_FILE) as f:
+                data = json.load(f)
+            payload = bytes(data['payload'])
+            if len(payload) == _AIO_LED_COUNT * 3 + _FAN_COUNT * _FAN_LED_SLOTS * 3:
+                return payload
+        except (OSError, KeyError, ValueError, json.JSONDecodeError):
+            pass
+        return None
 
     def _write_data(self, mode, data_type, data):
         self._read_data(mode, data_type)  # Will ensure we are writing the correct data type to avoid breakage
@@ -573,6 +871,63 @@ class CommanderCore(UsbHidDriver):
                                    data[data_start_index:data_start_index + packet_data_len])
                 data_start_index += packet_data_len
         self._send_command(_CMD_CLOSE_ENDPOINT)
+
+    def _write_led_data(self, mode, data_type, data):
+        """Write to an LED endpoint using 64-byte HID packets.
+
+        Differs from _write_data() in two ways:
+        1. Uses _LED_REPORT_LENGTH=64 (matching the device's USB FS HID descriptor).
+           Fan speed payloads fit in 64 bytes, masking this requirement. LED color
+           payloads are 699 bytes across 12 packets; 96-byte buffers silently
+           truncate to 64, corrupting every packet after the first 64 bytes.
+        2. Skips the read-verify guard: (0x22, 0x00) returns data type (0x07, 0x00)
+           when read, not (0x12, 0x00), so _write_data()'s guard would always refuse.
+        """
+        self._send_led_command(_CMD_OPEN_ENDPOINT, mode)
+
+        data_len = len(data)
+        data_start_index = 0
+        while data_start_index < data_len:
+            if data_start_index == 0:
+                packet_data_len = min(data_len, _LED_REPORT_LENGTH - 9)
+                buf = bytearray(2 + 2 + len(data_type) + packet_data_len)
+                buf[0:2] = int.to_bytes(data_len + len(data_type), 2, 'little')
+                buf[4:4 + len(data_type)] = data_type
+                buf[4 + len(data_type):] = data[0:packet_data_len]
+                self._send_led_command(_CMD_WRITE, buf)
+                data_start_index += packet_data_len
+            else:
+                packet_data_len = min(data_len - data_start_index, _LED_REPORT_LENGTH - 3)
+                self._send_led_command(
+                    _CMD_WRITE_MORE,
+                    data[data_start_index:data_start_index + packet_data_len])
+                data_start_index += packet_data_len
+
+        self._send_led_command(_CMD_CLOSE_ENDPOINT)
+
+    def _send_led_command(self, command, data=()):
+        """Like _send_command() but uses 64-byte HID reports for LED endpoints."""
+        buf = bytearray(_LED_REPORT_LENGTH + 1)
+        buf[1] = 0x08
+        buf[2:2 + len(command)] = command
+        buf[2 + len(command):2 + len(command) + len(data)] = data
+
+        self.device.clear_enqueued_reports()
+        self.device.write(buf)
+
+        res = self.device.read(_RESPONSE_LENGTH)
+        while res[0] != 0x00:
+            res = self.device.read(_RESPONSE_LENGTH)
+        buf = bytes(res)
+        _retries = 8
+        while buf[1] != command[0] and _retries > 0:
+            res = self.device.read(_RESPONSE_LENGTH)
+            while res[0] != 0x00:
+                res = self.device.read(_RESPONSE_LENGTH)
+            buf = bytes(res)
+            _retries -= 1
+        assert buf[1] == command[0], 'response does not match command'
+        return buf
 
     def _fan_to_channel(self, fan):
         if self._has_pump:
