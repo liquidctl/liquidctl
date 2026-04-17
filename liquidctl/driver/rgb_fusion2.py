@@ -283,6 +283,8 @@ _IT5711_COLOR_CYCLE_FPS = 24
 # IT5711 ARGB fans have fewer physical LEDs than Commander ST fan slots, so
 # the same rotation period looks slower — speeds are set ~2x faster than Commander ST.
 # Constraint: rot_secs > n_colors / FPS so gradient offset advances < 1 color/frame.
+# 'cpu-speed' maps to None — the animation thread reads /proc/stat each frame and
+# selects rot_secs dynamically from _CPU_SPEED_THRESHOLDS.
 _IT5711_COLOR_CYCLE_SPEEDS = {
     'slow':      10.0,
     'medium':     4.0,
@@ -290,7 +292,19 @@ _IT5711_COLOR_CYCLE_SPEEDS = {
     'faster':     0.5,
     'ludicrous':  0.25,
     'plaid':      0.15,
+    'cpu-speed':  None,   # adaptive — maps CPU % to rot_secs each frame
 }
+
+# CPU usage → speed name mapping for 'cpu-speed' mode.
+# Each (upper_pct_threshold, speed_name) pair; checked in order, first match wins.
+# speed_name must exist in _IT5711_COLOR_CYCLE_SPEEDS and have a non-None rot_secs value.
+_CPU_SPEED_THRESHOLDS = [
+    (20,  'slow'),
+    (40,  'medium'),
+    (60,  'fast'),
+    (80,  'faster'),
+    (100, 'ludicrous'),
+]
 
 
 class RgbFusion2IT5711(UsbHidDriver):
@@ -584,12 +598,26 @@ class RgbFusion2IT5711(UsbHidDriver):
             self._anim_thread = None
             self._anim_params = None
 
+    @staticmethod
+    def _read_cpu_stat():
+        """Read raw /proc/stat CPU idle and total counters for cpu-speed mode.
+
+        Returns (total_jiffies, idle_jiffies).  Call once per animation frame;
+        compute the delta against the previous frame's reading to get CPU usage %
+        over that ~41ms interval.  No sleep required — the frame loop provides it.
+        """
+        with open('/proc/stat') as f:
+            fields = list(map(int, f.readline().split()[1:]))
+        return sum(fields), fields[3]  # total, idle (4th field)
+
     def _animation_loop(self, channels, colors, rot_secs, stop_event, initial_offset=0.0):
         """Background thread: streams gradient frames until stop_event is set."""
         nc = len(colors)
         frame_dt = 1.0 / _IT5711_COLOR_CYCLE_FPS
-        step = nc / (rot_secs * _IT5711_COLOR_CYCLE_FPS)
+        cpu_speed_mode = rot_secs is None
+        step = nc / ((rot_secs or 10.0) * _IT5711_COLOR_CYCLE_FPS)  # slow default for first frame
         off = initial_offset
+        prev_cpu_stat = None  # (total, idle) from previous frame; None until first read
 
         # Disable the built-in effect engine for each animated channel so PktRGB
         # writes persist instead of being overwritten by the hardware effect engine.
@@ -602,6 +630,18 @@ class RgbFusion2IT5711(UsbHidDriver):
 
         while not stop_event.is_set():
             t0 = time.monotonic()
+            if cpu_speed_mode:
+                curr = self._read_cpu_stat()
+                if prev_cpu_stat is not None:
+                    dt = curr[0] - prev_cpu_stat[0]
+                    di = curr[1] - prev_cpu_stat[1]
+                    if dt > 0:
+                        cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
+                        for thresh, name in _CPU_SPEED_THRESHOLDS:
+                            if cpu_pct <= thresh:
+                                step = nc / (_IT5711_COLOR_CYCLE_SPEEDS[name] * _IT5711_COLOR_CYCLE_FPS)
+                                break
+                prev_cpu_stat = curr
             acc_mask = 0
             for ch in channels:
                 led_index, _ = _IT5711_ARGB_CHANNELS[ch]
