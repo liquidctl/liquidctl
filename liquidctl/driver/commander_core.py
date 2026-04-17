@@ -114,6 +114,8 @@ _COLOR_CYCLE_FPS = 24  # hardware sustains ~27fps; 24 keeps step<1 down to 0.125
 # Rotation period in seconds for each named speed.
 # Constraint: rot_secs > n_colors / FPS so gradient offset advances < 1 color/frame
 # (keeps rotation visually coherent and directional rather than strobing).
+# 'cpu-speed' maps to None — the animation thread reads /proc/stat each frame and
+# selects rot_secs dynamically from _CPU_SPEED_THRESHOLDS.
 _COLOR_CYCLE_SPEEDS = {
     'slow':      20.0,
     'medium':     8.0,
@@ -121,7 +123,19 @@ _COLOR_CYCLE_SPEEDS = {
     'faster':     1.0,
     'ludicrous':  0.5,
     'plaid':      0.15,
+    'cpu-speed':  None,   # adaptive — maps CPU % to rot_secs each frame
 }
+
+# CPU usage → speed name mapping for 'cpu-speed' mode.
+# Each (upper_pct_threshold, speed_name) pair; checked in order, first match wins.
+# speed_name must exist in _COLOR_CYCLE_SPEEDS and have a non-None rot_secs value.
+_CPU_SPEED_THRESHOLDS = [
+    (20,  'slow'),
+    (40,  'medium'),
+    (60,  'fast'),
+    (80,  'faster'),
+    (100, 'ludicrous'),
+]
 
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
@@ -402,6 +416,18 @@ class CommanderCore(UsbHidDriver):
             self._anim_thread = None
             self._anim_params = None
 
+    @staticmethod
+    def _read_cpu_stat():
+        """Read raw /proc/stat CPU idle and total counters for cpu-speed mode.
+
+        Returns (total_jiffies, idle_jiffies).  Call once per animation frame;
+        compute the delta against the previous frame's reading to get CPU usage %
+        over that ~41ms interval.  No sleep required — the frame loop provides it.
+        """
+        with open('/proc/stat') as f:
+            fields = list(map(int, f.readline().split()[1:]))
+        return sum(fields), fields[3]  # total, idle (4th field)
+
     def _animation_loop(self, zones, colors, rot_secs, stop_event, initial_offset=0.0):
         """Background thread: writes one complete LED frame per iteration (Mode A).
 
@@ -419,12 +445,26 @@ class CommanderCore(UsbHidDriver):
         """
         nc = len(colors)
         frame_dt = 1.0 / _COLOR_CYCLE_FPS
-        step = nc / (rot_secs * _COLOR_CYCLE_FPS)
+        cpu_speed_mode = rot_secs is None
+        step = nc / ((rot_secs or 20.0) * _COLOR_CYCLE_FPS)  # slow default for first frame
         off = initial_offset  # resume from where we left off
         first_frame = True
+        prev_cpu_stat = None  # (total, idle) from previous frame; None until first read
 
         while not stop_event.is_set():
             t0 = time.monotonic()
+            if cpu_speed_mode:
+                curr = self._read_cpu_stat()
+                if prev_cpu_stat is not None:
+                    dt = curr[0] - prev_cpu_stat[0]
+                    di = curr[1] - prev_cpu_stat[1]
+                    if dt > 0:
+                        cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
+                        for thresh, name in _CPU_SPEED_THRESHOLDS:
+                            if cpu_pct <= thresh:
+                                step = nc / (_COLOR_CYCLE_SPEEDS[name] * _COLOR_CYCLE_FPS)
+                                break
+                prev_cpu_stat = curr
             payload = self._build_cycle_payload(zones, colors, off)
             with self._anim_lock:
                 if stop_event.is_set():
