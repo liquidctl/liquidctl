@@ -383,70 +383,51 @@ class CommanderCore(UsbHidDriver):
         if self._anim_thread is not None:
             if self._anim_thread.is_alive():
                 self._anim_stop.set()
-                # Acquire the lock to wait for the current frame to finish sending.
-                # Once we hold the lock, the animation thread is either sleeping in
-                # stop_event.wait() or about to see stop_event is set and break.
-                # We release immediately; the thread then closes the endpoint and exits.
-                with self._anim_lock:
-                    pass
-                # Join without timeout: thread exits within one frame (~42ms at 24fps).
+                # join() is bounded: at most one _write_led_data() call (~42ms at
+                # 24fps with fast HID) plus remaining inter-frame sleep.
                 self._anim_thread.join()
             self._anim_thread = None
             self._anim_params = None
 
     def _animation_loop(self, zones, colors, rot_secs, stop_event, initial_offset=0.0):
-        """Background thread: streams gradient frames with the endpoint held open.
+        """Background thread: writes one complete LED frame per iteration (Mode A).
 
-        _anim_lock is held for the duration of each frame write (WRITE + WRITE_MORE
-        packets).  _wake_device_context() acquires the lock before proceeding with
-        fan ops, which guarantees the current frame is fully sent before the main
-        thread touches the HID device.  This prevents the two threads from issuing
-        overlapping HID commands and stealing each other's responses.
+        Each frame is a full OPEN_ENDPOINT → WRITE → WRITE_MORE... → CLOSE_ENDPOINT
+        sequence via _write_led_data().  _anim_lock is held only for the duration of
+        that one call, then released before the inter-frame sleep.
+
+        _wake_device_context() acquires _anim_lock to serialize HID access with the
+        animation thread without stopping it — it waits for the current frame write
+        to finish, does the fan/status op, and releases.  The animation continues
+        from the next frame without any stop/restart overhead.
+
+        CLOSE_ENDPOINT does NOT send SLEEP, so the device holds the last frame in
+        its display buffer; there is no visible flicker between frames.
         """
         nc = len(colors)
         frame_dt = 1.0 / _COLOR_CYCLE_FPS
         step = nc / (rot_secs * _COLOR_CYCLE_FPS)
         off = initial_offset  # resume from where we left off
+        first_frame = True
 
-        with self._anim_lock:
-            self._send_command(_CMD_WAKE)
-            self._send_led_command(_CMD_OPEN_ENDPOINT, _MODE_LED_COLORS)
-        try:
-            while not stop_event.is_set():
-                t0 = time.monotonic()
-                payload = self._build_cycle_payload(zones, colors, off)
-                with self._anim_lock:
-                    if stop_event.is_set():
-                        break
-                    self._stream_led_frame(payload)
-                self._led_payload = payload  # snapshot for re-apply after fan ops
-                off = (off + step) % nc
-                self._anim_offset = off  # persist for seamless restart
-                rem = frame_dt - (time.monotonic() - t0)
-                if rem > 0:
-                    stop_event.wait(rem)  # interruptible sleep
-        finally:
+        while not stop_event.is_set():
+            t0 = time.monotonic()
+            payload = self._build_cycle_payload(zones, colors, off)
             with self._anim_lock:
-                self._send_led_command(_CMD_CLOSE_ENDPOINT)
-
-    def _stream_led_frame(self, data):
-        """Send WRITE+WRITE_MORE packets into an already-open LED endpoint."""
-        n = len(data)
-        pos = 0
-        dt = _DATA_TYPE_LED_COLORS
-        while pos < n:
-            if pos == 0:
-                ch = min(n, _LED_REPORT_LENGTH - 9)
-                buf = bytearray(2 + 2 + len(dt) + ch)
-                buf[0:2] = int.to_bytes(n + len(dt), 2, 'little')
-                buf[4:4 + len(dt)] = dt
-                buf[4 + len(dt):] = data[:ch]
-                self._send_led_command(_CMD_WRITE, buf)
-                pos += ch
-            else:
-                ch = min(n - pos, _LED_REPORT_LENGTH - 3)
-                self._send_led_command(_CMD_WRITE_MORE, data[pos:pos + ch])
-                pos += ch
+                if stop_event.is_set():
+                    break
+                if first_frame:
+                    # WAKE inside the lock so _wake_device_context() (also lock-
+                    # protected) cannot race against this initial mode transition.
+                    self._send_command(_CMD_WAKE)
+                    first_frame = False
+                self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, payload)
+            self._led_payload = payload  # snapshot of last displayed frame
+            off = (off + step) % nc
+            self._anim_offset = off  # persist for seamless restart
+            rem = frame_dt - (time.monotonic() - t0)
+            if rem > 0:
+                stop_event.wait(rem)  # interruptible sleep
 
     # --------------------------------------------------------------------------
 
@@ -791,26 +772,39 @@ class CommanderCore(UsbHidDriver):
         if self._led_payload is None:
             self._led_payload = self._load_led_state()
 
-        # Pause any running animation to avoid HID conflicts during fan ops.
-        # The thread closes the endpoint before exiting; we restart it after.
-        anim_params = self._anim_params
         was_animating = (self._anim_thread is not None and self._anim_thread.is_alive())
-        if was_animating:
-            self._stop_animation()
 
-        try:
+        # Acquire _anim_lock to serialize HID access with the animation thread.
+        # If animation is running, this blocks until its current _write_led_data()
+        # call finishes (one frame, ≤42ms at 24fps with fast USB HID).  We do NOT
+        # stop or restart the animation — it continues from the next frame once we
+        # release the lock.  This eliminates the "stop → fan op → restart" overhead
+        # (which could exceed liqctld's 550ms get_status timeout) while still
+        # preventing concurrent HID access from two threads.
+        #
+        # SLEEP is intentionally NOT sent when LED is active: coolercontrold uses
+        # software speed tracking (set_fixed_speed every ~1s based on current water
+        # temp, confirmed by commander_core.rs extension=None → GraphProfileCommander
+        # path).  Sending SLEEP would revert fan speed to NVRAM, undoing the last
+        # set_fixed_speed call.  Keeping the device in WAKE mode lets the explicitly
+        # written speed persist until the next update cycle.
+        with self._anim_lock:
+            # Always WAKE: the device must be in software mode for fan ops and LED
+            # writes.  Idempotent — safe even if animation already WAKEd it.
             self._send_command(_CMD_WAKE)
-            yield
-        finally:
-            if was_animating and anim_params is not None:
-                # Restart animation — thread re-opens the endpoint itself.
-                zones, colors, rot_secs = anim_params
-                self._start_animation(zones, colors, rot_secs)
-            elif self._led_payload is not None:
-                # Keep device in WAKE mode while a static LED color is active.
-                self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, self._led_payload)
-            else:
-                self._send_command(_CMD_SLEEP)
+            try:
+                yield
+            finally:
+                if not was_animating:
+                    # No animation: re-apply static color to keep LED visible, or
+                    # SLEEP if there is nothing to show.
+                    if self._led_payload is not None:
+                        self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS,
+                                             self._led_payload)
+                    else:
+                        self._send_command(_CMD_SLEEP)
+                # If animation was running, releasing the lock lets it write the
+                # next frame immediately — no restart needed.
 
     def _save_led_state(self):
         """Persist current LED payload to disk for cross-session continuity."""
