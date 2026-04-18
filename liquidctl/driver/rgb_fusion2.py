@@ -9,6 +9,7 @@ Copyright CaseySJ, Jonas Malaco and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+import glob
 import logging
 import struct
 import sys
@@ -293,6 +294,7 @@ _IT5711_COLOR_CYCLE_SPEEDS = {
     'ludicrous':  0.25,
     'plaid':      0.15,
     'cpu-speed':  None,   # adaptive — maps CPU % to rot_secs each frame
+    'fan-speed':  -1.0,   # adaptive — maps system fan RPM to rot_secs each frame
 }
 
 # CPU usage → speed name mapping for 'cpu-speed' mode.
@@ -309,6 +311,20 @@ _CPU_SPEED_THRESHOLDS = [
 # Additional speed multiplier applied on top of the threshold-selected rotation
 # period in cpu-speed mode.  >1.0 = faster animation.
 _CPU_SPEED_BOOST = 1.5
+
+# System fan RPM → speed name mapping for 'fan-speed' mode.
+# Each (upper_rpm_threshold, speed_name) pair; checked in order, first match wins.
+# speed_name must exist in _IT5711_COLOR_CYCLE_SPEEDS and have a positive rot_secs value.
+_FAN_SPEED_THRESHOLDS = [
+    (300,   'slow'),
+    (700,   'medium'),
+    (1100,  'fast'),
+    (1500,  'faster'),
+    (99999, 'ludicrous'),
+]
+# Speed multiplier for fan-speed mode — animations run at half the base rotation
+# period so they feel more responsive to RPM changes.
+_FAN_SPEED_BOOST = 0.5
 
 
 class RgbFusion2IT5711(UsbHidDriver):
@@ -603,6 +619,27 @@ class RgbFusion2IT5711(UsbHidDriver):
             self._anim_params = None
 
     @staticmethod
+    def _read_system_fan_rpm():
+        """Return the highest fan RPM found in /sys/class/hwmon, or 0 if unavailable.
+
+        Reads all fan*_input entries under /sys/class/hwmon and returns the maximum.
+        Using the maximum (not first) gives consistent behavior across different systems
+        regardless of hwmon device ordering: animation runs fastest when the most
+        stressed fan is spinning hardest.  Returns 0 when no hwmon fans are present;
+        the animation loop maps 0 RPM to 'slow'.
+        """
+        rpms = []
+        for path in glob.glob('/sys/class/hwmon/hwmon*/fan*_input'):
+            try:
+                with open(path) as f:
+                    rpm = int(f.read().strip())
+                if rpm > 0:
+                    rpms.append(rpm)
+            except (OSError, ValueError):
+                pass
+        return max(rpms) if rpms else 0
+
+    @staticmethod
     def _read_cpu_stat():
         """Read raw /proc/stat CPU idle and total counters for cpu-speed mode.
 
@@ -619,7 +656,9 @@ class RgbFusion2IT5711(UsbHidDriver):
         nc = len(colors)
         frame_dt = 1.0 / _IT5711_COLOR_CYCLE_FPS
         cpu_speed_mode = rot_secs is None
-        step = nc / ((rot_secs or 10.0) * _IT5711_COLOR_CYCLE_FPS)  # slow default for first frame
+        fan_speed_mode = rot_secs is not None and rot_secs < 0
+        base_rot = rot_secs if (rot_secs is not None and rot_secs > 0) else 10.0
+        step = nc / (base_rot * _IT5711_COLOR_CYCLE_FPS)  # slow default for first frame
         off = initial_offset
         prev_cpu_stat = None  # (total, idle) from previous frame; None until first read
 
@@ -646,6 +685,14 @@ class RgbFusion2IT5711(UsbHidDriver):
                                 step = nc * _CPU_SPEED_BOOST / (_IT5711_COLOR_CYCLE_SPEEDS[name] * _IT5711_COLOR_CYCLE_FPS)
                                 break
                 prev_cpu_stat = curr
+            elif fan_speed_mode:
+                rpm = self._read_system_fan_rpm()
+                rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']  # fallback when hwmon unavailable
+                for thresh, name in _FAN_SPEED_THRESHOLDS:
+                    if rpm <= thresh:
+                        rot = _IT5711_COLOR_CYCLE_SPEEDS[name]
+                        break
+                step = nc * _FAN_SPEED_BOOST / (rot * _IT5711_COLOR_CYCLE_FPS)
             acc_mask = 0
             for ch in channels:
                 led_index, _ = _IT5711_ARGB_CHANNELS[ch]
