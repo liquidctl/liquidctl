@@ -526,8 +526,8 @@ class CommanderCore(UsbHidDriver):
                     first_frame = False
                 self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, payload)
                 self._led_payload = bytes(payload)
-                self._save_led_state()
 
+            self._save_led_state()  # outside lock: file I/O; _led_payload already set
             rem = (1.0 / _COLOR_CYCLE_FPS) - (time.monotonic() - t0)
             if rem > 0:
                 stop_event.wait(rem)  # interruptible sleep
@@ -873,13 +873,19 @@ class CommanderCore(UsbHidDriver):
         was_animating = (self._anim_thread is not None and self._anim_thread.is_alive())
 
         # Acquire _anim_lock to serialize HID access with the animation thread.
-        # If animation is running, this blocks until its current _write_led_data()
-        # call finishes (one frame, ≤42ms at 24fps with fast USB HID).  We do NOT
-        # stop or restart the animation — it continues from the next frame once we
-        # release the lock.  This eliminates the "stop → fan op → restart" overhead
-        # (which could exceed liqctld's 550ms get_status timeout) while still
-        # preventing concurrent HID access from two threads.
-        with self._anim_lock:
+        # Allow up to 400ms for a running frame to complete (normal frame ≤45ms at 24fps).
+        # If the timeout fires the frame is overrunning (e.g. heavy CPU load) — stop the
+        # animation thread so the fan control op (safety-critical) can proceed immediately.
+        # Animation resumes on the next set_color() call.  The 400ms budget leaves ~150ms
+        # for the WAKE + fan write before liqctld's 550ms read deadline.
+        if not self._anim_lock.acquire(timeout=0.4):
+            _LOGGER.warning(
+                'animation frame overran 400 ms; stopping animation to unblock fan control'
+            )
+            if self._anim_thread and self._anim_thread.is_alive():
+                self._anim_stop.set()
+            self._anim_lock.acquire()  # blocking — thread yields lock after current frame
+        try:
             # Always WAKE: the device must be in software mode for fan ops and LED
             # writes.  Idempotent — safe even if animation already WAKEd it.
             self._send_command(_CMD_WAKE)
@@ -904,6 +910,8 @@ class CommanderCore(UsbHidDriver):
                     # If animating: thread resumes from WAKE state on next frame.
                 # commit_speed=False (e.g. get_status): device stays in WAKE —
                 # no SLEEP, no LED blink.  Read-only ops don't need a fan commit.
+        finally:
+            self._anim_lock.release()
 
     def _save_led_state(self):
         """Persist current LED payload to disk for cross-session continuity."""
