@@ -306,6 +306,10 @@ _CPU_SPEED_THRESHOLDS = [
     (100, 'ludicrous'),
 ]
 
+# Additional speed multiplier applied on top of the threshold-selected rotation
+# period in cpu-speed mode.  >1.0 = faster animation.
+_CPU_SPEED_BOOST = 1.5
+
 
 class RgbFusion2IT5711(UsbHidDriver):
     """liquidctl driver for Gigabyte IT5711 RGB Fusion 2.0 USB controller.
@@ -639,7 +643,7 @@ class RgbFusion2IT5711(UsbHidDriver):
                         cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
                         for thresh, name in _CPU_SPEED_THRESHOLDS:
                             if cpu_pct <= thresh:
-                                step = nc / (_IT5711_COLOR_CYCLE_SPEEDS[name] * _IT5711_COLOR_CYCLE_FPS)
+                                step = nc * _CPU_SPEED_BOOST / (_IT5711_COLOR_CYCLE_SPEEDS[name] * _IT5711_COLOR_CYCLE_FPS)
                                 break
                 prev_cpu_stat = curr
             acc_mask = 0
