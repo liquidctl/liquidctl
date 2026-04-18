@@ -124,6 +124,7 @@ _COLOR_CYCLE_SPEEDS = {
     'ludicrous':  0.5,
     'plaid':      0.15,
     'cpu-speed':  None,   # adaptive — maps CPU % to rot_secs each frame
+    'fan-speed':  -1.0,   # adaptive — maps fan RPM to rot_secs each frame
 }
 
 # CPU usage → speed name mapping for 'cpu-speed' mode.
@@ -136,6 +137,22 @@ _CPU_SPEED_THRESHOLDS = [
     (80,  'faster'),
     (100, 'ludicrous'),
 ]
+
+# Fan RPM → speed name mapping for 'fan-speed' mode.
+# Covers the typical Commander ST fan range (0–2000+ RPM).
+# Zone 0 reads pump RPM; zones 1–6 read the matching fan port RPM.
+_FAN_SPEED_THRESHOLDS = [
+    (300,   'slow'),      # stopped / very low
+    (700,   'medium'),    # idle / low speed
+    (1100,  'fast'),      # moderate speed
+    (1500,  'faster'),    # high speed
+    (99999, 'ludicrous'), # max speed
+]
+
+# Speed multipliers applied on top of threshold-selected rotation periods.
+# >1.0 = faster animation, <1.0 = slower.
+_CPU_SPEED_BOOST = 1.5   # cpu-speed mode
+_FAN_SPEED_BOOST = 0.5   # fan-speed mode
 
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
@@ -155,12 +172,13 @@ class CommanderCore(UsbHidDriver):
         # USB FS packet limit when all 7 channels have 2-pt curves (71 bytes).
         self._curve_cache = {}      # channel index -> [(temp, duty), ...]
         self._pump_duty_1pt = 70    # pump fixed duty for the fw2.x 1-pt entry
-        self._led_payload   = None  # cached color payload; None = LED not set
-        self._led_type_sent = False # fan type write done once per session
-        self._anim_thread   = None  # background color-cycle thread
-        self._anim_stop     = None  # threading.Event to signal thread stop
-        self._anim_params   = None  # (zones, colors, rot_secs) for restart
-        self._anim_offset   = 0.0   # current gradient offset; preserved across restarts
+        self._led_payload      = None  # cached color payload; None = LED not set
+        self._led_type_sent    = False # fan type write done once per session
+        self._port_led_counts  = None  # [leds_per_port, ...] length _FAN_COUNT; set by initialize()
+        self._anim_thread      = None  # background color-cycle thread
+        self._anim_stop        = None  # threading.Event to signal thread stop
+        self._zone_states      = {}    # {zone_idx: {'colors', 'rot_secs', 'offset'}}
+        self._fan_rpms         = {}    # {zone_idx: rpm} last known speeds; updated by get_status()
         self._anim_lock     = threading.Lock()  # serializes HID access between animation
                                                 # thread and main thread; prevents concurrent
                                                 # reads from stealing each other's responses
@@ -183,6 +201,7 @@ class CommanderCore(UsbHidDriver):
             res = self._read_data(_MODE_LED_COUNT, _DATA_TYPE_LED_COUNT)
             num_devices = res[0]
             led_data = res[1:1 + num_devices * 4]
+            port_led_counts = []
             for i in range(0, num_devices):
                 connected = u16le_from(led_data, offset=i * 4) == 2
                 num_leds = u16le_from(led_data, offset=i * 4 + 2)
@@ -192,6 +211,15 @@ class CommanderCore(UsbHidDriver):
                     label = f'RGB port {i+1} LED count'
 
                 status += [(label, num_leds if connected else None, '')]
+
+                # Collect fan port LED counts (skip zone 0 = pump when has_pump).
+                if not (self._has_pump and i == 0):
+                    port_led_counts.append(num_leds if connected else 0)
+
+            # Pad to _FAN_COUNT so zone indices are always valid.
+            while len(port_led_counts) < _FAN_COUNT:
+                port_led_counts.append(0)
+            self._port_led_counts = port_led_counts[:_FAN_COUNT]
 
             # Get what fans are connected
             res = self._read_data(_MODE_CONNECTED_SPEEDS, _DATA_TYPE_CONNECTED_SPEEDS)
@@ -236,7 +264,10 @@ class CommanderCore(UsbHidDriver):
         status = []
 
         with self._wake_device_context():
-            for i, speed in enumerate(self._get_speeds()):
+            speeds = list(self._get_speeds())
+            for i, speed in enumerate(speeds):
+                self._fan_rpms[i] = speed  # cache for fan-speed LED mode
+            for i, speed in enumerate(speeds):
                 if self._has_pump:
                     label = 'Pump speed' if i == 0 else f'Fan speed {i}'
                 else:
@@ -262,18 +293,19 @@ class CommanderCore(UsbHidDriver):
 
         Valid channels:
           'pump'         pump head only (zone 0, 29 LEDs)  ['aio' accepted as alias]
-          'led'/'sync'   all zones (pump head + all fan ports)
+          'all'          all zones (pump head + all fan ports)  ['led', 'sync' accepted as aliases]
           'led1'–'led6'  individual fan ports (zone 1–6, 34 slots each)
 
-        Valid modes: 'static', 'off'
+        Valid modes: 'static', 'color-cycle', 'off'
+
+        Each zone is independently configurable — setting one zone does not affect
+        others.  'led'/'sync' overrides all zones.  The animation thread blends all
+        active zones into one 699-byte payload each frame.
 
         Only supported on firmware 2.x (Commander ST, 0x0c32).
         """
         if self._fw_major is not None and self._fw_major < 2:
             raise NotSupportedByDevice()
-
-        # Stop any running animation before switching modes.
-        self._stop_animation()
 
         mode = mode.lower()
         colors = list(colors)
@@ -281,7 +313,7 @@ class CommanderCore(UsbHidDriver):
         # Resolve channel → set of zone indices (0=pump head, 1-6=fan ports)
         if channel in ('pump', 'aio', 'led0'):
             zones = {0}
-        elif channel in ('led', 'sync'):
+        elif channel in ('all', 'led', 'sync'):
             zones = set(range(7))
         elif channel.startswith('led') and channel[3:].isdigit():
             z = int(channel[3:])
@@ -291,7 +323,10 @@ class CommanderCore(UsbHidDriver):
         else:
             raise ValueError(f'unknown channel, should be pump, led, sync, or led1–led{_FAN_COUNT}')
 
-        # color-cycle: start gradient animation thread and return immediately.
+        # Resolve mode → (colors_list, rot_secs)
+        #   color-cycle: rot_secs = seconds per full rotation (None = cpu-speed)
+        #   static:      rot_secs = 0.0  (no rotation; gradient renders as solid)
+        #   off:         remove zones from _zone_states
         if mode == 'color-cycle':
             if len(colors) < 2:
                 raise ValueError('color-cycle mode requires at least 2 colors')
@@ -302,61 +337,53 @@ class CommanderCore(UsbHidDriver):
                 valid = ', '.join(_COLOR_CYCLE_SPEEDS)
                 raise ValueError(f'unknown speed {speed!r}; valid: {valid}')
             rot_secs = _COLOR_CYCLE_SPEEDS[speed]
-            if not self._led_type_sent:
-                self._send_command(_CMD_SLEEP)
-                self._write_led_data(_MODE_LED_TYPE, _DATA_TYPE_LED_TYPE, _LED_TYPE_PAYLOAD)
-                self._led_type_sent = True
-            self._anim_offset = 0.0  # start fresh on explicit set_color call
-            self._start_animation(zones, colors, rot_secs)
-            return
-
-        # Resolve mode → (r, g, b) per zone
-        if mode == 'off':
-            zone_color = {z: (0, 0, 0) for z in zones}
         elif mode == 'static':
             if not colors:
                 raise ValueError('static mode requires at least one color')
-            r, g, b = colors[0]
-            zone_color = {z: (r, g, b) for z in zones}
+            colors = [colors[0]]  # only the first color matters
+            rot_secs = 0.0
+        elif mode == 'off':
+            colors = [(0, 0, 0)]
+            rot_secs = 0.0
         else:
             raise NotSupportedByDriver(f'unsupported mode {mode!r}; valid: static, color-cycle, off')
 
-        # Build 699-byte payload.
-        # Zone 0 (AIO pump): _AIO_LED_COUNT × 3 bytes.
-        # Zones 1–6 (fan ports): _FAN_LED_SLOTS × 3 bytes each, zero-padded for
-        # slots beyond the physically connected LED count.
-        if self._led_payload is not None:
-            payload = bytearray(self._led_payload)
-        else:
-            payload = bytearray(_AIO_LED_COUNT * 3 + _FAN_COUNT * _FAN_LED_SLOTS * 3)
-
-        if 0 in zone_color:
-            r, g, b = zone_color[0]
-            for i in range(_AIO_LED_COUNT):
-                payload[i*3], payload[i*3+1], payload[i*3+2] = r, g, b
-
-        offset = _AIO_LED_COUNT * 3
-        for z in range(1, _FAN_COUNT + 1):
-            if z in zone_color:
-                r, g, b = zone_color[z]
-                for i in range(_FAN_LED_SLOTS):
-                    payload[offset + i*3]   = r
-                    payload[offset + i*3+1] = g
-                    payload[offset + i*3+2] = b
-            offset += _FAN_LED_SLOTS * 3
-
-        self._led_payload = bytes(payload)
-        self._save_led_state()
         if not self._led_type_sent:
             # Fan type write must happen while device is in HARDWARE mode (before WAKE).
-            # OpenRGB: "Wake up device, needs to be done after setting fan mode to
-            # reinitialize device if fan mode has changed."
-            self._send_command(_CMD_SLEEP)   # ensure hardware mode
+            self._send_command(_CMD_SLEEP)
             self._write_led_data(_MODE_LED_TYPE, _DATA_TYPE_LED_TYPE, _LED_TYPE_PAYLOAD)
             self._led_type_sent = True
-        self._send_command(_CMD_WAKE)
-        self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, self._led_payload)
-        # No SLEEP — device stays in WAKE mode showing the new color.
+
+        # Update per-zone state under the animation lock.
+        # The running thread reads _zone_states each frame while holding this lock,
+        # so this update takes effect on the very next frame (≤42ms latency).
+        with self._anim_lock:
+            for z in zones:
+                if mode == 'off':
+                    self._zone_states.pop(z, None)
+                else:
+                    # Preserve existing offset so animation continues smoothly
+                    # when only speed/color changes (avoids a visible jump).
+                    existing_offset = self._zone_states.get(z, {}).get('offset', 0.0)
+                    self._zone_states[z] = {
+                        'colors':   list(colors),
+                        'rot_secs': rot_secs,
+                        'offset':   existing_offset,
+                    }
+
+        if self._zone_states:
+            self._ensure_animation_thread()
+        else:
+            self._stop_animation()
+            # Device is still in WAKE mode (animation left it there). Write a
+            # black payload so LEDs actually go dark rather than showing the
+            # last animated frame indefinitely.
+            if self._led_type_sent:
+                self._send_command(_CMD_WAKE)
+                port_counts = self._port_led_counts or [_FAN_LED_SLOTS] * _FAN_COUNT
+                black_payload = bytes(_AIO_LED_COUNT * 3 + sum(port_counts) * 3)
+                self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, black_payload)
+            self._led_payload = None
 
     def _ensure_fw_version(self):
         """Fetch and cache firmware major version. Must be called inside a wake context."""
@@ -381,26 +408,18 @@ class CommanderCore(UsbHidDriver):
             result[i*3+2] = int(colors[ci][2] * (1-t) + colors[ni][2] * t)
         return result
 
-    def _build_cycle_payload(self, zones, colors, offset):
-        """Build 699-byte payload with a rotating gradient on the specified zones."""
-        payload = bytearray(_AIO_LED_COUNT * 3 + _FAN_COUNT * _FAN_LED_SLOTS * 3)
-        if 0 in zones:
-            payload[0:_AIO_LED_COUNT*3] = self._build_gradient(
-                colors, _AIO_LED_COUNT, offset)
-        for z in range(1, _FAN_COUNT + 1):
-            start = _AIO_LED_COUNT * 3 + (z - 1) * _FAN_LED_SLOTS * 3
-            if z in zones:
-                payload[start:start + _FAN_LED_SLOTS*3] = self._build_gradient(
-                    colors, _FAN_LED_SLOTS, offset)
-        return bytes(payload)
+    def _ensure_animation_thread(self):
+        """Start the frame-pump thread if not already running.
 
-    def _start_animation(self, zones, colors, rot_secs):
-        """Start the color-cycle background thread."""
-        self._anim_params = (zones, list(colors), rot_secs)
+        Does NOT reset zone states or offsets — zones updated in _zone_states
+        under _anim_lock take effect on the very next frame.
+        """
+        if self._anim_thread is not None and self._anim_thread.is_alive():
+            return
         self._anim_stop = threading.Event()
         self._anim_thread = threading.Thread(
             target=self._animation_loop,
-            args=(zones, list(colors), rot_secs, self._anim_stop, self._anim_offset),
+            args=(self._anim_stop,),
             daemon=True,
         )
         self._anim_thread.start()
@@ -414,7 +433,6 @@ class CommanderCore(UsbHidDriver):
                 # 24fps with fast HID) plus remaining inter-frame sleep.
                 self._anim_thread.join()
             self._anim_thread = None
-            self._anim_params = None
 
     @staticmethod
     def _read_cpu_stat():
@@ -428,32 +446,32 @@ class CommanderCore(UsbHidDriver):
             fields = list(map(int, f.readline().split()[1:]))
         return sum(fields), fields[3]  # total, idle (4th field)
 
-    def _animation_loop(self, zones, colors, rot_secs, stop_event, initial_offset=0.0):
-        """Background thread: writes one complete LED frame per iteration (Mode A).
+    def _animation_loop(self, stop_event):
+        """Frame-pump thread: blends all active zones into one 699-byte payload per frame.
 
-        Each frame is a full OPEN_ENDPOINT → WRITE → WRITE_MORE... → CLOSE_ENDPOINT
-        sequence via _write_led_data().  _anim_lock is held only for the duration of
-        that one call, then released before the inter-frame sleep.
+        Each zone in _zone_states animates independently with its own colors, speed,
+        and phase offset.  All zones are written atomically in a single
+        OPEN_ENDPOINT → WRITE → WRITE_MORE... → CLOSE_ENDPOINT sequence.
 
-        _wake_device_context() acquires _anim_lock to serialize HID access with the
-        animation thread without stopping it — it waits for the current frame write
-        to finish, does the fan/status op, and releases.  The animation continues
-        from the next frame without any stop/restart overhead.
+        _anim_lock is held for the entire frame (build + write ≈ 45ms at 24fps).
+        set_color() acquires the same lock to update _zone_states — changes take
+        effect on the next frame (≤45ms latency), with no thread restart required.
 
-        CLOSE_ENDPOINT does NOT send SLEEP, so the device holds the last frame in
-        its display buffer; there is no visible flicker between frames.
+        _wake_device_context() also acquires _anim_lock to serialize fan ops with
+        the animation thread without stopping it.
         """
-        nc = len(colors)
-        frame_dt = 1.0 / _COLOR_CYCLE_FPS
-        cpu_speed_mode = rot_secs is None
-        step = nc / ((rot_secs or 20.0) * _COLOR_CYCLE_FPS)  # slow default for first frame
-        off = initial_offset  # resume from where we left off
         first_frame = True
-        prev_cpu_stat = None  # (total, idle) from previous frame; None until first read
+        prev_cpu_stat = None
+        cpu_rot_secs = _COLOR_CYCLE_SPEEDS.get('slow', 20.0)  # fallback for first frame
 
         while not stop_event.is_set():
             t0 = time.monotonic()
-            if cpu_speed_mode:
+
+            with self._anim_lock:
+                if stop_event.is_set() or not self._zone_states:
+                    break
+
+                # Read CPU stat once per frame (shared by all cpu-speed zones).
                 curr = self._read_cpu_stat()
                 if prev_cpu_stat is not None:
                     dt = curr[0] - prev_cpu_stat[0]
@@ -462,23 +480,55 @@ class CommanderCore(UsbHidDriver):
                         cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
                         for thresh, name in _CPU_SPEED_THRESHOLDS:
                             if cpu_pct <= thresh:
-                                step = nc / (_COLOR_CYCLE_SPEEDS[name] * _COLOR_CYCLE_FPS)
+                                cpu_rot_secs = _COLOR_CYCLE_SPEEDS[name]
                                 break
                 prev_cpu_stat = curr
-            payload = self._build_cycle_payload(zones, colors, off)
-            with self._anim_lock:
-                if stop_event.is_set():
-                    break
+
+                # Build payload from all active zone states.
+                # Fan LED data is packed contiguously using actual per-port LED
+                # counts (read from device during initialize()).  This gives each
+                # zone the correct byte range for independent per-port control.
+                port_counts = self._port_led_counts or [_FAN_LED_SLOTS] * _FAN_COUNT
+                payload = bytearray(_AIO_LED_COUNT * 3 + sum(port_counts) * 3)
+                for zone_idx, state in self._zone_states.items():
+                    if state['rot_secs'] is None:       # cpu-speed
+                        rot = cpu_rot_secs
+                        boost = _CPU_SPEED_BOOST
+                    elif state['rot_secs'] < 0:         # fan-speed
+                        rpm = self._fan_rpms.get(zone_idx, 0)
+                        rot = _COLOR_CYCLE_SPEEDS['slow']   # fallback until first get_status()
+                        for thresh, name in _FAN_SPEED_THRESHOLDS:
+                            if rpm <= thresh:
+                                rot = _COLOR_CYCLE_SPEEDS[name]
+                                break
+                        boost = _FAN_SPEED_BOOST
+                    else:                               # fixed speed
+                        rot = state['rot_secs']
+                        boost = 1.0
+                    nc = len(state['colors'])
+                    if rot > 0 and nc > 1:
+                        step = nc * boost / (rot * _COLOR_CYCLE_FPS)
+                    else:
+                        step = 0.0
+                    if zone_idx == 0:
+                        led_count = _AIO_LED_COUNT
+                        gradient = self._build_gradient(state['colors'], led_count, state['offset'])
+                        payload[0:_AIO_LED_COUNT * 3] = gradient
+                    else:
+                        led_count = port_counts[zone_idx - 1]
+                        gradient = self._build_gradient(state['colors'], led_count, state['offset'])
+                        start = _AIO_LED_COUNT * 3 + sum(port_counts[:zone_idx - 1]) * 3
+                        payload[start:start + led_count * 3] = gradient
+                    state['offset'] = (state['offset'] + step) % max(nc, 1)
+
                 if first_frame:
-                    # WAKE inside the lock so _wake_device_context() (also lock-
-                    # protected) cannot race against this initial mode transition.
                     self._send_command(_CMD_WAKE)
                     first_frame = False
                 self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, payload)
-            self._led_payload = payload  # snapshot of last displayed frame
-            off = (off + step) % nc
-            self._anim_offset = off  # persist for seamless restart
-            rem = frame_dt - (time.monotonic() - t0)
+                self._led_payload = bytes(payload)
+                self._save_led_state()
+
+            rem = (1.0 / _COLOR_CYCLE_FPS) - (time.monotonic() - t0)
             if rem > 0:
                 stop_event.wait(rem)  # interruptible sleep
 
@@ -597,9 +647,9 @@ class CommanderCore(UsbHidDriver):
         channels = self._parse_channels(channel)
         curve_points = list(profile)
         if len(curve_points) < 2:
-            ValueError('a minimum of 2 speed curve points must be configured.')
+            raise ValueError('a minimum of 2 speed curve points must be configured.')
         if len(curve_points) > 7:
-            ValueError('a maximum of 7 speed curve points may be configured.')
+            raise ValueError('a maximum of 7 speed curve points may be configured.')
 
         with self._wake_device_context(commit_speed=True):
             self._ensure_fw_version()
@@ -687,7 +737,10 @@ class CommanderCore(UsbHidDriver):
         if all(self._committed_duties.get(ch) == clamped for ch in channels):
             return
 
-        with self._wake_device_context(commit_speed=False):
+        # fw2.x uses a write-mode endpoint that commits immediately — no SLEEP needed.
+        # fw1.x writes to speed endpoints that require SLEEP to commit.
+        commit = self._fw_major is None or self._fw_major < 2
+        with self._wake_device_context(commit_speed=commit):
             self._ensure_fw_version()
             if self._fw_major >= 2:
                 # fw2.x: write directly to (0x18,0x00) using write-mode protocol.
@@ -867,7 +920,7 @@ class CommanderCore(UsbHidDriver):
             with open(_LED_STATE_FILE) as f:
                 data = json.load(f)
             payload = bytes(data['payload'])
-            if len(payload) == _AIO_LED_COUNT * 3 + _FAN_COUNT * _FAN_LED_SLOTS * 3:
+            if payload:
                 return payload
         except (OSError, KeyError, ValueError, json.JSONDecodeError):
             pass
