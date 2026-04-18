@@ -152,7 +152,7 @@ _FAN_SPEED_THRESHOLDS = [
 # Speed multipliers applied on top of threshold-selected rotation periods.
 # >1.0 = faster animation, <1.0 = slower.
 _CPU_SPEED_BOOST = 1.5   # cpu-speed mode
-_FAN_SPEED_BOOST = 0.5   # fan-speed mode
+_FAN_SPEED_BOOST = 0.7   # fan-speed mode
 
 class CommanderCore(UsbHidDriver):
     """Corsair Commander Core"""
