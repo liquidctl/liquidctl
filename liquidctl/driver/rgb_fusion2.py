@@ -363,15 +363,42 @@ class RgbFusion2IT5711(UsbHidDriver):
 
     def __init__(self, device, description, **kwargs):
         super().__init__(device, description, **kwargs)
-        self._cal        = {}    # per-channel calibration; set during initialize()
-        self._anim_thread  = None  # background color-cycle thread
-        self._anim_stop    = None  # threading.Event to signal stop
-        self._anim_params  = None  # (channels, colors, rot_secs) for restart
-        self._anim_offset  = 0.0   # current gradient offset; preserved across restarts
+        self._cal         = {}    # per-channel calibration; set during initialize()
+        self._anim_thread = None  # background color-cycle thread
+        self._anim_stop   = None  # threading.Event to signal stop
+        self._zone_states = {}    # {ch: {'colors', 'rot_secs', 'offset'}} for each active channel
+        self._zone_lock   = threading.Lock()  # serialises _zone_states between set_color and thread
 
     def disconnect(self, **kwargs):
-        """Stop animation thread before closing the HID connection."""
+        """Stop animation thread, turn off all LEDs, then close the HID connection.
+
+        Writing off before disconnect ensures the IT5711 does not retain its last
+        animated state on USB standby power (+5VSB) after system shutdown.
+        """
         self._stop_animation()
+        try:
+            # Re-enable the hardware effect engine (clears PktRGB direct mode).
+            self._send_feature_report([_REPORT_ID, 0x32, 0x00])
+            acc_mask = 0
+            for ch, (led_index, _) in _IT5711_ARGB_CHANNELS.items():
+                zone_bit = 1 << led_index
+                pkt = [_REPORT_ID, 0x20 + led_index,
+                       zone_bit & 0xFF, (zone_bit >> 8) & 0xFF,
+                       (zone_bit >> 16) & 0xFF, (zone_bit >> 24) & 0xFF,
+                       0, 0, 0, 0,   # zone1 = 0
+                       0,             # reserved
+                       0x01,          # EFFECT_STATIC
+                       0x00,          # brightness = 0 (off)
+                       0x00,          # min_brightness
+                       0, 0, 0, 0]    # color0 = black
+                self._send_feature_report(pkt)
+                acc_mask |= zone_bit
+            apply_pkt = [_REPORT_ID, 0x28,
+                         acc_mask & 0xFF, (acc_mask >> 8) & 0xFF,
+                         (acc_mask >> 16) & 0xFF, (acc_mask >> 24) & 0xFF]
+            self._send_feature_report(apply_pkt)
+        except Exception as e:
+            _LOGGER.debug('IT5711 disconnect off-sequence failed: %s', e)
         return super().disconnect(**kwargs)
 
     def initialize(self, **kwargs):
@@ -470,9 +497,6 @@ class RgbFusion2IT5711(UsbHidDriver):
 
         Colors should be an iterable of [red, green, blue] triples (0–255).
         """
-        # Stop any running animation before switching modes.
-        self._stop_animation()
-
         mode = mode.lower()
         colors = list(colors)
 
@@ -484,15 +508,7 @@ class RgbFusion2IT5711(UsbHidDriver):
             raise ValueError(
                 f'unknown channel {channel!r}; valid: argb1, argb2, argb3, sync')
 
-        if mode == 'off':
-            r, g, b = 0, 0, 0
-            brightness = 0x00
-        elif mode == 'fixed':
-            if not colors:
-                raise ValueError('fixed mode requires one color')
-            r, g, b = colors[0]
-            brightness = 0xFF
-        elif mode == 'color-cycle':
+        if mode == 'color-cycle':
             if len(colors) < 2:
                 raise ValueError('color-cycle mode requires at least 2 colors')
             if len(colors) > 8:
@@ -502,17 +518,46 @@ class RgbFusion2IT5711(UsbHidDriver):
                 valid = ', '.join(_IT5711_COLOR_CYCLE_SPEEDS)
                 raise ValueError(f'unknown speed {speed!r}; valid: {valid}')
             rot_secs = _IT5711_COLOR_CYCLE_SPEEDS[speed]
-            self._anim_offset = 0.0  # start fresh on explicit set_color call
-            self._start_animation(channels, colors, rot_secs)
+            # Update per-channel state under the zone lock.  The running thread
+            # reads _zone_states each frame, so changes take effect immediately
+            # without stopping and restarting the thread.  This prevents other
+            # channels' animations from being interrupted when one channel's
+            # settings change (the single thread drives ALL active channels).
+            with self._zone_lock:
+                for ch in channels:
+                    self._zone_states[ch] = {
+                        'colors':   list(colors),
+                        'rot_secs': rot_secs,
+                        'offset':   0.0,  # start fresh on explicit set_color call
+                    }
+            self._ensure_animation_thread()
             return
+
+        # For fixed/off modes: stop animation, write hardware effect, then
+        # restart animation for any remaining color-cycle channels.
+        if mode == 'off':
+            r, g, b = 0, 0, 0
+            brightness = 0x00
+        elif mode == 'fixed':
+            if not colors:
+                raise ValueError('fixed mode requires one color')
+            r, g, b = colors[0]
+            brightness = 0xFF
         else:
             raise NotSupportedByDevice()
+
+        # Remove these channels from animated state and stop thread if none remain.
+        with self._zone_lock:
+            for ch in channels:
+                self._zone_states.pop(ch, None)
+            has_remaining = bool(self._zone_states)
+        if not has_remaining:
+            self._stop_animation()
 
         # Enable built-in hardware effects on all ARGB headers.
         # Bitmask 0x00 = all channels enabled.
         self._send_feature_report([_REPORT_ID, 0x32, 0x00])
 
-        cal_map = getattr(self, '_cal', {})
         acc_mask = 0
 
         for ch in channels:
@@ -542,6 +587,10 @@ class RgbFusion2IT5711(UsbHidDriver):
                      acc_mask & 0xFF, (acc_mask >> 8) & 0xFF,
                      (acc_mask >> 16) & 0xFF, (acc_mask >> 24) & 0xFF]
         self._send_feature_report(apply_pkt)
+
+        # Restart animation for any channels still in color-cycle mode.
+        if has_remaining:
+            self._ensure_animation_thread()
 
     def set_speed_profile(self, channel, profile, **kwargs):
         """Not supported by this device."""
@@ -597,14 +646,14 @@ class RgbFusion2IT5711(UsbHidDriver):
             offset += bcount
             idx += leds_in_pkt
 
-    def _start_animation(self, channels, colors, rot_secs):
-        """Start the color-cycle background thread."""
-        self._anim_params = (list(channels), list(colors), rot_secs)
+    def _ensure_animation_thread(self):
+        """Start the color-cycle background thread if it is not already running."""
+        if self._anim_thread is not None and self._anim_thread.is_alive():
+            return
         self._anim_stop = threading.Event()
         self._anim_thread = threading.Thread(
             target=self._animation_loop,
-            args=(list(channels), list(colors), rot_secs,
-                  self._anim_stop, self._anim_offset),
+            args=(self._anim_stop,),
             daemon=True,
         )
         self._anim_thread.start()
@@ -616,7 +665,6 @@ class RgbFusion2IT5711(UsbHidDriver):
                 self._anim_stop.set()
                 self._anim_thread.join(timeout=2.0)
             self._anim_thread = None
-            self._anim_params = None
 
     @staticmethod
     def _read_system_fan_rpm():
@@ -651,29 +699,44 @@ class RgbFusion2IT5711(UsbHidDriver):
             fields = list(map(int, f.readline().split()[1:]))
         return sum(fields), fields[3]  # total, idle (4th field)
 
-    def _animation_loop(self, channels, colors, rot_secs, stop_event, initial_offset=0.0):
-        """Background thread: streams gradient frames until stop_event is set."""
-        nc = len(colors)
+    def _animation_loop(self, stop_event):
+        """Background thread: streams gradient frames for all active _zone_states channels.
+
+        Each channel in _zone_states may independently use cpu-speed (rot_secs is None),
+        fan-speed (rot_secs < 0), or a fixed rotation time (rot_secs > 0).  Shared
+        sensor reads (CPU stat, fan RPM) are done once per frame and reused across
+        channels that need them — no duplicate /proc or hwmon reads per frame.
+
+        Per-channel animation offsets are stored back into _zone_states['offset'] after
+        every frame so that a channel re-entering the dict after a fixed/off call will
+        start from 0.0 (as set_color() always writes offset=0.0).
+        """
         frame_dt = 1.0 / _IT5711_COLOR_CYCLE_FPS
-        cpu_speed_mode = rot_secs is None
-        fan_speed_mode = rot_secs is not None and rot_secs < 0
-        base_rot = rot_secs if (rot_secs is not None and rot_secs > 0) else 10.0
-        step = nc / (base_rot * _IT5711_COLOR_CYCLE_FPS)  # slow default for first frame
-        off = initial_offset
-        prev_cpu_stat = None  # (total, idle) from previous frame; None until first read
+        prev_cpu_stat = None  # (total, idle) — refreshed once per frame when needed
 
-        # Disable the built-in effect engine for each animated channel so PktRGB
-        # writes persist instead of being overwritten by the hardware effect engine.
-        disable_mask = 0
-        for ch in channels:
-            _, effect_disable_bit = _IT5711_ARGB_CHANNELS[ch]
-            disable_mask |= effect_disable_bit
-        self._send_feature_report([_REPORT_ID, 0x32, disable_mask])
-        self._send_feature_report([_REPORT_ID, 0x28, 0xFF, 0x07])
-
+        # Build the initial effect-engine disable mask from whatever channels are
+        # currently active.  This is re-evaluated each frame because set_color() can
+        # add new channels to _zone_states while the thread is running.
         while not stop_event.is_set():
             t0 = time.monotonic()
-            if cpu_speed_mode:
+
+            # Snapshot current zone states under the lock.
+            with self._zone_lock:
+                snapshot = {ch: dict(s) for ch, s in self._zone_states.items()}
+
+            if not snapshot:
+                # Nothing left to animate — exit cleanly.
+                break
+
+            # Determine which shared sensor reads are needed this frame.
+            needs_cpu = any(s['rot_secs'] is None for s in snapshot.values())
+            needs_fan = any(
+                s['rot_secs'] is not None and s['rot_secs'] < 0
+                for s in snapshot.values()
+            )
+
+            # Read CPU usage (delta since last frame).
+            if needs_cpu:
                 curr = self._read_cpu_stat()
                 if prev_cpu_stat is not None:
                     dt = curr[0] - prev_cpu_stat[0]
@@ -682,35 +745,81 @@ class RgbFusion2IT5711(UsbHidDriver):
                         cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
                         for thresh, name in _CPU_SPEED_THRESHOLDS:
                             if cpu_pct <= thresh:
-                                step = nc * _CPU_SPEED_BOOST / (_IT5711_COLOR_CYCLE_SPEEDS[name] * _IT5711_COLOR_CYCLE_FPS)
+                                cpu_rot = _IT5711_COLOR_CYCLE_SPEEDS[name]
                                 break
+                        else:
+                            cpu_rot = _IT5711_COLOR_CYCLE_SPEEDS['ludicrous']
+                    else:
+                        cpu_rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']
+                else:
+                    cpu_rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']
                 prev_cpu_stat = curr
-            elif fan_speed_mode:
+            else:
+                cpu_rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']  # unused; avoids UnboundLocalError
+
+            # Read fan RPM.
+            if needs_fan:
                 rpm = self._read_system_fan_rpm()
-                rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']  # fallback when hwmon unavailable
+                fan_rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']  # fallback
                 for thresh, name in _FAN_SPEED_THRESHOLDS:
                     if rpm <= thresh:
-                        rot = _IT5711_COLOR_CYCLE_SPEEDS[name]
+                        fan_rot = _IT5711_COLOR_CYCLE_SPEEDS[name]
                         break
-                step = nc * _FAN_SPEED_BOOST / (rot * _IT5711_COLOR_CYCLE_FPS)
+            else:
+                fan_rot = _IT5711_COLOR_CYCLE_SPEEDS['slow']  # unused
+
+            # Disable hardware effect engine for ALL currently active channels so that
+            # PktRGB writes are not silently overwritten by the built-in effect engine.
+            disable_mask = 0
+            for ch in snapshot:
+                _, effect_disable_bit = _IT5711_ARGB_CHANNELS[ch]
+                disable_mask |= effect_disable_bit
+            self._send_feature_report([_REPORT_ID, 0x32, disable_mask])
+            self._send_feature_report([_REPORT_ID, 0x28, 0xFF, 0x07])
+
+            # Write PktRGB data for each active channel.
             acc_mask = 0
-            for ch in channels:
+            new_offsets = {}
+            for ch, state in snapshot.items():
+                colors   = state['colors']
+                rot_secs = state['rot_secs']
+                off      = state['offset']
+                nc       = len(colors)
+
+                # Compute per-channel animation step.
+                if rot_secs is None:
+                    # cpu-speed: step scales with CPU load.
+                    step = nc * _CPU_SPEED_BOOST / (cpu_rot * _IT5711_COLOR_CYCLE_FPS)
+                elif rot_secs < 0:
+                    # fan-speed: step scales with highest hwmon fan RPM.
+                    step = nc * _FAN_SPEED_BOOST / (fan_rot * _IT5711_COLOR_CYCLE_FPS)
+                else:
+                    # Fixed rotation time.
+                    step = nc / (rot_secs * _IT5711_COLOR_CYCLE_FPS)
+
                 led_index, _ = _IT5711_ARGB_CHANNELS[ch]
                 header = _IT5711_PKTRGB_HEADERS[ch]
                 cal = self._cal.get(ch, _IT5711_DEFAULT_CAL)
                 zone_bit = 1 << led_index
+
                 led_data = self._build_gradient(colors, _IT5711_LEDS_PER_STRIP, off)
                 self._write_pktrgb(header, led_data, cal)
                 acc_mask |= zone_bit
+                new_offsets[ch] = (off + step) % nc
 
-            # Activate all channels simultaneously.
+            # Activate all written channels simultaneously.
             apply_pkt = [_REPORT_ID, 0x28,
                          acc_mask & 0xFF, (acc_mask >> 8) & 0xFF,
                          (acc_mask >> 16) & 0xFF, (acc_mask >> 24) & 0xFF]
             self._send_feature_report(apply_pkt)
 
-            self._anim_offset = off
-            off = (off + step) % nc
+            # Write back updated offsets under the lock so set_color() changes
+            # (which write offset=0.0) are not silently overwritten.
+            with self._zone_lock:
+                for ch, new_off in new_offsets.items():
+                    if ch in self._zone_states:
+                        self._zone_states[ch]['offset'] = new_off
+
             rem = frame_dt - (time.monotonic() - t0)
             if rem > 0:
                 stop_event.wait(rem)
