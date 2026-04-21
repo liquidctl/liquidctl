@@ -908,10 +908,13 @@ class CommanderCore(UsbHidDriver):
                     # Doing WAKE unconditionally here means the animation thread can
                     # write its next frame without needing to re-check first_frame.
                     self._send_command(_CMD_WAKE)
-                    if not was_animating and self._led_payload is not None:
+                    if was_animating:
+                        # Restart thread if it was stopped by the lock-timeout path above;
+                        # no-op if thread is still alive (it resumes on its next frame).
+                        self._ensure_animation_thread()
+                    elif self._led_payload is not None:
                         self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS,
                                              self._led_payload)
-                    # If animating: thread resumes from WAKE state on next frame.
                 # commit_speed=False (e.g. get_status): device stays in WAKE —
                 # no SLEEP, no LED blink.  Read-only ops don't need a fan commit.
         finally:
