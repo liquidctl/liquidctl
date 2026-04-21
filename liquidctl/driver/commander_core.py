@@ -465,72 +465,76 @@ class CommanderCore(UsbHidDriver):
         cpu_rot_secs = _COLOR_CYCLE_SPEEDS.get('slow', 20.0)  # fallback for first frame
 
         while not stop_event.is_set():
-            t0 = time.monotonic()
+            try:
+                t0 = time.monotonic()
 
-            with self._anim_lock:
-                if stop_event.is_set() or not self._zone_states:
-                    break
+                with self._anim_lock:
+                    if stop_event.is_set() or not self._zone_states:
+                        break
 
-                # Read CPU stat once per frame (shared by all cpu-speed zones).
-                curr = self._read_cpu_stat()
-                if prev_cpu_stat is not None:
-                    dt = curr[0] - prev_cpu_stat[0]
-                    di = curr[1] - prev_cpu_stat[1]
-                    if dt > 0:
-                        cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
-                        for thresh, name in _CPU_SPEED_THRESHOLDS:
-                            if cpu_pct <= thresh:
-                                cpu_rot_secs = _COLOR_CYCLE_SPEEDS[name]
-                                break
-                prev_cpu_stat = curr
+                    # Read CPU stat once per frame (shared by all cpu-speed zones).
+                    curr = self._read_cpu_stat()
+                    if prev_cpu_stat is not None:
+                        dt = curr[0] - prev_cpu_stat[0]
+                        di = curr[1] - prev_cpu_stat[1]
+                        if dt > 0:
+                            cpu_pct = max(0.0, min(100.0, (1.0 - di / dt) * 100.0))
+                            for thresh, name in _CPU_SPEED_THRESHOLDS:
+                                if cpu_pct <= thresh:
+                                    cpu_rot_secs = _COLOR_CYCLE_SPEEDS[name]
+                                    break
+                    prev_cpu_stat = curr
 
-                # Build payload from all active zone states.
-                # Fan LED data is packed contiguously using actual per-port LED
-                # counts (read from device during initialize()).  This gives each
-                # zone the correct byte range for independent per-port control.
-                port_counts = self._port_led_counts or [_FAN_LED_SLOTS] * _FAN_COUNT
-                payload = bytearray(_AIO_LED_COUNT * 3 + sum(port_counts) * 3)
-                for zone_idx, state in self._zone_states.items():
-                    if state['rot_secs'] is None:       # cpu-speed
-                        rot = cpu_rot_secs
-                        boost = _CPU_SPEED_BOOST
-                    elif state['rot_secs'] < 0:         # fan-speed
-                        rpm = self._fan_rpms.get(zone_idx, 0)
-                        rot = _COLOR_CYCLE_SPEEDS['slow']   # fallback until first get_status()
-                        for thresh, name in _FAN_SPEED_THRESHOLDS:
-                            if rpm <= thresh:
-                                rot = _COLOR_CYCLE_SPEEDS[name]
-                                break
-                        boost = _FAN_SPEED_BOOST
-                    else:                               # fixed speed
-                        rot = state['rot_secs']
-                        boost = 1.0
-                    nc = len(state['colors'])
-                    if rot > 0 and nc > 1:
-                        step = nc * boost / (rot * _COLOR_CYCLE_FPS)
-                    else:
-                        step = 0.0
-                    if zone_idx == 0:
-                        led_count = _AIO_LED_COUNT
-                        gradient = self._build_gradient(state['colors'], led_count, state['offset'])
-                        payload[0:_AIO_LED_COUNT * 3] = gradient
-                    else:
-                        led_count = port_counts[zone_idx - 1]
-                        gradient = self._build_gradient(state['colors'], led_count, state['offset'])
-                        start = _AIO_LED_COUNT * 3 + sum(port_counts[:zone_idx - 1]) * 3
-                        payload[start:start + led_count * 3] = gradient
-                    state['offset'] = (state['offset'] + step) % max(nc, 1)
+                    # Build payload from all active zone states.
+                    # Fan LED data is packed contiguously using actual per-port LED
+                    # counts (read from device during initialize()).  This gives each
+                    # zone the correct byte range for independent per-port control.
+                    port_counts = self._port_led_counts or [_FAN_LED_SLOTS] * _FAN_COUNT
+                    payload = bytearray(_AIO_LED_COUNT * 3 + sum(port_counts) * 3)
+                    for zone_idx, state in self._zone_states.items():
+                        if state['rot_secs'] is None:       # cpu-speed
+                            rot = cpu_rot_secs
+                            boost = _CPU_SPEED_BOOST
+                        elif state['rot_secs'] < 0:         # fan-speed
+                            rpm = self._fan_rpms.get(zone_idx, 0)
+                            rot = _COLOR_CYCLE_SPEEDS['slow']   # fallback until first get_status()
+                            for thresh, name in _FAN_SPEED_THRESHOLDS:
+                                if rpm <= thresh:
+                                    rot = _COLOR_CYCLE_SPEEDS[name]
+                                    break
+                            boost = _FAN_SPEED_BOOST
+                        else:                               # fixed speed
+                            rot = state['rot_secs']
+                            boost = 1.0
+                        nc = len(state['colors'])
+                        if rot > 0 and nc > 1:
+                            step = nc * boost / (rot * _COLOR_CYCLE_FPS)
+                        else:
+                            step = 0.0
+                        if zone_idx == 0:
+                            led_count = _AIO_LED_COUNT
+                            gradient = self._build_gradient(state['colors'], led_count, state['offset'])
+                            payload[0:_AIO_LED_COUNT * 3] = gradient
+                        else:
+                            led_count = port_counts[zone_idx - 1]
+                            gradient = self._build_gradient(state['colors'], led_count, state['offset'])
+                            start = _AIO_LED_COUNT * 3 + sum(port_counts[:zone_idx - 1]) * 3
+                            payload[start:start + led_count * 3] = gradient
+                        state['offset'] = (state['offset'] + step) % max(nc, 1)
 
-                if first_frame:
-                    self._send_command(_CMD_WAKE)
-                    first_frame = False
-                self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, payload)
-                self._led_payload = bytes(payload)
+                    if first_frame:
+                        self._send_command(_CMD_WAKE)
+                        first_frame = False
+                    self._write_led_data(_MODE_LED_COLORS, _DATA_TYPE_LED_COLORS, payload)
+                    self._led_payload = bytes(payload)
 
-            self._save_led_state()  # outside lock: file I/O; _led_payload already set
-            rem = (1.0 / _COLOR_CYCLE_FPS) - (time.monotonic() - t0)
-            if rem > 0:
-                stop_event.wait(rem)  # interruptible sleep
+                self._save_led_state()  # outside lock: file I/O; _led_payload already set
+                rem = (1.0 / _COLOR_CYCLE_FPS) - (time.monotonic() - t0)
+                if rem > 0:
+                    stop_event.wait(rem)  # interruptible sleep
+            except Exception as e:
+                _LOGGER.warning('animation frame failed, retrying in 2s: %s', e)
+                stop_event.wait(2.0)
 
     # --------------------------------------------------------------------------
 
