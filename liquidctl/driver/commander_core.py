@@ -534,6 +534,7 @@ class CommanderCore(UsbHidDriver):
                     stop_event.wait(rem)  # interruptible sleep
             except Exception as e:
                 _LOGGER.warning('animation frame failed, retrying in 2s: %s', e)
+                first_frame = True  # force WAKE before next write; device may be in SLEEP
                 stop_event.wait(2.0)
 
     # --------------------------------------------------------------------------
@@ -888,7 +889,9 @@ class CommanderCore(UsbHidDriver):
             )
             if self._anim_thread and self._anim_thread.is_alive():
                 self._anim_stop.set()
-            self._anim_lock.acquire()  # blocking — thread yields lock after current frame
+            if not self._anim_lock.acquire(timeout=0.5):
+                _LOGGER.warning('animation thread still unresponsive after 900 ms; aborting op')
+                raise RuntimeError('HID device unresponsive; animation thread holding lock')
         try:
             # Always WAKE: the device must be in software mode for fan ops and LED
             # writes.  Idempotent — safe even if animation already WAKEd it.
@@ -919,6 +922,8 @@ class CommanderCore(UsbHidDriver):
                 # no SLEEP, no LED blink.  Read-only ops don't need a fan commit.
         finally:
             self._anim_lock.release()
+            if was_animating:
+                self._ensure_animation_thread()
 
     def _save_led_state(self):
         """Persist current LED payload to disk for cross-session continuity."""
