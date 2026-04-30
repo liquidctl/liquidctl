@@ -161,7 +161,7 @@ class HydroShiftLCD(UsbHidDriver):
             self._data = runtime_storage
         else:
             ids = f'vid{self.vendor_id:04x}_pid{self.product_id:04x}'
-            loc = f'bus{self.bus}_address{self.address}'
+            loc = 'loc' + '_'.join(re.findall(r'\d+', self.address))
             self._data = RuntimeStorage(key_prefixes=[ids, loc])
         return ret
 
