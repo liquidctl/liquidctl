@@ -807,6 +807,34 @@ The animation direction can be set with
 .BI \-\-direction= value ,
 where the allowed values are: \fIforward\fR or \fIbackward\fR.
 .
+.SS Lian Li HydroShift LCD 360S, RGB, TL
+Cooling channels: \fIpump\fR, \fIfan\fR.
+.PP
+This device does not support speed profiles for any channels, only fixed speeds are supported.
+.PP
+Lighting channels: \fIfan\fR.
+.PP
+Supported lighting modes: \fIrainbow\fR, \fIrainbow\-morph\fR, \fIstatic\fR,
+\fIbreathing\fR, \fIrunway\fR, \fImeteor\fR, \fIcolor\-cycle\fR,
+\fIstaggered\fR, \fItide\fR, \fImixing\fR, \fIripple\fR, \fIreflect\fR,
+\fItail\-chasing\fR, \fIpaint\fR, \fIping\-pong\fR.
+Each mode accepts up to four RGB colors.
+.PP
+The animation speed can be set with
+.BI \-\-speed= value ,
+where the allowed values are: \fIslowest\fR, \fIslower\fR, \fInormal\fR,
+\fIfaster\fR, \fIfastest\fR.
+The animation direction can be set with
+.BI \-\-direction= value ,
+where the allowed values are: \fIforward\fR or \fIbackward\fR.
+.PP
+Screen channel: \fIlcd\fR. Modes: \fIstatic\fR (path to image),
+\fIgif\fR (path to animated GIF), \fIvideo\fR (path to video, decoded via
+\fBffmpeg\fR), \fIbrightness\fR (0\-100), \fIorientation\fR (0, 90, 180, 270),
+and \fIlcd\fR (return control to firmware/application mode).
+The configured orientation is persisted via runtime storage and applied to
+subsequent images.
+.
 .SH SEE ALSO
 The complete documentation is available in
 the project's sources and

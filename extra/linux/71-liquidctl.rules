@@ -503,6 +503,15 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="8297", TAG+="uacc
 # Lian Li GA II LCD
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="7395", TAG+="uaccess"
 
+# Lian Li HydroShift LCD 360S
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="7398", TAG+="uaccess"
+
+# Lian Li HydroShift LCD RGB
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="7399", TAG+="uaccess"
+
+# Lian Li HydroShift LCD TL
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="739a", TAG+="uaccess"
+
 # Lian Li Uni AL
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a101", TAG+="uaccess"
 
