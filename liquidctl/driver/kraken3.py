@@ -659,7 +659,7 @@ class KrakenZ3(KrakenX3):
 
     def _find_winusb_device(self, vid, pid, serial):
         winusb_devices = self.bulk_device.list_usb_devices(
-            deviceinterface=True, present=True, findparent=True
+            deviceinterface=True, present=True, findparent=True, vid=vid, pid=pid
         )
         for device in winusb_devices:
             if (
