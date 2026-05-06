@@ -891,6 +891,7 @@ class CommanderCore(UsbHidDriver):
                 self._anim_stop.set()
             if not self._anim_lock.acquire(timeout=0.5):
                 _LOGGER.warning('animation thread still unresponsive after 900 ms; aborting op')
+                self._anim_stop.clear()  # undo stop signal — thread will self-heal after HID timeout
                 raise RuntimeError('HID device unresponsive; animation thread holding lock')
         try:
             # Always WAKE: the device must be in software mode for fan ops and LED
