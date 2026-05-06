@@ -109,7 +109,7 @@ _LED_TYPE_PAYLOAD = bytes([
 _FAN_MODE_FIXED_PERCENT = 0x00
 _FAN_MODE_CURVE_PERCENT = 0x02
 
-_COLOR_CYCLE_FPS = 24  # hardware sustains ~27fps; 24 keeps step<1 down to 0.125s/rotation
+_COLOR_CYCLE_FPS = 12  # 12fps halves HID load vs 24fps; imperceptible on slow color cycles
 
 # Rotation period in seconds for each named speed.
 # Constraint: rot_secs > n_colors / FPS so gradient offset advances < 1 color/frame
