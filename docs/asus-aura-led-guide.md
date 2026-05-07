@@ -2,6 +2,7 @@
 _Driver API and source code available in [`liquidctl.driver.aura_led`](../liquidctl/driver/aura_led.py)._
 
 _New in 1.10.0._<br>
+_Changed in git: add support for the `0x1B29` controller used by ASUS ROG Strix LC III 360 liquid coolers._<br>
 
 This driver supports ASUS Aura USB-based lighting controllers that appear in various ASUS Z490, Z590, and Z690 motherboards. These controllers operate in either (a) direct mode or (b) effect mode. _Direct_ mode is employed by Aura Crate in Windows. It requires the application to send a continuous stream of commands to the controller in order to modulate lighting effects on each addressable LED. The other mode is _effect_ mode in which the controller itself modulates lighting effects on each addressable LED. Effect mode requires the application to issue a single set of command codes to the controller in order to initiate the given effect. The controller continues to process that effect until the application sends a different command.
 
@@ -9,13 +10,14 @@ This driver employs the _effect_ mode (fire and forget). The selected lighting m
 
 The disadvantage, however, is the inability to set different lighting modes to different lighting channels. All channels remain synchronized.
 
-There are three known variants of the Aura LED USB-based controller:
+There are four known variants of the Aura LED USB-based controller:
 
 - Device `0x19AF`: found in ASUS ProArt Z690-Creator WiFi
 - Device `0x1939` [^1]
 - Device `0x18F3`[^1]: found in ASUS ROG Maximus Z690 Formula
+- Device `0x1B29`[^1]: found in ASUS ROG Strix LC III 360 liquid coolers
 
-[^1]: Support for devices `0x1939` and `0x18F3` may not be sufficiently developed so users are asked to experiment and provide feedback. [Wireshark USB traffic capture](./developer/capturing-usb-traffic.md), in particular, will be very helpful.
+[^1]: Support for devices `0x1939`, `0x18F3` and `0x1B29` may not be sufficiently developed so users are asked to experiment and provide feedback. [Wireshark USB traffic capture](./developer/capturing-usb-traffic.md), in particular, will be very helpful.
 
 
 ## Initialization
