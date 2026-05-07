@@ -10,6 +10,7 @@ Additional controllers (requires user testing and feedback):
 
 - idVendor=0x0B05, idProduct=0x1939
 - idVendor=0x0B05, idProduct=0x18F3
+- idVendor=0x0B05, idProduct=0x1B29
 
 These controllers have not been sufficiently tested. Users are asked to test and
 report issues.
@@ -135,14 +136,15 @@ class AuraLed(UsbHidDriver):
     liquidctl driver for ASUS Aura LED USB controllers.
     This driver only supports 'effect' mode, hence no speed/color channels
 
-    Devices 0x1939 and 0x18F3 are not fully supported at this time; users are asked
-    to experiment with this driver and provide feedback
+    Devices 0x1939, 0x18F3 and 0x1B29 are not fully supported at this time; users
+    are asked to experiment with this driver and provide feedback
     """
 
     _MATCHES = [
         (0x0B05, 0x19AF, "ASUS Aura LED Controller", {}),
         (0x0B05, 0x1939, "ASUS Aura LED Controller", {}),
         (0x0B05, 0x18F3, "ASUS Aura LED Controller", {}),
+        (0x0B05, 0x1B29, "ASUS Aura LED Controller", {}),
     ]
 
     def initialize(self, **kwargs):

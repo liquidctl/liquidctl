@@ -25,6 +25,12 @@ def mockAuraLed_19AFDevice():
     return dev
 
 
+def test_aura_led_matches_1B29_device():
+    matches = {(vid, pid) for vid, pid, _desc, _kwargs in AuraLed._MATCHES}
+
+    assert (0x0B05, 0x1B29) in matches
+
+
 def test_aura_led_19AF_device_command_format(mockAuraLed_19AFDevice):
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_FIRMWARE)
     mockAuraLed_19AFDevice.device.preload_read(_INIT_19AF_CONFIG)
