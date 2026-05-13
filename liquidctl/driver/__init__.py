@@ -30,6 +30,7 @@ from liquidctl.driver import asus_ryujin
 from liquidctl.driver import asus_ryuo
 from liquidctl.driver import aura_led
 from liquidctl.driver import commander_core
+from liquidctl.driver import commander_duo
 from liquidctl.driver import commander_pro
 from liquidctl.driver import control_hub
 from liquidctl.driver import coolit
@@ -66,7 +67,10 @@ def find_liquidctl_devices(pick=None, **kwargs):
                    key=lambda x: (x.__module__, x.__name__))
     num = 0
     for bus_cls in buses:
-        for dev in bus_cls().find_devices(**kwargs):
+        devices = bus_cls().find_devices(**kwargs)
+        if devices is None:
+            continue
+        for dev in devices:
             if pick is not None:
                 if num == pick:
                     yield dev
