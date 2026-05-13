@@ -143,6 +143,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | Fan/LED controller | [Aquacomputer Quadro](docs/aquacomputer-quadro-guide.md) | hp | 1.15.0 |
 | Fan/LED controller | [Corsair Commander Pro](docs/corsair-commander-guide.md) | h | 1.11.1 |
 | Fan/LED controller | [Corsair Commander Core, Core XT, ST](docs/corsair-commander-core-guide.md) | Bp | 1.14.0 |
+| Fan/LED controller | [Corsair Commander DUO](docs/corsair-commander-duo-guide.md) | p | git |
 | Fan/LED controller | [Corsair Lighting Node Core, Pro](docs/corsair-commander-guide.md) | | 1.8.1 |
 | Fan/LED controller | [Corsair Obsidian 1000D](docs/corsair-commander-guide.md) | | 1.9.1 |
 | Fan/LED controller | [Lian Li Uni SL, SL v2, AL, AL v2, SL-Infinity](docs/lianli-uni-guide.md) | | 1.16.0 |

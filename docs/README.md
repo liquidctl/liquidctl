@@ -23,6 +23,7 @@ Device guides
 - [Asetek 690LC liquid coolers](asetek-690lc-guide.md)
 - [Asetek Pro liquid coolers](asetek-pro-guide.md)
 - [Corsair Commander Core and Core XT](corsair-commander-core-guide.md)
+- [Corsair Commander DUO](corsair-commander-duo-guide.md)
 - [Corsair Commander Pro, Obsidian 1000D and Lighting Node Pro/Core](corsair-commander-guide.md)
 - [Corsair HXi and RMi series PSUs](corsair-hxi-rmi-psu-guide.md)
 - [Corsair Hydro Platinum, Pro XT and Elite RGB all-in-one liquidctl coolers](corsair-platinum-pro-xt-guide.md)
