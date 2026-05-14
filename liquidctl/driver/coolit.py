@@ -13,8 +13,10 @@ Supported features
  - pump speed control (AIOs only)
  - fan speed control
 
-These devices share a single USB product ID, so the desired variant must be
-selected with ``--match <substring>`` (e.g. ``--match commander``).
+These devices share a single USB product ID; the driver auto-detects the
+specific variant by reading the device-type byte (cmd 0x00) at connect
+time. Unknown variants log a warning with the type byte, firmware version
+and product name so they can be added to the table.
 
 Copyright Roberto Marques, Serphentas, and other contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -37,6 +39,7 @@ _PUMP_INDEX = 0x02
 
 _COMMAND_DEVICE_TYPE = 0x00
 _COMMAND_FIRMWARE_ID = 0x01
+_COMMAND_PRODUCT_NAME = 0x02
 _COMMAND_TEMP_SELECT = 0x0C
 _COMMAND_TEMP_READ = 0x0E
 _COMMAND_FAN_SELECT = 0x10
@@ -188,18 +191,18 @@ class Coolit(UsbHidDriver):
         return ret
 
     def _detect_variant(self):
-        """Read cmd 0x00 and apply the matching variant config."""
+        """Read cmd 0x00 and apply the matching variant config.
+
+        On unknown variants, also probe firmware + product name and emit an
+        actionable warning so users can file an issue with the full fingerprint.
+        """
         res = self._send_command(
             self._build_data_package(_COMMAND_DEVICE_TYPE, _OP_CODE_READ_ONE_BYTE)
         )
         type_byte = res[2]
         variant = _VARIANT_BY_TYPE.get(type_byte)
         if variant is None:
-            LOGGER.warning(
-                "unknown device type 0x%02x at 1b1c:0c04, falling back to %s",
-                type_byte,
-                _VARIANT_FALLBACK["description"],
-            )
+            self._log_unknown_variant(type_byte)
             variant = _VARIANT_FALLBACK
         else:
             LOGGER.info("detected %s (type byte 0x%02x)", variant["description"], type_byte)
@@ -209,6 +212,35 @@ class Coolit(UsbHidDriver):
         self._temp_count = variant["temp_count"]
         self._component_count = 1 + self._fan_count * self._rgb_fans
         self._fan_names = [f"fan{i + 1}" for i in range(self._fan_count)]
+
+    def _log_unknown_variant(self, type_byte):
+        """Best-effort fingerprint dump for an unknown 1b1c:0c04 variant."""
+        try:
+            fw_res = self._send_command(
+                self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES)
+            )
+            firmware = "%d.%d.%d" % (fw_res[3] >> 4, fw_res[3] & 0xF, fw_res[2])
+        except Exception as exc:  # noqa: BLE001 — best-effort diagnostic
+            firmware = f"<error: {exc}>"
+        try:
+            # The PRODUCT_NAME response carries 4 ASCII bytes regardless of
+            # the read width; grab them directly from the response payload.
+            name_res = self._send_command(
+                self._build_data_package(_COMMAND_PRODUCT_NAME, _OP_CODE_READ_TWO_BYTES)
+            )
+            name = bytes(name_res[2:6]).rstrip(b"\x00").decode("ascii", errors="replace")
+        except Exception as exc:  # noqa: BLE001
+            name = f"<error: {exc}>"
+        LOGGER.warning(
+            "unknown 1b1c:0c04 device (type=0x%02x, firmware=%s, product=%r); "
+            "falling back to %s. Please report at "
+            "https://github.com/liquidctl/liquidctl/issues with these details "
+            "so the device can be added to the variant table.",
+            type_byte,
+            firmware,
+            name,
+            _VARIANT_FALLBACK["description"],
+        )
 
     def initialize(self, pump_mode="quiet", **kwargs):
         """Initialize the device and set the pump mode (on AIO variants).
