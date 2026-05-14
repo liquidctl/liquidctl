@@ -35,6 +35,7 @@ LOGGER = logging.getLogger(__name__)
 _REPORT_LENGTH = 64
 _PUMP_INDEX = 0x02
 
+_COMMAND_DEVICE_TYPE = 0x00
 _COMMAND_FIRMWARE_ID = 0x01
 _COMMAND_TEMP_SELECT = 0x0C
 _COMMAND_TEMP_READ = 0x0E
@@ -62,6 +63,33 @@ _PUMP_DEFAULT_EXTREME = [0x86, 0x0B]
 
 _SEQUENCE_MIN = 1
 _SEQUENCE_MAX = 255
+
+# Variant table keyed by the byte returned from cmd 0x00 (DEVICE_TYPE).
+# Sources: direct probe (0x3D), OpenCorsairLink pcap (0x42).
+# See 1b1c-0c04.md for the full discovery story.
+_VARIANT_BY_TYPE = {
+    0x3D: {
+        "description": "Corsair Commander Mini",
+        "has_pump": False,
+        "fan_count": 6,
+        "temp_count": 4,
+    },
+    0x42: {
+        "description": "Corsair H110i GT",
+        "has_pump": True,
+        "fan_count": 2,
+        "temp_count": 1,
+    },
+}
+
+# Fallback for unknown type bytes: behave like the historical H110i GT driver
+# so existing AIO users on as-yet-unsupported variants do not regress.
+_VARIANT_FALLBACK = {
+    "description": "Corsair Link device (unknown variant)",
+    "has_pump": True,
+    "fan_count": 2,
+    "temp_count": 1,
+}
 
 
 @unique
@@ -117,40 +145,71 @@ class Coolit(UsbHidDriver):
     """liquidctl driver for legacy Corsair Link devices (1b1c:0c04)."""
 
     _MATCHES = [
-        (
-            0x1B1C,
-            0x0C04,
-            "Corsair H110i GT",
-            {"has_pump": True, "fan_count": 2, "temp_count": 1, "rgb_fans": False},
-        ),
-        (
-            0x1B1C,
-            0x0C04,
-            "Corsair Commander Mini",
-            {"has_pump": False, "fan_count": 6, "temp_count": 4, "rgb_fans": False},
-        ),
+        (0x1B1C, 0x0C04, "Corsair Link cooler/controller", {}),
     ]
 
-    def __init__(self, device, description, has_pump, fan_count, temp_count, rgb_fans, **kwargs):
+    def __init__(
+        self,
+        device,
+        description,
+        has_pump=None,
+        fan_count=None,
+        temp_count=None,
+        rgb_fans=False,
+        **kwargs,
+    ):
         super().__init__(device, description, **kwargs)
+        # When variant kwargs are supplied (e.g. by tests), use them and skip
+        # auto-detection. In normal use these stay None and connect() reads
+        # cmd 0x00 (DEVICE_TYPE) to pick the right config.
         self._has_pump = has_pump
         self._fan_count = fan_count
         self._temp_count = temp_count
-        self._component_count = 1 + fan_count * rgb_fans
-        self._fan_names = [f"fan{i + 1}" for i in range(fan_count)]
+        self._rgb_fans = rgb_fans
+        if fan_count is not None:
+            self._component_count = 1 + fan_count * rgb_fans
+            self._fan_names = [f"fan{i + 1}" for i in range(fan_count)]
+        else:
+            self._component_count = 0
+            self._fan_names = []
 
         # the following fields are only initialized in connect()
         self._data = None
         self._sequence = None
 
     def connect(self, **kwargs):
-        """Connect to the device."""
+        """Connect to the device and auto-detect the variant if needed."""
         ret = super().connect(**kwargs)
         ids = f"vid{self.vendor_id:04x}_pid{self.product_id:04x}"
         loc = "loc" + "_".join(re.findall(r"\d+", self.address))
         self._data = RuntimeStorage(key_prefixes=[ids, loc])
         self._sequence = _sequence()
+        if self._has_pump is None:
+            self._detect_variant()
         return ret
+
+    def _detect_variant(self):
+        """Read cmd 0x00 and apply the matching variant config."""
+        res = self._send_command(
+            self._build_data_package(_COMMAND_DEVICE_TYPE, _OP_CODE_READ_ONE_BYTE)
+        )
+        type_byte = res[2]
+        variant = _VARIANT_BY_TYPE.get(type_byte)
+        if variant is None:
+            LOGGER.warning(
+                "unknown device type 0x%02x at 1b1c:0c04, falling back to %s",
+                type_byte,
+                _VARIANT_FALLBACK["description"],
+            )
+            variant = _VARIANT_FALLBACK
+        else:
+            LOGGER.info("detected %s (type byte 0x%02x)", variant["description"], type_byte)
+        self._description = variant["description"]
+        self._has_pump = variant["has_pump"]
+        self._fan_count = variant["fan_count"]
+        self._temp_count = variant["temp_count"]
+        self._component_count = 1 + self._fan_count * self._rgb_fans
+        self._fan_names = [f"fan{i + 1}" for i in range(self._fan_count)]
 
     def initialize(self, pump_mode="quiet", **kwargs):
         """Initialize the device and set the pump mode (on AIO variants).
