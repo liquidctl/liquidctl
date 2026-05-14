@@ -66,7 +66,6 @@ _SEQUENCE_MAX = 255
 
 # Variant table keyed by the byte returned from cmd 0x00 (DEVICE_TYPE).
 # Sources: direct probe (0x3D), OpenCorsairLink pcap (0x42).
-# See 1b1c-0c04.md for the full discovery story.
 _VARIANT_BY_TYPE = {
     0x3D: {
         "description": "Corsair Commander Mini",
