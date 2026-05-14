@@ -35,7 +35,6 @@ from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profil
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
-_PUMP_INDEX = 0x02
 
 _COMMAND_DEVICE_TYPE = 0x00
 _COMMAND_FIRMWARE_ID = 0x01
@@ -68,29 +67,40 @@ _SEQUENCE_MIN = 1
 _SEQUENCE_MAX = 255
 
 # Variant table keyed by the byte returned from cmd 0x00 (DEVICE_TYPE).
-# Sources: direct probe (0x3D), OpenCorsairLink pcap (0x42).
+# Verified directly:
+#   - 0x3D Commander Mini (probe against the user's device)
+#   - 0x42 H110i / H110i GT (parsed pcap; matches the original liquidctl
+#     hardcoded `_PUMP_INDEX = 0x02`)
+# Other entries are taken from OpenCorsairLink's `device.c` table on the
+# `testing` branch and have not been validated against real hardware. If a
+# row is wrong, please file an issue with the warning fingerprint.
+#
+# `pump_index` is the fan-slot number where the pump is wired on AIO
+# variants; ignored when has_pump is False.
 _VARIANT_BY_TYPE = {
-    0x3D: {
-        "description": "Corsair Commander Mini",
-        "has_pump": False,
-        "fan_count": 6,
-        "temp_count": 4,
-    },
-    0x42: {
-        "description": "Corsair H110i GT",
-        "has_pump": True,
-        "fan_count": 2,
-        "temp_count": 1,
-    },
+    0x37: {"description": "Corsair H80",            "has_pump": True,  "fan_count": 4, "temp_count": 4, "pump_index": 5},
+    0x38: {"description": "Corsair Cooling Node",   "has_pump": False, "fan_count": 4, "temp_count": 4, "pump_index": 0},
+    0x39: {"description": "Corsair Lighting Node",  "has_pump": False, "fan_count": 4, "temp_count": 0, "pump_index": 0},
+    0x3A: {"description": "Corsair H100",           "has_pump": True,  "fan_count": 4, "temp_count": 4, "pump_index": 5},
+    0x3B: {"description": "Corsair H80i",           "has_pump": True,  "fan_count": 4, "temp_count": 1, "pump_index": 5},
+    0x3C: {"description": "Corsair H100i",          "has_pump": True,  "fan_count": 4, "temp_count": 1, "pump_index": 5},
+    0x3D: {"description": "Corsair Commander Mini", "has_pump": False, "fan_count": 6, "temp_count": 4, "pump_index": 0},
+    0x40: {"description": "Corsair H100i GT",       "has_pump": True,  "fan_count": 4, "temp_count": 1, "pump_index": 5},
+    0x41: {"description": "Corsair H110i GT",       "has_pump": True,  "fan_count": 2, "temp_count": 1, "pump_index": 3},
+    # 0x42 is reported by the device the historical liquidctl driver was
+    # written for and labeled "H110i GT"; OpenCorsairLink calls it "H110i".
+    # Carry both names so substring `--match` works for either.
+    0x42: {"description": "Corsair H110i / H110i GT", "has_pump": True, "fan_count": 2, "temp_count": 1, "pump_index": 2},
 }
 
-# Fallback for unknown type bytes: behave like the historical H110i GT driver
+# Fallback for unknown type bytes: behave like the historical H110i driver
 # so existing AIO users on as-yet-unsupported variants do not regress.
 _VARIANT_FALLBACK = {
     "description": "Corsair Link device (unknown variant)",
     "has_pump": True,
     "fan_count": 2,
     "temp_count": 1,
+    "pump_index": 2,
 }
 
 
@@ -157,6 +167,7 @@ class Coolit(UsbHidDriver):
         has_pump=None,
         fan_count=None,
         temp_count=None,
+        pump_index=2,
         rgb_fans=False,
         **kwargs,
     ):
@@ -167,6 +178,7 @@ class Coolit(UsbHidDriver):
         self._has_pump = has_pump
         self._fan_count = fan_count
         self._temp_count = temp_count
+        self._pump_index = pump_index
         self._rgb_fans = rgb_fans
         if fan_count is not None:
             self._component_count = 1 + fan_count * rgb_fans
@@ -210,6 +222,7 @@ class Coolit(UsbHidDriver):
         self._has_pump = variant["has_pump"]
         self._fan_count = variant["fan_count"]
         self._temp_count = variant["temp_count"]
+        self._pump_index = variant["pump_index"]
         self._component_count = 1 + self._fan_count * self._rgb_fans
         self._fan_names = [f"fan{i + 1}" for i in range(self._fan_count)]
 
@@ -335,7 +348,7 @@ class Coolit(UsbHidDriver):
                     self._build_data_package(
                         _COMMAND_FAN_SELECT,
                         _OP_CODE_WRITE_ONE_BYTE,
-                        params=bytes([_PUMP_INDEX]),
+                        params=bytes([self._pump_index]),
                     ),
                     self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES),
                 ]
@@ -532,7 +545,7 @@ class Coolit(UsbHidDriver):
         self._send_commands(
             [
                 self._build_data_package(
-                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([_PUMP_INDEX])
+                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([self._pump_index])
                 ),
                 self._build_data_package(
                     _COMMAND_FAN_FIXED_RPM,
