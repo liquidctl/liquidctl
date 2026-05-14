@@ -184,67 +184,73 @@ class Coolit(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        dataPackages = []
-
-        # temperature sensors
-        for idx in range(self._temp_count):
-            dataPackages.append(
-                self._build_data_package(
-                    _COMMAND_TEMP_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
-                )
-            )
-            dataPackages.append(
-                self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES)
-            )
-
-        # fan slots
-        for idx in range(self._fan_count):
-            dataPackages.append(
-                self._build_data_package(
-                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
-                )
-            )
-            dataPackages.append(
-                self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
-            )
-
-        # pump (AIO variants only)
-        if self._has_pump:
-            dataPackages.append(
-                self._build_data_package(
-                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([_PUMP_INDEX])
-                )
-            )
-            dataPackages.append(
-                self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
-            )
-
-        res = self._send_commands(dataPackages)
-
-        # each (SELECT, READ_TWO) pair occupies 6 bytes in the response:
-        # [seq, op_write, seq, op_read, data_lo, data_hi]
+        # Each (SELECT, READ_TWO) pair takes 7 bytes in the request and 6 bytes
+        # in the response: [seq, op_write, seq, op_read, data_lo, data_hi].
+        # The HID report has a 63-byte payload, so 4 temps + 6 fans + pump = 77
+        # bytes does not fit; batch by group instead.
         status = []
-        offset = 0
 
-        for idx in range(self._temp_count):
-            frac = res[offset + 4]
-            whole = res[offset + 5]
-            offset += 6
-            # TODO: confirm disconnected-sensor sentinel. On a Commander Mini,
-            # an unpopulated thermistor header returned whole=0xb4; here we
-            # treat any value with bit 7 set as "no sensor" and skip it.
-            if whole & 0x80:
-                continue
-            temp = whole + frac / 255
-            label = "Liquid temperature" if self._temp_count == 1 else f"Temperature {idx + 1}"
-            status.append((label, temp, "°C"))
+        if self._temp_count:
+            pkgs = []
+            for idx in range(self._temp_count):
+                pkgs.append(
+                    self._build_data_package(
+                        _COMMAND_TEMP_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
+                    )
+                )
+                pkgs.append(
+                    self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES)
+                )
+            res = self._send_commands(pkgs)
+            for idx in range(self._temp_count):
+                offset = idx * 6
+                frac = res[offset + 4]
+                whole = res[offset + 5]
+                # TODO: the disconnected-sensor sentinel is heuristic. On a
+                # Commander Mini an unpopulated header returned whole=0xb4;
+                # here we treat any value with bit 7 set as "no sensor" and
+                # skip it. Worth verifying with more samples.
+                if whole & 0x80:
+                    continue
+                temp = whole + frac / 255
+                if self._temp_count == 1:
+                    label = "Liquid temperature"
+                else:
+                    # Protocol index 0 maps to the highest-numbered physical
+                    # port label on the Commander Mini silkscreen, so reverse.
+                    label = f"Temperature {self._temp_count - idx}"
+                status.append((label, temp, "°C"))
 
-        for idx in range(self._fan_count):
-            status.append((f"Fan {idx + 1} speed", u16le_from(res, offset=offset + 4), "rpm"))
-            offset += 6
+        if self._fan_count:
+            pkgs = []
+            for idx in range(self._fan_count):
+                pkgs.append(
+                    self._build_data_package(
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
+                    )
+                )
+                pkgs.append(
+                    self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
+                )
+            res = self._send_commands(pkgs)
+            for idx in range(self._fan_count):
+                offset = idx * 6
+                status.append(
+                    (f"Fan {idx + 1} speed", u16le_from(res, offset=offset + 4), "rpm")
+                )
 
         if self._has_pump:
-            status.append(("Pump speed", u16le_from(res, offset=offset + 4), "rpm"))
+            res = self._send_commands(
+                [
+                    self._build_data_package(
+                        _COMMAND_FAN_SELECT,
+                        _OP_CODE_WRITE_ONE_BYTE,
+                        params=bytes([_PUMP_INDEX]),
+                    ),
+                    self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES),
+                ]
+            )
+            status.append(("Pump speed", u16le_from(res, offset=4), "rpm"))
 
         return status
 
