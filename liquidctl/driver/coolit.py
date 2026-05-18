@@ -40,8 +40,10 @@ _COMMAND_DEVICE_TYPE = 0x00
 _COMMAND_FIRMWARE_ID = 0x01
 _COMMAND_PRODUCT_NAME = 0x02
 _COMMAND_TEMP_SELECT = 0x0C
+_COMMAND_TEMP_COUNT_SENSORS = 0x0D
 _COMMAND_TEMP_READ = 0x0E
 _COMMAND_FAN_SELECT = 0x10
+_COMMAND_FAN_COUNT = 0x11
 _COMMAND_FAN_MODE = 0x12
 _COMMAND_FAN_FIXED_PWM = 0x13
 _COMMAND_FAN_FIXED_RPM = 0x14
@@ -75,32 +77,33 @@ _SEQUENCE_MAX = 255
 # `testing` branch and have not been validated against real hardware. If a
 # row is wrong, please file an issue with the warning fingerprint.
 #
-# `pump_index` is the fan-slot number where the pump is wired on AIO
-# variants; ignored when has_pump is False.
+# Fan and temperature counts are NOT stored here — they are discovered
+# at connect time via FAN_Count (0x11) and TEMP_CountSensors (0x0D).
+# Only the fields the device cannot self-report live in this table:
+# the human-friendly description and the pump details.
 _VARIANT_BY_TYPE = {
-    0x37: {"description": "Corsair H80",            "has_pump": True,  "fan_count": 4, "temp_count": 4, "pump_index": 5},
-    0x38: {"description": "Corsair Cooling Node",   "has_pump": False, "fan_count": 4, "temp_count": 4, "pump_index": 0},
-    0x39: {"description": "Corsair Lighting Node",  "has_pump": False, "fan_count": 4, "temp_count": 0, "pump_index": 0},
-    0x3A: {"description": "Corsair H100",           "has_pump": True,  "fan_count": 4, "temp_count": 4, "pump_index": 5},
-    0x3B: {"description": "Corsair H80i",           "has_pump": True,  "fan_count": 4, "temp_count": 1, "pump_index": 5},
-    0x3C: {"description": "Corsair H100i",          "has_pump": True,  "fan_count": 4, "temp_count": 1, "pump_index": 5},
-    0x3D: {"description": "Corsair Commander Mini", "has_pump": False, "fan_count": 6, "temp_count": 4, "pump_index": 0},
-    0x40: {"description": "Corsair H100i GT",       "has_pump": True,  "fan_count": 4, "temp_count": 1, "pump_index": 5},
-    0x41: {"description": "Corsair H110i GT",       "has_pump": True,  "fan_count": 2, "temp_count": 1, "pump_index": 3},
+    0x37: {"description": "Corsair H80",              "has_pump": True,  "pump_index": 5},
+    0x38: {"description": "Corsair Cooling Node",     "has_pump": False, "pump_index": 0},
+    0x39: {"description": "Corsair Lighting Node",    "has_pump": False, "pump_index": 0},
+    0x3A: {"description": "Corsair H100",             "has_pump": True,  "pump_index": 5},
+    0x3B: {"description": "Corsair H80i",             "has_pump": True,  "pump_index": 5},
+    0x3C: {"description": "Corsair H100i",            "has_pump": True,  "pump_index": 5},
+    0x3D: {"description": "Corsair Commander Mini",   "has_pump": False, "pump_index": 0},
+    0x40: {"description": "Corsair H100i GT",         "has_pump": True,  "pump_index": 5},
+    0x41: {"description": "Corsair H110i GT",         "has_pump": True,  "pump_index": 3},
     # 0x42 is reported by the device the historical liquidctl driver was
     # written for and labeled "H110i GT"; OpenCorsairLink calls it "H110i".
     # Carry both names so substring `--match` works for either.
-    0x42: {"description": "Corsair H110i / H110i GT", "has_pump": True, "fan_count": 2, "temp_count": 1, "pump_index": 2},
+    0x42: {"description": "Corsair H110i / H110i GT", "has_pump": True,  "pump_index": 2},
 }
 
-# Fallback for unknown type bytes: behave like the historical H110i driver
-# so existing AIO users on as-yet-unsupported variants do not regress.
+# Fallback for unknown type bytes. has_pump=False is the safe default —
+# we will not send pump-mode writes to a device we don't recognize.
+# Counts come from runtime discovery so even unknown devices enumerate.
 _VARIANT_FALLBACK = {
     "description": "Corsair Link device (unknown variant)",
-    "has_pump": True,
-    "fan_count": 2,
-    "temp_count": 1,
-    "pump_index": 2,
+    "has_pump": False,
+    "pump_index": 0,
 }
 
 
@@ -220,11 +223,27 @@ class Coolit(UsbHidDriver):
             LOGGER.info("detected %s (type byte 0x%02x)", variant["description"], type_byte)
         self._description = variant["description"]
         self._has_pump = variant["has_pump"]
-        self._fan_count = variant["fan_count"]
-        self._temp_count = variant["temp_count"]
         self._pump_index = variant["pump_index"]
+
+        # Counts come from the device itself: TEMP_CountSensors (0x0D) and
+        # FAN_Count (0x11) are part of the protocol. FAN_Count includes the
+        # pump slot for AIO variants, so subtract one to get the fan-only count.
+        fan_slots = self._read_one(_COMMAND_FAN_COUNT)
+        self._temp_count = self._read_one(_COMMAND_TEMP_COUNT_SENSORS)
+        self._fan_count = max(0, fan_slots - (1 if self._has_pump else 0))
+        LOGGER.debug(
+            "%s: discovered %d fan slot(s) (%d fans + %d pump), %d temp sensor(s)",
+            self._description, fan_slots, self._fan_count,
+            1 if self._has_pump else 0, self._temp_count,
+        )
+
         self._component_count = 1 + self._fan_count * self._rgb_fans
         self._fan_names = [f"fan{i + 1}" for i in range(self._fan_count)]
+
+    def _read_one(self, command):
+        """Send a READ_ONE_BYTE command and return the data byte."""
+        res = self._send_command(self._build_data_package(command, _OP_CODE_READ_ONE_BYTE))
+        return res[2]
 
     def _log_unknown_variant(self, type_byte):
         """Best-effort fingerprint dump for an unknown 1b1c:0c04 variant."""
@@ -325,22 +344,53 @@ class Coolit(UsbHidDriver):
                 status.append((label, temp, "°C"))
 
         if self._fan_count:
-            pkgs = []
+            # Two batches: one for FAN_MODE per slot (so we can mark empty slots
+            # definitively rather than guess from rpm==0), and one for the
+            # FAN_READ_RPM + FAN_MAX_RPM pair per slot.
+            mode_pkgs = []
             for idx in range(self._fan_count):
-                pkgs.append(
+                mode_pkgs.append(
                     self._build_data_package(
                         _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
                     )
                 )
-                pkgs.append(
+                mode_pkgs.append(
+                    self._build_data_package(_COMMAND_FAN_MODE, _OP_CODE_READ_ONE_BYTE)
+                )
+            mode_res = self._send_commands(mode_pkgs)
+
+            rpm_pkgs = []
+            for idx in range(self._fan_count):
+                rpm_pkgs.append(
+                    self._build_data_package(
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
+                    )
+                )
+                rpm_pkgs.append(
                     self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
                 )
-            res = self._send_commands(pkgs)
-            for idx in range(self._fan_count):
-                offset = idx * 6
-                status.append(
-                    (f"Fan {idx + 1} speed", u16le_from(res, offset=offset + 4), "rpm")
+                rpm_pkgs.append(
+                    self._build_data_package(_COMMAND_FAN_MAX_RPM, _OP_CODE_READ_TWO_BYTES)
                 )
+            rpm_res = self._send_commands(rpm_pkgs)
+
+            for idx in range(self._fan_count):
+                # mode batch: 5 bytes per slot (2 SELECT ack + 3 READ_ONE),
+                # FAN_MODE byte at offset+4
+                mode = mode_res[idx * 5 + 4]
+                # rpm batch: 10 bytes per slot (2 SELECT + 4 RPM + 4 MAX_RPM),
+                # current rpm at offset+4, max rpm at offset+8
+                rpm_offset = idx * 10
+                rpm = u16le_from(rpm_res, offset=rpm_offset + 4)
+                max_rpm = u16le_from(rpm_res, offset=rpm_offset + 8)
+                if mode == 0x03:
+                    status.append((f"Fan {idx + 1} speed", 0, "(empty)"))
+                elif max_rpm:
+                    status.append(
+                        (f"Fan {idx + 1} speed", rpm, f"rpm (max {max_rpm})")
+                    )
+                else:
+                    status.append((f"Fan {idx + 1} speed", rpm, "rpm"))
 
         if self._has_pump:
             res = self._send_commands(
