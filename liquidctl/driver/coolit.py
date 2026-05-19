@@ -3,8 +3,25 @@
 Supported devices
 -----------------
 
+All of these share a single USB product ID; the driver auto-detects the
+specific variant by reading the device-type byte (cmd 0x00) at connect
+time:
+
+ - Corsair H80 (AIO cooler)
+ - Corsair H80i (AIO cooler)
+ - Corsair H100 (AIO cooler)
+ - Corsair H100i (AIO cooler)
+ - Corsair H100i GT (AIO cooler)
+ - Corsair H110i (AIO cooler)
  - Corsair H110i GT (AIO cooler)
+ - Corsair Cooling Node (fan / temperature controller)
+ - Corsair Lighting Node (lighting controller)
  - Corsair Commander Mini (fan / temperature controller)
+
+Fan and temperature-sensor counts are self-discovered at runtime, so
+variants not in the table above still enumerate correctly; an unknown
+variant logs a warning with the type byte, firmware version and product
+name so it can be added to the table.
 
 Supported features
 ------------------
@@ -12,11 +29,6 @@ Supported features
  - general monitoring (temperature sensors, fan speeds, pump speed on AIOs)
  - pump speed control (AIOs only)
  - fan speed control
-
-These devices share a single USB product ID; the driver auto-detects the
-specific variant by reading the device-type byte (cmd 0x00) at connect
-time. Unknown variants log a warning with the type byte, firmware version
-and product name so they can be added to the table.
 
 Copyright Roberto Marques, Serphentas, and other contributors
 SPDX-License-Identifier: GPL-3.0-or-later
