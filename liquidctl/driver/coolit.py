@@ -202,12 +202,12 @@ class Coolit(UsbHidDriver):
         self._data = None
         self._sequence = None
 
-    def connect(self, **kwargs):
+    def connect(self, runtime_storage=None, **kwargs):
         """Connect to the device and auto-detect the variant if needed."""
         ret = super().connect(**kwargs)
         ids = f"vid{self.vendor_id:04x}_pid{self.product_id:04x}"
         loc = "loc" + "_".join(re.findall(r"\d+", self.address))
-        self._data = RuntimeStorage(key_prefixes=[ids, loc])
+        self._data = runtime_storage or RuntimeStorage(key_prefixes=[ids, loc])
         self._sequence = _sequence()
         if self._has_pump is None:
             self._detect_variant()
