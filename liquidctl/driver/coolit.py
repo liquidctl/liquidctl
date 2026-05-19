@@ -183,7 +183,6 @@ class Coolit(UsbHidDriver):
         fan_count=None,
         temp_count=None,
         pump_index=2,
-        rgb_fans=False,
         **kwargs,
     ):
         super().__init__(device, description, **kwargs)
@@ -194,12 +193,9 @@ class Coolit(UsbHidDriver):
         self._fan_count = fan_count
         self._temp_count = temp_count
         self._pump_index = pump_index
-        self._rgb_fans = rgb_fans
         if fan_count is not None:
-            self._component_count = 1 + fan_count * rgb_fans
             self._fan_names = [f"fan{i + 1}" for i in range(fan_count)]
         else:
-            self._component_count = 0
             self._fan_names = []
 
         # the following fields are only initialized in connect()
@@ -249,7 +245,6 @@ class Coolit(UsbHidDriver):
             1 if self._has_pump else 0, self._temp_count,
         )
 
-        self._component_count = 1 + self._fan_count * self._rgb_fans
         self._fan_names = [f"fan{i + 1}" for i in range(self._fan_count)]
 
     def _read_one(self, command):
@@ -508,7 +503,7 @@ class Coolit(UsbHidDriver):
 
     def _send_set_cooling(self):
         for fan in self._fan_names:
-            fanIndex = 0 if fan == "fan1" else 1
+            fanIndex = int(fan[3:]) - 1
 
             mode = _FanMode(self._data.load(f"{fan}_mode", of_type=int))
 
@@ -547,7 +542,7 @@ class Coolit(UsbHidDriver):
                 dataPackages = []
                 dataPackages.append(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])
+                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
                     )
                 )
                 dataPackages.append(
