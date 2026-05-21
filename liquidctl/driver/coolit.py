@@ -37,7 +37,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 import re
 
-from enum import Enum, unique
+from collections import namedtuple
+from enum import Enum, IntEnum, unique
 
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.driver.usb import UsbHidDriver
@@ -93,30 +94,28 @@ _SEQUENCE_MAX = 255
 # at connect time via FAN_Count (0x11) and TEMP_CountSensors (0x0D).
 # Only the fields the device cannot self-report live in this table:
 # the human-friendly description and the pump details.
+_Variant = namedtuple("_Variant", ["description", "has_pump", "pump_index"])
+
 _VARIANT_BY_TYPE = {
-    0x37: {"description": "Corsair H80",              "has_pump": True,  "pump_index": 5},
-    0x38: {"description": "Corsair Cooling Node",     "has_pump": False, "pump_index": 0},
-    0x39: {"description": "Corsair Lighting Node",    "has_pump": False, "pump_index": 0},
-    0x3A: {"description": "Corsair H100",             "has_pump": True,  "pump_index": 5},
-    0x3B: {"description": "Corsair H80i",             "has_pump": True,  "pump_index": 5},
-    0x3C: {"description": "Corsair H100i",            "has_pump": True,  "pump_index": 5},
-    0x3D: {"description": "Corsair Commander Mini",   "has_pump": False, "pump_index": 0},
-    0x40: {"description": "Corsair H100i GT",         "has_pump": True,  "pump_index": 5},
-    0x41: {"description": "Corsair H110i GT",         "has_pump": True,  "pump_index": 3},
+    0x37: _Variant("Corsair H80",              True,  5),
+    0x38: _Variant("Corsair Cooling Node",     False, 0),
+    0x39: _Variant("Corsair Lighting Node",    False, 0),
+    0x3A: _Variant("Corsair H100",             True,  5),
+    0x3B: _Variant("Corsair H80i",             True,  5),
+    0x3C: _Variant("Corsair H100i",            True,  5),
+    0x3D: _Variant("Corsair Commander Mini",   False, 0),
+    0x40: _Variant("Corsair H100i GT",         True,  5),
+    0x41: _Variant("Corsair H110i GT",         True,  3),
     # 0x42 is reported by the device the historical liquidctl driver was
     # written for and labeled "H110i GT"; OpenCorsairLink calls it "H110i".
     # Carry both names so substring `--match` works for either.
-    0x42: {"description": "Corsair H110i / H110i GT", "has_pump": True,  "pump_index": 2},
+    0x42: _Variant("Corsair H110i / H110i GT", True,  2),
 }
 
 # Fallback for unknown type bytes. has_pump=False is the safe default —
 # we will not send pump-mode writes to a device we don't recognize.
 # Counts come from runtime discovery so even unknown devices enumerate.
-_VARIANT_FALLBACK = {
-    "description": "Corsair Link device (unknown variant)",
-    "has_pump": False,
-    "pump_index": 0,
-}
+_VARIANT_FALLBACK = _Variant("Corsair Link device (unknown variant)", False, 0)
 
 
 @unique
@@ -228,10 +227,10 @@ class Coolit(UsbHidDriver):
             self._log_unknown_variant(type_byte)
             variant = _VARIANT_FALLBACK
         else:
-            LOGGER.info("detected %s (type byte 0x%02x)", variant["description"], type_byte)
-        self._description = variant["description"]
-        self._has_pump = variant["has_pump"]
-        self._pump_index = variant["pump_index"]
+            LOGGER.info("detected %s (type byte 0x%02x)", variant.description, type_byte)
+        self._description = variant.description
+        self._has_pump = variant.has_pump
+        self._pump_index = variant.pump_index
 
         # Counts come from the device itself: TEMP_CountSensors (0x0D) and
         # FAN_Count (0x11) are part of the protocol. FAN_Count includes the
@@ -278,7 +277,7 @@ class Coolit(UsbHidDriver):
             type_byte,
             firmware,
             name,
-            _VARIANT_FALLBACK["description"],
+            _VARIANT_FALLBACK.description,
         )
 
     def initialize(self, pump_mode="quiet", **kwargs):
