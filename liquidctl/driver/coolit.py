@@ -49,28 +49,31 @@ LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 
-_COMMAND_DEVICE_TYPE = 0x00
-_COMMAND_FIRMWARE_ID = 0x01
-_COMMAND_PRODUCT_NAME = 0x02
-_COMMAND_TEMP_SELECT = 0x0C
-_COMMAND_TEMP_COUNT_SENSORS = 0x0D
-_COMMAND_TEMP_READ = 0x0E
-_COMMAND_FAN_SELECT = 0x10
-_COMMAND_FAN_COUNT = 0x11
-_COMMAND_FAN_MODE = 0x12
-_COMMAND_FAN_FIXED_PWM = 0x13
-_COMMAND_FAN_FIXED_RPM = 0x14
-_COMMAND_FAN_READ_RPM = 0x16
-_COMMAND_FAN_MAX_RPM = 0x17
-_COMMAND_FAN_RPM_TABLE = 0x19
-_COMMAND_FAN_TEMP_TABLE = 0x1A
+class _Command(IntEnum):
+    DEVICE_TYPE = 0x00
+    FIRMWARE_ID = 0x01
+    PRODUCT_NAME = 0x02
+    TEMP_SELECT = 0x0C
+    TEMP_COUNT_SENSORS = 0x0D
+    TEMP_READ = 0x0E
+    FAN_SELECT = 0x10
+    FAN_COUNT = 0x11
+    FAN_MODE = 0x12
+    FAN_FIXED_PWM = 0x13
+    FAN_FIXED_RPM = 0x14
+    FAN_READ_RPM = 0x16
+    FAN_MAX_RPM = 0x17
+    FAN_RPM_TABLE = 0x19
+    FAN_TEMP_TABLE = 0x1A
 
-_OP_CODE_WRITE_ONE_BYTE = 0x06
-_OP_CODE_READ_ONE_BYTE = 0x07
-_OP_CODE_WRITE_TWO_BYTES = 0x08
-_OP_CODE_READ_TWO_BYTES = 0x09
-_OP_CODE_WRITE_THREE_BYTES = 0x0A
-_OP_CODE_READ_THREE_BYTES = 0x0B
+
+class _OpCode(IntEnum):
+    WRITE_ONE = 0x06
+    READ_ONE = 0x07
+    WRITE_TWO = 0x08
+    READ_TWO = 0x09
+    WRITE_THREE = 0x0A
+    READ_THREE = 0x0B
 
 _PROFILE_LENGTH = 5
 _CRITICAL_TEMPERATURE = 60
@@ -219,7 +222,7 @@ class Coolit(UsbHidDriver):
         actionable warning so users can file an issue with the full fingerprint.
         """
         res = self._send_command(
-            self._build_data_package(_COMMAND_DEVICE_TYPE, _OP_CODE_READ_ONE_BYTE)
+            self._build_data_package(_Command.DEVICE_TYPE, _OpCode.READ_ONE)
         )
         type_byte = res[2]
         variant = _VARIANT_BY_TYPE.get(type_byte)
@@ -235,8 +238,8 @@ class Coolit(UsbHidDriver):
         # Counts come from the device itself: TEMP_CountSensors (0x0D) and
         # FAN_Count (0x11) are part of the protocol. FAN_Count includes the
         # pump slot for AIO variants, so subtract one to get the fan-only count.
-        fan_slots = self._read_one(_COMMAND_FAN_COUNT)
-        self._temp_count = self._read_one(_COMMAND_TEMP_COUNT_SENSORS)
+        fan_slots = self._read_one(_Command.FAN_COUNT)
+        self._temp_count = self._read_one(_Command.TEMP_COUNT_SENSORS)
         self._fan_count = max(0, fan_slots - (1 if self._has_pump else 0))
         LOGGER.debug(
             "%s: discovered %d fan slot(s) (%d fans + %d pump), %d temp sensor(s)",
@@ -248,14 +251,14 @@ class Coolit(UsbHidDriver):
 
     def _read_one(self, command):
         """Send a READ_ONE_BYTE command and return the data byte."""
-        res = self._send_command(self._build_data_package(command, _OP_CODE_READ_ONE_BYTE))
+        res = self._send_command(self._build_data_package(command, _OpCode.READ_ONE))
         return res[2]
 
     def _log_unknown_variant(self, type_byte):
         """Best-effort fingerprint dump for an unknown 1b1c:0c04 variant."""
         try:
             fw_res = self._send_command(
-                self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES)
+                self._build_data_package(_Command.FIRMWARE_ID, _OpCode.READ_TWO)
             )
             firmware = "%d.%d.%d" % (fw_res[3] >> 4, fw_res[3] & 0xF, fw_res[2])
         except Exception as exc:  # noqa: BLE001 — best-effort diagnostic
@@ -264,7 +267,7 @@ class Coolit(UsbHidDriver):
             # The PRODUCT_NAME response carries 4 ASCII bytes regardless of
             # the read width; grab them directly from the response payload.
             name_res = self._send_command(
-                self._build_data_package(_COMMAND_PRODUCT_NAME, _OP_CODE_READ_TWO_BYTES)
+                self._build_data_package(_Command.PRODUCT_NAME, _OpCode.READ_TWO)
             )
             name = bytes(name_res[2:6]).rstrip(b"\x00").decode("ascii", errors="replace")
         except Exception as exc:  # noqa: BLE001
@@ -301,7 +304,7 @@ class Coolit(UsbHidDriver):
             self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
 
         res = self._send_command(
-            self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES)
+            self._build_data_package(_Command.FIRMWARE_ID, _OpCode.READ_TWO)
         )
 
         fw_version = (res[3] >> 4, res[3] & 0xF, res[2])
@@ -323,11 +326,11 @@ class Coolit(UsbHidDriver):
             for idx in range(self._temp_count):
                 pkgs.append(
                     self._build_data_package(
-                        _COMMAND_TEMP_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
+                        _Command.TEMP_SELECT, _OpCode.WRITE_ONE, params=bytes([idx])
                     )
                 )
                 pkgs.append(
-                    self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES)
+                    self._build_data_package(_Command.TEMP_READ, _OpCode.READ_TWO)
                 )
             res = self._send_commands(pkgs)
             # Protocol index 0 maps to the highest-numbered physical port on
@@ -358,11 +361,11 @@ class Coolit(UsbHidDriver):
             for idx in range(self._fan_count):
                 mode_pkgs.append(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
+                        _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([idx])
                     )
                 )
                 mode_pkgs.append(
-                    self._build_data_package(_COMMAND_FAN_MODE, _OP_CODE_READ_ONE_BYTE)
+                    self._build_data_package(_Command.FAN_MODE, _OpCode.READ_ONE)
                 )
             mode_res = self._send_commands(mode_pkgs)
 
@@ -370,14 +373,14 @@ class Coolit(UsbHidDriver):
             for idx in range(self._fan_count):
                 rpm_pkgs.append(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([idx])
+                        _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([idx])
                     )
                 )
                 rpm_pkgs.append(
-                    self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
+                    self._build_data_package(_Command.FAN_READ_RPM, _OpCode.READ_TWO)
                 )
                 rpm_pkgs.append(
-                    self._build_data_package(_COMMAND_FAN_MAX_RPM, _OP_CODE_READ_TWO_BYTES)
+                    self._build_data_package(_Command.FAN_MAX_RPM, _OpCode.READ_TWO)
                 )
             rpm_res = self._send_commands(rpm_pkgs)
 
@@ -403,11 +406,11 @@ class Coolit(UsbHidDriver):
             res = self._send_commands(
                 [
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT,
-                        _OP_CODE_WRITE_ONE_BYTE,
+                        _Command.FAN_SELECT,
+                        _OpCode.WRITE_ONE,
                         params=bytes([self._pump_index]),
                     ),
-                    self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES),
+                    self._build_data_package(_Command.FAN_READ_RPM, _OpCode.READ_TWO),
                 ]
             )
             status.append(("Pump speed", u16le_from(res, offset=4), "rpm"))
@@ -462,7 +465,7 @@ class Coolit(UsbHidDriver):
             return [channel]
         raise ValueError(f"Unknown channel, should be one of: {_quoted('fan', *self._fan_names)}")
 
-    def _build_data_package(self, command, opCode, params=None):
+    def _build_data_package(self, command, opcode, params=None):
         if params:
             buf = bytearray(3 + len(params))
             buf[3 : 3 + len(params)] = params
@@ -470,8 +473,8 @@ class Coolit(UsbHidDriver):
             buf = bytearray(3)
 
         buf[0] = next(self._sequence)
-        buf[1] = opCode
-        buf[2] = command
+        buf[1] = opcode.value
+        buf[2] = command.value
 
         return buf
 
@@ -512,18 +515,18 @@ class Coolit(UsbHidDriver):
                 duty = clamp(stored, 0, 100)
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
+                        _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([fanIndex])
                     )
                 )
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                        _Command.FAN_MODE, _OpCode.WRITE_ONE, params=bytes([mode.value])
                     )
                 )
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_FIXED_PWM,
-                        _OP_CODE_WRITE_ONE_BYTE,
+                        _Command.FAN_FIXED_PWM,
+                        _OpCode.WRITE_ONE,
                         params=bytes([fraction_of_byte(percentage=duty)]),
                     )
                 )
@@ -542,11 +545,11 @@ class Coolit(UsbHidDriver):
                 dataPackages = []
                 dataPackages.append(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
+                        _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([fanIndex])
                     )
                 )
                 dataPackages.append(
-                    self._build_data_package(_COMMAND_FAN_MAX_RPM, _OP_CODE_READ_TWO_BYTES)
+                    self._build_data_package(_Command.FAN_MAX_RPM, _OpCode.READ_TWO)
                 )
                 max_rpm = u16le_from(self._send_commands(dataPackages), offset=4)
 
@@ -561,22 +564,22 @@ class Coolit(UsbHidDriver):
                 # select fan to customize
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
+                        _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([fanIndex])
                     )
                 )
 
                 # Change mode to custom Profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                        _Command.FAN_MODE, _OpCode.WRITE_ONE, params=bytes([mode.value])
                     )
                 )
 
                 # Send duty cycle Profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_RPM_TABLE,
-                        _OP_CODE_WRITE_THREE_BYTES,
+                        _Command.FAN_RPM_TABLE,
+                        _OpCode.WRITE_THREE,
                         params=bytes(fanDutyData),
                     )
                 )
@@ -584,8 +587,8 @@ class Coolit(UsbHidDriver):
                 # Send temperature profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_TEMP_TABLE,
-                        _OP_CODE_WRITE_THREE_BYTES,
+                        _Command.FAN_TEMP_TABLE,
+                        _OpCode.WRITE_THREE,
                         params=bytes(fanTemperatureData),
                     )
                 )
@@ -602,11 +605,11 @@ class Coolit(UsbHidDriver):
         self._send_commands(
             [
                 self._build_data_package(
-                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([self._pump_index])
+                    _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([self._pump_index])
                 ),
                 self._build_data_package(
-                    _COMMAND_FAN_FIXED_RPM,
-                    _OP_CODE_WRITE_TWO_BYTES,
+                    _Command.FAN_FIXED_RPM,
+                    _OpCode.WRITE_TWO,
                     params=bytes(
                         _PUMP_DEFAULT_QUIET
                         if pump_mode == _PumpMode.QUIET
