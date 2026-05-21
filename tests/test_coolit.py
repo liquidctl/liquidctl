@@ -86,6 +86,14 @@ def test_set_speed_profile_reads_max_rpm_for_target_fan(mock_commander_mini):
     assert _max_rpm_select_params(controller.device.sent) == [2]
 
 
+def test_temperature_rows_are_in_ascending_label_order(mock_commander_mini):
+    """Temperature rows must be listed as 1, 2, 3, 4 (silkscreen order)."""
+    controller = mock_commander_mini
+    status = controller.get_status()
+    temp_labels = [row[0] for row in status if row[0].startswith("Temperature ")]
+    assert temp_labels == ["Temperature 1", "Temperature 2", "Temperature 3", "Temperature 4"]
+
+
 def test_commander_mini_not_totally_broken(mock_commander_mini):
     controller = mock_commander_mini
     controller.initialize()

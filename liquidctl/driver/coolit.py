@@ -331,7 +331,10 @@ class Coolit(UsbHidDriver):
                     self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES)
                 )
             res = self._send_commands(pkgs)
-            for idx in range(self._temp_count):
+            # Protocol index 0 maps to the highest-numbered physical port on
+            # the Commander Mini silkscreen, so iterate in reverse to emit
+            # rows in ascending label order (1, 2, 3, 4 top-to-bottom).
+            for idx in reversed(range(self._temp_count)):
                 offset = idx * 6
                 frac = res[offset + 4]
                 whole = res[offset + 5]
@@ -345,8 +348,6 @@ class Coolit(UsbHidDriver):
                 if self._temp_count == 1:
                     label = "Liquid temperature"
                 else:
-                    # Protocol index 0 maps to the highest-numbered physical
-                    # port label on the Commander Mini silkscreen, so reverse.
                     label = f"Temperature {self._temp_count - idx}"
                 status.append((label, temp, "°C"))
 
