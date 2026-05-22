@@ -49,6 +49,7 @@ LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
 
+
 class _Command(IntEnum):
     DEVICE_TYPE = 0x00
     FIRMWARE_ID = 0x01
@@ -75,6 +76,7 @@ class _OpCode(IntEnum):
     WRITE_THREE = 0x0A
     READ_THREE = 0x0B
 
+
 _PROFILE_LENGTH = 5
 _CRITICAL_TEMPERATURE = 60
 
@@ -100,19 +102,19 @@ _SEQUENCE_MAX = 255
 _Variant = namedtuple("_Variant", ["description", "has_pump", "pump_index"])
 
 _VARIANT_BY_TYPE = {
-    0x37: _Variant("Corsair H80",              True,  5),
-    0x38: _Variant("Corsair Cooling Node",     False, 0),
-    0x39: _Variant("Corsair Lighting Node",    False, 0),
-    0x3A: _Variant("Corsair H100",             True,  5),
-    0x3B: _Variant("Corsair H80i",             True,  5),
-    0x3C: _Variant("Corsair H100i",            True,  5),
-    0x3D: _Variant("Corsair Commander Mini",   False, 0),
-    0x40: _Variant("Corsair H100i GT",         True,  5),
-    0x41: _Variant("Corsair H110i GT",         True,  3),
+    0x37: _Variant("Corsair H80", True, 5),
+    0x38: _Variant("Corsair Cooling Node", False, 0),
+    0x39: _Variant("Corsair Lighting Node", False, 0),
+    0x3A: _Variant("Corsair H100", True, 5),
+    0x3B: _Variant("Corsair H80i", True, 5),
+    0x3C: _Variant("Corsair H100i", True, 5),
+    0x3D: _Variant("Corsair Commander Mini", False, 0),
+    0x40: _Variant("Corsair H100i GT", True, 5),
+    0x41: _Variant("Corsair H110i GT", True, 3),
     # 0x42 is reported by the device the historical liquidctl driver was
     # written for and labeled "H110i GT"; OpenCorsairLink calls it "H110i".
     # Carry both names so substring `--match` works for either.
-    0x42: _Variant("Corsair H110i / H110i GT", True,  2),
+    0x42: _Variant("Corsair H110i / H110i GT", True, 2),
 }
 
 # Fallback for unknown type bytes. has_pump=False is the safe default —
