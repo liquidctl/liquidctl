@@ -148,9 +148,9 @@ class CommanderCore(UsbHidDriver):
         channels = self._parse_channels(channel)
         curve_points = list(profile)
         if len(curve_points) < 2:
-            ValueError('a minimum of 2 speed curve points must be configured.')
+            raise ValueError('a minimum of 2 speed curve points must be configured.')
         if len(curve_points) > 7:
-            ValueError('a maximum of 7 speed curve points may be configured.')
+            raise ValueError('a maximum of 7 speed curve points may be configured.')
 
         with self._wake_device_context():
             # Set hardware speed mode

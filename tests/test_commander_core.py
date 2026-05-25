@@ -402,3 +402,15 @@ def test_parse_channels_error_commander_core():
     core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core', True)
     with pytest.raises(ValueError):
         core._parse_channels('fan')
+
+
+def test_set_speed_profile_raises_on_too_few_points(commander_core_device):
+    """Fix for unraised ValueError typo: minimum of 2 curve points is enforced."""
+    with pytest.raises(ValueError):
+        commander_core_device.set_speed_profile('fan1', [(30, 50)])
+
+
+def test_set_speed_profile_raises_on_too_many_points(commander_core_device):
+    """Fix for unraised ValueError typo: maximum of 7 curve points is enforced."""
+    with pytest.raises(ValueError):
+        commander_core_device.set_speed_profile('fan1', [(t, 50) for t in range(20, 28)])
