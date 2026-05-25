@@ -186,9 +186,10 @@ class CommanderCore(UsbHidDriver):
                 # set number of curve points
                 new_data.append(int.to_bytes(len(curve_points), length=1, byteorder="big"))
 
-                # set curve points
+                # set curve points (decidegree temps; round() so float inputs
+                # like 31.3 produce 313, not 312 via truncation)
                 for (temp, duty) in curve_points:
-                    new_data.append(int.to_bytes(temp*10, length=2, byteorder="little", signed=False))
+                    new_data.append(int.to_bytes(round(temp * 10), length=2, byteorder="little", signed=False))
                     new_data.append(int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False))
 
                 # Update device data

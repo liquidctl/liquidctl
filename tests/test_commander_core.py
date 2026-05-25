@@ -414,3 +414,13 @@ def test_set_speed_profile_raises_on_too_many_points(commander_core_device):
     """Fix for unraised ValueError typo: maximum of 7 curve points is enforced."""
     with pytest.raises(ValueError):
         commander_core_device.set_speed_profile('fan1', [(t, 50) for t in range(20, 28)])
+
+
+def test_set_speed_profile_rounds_float_temperatures(commander_core_device):
+    """Curve temperatures are encoded as decidegrees; floats must be rounded
+    rather than truncated.  31.3 * 10 evaluates to 312.9999... under IEEE-754,
+    so int() would store 312 instead of the intended 313."""
+    commander_core_device.device.speeds_mode = (0, 0, 0, 0, 0, 0, 0)
+    commander_core_device.set_speed_profile('fan1', [(20.0, 0), (31.3, 50)])
+    stored = commander_core_device.device.curve_points_by_device[1]
+    assert stored[1][0] == 31.3, f'expected 31.3, got {stored[1][0]!r}'
