@@ -19,6 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 96
 _RESPONSE_LENGTH = 96
+_MAX_RESPONSE_RETRIES = 16  # see _send_command — drains stale reports / echoes
 
 _INTERFACE_NUMBER = 0
 
@@ -288,12 +289,18 @@ class CommanderCore(UsbHidDriver):
         self.device.clear_enqueued_reports()
         self.device.write(buf)
 
-        res = self.device.read(_RESPONSE_LENGTH)
-        while res[0] != 0x00:
+        # Skip unsolicited reports (res[0] != 0x00) and stale command echoes
+        # (res[1] != command[0]).  Both can occur under firmware 2.x between
+        # the drain and the write.  A bounded retry budget covers either
+        # case so the function cannot spin indefinitely.
+        retries = _MAX_RESPONSE_RETRIES
+        while True:
             res = self.device.read(_RESPONSE_LENGTH)
-        buf = bytes(res)
-        assert buf[1] == command[0], 'response does not match command'
-        return buf
+            if res[0] == 0x00 and res[1] == command[0]:
+                return bytes(res)
+            retries -= 1
+            if retries <= 0:
+                raise ExpectationNotMet('response does not match command')
 
     @contextmanager
     def _wake_device_context(self):

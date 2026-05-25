@@ -424,3 +424,23 @@ def test_set_speed_profile_rounds_float_temperatures(commander_core_device):
     commander_core_device.set_speed_profile('fan1', [(20.0, 0), (31.3, 50)])
     stored = commander_core_device.device.curve_points_by_device[1]
     assert stored[1][0] == 31.3, f'expected 31.3, got {stored[1][0]!r}'
+
+
+def test_send_command_raises_on_persistent_wrong_echo(commander_core_device):
+    """Replacement for the assert-based response check: under python -O the
+    assert disappears and the function silently returns wrong data.  The new
+    code raises ExpectationNotMet after a bounded number of retries."""
+    commander_core_device.device.read = lambda length: [0x00, 0xFF, 0x00] + [0] * (length - 3)
+    commander_core_device.device.write = lambda data: len(data)
+    with pytest.raises(ExpectationNotMet):
+        commander_core_device._send_command((0x02, 0x13))
+
+
+def test_send_command_raises_on_persistent_nonzero_report_id(commander_core_device):
+    """A device that emits only unsolicited reports (res[0] != 0x00) must not
+    cause the driver to spin forever.  The single retry budget covers both
+    res[0] != 0x00 and stale echo cases."""
+    commander_core_device.device.read = lambda length: [0xFF, 0x02, 0x00] + [0] * (length - 3)
+    commander_core_device.device.write = lambda data: len(data)
+    with pytest.raises(ExpectationNotMet):
+        commander_core_device._send_command((0x02, 0x13))
