@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changes since 1.16.0
+
+Added:
+
+- NZXT Kraken Elite V2: control the pump RGB ring, the external RGB-fan header, and `sync` (liquidctl#882, building on liquidctl#803)
+
 ## [1.16.0] – 2026-03-03
 
 ### Changes since 1.15.0
