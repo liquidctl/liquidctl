@@ -864,7 +864,8 @@ class CommanderCore(UsbHidDriver):
                 res = self.device.read(_RESPONSE_LENGTH)
             buf = bytes(res)
             _retries -= 1
-        assert buf[1] == command[0], 'response does not match command'
+        if buf[1] != command[0]:
+            raise ExpectationNotMet('response does not match command')
         return buf
 
     @contextmanager
@@ -1092,7 +1093,8 @@ class CommanderCore(UsbHidDriver):
                 res = self.device.read(_RESPONSE_LENGTH)
             buf = bytes(res)
             _retries -= 1
-        assert buf[1] == command[0], 'response does not match command'
+        if buf[1] != command[0]:
+            raise ExpectationNotMet('response does not match command')
         return buf
 
     def _fan_to_channel(self, fan):
