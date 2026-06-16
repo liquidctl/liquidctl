@@ -368,8 +368,10 @@ class MpgCooler(UsbHidDriver):
         # have the desired usage page, or that on that system a
         # single handle is returned for that device interface (see: #259)
 
-        if (handle.hidinfo["usage_page"] == EXTRA_USAGE_PAGE
-                and handle.hidinfo["usage"] != _CONTROL_USAGE):
+        if (
+            handle.hidinfo["usage_page"] == EXTRA_USAGE_PAGE
+            and handle.hidinfo["usage"] != _CONTROL_USAGE
+        ):
             return
         yield from super().probe(handle, **kwargs)
 
