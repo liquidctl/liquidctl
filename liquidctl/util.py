@@ -57,6 +57,7 @@ class Hue2Accessory(Enum):
     F140_RGB_CORE = (0x17, 'F140 RGB Core')
     F240_RGB_CORE = (0x1b, 'F240 RGB Core')
     F360_RGB_CORE = (0x1d, 'F360 RGB Core')
+    KRAKEN_2024_ELITE_RING = (0x1e, 'Kraken 2024 Elite Pump Ring')
 
     def __new__(cls, value, pretty_name):
         member = object.__new__(cls)

@@ -29,9 +29,19 @@ In addition to this, Kraken Z coolers restore the embedded fan controller that i
 Kraken 2023 AIOs use the same pump and as their Z3 predecessor but the integrated LED controller has been removed. The LCD resolution is 240x240 for the standard version and 640x640 for the Elite variant, which also features a light ring on the pump housing. **Controlling the light ring is not yet supported**.
 
 
-## NZXT Kraken 2024 Elite RGB
+## NZXT Kraken Elite V2
 
-The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining the 640x640 LCD. As of the 1.2.1 firmware, it's still able to use GIF and static modes. **Controlling the light ring is not yet supported**.
+NZXT's 2024 Kraken Elite refresh, which the cooler reports over USB as _Kraken Elite V2_.  It shares the 2023 Elite's 640x640 LCD pump and adds an addressable RGB ring around the pump cap.  A single USB id (`1e71:3012`) covers both the RGB-fan bundle (retailed as _Kraken Elite RGB_) and the plain-fan bundle (_Kraken Elite_); these are the same cooler — firmware-identical and indistinguishable over USB — so liquidctl uses the generation name for both.  As of the 1.2.1 firmware, the GIF and static LCD modes are also supported.
+
+Three lighting channels are exposed: `ring`, the pump-cap ring; `external`, the RGB header where the bundled RGB (radiator) fans connect (empty when no RGB accessory is plugged in); and `sync`, which drives both at once.  The ring is driven with the Hue 2 _direct_ protocol; `fixed` is mapped to a per-LED `super-fixed` write so the whole ring shows a single solid color, instead of the periodic flicker the animation protocol produces on this channel.  (For a solid ring color use the `ring` channel; the same `fixed` on `sync` reaches the ring over the animation protocol and may flicker.)
+
+```
+# liquidctl set ring color fixed 00aaff
+# liquidctl set external color spectrum-wave
+# liquidctl set sync color breathing ff2608 --speed slower
+```
+
+NZXT RGB fans (and other Hue 2 accessories) daisy-chained to the cooler's RGB header are controlled through the `external` channel; run `liquidctl initialize` to list the connected accessories.  The complete list of color modes is in the [RGB lighting](#rgb-lighting-with-leds) section below.
 
 
 ## NZXT Kraken 2024 Plus
@@ -109,18 +119,20 @@ _New in 1.14.0._<br>
 
 Adds support for NZXT Kraken 2023 Standard, Elite
 
-Adds support for NZXT Kraken 2024 Elite RGB
+Adds support for NZXT Kraken Elite V2 (2024 Elite)
 
 ## RGB lighting with LEDs
 
 One or more LED channels are provided, depending on the model.
 
-| Channel | Type | LED count | X models | Z models |
-| --- | --- | --- | :---: | :---: |
-| `external` | HUE 2/HUE+ accessories | up to 40 | ✓ |  ✓ |
-| `ring` | Infinity mirror: ring | 8 | ✓ | |
-| `logo` | Infinity mirror: logo | 1 | ✓ | |
-| `sync` | Synchronize all channels | up to 40 | ✓ | |
+| Channel | Type | LED count | X models | Z models | 2024 Elite |
+| --- | --- | --- | :---: | :---: | :---: |
+| `external` | HUE 2/HUE+ accessories | up to 40 | ✓ |  ✓ | ✓ |
+| `ring` | Pump ring | 8 (X3) | ✓ | | ✓ |
+| `logo` | Infinity mirror: logo | 1 | ✓ | | |
+| `sync` | Synchronize all channels | up to 40 | ✓ | | ✓ |
+
+On the 2024 Elite the `ring` is the RGB ring around the pump-cap LCD, addressed over the Hue 2 _direct_ protocol; `external` is the RGB-fan (radiator) header; and `sync` drives both together.
 
 Color modes can be set independently for each lighting channel, but the specified color mode will then apply to all devices daisy chained on that channel.
 
