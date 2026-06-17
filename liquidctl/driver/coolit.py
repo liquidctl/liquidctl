@@ -1,15 +1,33 @@
-"""liquidctl driver for Corsair Platinum and PRO XT coolers.
+"""liquidctl driver for legacy Corsair Link devices (USB 1b1c:0c04).
 
 Supported devices
 -----------------
 
- - Corsair H110i GT
+All of these share a single USB product ID; the driver auto-detects the
+specific variant by reading the device-type byte (cmd 0x00) at connect
+time:
+
+ - Corsair H80 (AIO cooler)
+ - Corsair H80i (AIO cooler)
+ - Corsair H100 (AIO cooler)
+ - Corsair H100i (AIO cooler)
+ - Corsair H100i GT (AIO cooler)
+ - Corsair H110i (AIO cooler)
+ - Corsair H110i GT (AIO cooler)
+ - Corsair Cooling Node (fan / temperature controller)
+ - Corsair Lighting Node (lighting controller)
+ - Corsair Commander Mini (fan / temperature controller)
+
+Fan and temperature-sensor counts are self-discovered at runtime, so
+variants not in the table above still enumerate correctly; an unknown
+variant logs a warning with the type byte, firmware version and product
+name so it can be added to the table.
 
 Supported features
 ------------------
 
- - general monitoring
- - pump speed control
+ - general monitoring (temperature sensors, fan speeds, pump speed on AIOs)
+ - pump speed control (AIOs only)
  - fan speed control
 
 Copyright Roberto Marques, Serphentas, and other contributors
@@ -19,7 +37,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import logging
 import re
 
-from enum import Enum, unique
+from collections import namedtuple
+from enum import Enum, IntEnum, unique
 
 from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.driver.usb import UsbHidDriver
@@ -29,25 +48,34 @@ from liquidctl.util import clamp, fraction_of_byte, u16le_from, normalize_profil
 LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 64
-_PUMP_INDEX = 0x02
 
-_COMMAND_FIRMWARE_ID = 0x01
-_COMMAND_TEMP_READ = 0x0E
-_COMMAND_FAN_SELECT = 0x10
-_COMMAND_FAN_MODE = 0x12
-_COMMAND_FAN_FIXED_PWM = 0x13
-_COMMAND_FAN_FIXED_RPM = 0x14
-_COMMAND_FAN_READ_RPM = 0x16
-_COMMAND_FAN_MAX_RPM = 0x17
-_COMMAND_FAN_RPM_TABLE = 0x19
-_COMMAND_FAN_TEMP_TABLE = 0x1A
 
-_OP_CODE_WRITE_ONE_BYTE = 0x06
-_OP_CODE_READ_ONE_BYTE = 0x07
-_OP_CODE_WRITE_TWO_BYTES = 0x08
-_OP_CODE_READ_TWO_BYTES = 0x09
-_OP_CODE_WRITE_THREE_BYTES = 0x0A
-_OP_CODE_READ_THREE_BYTES = 0x0B
+class _Command(IntEnum):
+    DEVICE_TYPE = 0x00
+    FIRMWARE_ID = 0x01
+    PRODUCT_NAME = 0x02
+    TEMP_SELECT = 0x0C
+    TEMP_COUNT_SENSORS = 0x0D
+    TEMP_READ = 0x0E
+    FAN_SELECT = 0x10
+    FAN_COUNT = 0x11
+    FAN_MODE = 0x12
+    FAN_FIXED_PWM = 0x13
+    FAN_FIXED_RPM = 0x14
+    FAN_READ_RPM = 0x16
+    FAN_MAX_RPM = 0x17
+    FAN_RPM_TABLE = 0x19
+    FAN_TEMP_TABLE = 0x1A
+
+
+class _OpCode(IntEnum):
+    WRITE_ONE = 0x06
+    READ_ONE = 0x07
+    WRITE_TWO = 0x08
+    READ_TWO = 0x09
+    WRITE_THREE = 0x0A
+    READ_THREE = 0x0B
+
 
 _PROFILE_LENGTH = 5
 _CRITICAL_TEMPERATURE = 60
@@ -57,6 +85,47 @@ _PUMP_DEFAULT_EXTREME = [0x86, 0x0B]
 
 _SEQUENCE_MIN = 1
 _SEQUENCE_MAX = 255
+
+# Variant table keyed by the byte returned from cmd 0x00 (DEVICE_TYPE).
+# Verified directly:
+#   - 0x3D Commander Mini (probe against the user's device)
+#   - 0x42 H110i / H110i GT (parsed pcap; matches the original liquidctl
+#     hardcoded `_PUMP_INDEX = 0x02`)
+# Other entries are taken from OpenCorsairLink's `device.c` table on the
+# `testing` branch and have not been validated against real hardware. If a
+# row is wrong, please file an issue with the warning fingerprint.
+#
+# Fan and temperature counts are NOT stored here — they are discovered
+# at connect time via FAN_Count (0x11) and TEMP_CountSensors (0x0D).
+# Only the fields the device cannot self-report live in this table:
+# the human-friendly description and the pump details.
+_Variant = namedtuple("_Variant", ["description", "has_pump", "pump_index"])
+
+_VARIANT_BY_TYPE = {
+    0x37: _Variant("Corsair H80", True, 5),
+    0x38: _Variant("Corsair Cooling Node", False, 0),
+    0x39: _Variant("Corsair Lighting Node", False, 0),
+    0x3A: _Variant("Corsair H100", True, 5),
+    0x3B: _Variant("Corsair H80i", True, 5),
+    0x3C: _Variant("Corsair H100i", True, 5),
+    0x3D: _Variant("Corsair Commander Mini", False, 0),
+    0x40: _Variant("Corsair H100i GT", True, 5),
+    0x41: _Variant("Corsair H110i GT", True, 3),
+    # 0x42 is reported by the device the historical liquidctl driver was
+    # written for and labeled "H110i GT"; OpenCorsairLink calls it "H110i".
+    # Carry both names so substring `--match` works for either.
+    0x42: _Variant("Corsair H110i / H110i GT", True, 2),
+}
+
+# Fallback for unknown type bytes. has_pump=False is the safe default —
+# we will not send pump-mode writes to a device we don't recognize.
+# Counts come from runtime discovery so even unknown devices enumerate.
+_VARIANT_FALLBACK = _Variant("Corsair Link device (unknown variant)", False, 0)
+
+# Pairs a user-facing channel name ("fan1") with the zero-based hardware
+# index the protocol's FAN_SELECT expects, so call sites never parse the
+# index back out of the name.
+_FanChannel = namedtuple("_FanChannel", ["name", "index"])
 
 
 @unique
@@ -109,54 +178,140 @@ def _quoted(*names):
 
 
 class Coolit(UsbHidDriver):
-    """liquidctl driver for Corsair H110i GT cooler"""
+    """liquidctl driver for legacy Corsair Link devices (1b1c:0c04)."""
 
     _MATCHES = [
-        (
-            0x1B1C,
-            0x0C04,
-            "Corsair H110i GT",
-            {"has_pump": True, "fan_count": 2, "rgb_fans": False},
-        ),
+        (0x1B1C, 0x0C04, "Corsair Link cooler/controller", {}),
     ]
 
-    def __init__(self, device, description, fan_count, rgb_fans, **kwargs):
+    def __init__(
+        self,
+        device,
+        description,
+        has_pump=None,
+        fan_count=None,
+        temp_count=None,
+        pump_index=2,
+        **kwargs,
+    ):
         super().__init__(device, description, **kwargs)
-        self._component_count = 1 + fan_count * rgb_fans
-        self._fan_names = [f"fan{i + 1}" for i in range(fan_count)]
+        # When variant kwargs are supplied (e.g. by tests), use them and skip
+        # auto-detection. In normal use these stay None and connect() reads
+        # cmd 0x00 (DEVICE_TYPE) to pick the right config.
+        self._has_pump = has_pump
+        self._temp_count = temp_count
+        self._pump_index = pump_index
+        self._set_fan_count(fan_count or 0)
 
         # the following fields are only initialized in connect()
         self._data = None
         self._sequence = None
 
-    def connect(self, **kwargs):
-        """Connect to the device."""
+    def _set_fan_count(self, count):
+        """Build the fan channel records (and derived names) for `count` fans."""
+        self._fan_count = count
+        self._fan_channels = [_FanChannel(f"fan{i + 1}", i) for i in range(count)]
+        self._fan_names = [fan.name for fan in self._fan_channels]
+
+    def connect(self, runtime_storage=None, **kwargs):
+        """Connect to the device and auto-detect the variant if needed."""
         ret = super().connect(**kwargs)
         ids = f"vid{self.vendor_id:04x}_pid{self.product_id:04x}"
         loc = "loc" + "_".join(re.findall(r"\d+", self.address))
-        self._data = RuntimeStorage(key_prefixes=[ids, loc])
+        self._data = runtime_storage or RuntimeStorage(key_prefixes=[ids, loc])
         self._sequence = _sequence()
+        if self._has_pump is None:
+            self._detect_variant()
         return ret
 
+    def _detect_variant(self):
+        """Read cmd 0x00 and apply the matching variant config.
+
+        On unknown variants, also probe firmware + product name and emit an
+        actionable warning so users can file an issue with the full fingerprint.
+        """
+        res = self._send_command(
+            self._build_data_package(_Command.DEVICE_TYPE, _OpCode.READ_ONE)
+        )
+        type_byte = res[2]
+        variant = _VARIANT_BY_TYPE.get(type_byte)
+        if variant is None:
+            self._log_unknown_variant(type_byte)
+            variant = _VARIANT_FALLBACK
+        else:
+            LOGGER.info("detected %s (type byte 0x%02x)", variant.description, type_byte)
+        self._description = variant.description
+        self._has_pump = variant.has_pump
+        self._pump_index = variant.pump_index
+
+        # Counts come from the device itself: TEMP_CountSensors (0x0D) and
+        # FAN_Count (0x11) are part of the protocol. FAN_Count includes the
+        # pump slot for AIO variants, so subtract one to get the fan-only count.
+        fan_slots = self._read_one(_Command.FAN_COUNT)
+        self._temp_count = self._read_one(_Command.TEMP_COUNT_SENSORS)
+        self._set_fan_count(max(0, fan_slots - (1 if self._has_pump else 0)))
+        LOGGER.debug(
+            "%s: discovered %d fan slot(s) (%d fans + %d pump), %d temp sensor(s)",
+            self._description, fan_slots, self._fan_count,
+            1 if self._has_pump else 0, self._temp_count,
+        )
+
+    def _read_one(self, command):
+        """Send a READ_ONE_BYTE command and return the data byte."""
+        res = self._send_command(self._build_data_package(command, _OpCode.READ_ONE))
+        return res[2]
+
+    def _log_unknown_variant(self, type_byte):
+        """Best-effort fingerprint dump for an unknown 1b1c:0c04 variant."""
+        try:
+            fw_res = self._send_command(
+                self._build_data_package(_Command.FIRMWARE_ID, _OpCode.READ_TWO)
+            )
+            firmware = "%d.%d.%d" % (fw_res[3] >> 4, fw_res[3] & 0xF, fw_res[2])
+        except Exception as exc:  # noqa: BLE001 — best-effort diagnostic
+            firmware = f"<error: {exc}>"
+        try:
+            # The PRODUCT_NAME response carries 4 ASCII bytes regardless of
+            # the read width; grab them directly from the response payload.
+            name_res = self._send_command(
+                self._build_data_package(_Command.PRODUCT_NAME, _OpCode.READ_TWO)
+            )
+            name = bytes(name_res[2:6]).rstrip(b"\x00").decode("ascii", errors="replace")
+        except Exception as exc:  # noqa: BLE001
+            name = f"<error: {exc}>"
+        LOGGER.warning(
+            "unknown 1b1c:0c04 device (type=0x%02x, firmware=%s, product=%r); "
+            "falling back to %s. Please report at "
+            "https://github.com/liquidctl/liquidctl/issues with these details "
+            "so the device can be added to the variant table.",
+            type_byte,
+            firmware,
+            name,
+            _VARIANT_FALLBACK.description,
+        )
+
     def initialize(self, pump_mode="quiet", **kwargs):
-        """Initialize the device and set the pump mode
+        """Initialize the device and set the pump mode (on AIO variants).
 
         The device should be initialized every time it is powered on, including when
         the system resumes from suspending to memory.
 
-        Valid values for `pump_mode` are "quiet" and "extreme".
+        Valid values for `pump_mode` are "quiet" and "extreme"; ignored on
+        variants without a pump (e.g. Commander Mini).
         Unconfigured fan channels may default to 100% duty.
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        if pump_mode not in ["quiet", "extreme"]:
-            LOGGER.warning('pump mode must be either "quiet" or "extreme", falling back to "quiet"')
-            pump_mode = "quiet"
-
-        self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
+        if self._has_pump:
+            if pump_mode not in ["quiet", "extreme"]:
+                LOGGER.warning(
+                    'pump mode must be either "quiet" or "extreme", falling back to "quiet"'
+                )
+                pump_mode = "quiet"
+            self._data.store("pump_mode", _PumpMode[pump_mode.upper()].value)
 
         res = self._send_command(
-            self._build_data_package(_COMMAND_FIRMWARE_ID, _OP_CODE_READ_TWO_BYTES)
+            self._build_data_package(_Command.FIRMWARE_ID, _OpCode.READ_TWO)
         )
 
         fw_version = (res[3] >> 4, res[3] & 0xF, res[2])
@@ -167,51 +322,91 @@ class Coolit(UsbHidDriver):
 
         Returns a list of `(property, value, unit)` tuples.
         """
-        dataPackages = list()
+        # Each (SELECT, READ_TWO) pair takes 7 bytes in the request and 6 bytes
+        # in the response: [seq, op_write, seq, op_read, data_lo, data_hi].
+        # The HID report has a 63-byte payload, so 4 temps + 6 fans + pump = 77
+        # bytes does not fit; batch by group instead.
+        status = []
 
-        # temperature
-        dataPackages.append(self._build_data_package(_COMMAND_TEMP_READ, _OP_CODE_READ_TWO_BYTES))
+        if self._temp_count:
+            pkgs = []
+            for idx in range(self._temp_count):
+                pkgs.append(self._select_temp(idx))
+                pkgs.append(
+                    self._build_data_package(_Command.TEMP_READ, _OpCode.READ_TWO)
+                )
+            res = self._send_commands(pkgs)
+            # Protocol index 0 maps to the highest-numbered physical port on
+            # the Commander Mini silkscreen, so iterate in reverse to emit
+            # rows in ascending label order (1, 2, 3, 4 top-to-bottom).
+            for idx in reversed(range(self._temp_count)):
+                offset = idx * 6
+                frac = res[offset + 4]
+                whole = res[offset + 5]
+                # TODO: the disconnected-sensor sentinel is heuristic. On a
+                # Commander Mini an unpopulated header returned whole=0xb4;
+                # here we treat any value with bit 7 set as "no sensor" and
+                # skip it. Worth verifying with more samples.
+                if whole & 0x80:
+                    continue
+                temp = whole + frac / 255
+                if self._temp_count == 1:
+                    label = "Liquid temperature"
+                else:
+                    label = f"Temperature {self._temp_count - idx}"
+                status.append((label, temp, "°C"))
 
-        # fan 1
-        dataPackages.append(
-            self._build_data_package(
-                _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])
+        if self._fan_count:
+            # Two batches: one for FAN_MODE per slot (so we can mark empty slots
+            # definitively rather than guess from rpm==0), and one for the
+            # FAN_READ_RPM + FAN_MAX_RPM pair per slot.
+            mode_pkgs = []
+            for idx in range(self._fan_count):
+                mode_pkgs.append(self._select_fan(idx))
+                mode_pkgs.append(
+                    self._build_data_package(_Command.FAN_MODE, _OpCode.READ_ONE)
+                )
+            mode_res = self._send_commands(mode_pkgs)
+
+            rpm_pkgs = []
+            for idx in range(self._fan_count):
+                rpm_pkgs.append(self._select_fan(idx))
+                rpm_pkgs.append(
+                    self._build_data_package(_Command.FAN_READ_RPM, _OpCode.READ_TWO)
+                )
+                rpm_pkgs.append(
+                    self._build_data_package(_Command.FAN_MAX_RPM, _OpCode.READ_TWO)
+                )
+            rpm_res = self._send_commands(rpm_pkgs)
+
+            for idx in range(self._fan_count):
+                # mode batch: 5 bytes per slot (2 SELECT ack + 3 READ_ONE),
+                # FAN_MODE byte at offset+4
+                mode = mode_res[idx * 5 + 4]
+                # rpm batch: 10 bytes per slot (2 SELECT + 4 RPM + 4 MAX_RPM),
+                # current rpm at offset+4, max rpm at offset+8
+                rpm_offset = idx * 10
+                rpm = u16le_from(rpm_res, offset=rpm_offset + 4)
+                max_rpm = u16le_from(rpm_res, offset=rpm_offset + 8)
+                if mode == 0x03:
+                    status.append((f"Fan {idx + 1} speed", 0, "(empty)"))
+                elif max_rpm:
+                    status.append(
+                        (f"Fan {idx + 1} speed", rpm, f"rpm (max {max_rpm})")
+                    )
+                else:
+                    status.append((f"Fan {idx + 1} speed", rpm, "rpm"))
+
+        if self._has_pump:
+            res = self._send_commands(
+                [
+                    self._select_fan(self._pump_index),
+                    self._build_data_package(_Command.FAN_READ_RPM, _OpCode.READ_TWO),
+                ]
             )
-        )
-        dataPackages.append(
-            self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
-        )
+            status.append(("Pump speed", u16le_from(res, offset=4), "rpm"))
 
-        # fan 2
-        dataPackages.append(
-            self._build_data_package(
-                _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([1])
-            )
-        )
-        dataPackages.append(
-            self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
-        )
-
-        # pump
-        dataPackages.append(
-            self._build_data_package(
-                _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([2])
-            )
-        )
-        dataPackages.append(
-            self._build_data_package(_COMMAND_FAN_READ_RPM, _OP_CODE_READ_TWO_BYTES)
-        )
-
-        res = self._send_commands(dataPackages)
-
-        temp = res[3] + res[2] / 255
-
-        return [
-            ("Liquid temperature", temp, "°C"),
-            ("Fan 1 speed", u16le_from(res, offset=8), "rpm"),
-            ("Fan 2 speed", u16le_from(res, offset=14), "rpm"),
-            ("Pump speed", u16le_from(res, offset=20), "rpm"),
-        ]
+        return status
 
     def set_fixed_speed(self, channel, duty, **kwargs):
         """Set fan or fans to a fixed speed duty.
@@ -220,10 +415,10 @@ class Coolit(UsbHidDriver):
         "fan", to simultaneously configure all fans.  Unconfigured fan channels
         may default to 100% duty.
         """
-        for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store(f"{hw_channel}_mode", _FanMode.FIXED_DUTY.value)
-            self._data.store(f"{hw_channel}_duty", duty)
-            LOGGER.info(f"setting {hw_channel} to duty mode")
+        for fan in self._get_hw_fan_channels(channel):
+            self._data.store(f"{fan.name}_mode", _FanMode.FIXED_DUTY.value)
+            self._data.store(f"{fan.name}_duty", duty)
+            LOGGER.info("setting %s to duty mode", fan.name)
         self._send_set_cooling()
 
     def set_speed_profile(self, channel, profile, **kwargs):
@@ -239,10 +434,10 @@ class Coolit(UsbHidDriver):
         latter case the fan will be set to max out at 60°C.
         """
         profile = list(profile)
-        for hw_channel in self._get_hw_fan_channels(channel):
-            self._data.store(f"{hw_channel}_mode", _FanMode.CUSTOM_PROFILE.value)
-            self._data.store(f"{hw_channel}_profile", profile)
-            LOGGER.info(f"setting {hw_channel} to profile mode")
+        for fan in self._get_hw_fan_channels(channel):
+            self._data.store(f"{fan.name}_mode", _FanMode.CUSTOM_PROFILE.value)
+            self._data.store(f"{fan.name}_profile", profile)
+            LOGGER.info("setting %s to profile mode", fan.name)
         self._send_set_cooling()
 
     def set_color(self, channel, mode, colors, **kwargs):
@@ -256,12 +451,13 @@ class Coolit(UsbHidDriver):
     def _get_hw_fan_channels(self, channel):
         channel = channel.lower()
         if channel == "fan":
-            return self._fan_names
-        if channel in self._fan_names:
-            return [channel]
+            return self._fan_channels
+        for fan in self._fan_channels:
+            if fan.name == channel:
+                return [fan]
         raise ValueError(f"Unknown channel, should be one of: {_quoted('fan', *self._fan_names)}")
 
-    def _build_data_package(self, command, opCode, params=None):
+    def _build_data_package(self, command, opcode, params=None):
         if params:
             buf = bytearray(3 + len(params))
             buf[3 : 3 + len(params)] = params
@@ -269,10 +465,22 @@ class Coolit(UsbHidDriver):
             buf = bytearray(3)
 
         buf[0] = next(self._sequence)
-        buf[1] = opCode
-        buf[2] = command
+        buf[1] = opcode.value
+        buf[2] = command.value
 
         return buf
+
+    def _select_fan(self, index):
+        """Build a FAN_SELECT package addressing the given hardware fan index."""
+        return self._build_data_package(
+            _Command.FAN_SELECT, _OpCode.WRITE_ONE, params=bytes([index])
+        )
+
+    def _select_temp(self, index):
+        """Build a TEMP_SELECT package addressing the given sensor index."""
+        return self._build_data_package(
+            _Command.TEMP_SELECT, _OpCode.WRITE_ONE, params=bytes([index])
+        )
 
     def _send_commands(self, dataPackages):
         buf = bytearray(_REPORT_LENGTH)
@@ -301,37 +509,30 @@ class Coolit(UsbHidDriver):
         return buf
 
     def _send_set_cooling(self):
-        for fan in self._fan_names:
-            fanIndex = 0 if fan == "fan1" else 1
-
-            mode = _FanMode(self._data.load(f"{fan}_mode", of_type=int))
+        for fan in self._fan_channels:
+            mode = _FanMode(self._data.load(f"{fan.name}_mode", of_type=int))
 
             if mode is _FanMode.FIXED_DUTY:
-                stored = self._data.load(f"{fan}_duty", of_type=int, default=100)
+                stored = self._data.load(f"{fan.name}_duty", of_type=int, default=100)
                 duty = clamp(stored, 0, 100)
+                self._send_command(self._select_fan(fan.index))
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
+                        _Command.FAN_MODE, _OpCode.WRITE_ONE, params=bytes([mode.value])
                     )
                 )
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
-                    )
-                )
-                self._send_command(
-                    self._build_data_package(
-                        _COMMAND_FAN_FIXED_PWM,
-                        _OP_CODE_WRITE_ONE_BYTE,
+                        _Command.FAN_FIXED_PWM,
+                        _OpCode.WRITE_ONE,
                         params=bytes([fraction_of_byte(percentage=duty)]),
                     )
                 )
-                LOGGER.info("setting %s to %d%% duty cycle", fan, duty)
+                LOGGER.info("setting %s to %d%% duty cycle", fan.name, duty)
 
             elif mode is _FanMode.CUSTOM_PROFILE:
-                stored = self._data.load(f"{fan}_profile", of_type=list, default=[])
+                stored = self._data.load(f"{fan.name}_profile", of_type=list, default=[])
                 profile = _prepare_profile(stored)  # ensures correct len(profile)
-                pairs = ((temp, fraction_of_byte(percentage=duty)) for temp, duty in profile)
 
                 # "magical" 0x0A in front of curve definition packages
                 fanTemperatureData = [0x0A]
@@ -339,13 +540,9 @@ class Coolit(UsbHidDriver):
 
                 # get max RPM for current fan
                 dataPackages = []
+                dataPackages.append(self._select_fan(fan.index))
                 dataPackages.append(
-                    self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([0])
-                    )
-                )
-                dataPackages.append(
-                    self._build_data_package(_COMMAND_FAN_MAX_RPM, _OP_CODE_READ_TWO_BYTES)
+                    self._build_data_package(_Command.FAN_MAX_RPM, _OpCode.READ_TWO)
                 )
                 max_rpm = u16le_from(self._send_commands(dataPackages), offset=4)
 
@@ -358,24 +555,20 @@ class Coolit(UsbHidDriver):
                     fanDutyData.append(int(rpm - (rpm % 255)) >> 8)
 
                 # select fan to customize
-                self._send_command(
-                    self._build_data_package(
-                        _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([fanIndex])
-                    )
-                )
+                self._send_command(self._select_fan(fan.index))
 
                 # Change mode to custom Profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_MODE, _OP_CODE_WRITE_ONE_BYTE, params=bytes([mode.value])
+                        _Command.FAN_MODE, _OpCode.WRITE_ONE, params=bytes([mode.value])
                     )
                 )
 
                 # Send duty cycle Profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_RPM_TABLE,
-                        _OP_CODE_WRITE_THREE_BYTES,
+                        _Command.FAN_RPM_TABLE,
+                        _OpCode.WRITE_THREE,
                         params=bytes(fanDutyData),
                     )
                 )
@@ -383,26 +576,27 @@ class Coolit(UsbHidDriver):
                 # Send temperature profile
                 self._send_command(
                     self._build_data_package(
-                        _COMMAND_FAN_TEMP_TABLE,
-                        _OP_CODE_WRITE_THREE_BYTES,
+                        _Command.FAN_TEMP_TABLE,
+                        _OpCode.WRITE_THREE,
                         params=bytes(fanTemperatureData),
                     )
                 )
 
-                LOGGER.info("setting %s to follow profile %r", fan, profile)
+                LOGGER.info("setting %s to follow profile %r", fan.name, profile)
             else:
                 raise ValueError(f"Unsupported fan {mode}")
+
+        if not self._has_pump:
+            return
 
         pump_mode = _PumpMode(self._data.load("pump_mode", of_type=int))
 
         self._send_commands(
             [
+                self._select_fan(self._pump_index),
                 self._build_data_package(
-                    _COMMAND_FAN_SELECT, _OP_CODE_WRITE_ONE_BYTE, params=bytes([_PUMP_INDEX])
-                ),
-                self._build_data_package(
-                    _COMMAND_FAN_FIXED_RPM,
-                    _OP_CODE_WRITE_TWO_BYTES,
+                    _Command.FAN_FIXED_RPM,
+                    _OpCode.WRITE_TWO,
                     params=bytes(
                         _PUMP_DEFAULT_QUIET
                         if pump_mode == _PumpMode.QUIET
