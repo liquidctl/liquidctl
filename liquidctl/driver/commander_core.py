@@ -19,6 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 _REPORT_LENGTH = 96
 _RESPONSE_LENGTH = 96
+_MAX_RESPONSE_RETRIES = 16  # see _send_command — drains stale reports / echoes
 
 _INTERFACE_NUMBER = 0
 
@@ -148,9 +149,9 @@ class CommanderCore(UsbHidDriver):
         channels = self._parse_channels(channel)
         curve_points = list(profile)
         if len(curve_points) < 2:
-            ValueError('a minimum of 2 speed curve points must be configured.')
+            raise ValueError('a minimum of 2 speed curve points must be configured.')
         if len(curve_points) > 7:
-            ValueError('a maximum of 7 speed curve points may be configured.')
+            raise ValueError('a maximum of 7 speed curve points may be configured.')
 
         with self._wake_device_context():
             # Set hardware speed mode
@@ -186,9 +187,10 @@ class CommanderCore(UsbHidDriver):
                 # set number of curve points
                 new_data.append(int.to_bytes(len(curve_points), length=1, byteorder="big"))
 
-                # set curve points
+                # set curve points (decidegree temps; round() so float inputs
+                # like 31.3 produce 313, not 312 via truncation)
                 for (temp, duty) in curve_points:
-                    new_data.append(int.to_bytes(temp*10, length=2, byteorder="little", signed=False))
+                    new_data.append(int.to_bytes(round(temp * 10), length=2, byteorder="little", signed=False))
                     new_data.append(int.to_bytes(clamp(duty, 0, 100), length=2, byteorder="little", signed=False))
 
                 # Update device data
@@ -287,12 +289,18 @@ class CommanderCore(UsbHidDriver):
         self.device.clear_enqueued_reports()
         self.device.write(buf)
 
-        res = self.device.read(_RESPONSE_LENGTH)
-        while res[0] != 0x00:
+        # Skip unsolicited reports (res[0] != 0x00) and stale command echoes
+        # (res[1] != command[0]).  Both can occur under firmware 2.x between
+        # the drain and the write.  A bounded retry budget covers either
+        # case so the function cannot spin indefinitely.
+        retries = _MAX_RESPONSE_RETRIES
+        while True:
             res = self.device.read(_RESPONSE_LENGTH)
-        buf = bytes(res)
-        assert buf[1] == command[0], 'response does not match command'
-        return buf
+            if res[0] == 0x00 and res[1] == command[0]:
+                return bytes(res)
+            retries -= 1
+            if retries <= 0:
+                raise ExpectationNotMet('response does not match command')
 
     @contextmanager
     def _wake_device_context(self):

@@ -402,3 +402,45 @@ def test_parse_channels_error_commander_core():
     core = CommanderCore(MockCommanderCoreDevice(), 'Corsair Commander Core', True)
     with pytest.raises(ValueError):
         core._parse_channels('fan')
+
+
+def test_set_speed_profile_raises_on_too_few_points(commander_core_device):
+    """Fix for unraised ValueError typo: minimum of 2 curve points is enforced."""
+    with pytest.raises(ValueError):
+        commander_core_device.set_speed_profile('fan1', [(30, 50)])
+
+
+def test_set_speed_profile_raises_on_too_many_points(commander_core_device):
+    """Fix for unraised ValueError typo: maximum of 7 curve points is enforced."""
+    with pytest.raises(ValueError):
+        commander_core_device.set_speed_profile('fan1', [(t, 50) for t in range(20, 28)])
+
+
+def test_set_speed_profile_rounds_float_temperatures(commander_core_device):
+    """Curve temperatures are encoded as decidegrees; floats must be rounded
+    rather than truncated.  31.3 * 10 evaluates to 312.9999... under IEEE-754,
+    so int() would store 312 instead of the intended 313."""
+    commander_core_device.device.speeds_mode = (0, 0, 0, 0, 0, 0, 0)
+    commander_core_device.set_speed_profile('fan1', [(20.0, 0), (31.3, 50)])
+    stored = commander_core_device.device.curve_points_by_device[1]
+    assert stored[1][0] == 31.3, f'expected 31.3, got {stored[1][0]!r}'
+
+
+def test_send_command_raises_on_persistent_wrong_echo(commander_core_device):
+    """Replacement for the assert-based response check: under python -O the
+    assert disappears and the function silently returns wrong data.  The new
+    code raises ExpectationNotMet after a bounded number of retries."""
+    commander_core_device.device.read = lambda length: [0x00, 0xFF, 0x00] + [0] * (length - 3)
+    commander_core_device.device.write = lambda data: len(data)
+    with pytest.raises(ExpectationNotMet):
+        commander_core_device._send_command((0x02, 0x13))
+
+
+def test_send_command_raises_on_persistent_nonzero_report_id(commander_core_device):
+    """A device that emits only unsolicited reports (res[0] != 0x00) must not
+    cause the driver to spin forever.  The single retry budget covers both
+    res[0] != 0x00 and stale echo cases."""
+    commander_core_device.device.read = lambda length: [0xFF, 0x02, 0x00] + [0] * (length - 3)
+    commander_core_device.device.write = lambda data: len(data)
+    with pytest.raises(ExpectationNotMet):
+        commander_core_device._send_command((0x02, 0x13))
