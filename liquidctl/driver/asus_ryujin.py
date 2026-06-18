@@ -502,6 +502,17 @@ class AsusRyujin(UsbHidDriver):
             bgr[i + 1] = pixels[i + 1]  # G
             bgr[i + 2] = pixels[i]  # R
 
+        # Wake the panel from standby and ensure brightness is up BEFORE writing the
+        # framebuffer. Without this, a screen left in standby (e.g. by Windows on a
+        # dual-boot box, or a cold boot) renders the pushed image as black even though
+        # the bulk write succeeds. Use the raw-HID path: the hidapi handle is closed
+        # while the kernel driver is detached for bulk access.
+        self._raw_hid_write([_CMD_SET_DISPLAY_OPTION, 0x10])  # wake from standby
+        time.sleep(0.05)
+        # set config: display_type, mode, orientation, reserved, brightness=100
+        self._raw_hid_write([_CMD_SET_DISPLAY_OPTION, 0x01, 0x00, 0x00, 0x00, 0x00, 100])
+        time.sleep(0.05)
+
         self._switch_display_mode(_DISPLAY_MODE_FRAMEBUFFER)
         time.sleep(0.1)
         self._write_bulk(bytes(bgr))
