@@ -122,6 +122,7 @@ This can be specified by using the `--direction` flag.
 | `super-breathing` | Up to 40, one for each LED | Only one step |
 | `pulse` | Up to 8, one for each pulse |
 | `candle` | One |
+| `wave` | Up to 40, one for each LED |
 | `wings` | One |
 
 #### Deprecated modes

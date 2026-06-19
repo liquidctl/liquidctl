@@ -732,7 +732,8 @@ class Nzxt2023RgbController(_BaseSmartDevice):
         'rainbow-pulse':    (0x0d, 0x01, 0x00, 0, 0),
         'rainbow-flow':     (0x0b, 0x01, 0x00, 0, 0),
         'super-rainbow':    (0x0c, 0x01, 0x00, 0, 0),
-        'candle':           (0x08, 0x00, 0x00, 0, 1)
+        'candle':           (0x08, 0x00, 0x00, 0, 1),
+        'wave':             (0x02, 0x6a, 0x00, 1, 40)
     }
 
     _SPEED_VALUES = {
@@ -747,6 +748,7 @@ class Nzxt2023RgbController(_BaseSmartDevice):
         'spectrum-wave':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
         'cover-marquee':      [[0x5e, 0x01], [0x2c, 0x01], [0xfa,0x00], [0x96,0x00], [0x50, 0x00]],
         'alternating':        [[0x40, 0x06], [0x14, 0x05], [0xe8, 0x03], [0x20, 0x03], [0x58, 0x02]],
+        'wave':               [[0x96, 0x00], [0x80, 0x00], [0x6a, 0x00], [0x40, 0x00], [0x20, 0x00]],
         'fixed':              [[0x32, 0x00]]*5,
         'super-fixed':        [[0x32, 0x00]]*5,
         'candle':             [[0x32, 0x00]]*5,
@@ -824,13 +826,13 @@ class Nzxt2023RgbController(_BaseSmartDevice):
                 return
         assert False, f'missing messages (attempts={self._MAX_READ_ATTEMPTS}, missing={len(parsers)})'
 
-    def _write_individual_color(self, cid, colors):
+    def _write_individual_color(self, cid, colors, effect_byte=0x01, speed_byte=0x00):
         color_count = len(colors)
         led_padding = [0x00, 0x00, 0x00]*(40 - color_count)  # turn off remaining LEDs
         leds = list(itertools.chain(*colors)) + led_padding
         self._write([0x22, 0x10, cid, 0x00] + leds[0:60])  # send first 20 colors to device (3 bytes per color)
         self._write([0x22, 0x11, cid, 0x00] + leds[60:])  # send remaining colors to device
-        self._write([0x22, 0xa0, cid, 0x00, 0x01, 0x00, 0x00, 0x08, 0x00,
+        self._write([0x22, 0xa0, cid, 0x00, effect_byte, speed_byte, 0x00, 0x08, 0x00,
                      0x00, 0x80, 0x00, 0x32, 0x00, 0x00, 0x01])
 
     def _write_colors(self, cid, mode, colors, sval, direction='forward',):
@@ -839,7 +841,13 @@ class Nzxt2023RgbController(_BaseSmartDevice):
         color_count = len(colors)
 
         if maxcolors == 40:
-            self._write_individual_color(cid, colors)
+            bytes = [0x01, 0x00] # defaults
+
+            if mode == 'wave':
+                bytes[0] = 0x02 # set effect
+                bytes[1] = self._SPEED_VALUES[mode][sval][0] # set speed
+
+            self._write_individual_color(cid, colors, effect_byte=bytes[0], speed_byte=bytes[1])
         else:
             # Header and device id
             header = [0x2a, 0x04, cid, cid]
