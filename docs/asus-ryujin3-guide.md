@@ -80,6 +80,35 @@ The Ryujin III has a 320x240 LCD. The screen can be controlled via the `lcd` cha
 Any image format supported by Pillow (PNG, JPEG, BMP, etc.) will be automatically
 resized to 320x240 and displayed. Requires `Pillow` (`pip install Pillow`).
 
+This `static` mode writes the image to the **live framebuffer**: it is shown
+immediately but is **volatile** — the panel reverts to its built-in animation on
+reboot, because nothing is stored on the cooler.
+
+### Persistent image / animation (survives reboot)
+
+To store content in the cooler's onboard flash like Armoury Crate does — so the
+firmware replays it across reboots without the host running — use `image` (for a
+still image) or `gif` (for an animation):
+
+```
+# liquidctl set lcd screen image /path/to/image.jpg
+# liquidctl set lcd screen gif /path/to/animation.gif
+```
+
+`image` stores a single still (uploaded as JPEG) into the static slideshow slot;
+`gif` stores an animated GIF into an animation slot and loops it. Both are
+resized to 320x240 and require `Pillow`. Unlike `static`, the result persists
+across reboots.
+
+These uploads are paced by the device's own flow-control notifications (the
+firmware acknowledges each chunk before the next is sent), which is what makes
+the write actually commit to flash.
+
+> **Note:** after a lot of rapid back-to-back uploads the cooler's flash upload
+> state can wedge — the upload reports `flash slot not ready` and recommends a
+> power-cycle. A full power-cycle (so the cooler's USB rails fully drain) clears
+> it; a soft reboot does not. In normal one-off use you will not hit this.
+
 ### Built-in animation
 
 Switch back to the default ROG animation:

@@ -18,6 +18,15 @@ from liquidctl.util import clamp, u16le_from, rpadlist, fraction_of_byte
 
 _LOGGER = logging.getLogger(__name__)
 
+
+class _FlashSlotStuck(Exception):
+    """Internal: the flash erase came back stuck (ee13 1001).
+
+    Transient device state after an interrupted upload; cleared by the unstick
+    sweep. Caught inside the driver to trigger one recovery + retry; never
+    propagates to the caller.
+    """
+
 _REPORT_LENGTH = 65
 _PREFIX = 0xEC
 
@@ -38,6 +47,27 @@ _CMD_SET_HW_MONITOR_STRING = 0x53
 _CMD_SET_DISPLAY_OPTION = 0x5C
 _CMD_SET_CLOCK = 0x11
 _CMD_FLUSH_FRAMEBUFFER = 0x7F
+
+# Persistent flash-slot upload command headers (Armoury Crate path).
+# Unlike the volatile framebuffer (mode 0x20), these upload an image/animation into
+# the cooler's onboard flash so the firmware auto-plays it across reboots.
+_CMD_UPLOAD_BEGIN = 0x71  # begin upload session
+_CMD_UPLOAD_ARM = 0xF1  # arm / read capability (free space)
+_CMD_UPLOAD_PARAMS = 0x72  # image params (format + page count)
+_CMD_UPLOAD_PREPARE = 0x73  # 0x01 = erase/prepare slot, 0xFF = commit
+_CMD_UPLOAD_SIZE = 0x7F  # declare payload size (also the framebuffer flush header)
+_CMD_DISPLAY_OPTION = 0x5C  # wake / brightness (alias of _CMD_SET_DISPLAY_OPTION)
+_CMD_WAKE_FRAME = 0xDC  # wake frame before a display switch
+_CMD_SELECT_SLOT = 0x5D  # select stored slot before display
+
+# Async interrupt-IN (EP 0x82) "ee" flow-control notification headers.
+# The firmware paces the bulk upload with these; the uploader MUST wait for them.
+_EE_SLOT = 0x13  # ee13 0001 = erased/ready;  ee13 00ff = flash-write complete
+_EE_CHUNK = 0x14  # ee14 ..10 = chunk accepted; ee14 ..0a = ready to commit
+
+# Persistent-upload format params (third byte of ec72 is a page count; any 1..n accepted)
+_UPLOAD_FMT_STATIC = [0x01, 0x01]  # JPEG
+_UPLOAD_FMT_ANIM = [0x01, 0x02, 0x03]  # GIF89a
 
 # Display mode bytes (wire encoding, from ryujin.py DisplayMode enum)
 _DISPLAY_MODE_OFF = 0x00
@@ -381,7 +411,9 @@ class AsusRyujin(UsbHidDriver):
 
         | Channel | Mode | Value |
         | --- | --- | --- |
-        | `lcd` | `static` | path to image file |
+        | `lcd` | `static` | path to image file (volatile; cleared on reboot) |
+        | `lcd` | `image` | path to image file (persistent; stored to flash, survives reboot) |
+        | `lcd` | `gif` | path to a GIF (persistent animation; stored to flash, survives reboot) |
         | `lcd` | `liquid` | — (built-in ROG animation) |
         | `lcd` | `clock` | `24h` or `12h` (default: `24h`) |
         | `lcd` | `monitor` | — (HW monitor showing live stats) |
@@ -391,6 +423,12 @@ class AsusRyujin(UsbHidDriver):
         | `lcd` | `release` | — (release pump to internal controller; fan stays at last duty) |
         | `lcd` | `brightness` | int between `0` and `100` (%) |
         | `lcd` | `orientation` | `0`, `1`, `2` or `3` (0°, 90°, 180°, 270°) |
+
+        `static` writes a single frame to the live framebuffer (mode 0x20); it is
+        volatile and the panel reverts to its built-in animation on reboot. `image`
+        and `gif` upload to the cooler's onboard flash like Armoury Crate does, so the
+        firmware replays the content across reboots. The persistent path is paced by
+        the device's async "ee" flow-control notifications.
 
         Requires Ryujin III (models with LCD display).
         """
@@ -406,6 +444,15 @@ class AsusRyujin(UsbHidDriver):
                 raise ValueError("static mode requires a path to an image file")
             self._set_screen_static(value)
             self._release_raw_usb_device()
+        elif mode in ("image", "gif"):
+            # Persistent flash-slot upload (survives reboot). Animations live in
+            # the animation slots (0-3, as Armoury Crate uses); static images use
+            # the static slideshow table (slot 4). Defaults differ accordingly.
+            if value is None:
+                raise ValueError(f"{mode} mode requires a path to an image file")
+            is_anim = mode == "gif"
+            slot = int(kwargs.get("slot", 3 if is_anim else 4))
+            self._upload_flash_slot(value, animation=is_anim, slot=slot)
         elif mode == "liquid":
             self._write([_PREFIX, _CMD_SWITCH_DISPLAY_MODE, _DISPLAY_MODE_ANIMATION])
         elif mode == "clock":
@@ -434,8 +481,8 @@ class AsusRyujin(UsbHidDriver):
             self._release_cooler_control()
         else:
             raise ValueError(
-                f"invalid mode: {mode}, valid: static, liquid, clock, monitor, off, "
-                f"standby, wake, brightness, orientation, release"
+                f"invalid mode: {mode}, valid: static, image, gif, liquid, clock, "
+                f"monitor, off, standby, wake, brightness, orientation, release"
             )
 
     def _raw_hid_write(self, cmd: list):
@@ -504,9 +551,9 @@ class AsusRyujin(UsbHidDriver):
 
         # Wake the panel from standby and ensure brightness is up BEFORE writing the
         # framebuffer. Without this, a screen left in standby (e.g. by Windows on a
-        # dual-boot box, or a cold boot) renders the pushed image as black even though
-        # the bulk write succeeds. Use the raw-HID path: the hidapi handle is closed
-        # while the kernel driver is detached for bulk access.
+        # dual-boot box) renders the pushed image as black even though the bulk write
+        # succeeds. Use the raw-HID path: the hidapi handle is closed while the kernel
+        # driver is detached for bulk access.
         self._raw_hid_write([_CMD_SET_DISPLAY_OPTION, 0x10])  # wake from standby
         time.sleep(0.05)
         # set config: display_type, mode, orientation, reserved, brightness=100
@@ -518,6 +565,256 @@ class AsusRyujin(UsbHidDriver):
         self._write_bulk(bytes(bgr))
         self._flush_framebuffer()
         _LOGGER.info("displayed static image: %s", path)
+
+    # --- Persistent flash-slot upload (Armoury Crate path) --------------------
+    #
+    # This path stores the image/animation in the cooler's onboard flash so the
+    # firmware replays it across reboots. It is architecturally the OPPOSITE of
+    # the volatile framebuffer above: the kernel HID driver stays BOUND so the
+    # hidapi handle (self.device) carries control commands AND the device's async
+    # interrupt-IN "ee" flow-control notifications, while a separate pyusb handle
+    # claims ONLY interface 0 for the bulk image payload. The firmware paces the
+    # upload with the ee signals; blasting chunks blind (as earlier attempts did)
+    # leaves the commit a no-op and nothing persists.
+
+    def _bulk_only_device(self):
+        """Open a pyusb handle claiming ONLY interface 0 (bulk EP).
+
+        Interface 1 (HID) is deliberately left to the kernel/hidapi so control +
+        ee-signal reads keep working on self.device during the upload.
+        """
+        if self._bulk_device is not None:
+            return self._bulk_device
+
+        import usb.core
+        import usb.util
+
+        dev = usb.core.find(idVendor=self.vendor_id, idProduct=self.product_id)
+        if dev is None:
+            raise ExpectationNotMet("could not find USB device for LCD")
+        try:
+            usb.util.claim_interface(dev, 0)
+        except Exception:
+            pass  # already claimed / not kernel-bound
+        self._bulk_device = dev
+        return dev
+
+    def _ee_read(self, total_timeout=4.0):
+        """Read one interrupt-IN report via hidapi, retrying until timeout.
+
+        Returns the report bytes, or None if nothing arrived in total_timeout.
+        """
+        from liquidctl.driver.usb import Timeout
+
+        deadline = time.monotonic() + total_timeout
+        while time.monotonic() < deadline:
+            try:
+                report = self.device.read(_REPORT_LENGTH, timeout=400)
+            except Timeout:
+                continue
+            except Exception:
+                return None
+            if report:
+                return bytes(report)
+        return None
+
+    def _ee_wait(self, predicate, total_timeout=4.0):
+        """Wait for an ee/ec report matching predicate; return it or None."""
+        deadline = time.monotonic() + total_timeout
+        while time.monotonic() < deadline:
+            report = self._ee_read(min(0.5, total_timeout))
+            if report and predicate(report):
+                return report
+        return None
+
+    def _encode_for_flash(self, path, animation):
+        """Encode an image to the wire payload + the ec72 format params."""
+        try:
+            from PIL import Image, ImageSequence
+        except ImportError:
+            raise NotSupportedByDriver(
+                "Pillow is required for flash-slot upload: pip install Pillow"
+            )
+        import io
+
+        src = Image.open(path)
+        buf = io.BytesIO()
+        if animation:
+            frames = [
+                f.convert("RGB").resize((_LCD_WIDTH, _LCD_HEIGHT), Image.LANCZOS)
+                for f in ImageSequence.Iterator(src)
+            ]
+            if len(frames) == 1:
+                frames[0].save(buf, "GIF")
+            else:
+                frames[0].save(
+                    buf,
+                    "GIF",
+                    save_all=True,
+                    append_images=frames[1:],
+                    loop=0,
+                    duration=src.info.get("duration", 80),
+                )
+            return buf.getvalue(), list(_UPLOAD_FMT_ANIM)
+        src.convert("RGB").resize((_LCD_WIDTH, _LCD_HEIGHT), Image.LANCZOS).save(
+            buf, "JPEG", quality=90
+        )
+        return buf.getvalue(), list(_UPLOAD_FMT_STATIC)
+
+    def _upload_flash_slot(self, path, animation, slot):
+        """Upload an image/animation to a flash slot and display it.
+
+        Persists across reboots. Paced by the device's ee flow-control signals.
+
+        The flash state machine can get stuck after an interrupted upload: the
+        erase step replies ee13 **10**01 (instead of ee13 0001) and the size
+        declaration is then rejected. A light stuck state is cleared by a sweep
+        of clean begin/arm/params/erase cycles, so we attempt the upload and, if
+        the erase comes back stuck, run that recovery and retry once. A *deep*
+        wedge (after a lot of rapid upload/reset cycling) survives soft reboots,
+        USB rebinds and the sweep alike, and is only cleared by a full
+        power-cycle of the cooler (its USB +5V rails must fully drain); in that
+        case we surface a clear error telling the user to power-cycle.
+        """
+        try:
+            self._attempt_flash_upload(path, animation, slot)
+            return
+        except _FlashSlotStuck:
+            _LOGGER.warning("flash slot stuck (ee13 1001); attempting recovery + retry")
+
+        self._unstick_flash()
+        try:
+            self._attempt_flash_upload(path, animation, slot)
+        except _FlashSlotStuck as exc:
+            raise ExpectationNotMet(
+                "the cooler's flash upload state is wedged (%s) and software "
+                "recovery (sweep + USB rebind) did not clear it. This happens "
+                "after heavy upload cycling; fully power-cycle the system (drain "
+                "the PSU for ~15s so the cooler's USB rails reset) and retry." % exc
+            )
+
+    def _unstick_flash(self):
+        """Best-effort flush of a stuck flash state machine.
+
+        After an interrupted upload the erase returns ee13 1001 and the size
+        declaration is rejected. Running clean begin/arm/params/erase cycles on
+        a fresh hidapi handle clears a *light* stuck state. Release the bulk
+        handle and reconnect first so the sweep runs on a clean session. NOTE: a
+        deep wedge is not cleared by this (only a power-cycle is) -- this is a
+        best effort, and the caller surfaces a clear error if the retry fails.
+        """
+        self._release_raw_usb_device()
+        try:
+            self.disconnect()
+        except Exception:
+            pass
+        self.connect()
+        dev = self.device
+        for page in range(1, 11):
+            dev.clear_enqueued_reports()
+            self._write([_PREFIX, _CMD_UPLOAD_BEGIN, 0x01, 0x01])
+            self._ee_read(0.3)
+            self._write([_PREFIX, _CMD_UPLOAD_ARM, 0x00])
+            self._ee_read(0.3)
+            self._write([_PREFIX, _CMD_UPLOAD_PARAMS, 0x01, 0x02, page])
+            self._ee_read(0.3)
+            dev.clear_enqueued_reports()
+            self._write([_PREFIX, _CMD_UPLOAD_PREPARE, 0x01])
+            self._ee_wait(lambda r: len(r) >= 4 and r[0] == _PREFIX + 2 and r[1] == _EE_SLOT, 2.0)
+        _LOGGER.debug("ran flash unstick sweep")
+
+    def _attempt_flash_upload(self, path, animation, slot):
+        """One flash-slot upload attempt (no recovery). See _upload_flash_slot."""
+        payload, fmt_params = self._encode_for_flash(path, animation)
+        size = len(payload)
+        if size % 4096:
+            payload += b"\x00" * (4096 - (size % 4096))
+        n_chunks = len(payload) // 4096
+
+        bulk = self._bulk_only_device()
+
+        def cmd(body):
+            self._write([_PREFIX] + list(body))
+
+        ee = lambda r, h2, h3=None: (
+            len(r) >= 4 and r[0] == _PREFIX + 2 and r[1] == h2 and (h3 is None or r[3] == h3)
+        )
+
+        # --- HEADER ---
+        self.device.clear_enqueued_reports()
+        cmd([_CMD_UPLOAD_BEGIN, 0x01, 0x01])
+        self._ee_read(0.6)
+        cmd([_CMD_UPLOAD_ARM, 0x00])  # arm -> capability (free space) reply
+        self._ee_wait(lambda r: r[:4] == bytes([_PREFIX, _CMD_UPLOAD_BEGIN, 0x00, 0x01]), 2.0)
+        cmd([_CMD_UPLOAD_PARAMS] + fmt_params)
+        self._ee_read(0.6)
+
+        self.device.clear_enqueued_reports()
+        cmd([_CMD_UPLOAD_PREPARE, 0x01])  # erase/prepare slot
+        erased = self._ee_wait(lambda r: ee(r, _EE_SLOT), 3.0)
+        if erased is None or erased[2] != 0x00:
+            # ee13 1001 (status 0x10) => stuck state; recoverable via unstick sweep.
+            raise _FlashSlotStuck(
+                "flash slot not ready (erase status %s)"
+                % (erased[:4].hex() if erased else "timeout")
+            )
+
+        cmd([_CMD_UPLOAD_SIZE, 0x02] + list(size.to_bytes(3, "little")))  # declare size
+        ready = self._ee_wait(lambda r: r[:2] == bytes([_PREFIX, _CMD_UPLOAD_SIZE]), 2.0)
+        if ready is None or ready[2] != 0x00:
+            raise ExpectationNotMet(
+                "device rejected size declaration (%s)"
+                % (ready[:4].hex() if ready else "timeout")
+            )
+
+        # --- BULK (ee14-gated) ---
+        off = 0
+        for c in range(n_chunks):
+            bulk.write(_EP_BULK_OUT, payload[off : off + 4096], timeout=3000)
+            off += 4096
+            ack = self._ee_wait(lambda r: ee(r, _EE_CHUNK), 3.0)
+            if ack is None:
+                raise ExpectationNotMet(f"no ee14 ack for chunk {c}/{n_chunks}")
+
+        # --- COMMIT (ee13 ..ff-gated) ---
+        cmd([_CMD_UPLOAD_PREPARE, 0xFF])
+        self._ee_read(0.4)
+        done = self._ee_wait(lambda r: ee(r, _EE_SLOT, 0xFF), 10.0)
+        if done is None:
+            raise ExpectationNotMet("commit timed out (ee13 ..ff not received)")
+        time.sleep(0.5)
+
+        # --- DISPLAY the freshly written slot ---
+        cmd([_CMD_WAKE_FRAME, 0x00])
+        self._ee_read(0.2)
+        cmd([_CMD_DISPLAY_OPTION, 0x01, 0x00, 0x64, 0x00, 0x00, 0x64, 0x14, 0x00, 0x00, 0x00, 0x64, 0x14])
+        self._ee_read(0.2)
+        cmd([_CMD_WAKE_FRAME, 0x00])
+        self._ee_read(0.2)
+        if animation:
+            cmd([_CMD_SELECT_SLOT, 0x00, 0x01, _DISPLAY_MODE_SINGLE_ANIM, 0x01, slot, 0x05])
+            self._ee_read(0.2)
+            cmd([_CMD_SWITCH_DISPLAY_MODE, _DISPLAY_MODE_SINGLE_ANIM, 0x01, slot])
+        else:
+            cmd([0x60, 0x00, 0x01, 0x10])
+            self._ee_read(0.2)
+            offs = [0x17, 0x3F, 0x67, 0x8F, 0xB7, 0xDF]
+            for i in range(6):
+                cmd([0x60, 0x00, 0x02, i, 0x03, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x08, 0x00, offs[i]])
+                self._ee_read(0.2)
+            cmd([_CMD_SELECT_SLOT, 0x00, 0x01, 0x04, 0x00, 0x00, 0x05])
+            self._ee_read(0.2)
+            cmd([_CMD_SWITCH_DISPLAY_MODE, _DISPLAY_MODE_SLIDESHOW])
+        self._ee_read(0.2)
+
+        self._release_raw_usb_device()
+        _LOGGER.info(
+            "uploaded %s to flash slot %d (%d bytes): %s",
+            "animation" if animation else "image",
+            slot,
+            size,
+            path,
+        )
 
     def _set_screen_clock_hid(self, fmt_24h: bool = True):
         """Switch to clock mode via hidapi (no pyusb needed)."""

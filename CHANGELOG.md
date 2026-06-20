@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+Added:
+
+- ASUS Ryujin III: persistent flash-slot LCD content via `set lcd screen image`
+  (still image) and `set lcd screen gif` (animation). Unlike the volatile
+  `static` framebuffer, these upload to the cooler's onboard flash like Armoury
+  Crate does, so the firmware replays the content across reboots. The upload is
+  gated on the device's async flow-control notifications, which is what makes
+  the write commit to flash.
+
 ## [1.16.0] – 2026-03-03
 
 ### Changes since 1.15.0
