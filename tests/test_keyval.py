@@ -187,24 +187,36 @@ def test_fs_backend_stores_honor_load_store_locking(tmpdir):
     store = _FilesystemBackend(key_prefixes=["prefix"], runtime_dirs=[run_dir])
     store.store("key", 42)
 
-    ps = [
-        mp_ctx.Process(target=_fs_mp_increment_key, args=(run_dir, "prefix", "key", 0.2)),
-        mp_ctx.Process(target=_fs_mp_store_key, args=(run_dir, "prefix", "key", -1)),
-    ]
+    # Two Events let the test deterministically order the two processes
+    # without relying on time.sleep() to win a race:
+    #   - `holding_lock` is set by the holder once it is inside the
+    #     load_store closure (i.e. it has already taken the lock).
+    #   - `may_release` is awaited by the holder before returning, so
+    #     the test can keep the lock contended for as long as it likes.
+    holding_lock = mp_ctx.Event()
+    may_release = mp_ctx.Event()
 
-    start_time = time.monotonic()
+    holder = mp_ctx.Process(
+        target=_fs_mp_increment_key_synced,
+        args=(run_dir, "prefix", "key", holding_lock, may_release),
+    )
+    writer = mp_ctx.Process(
+        target=_fs_mp_store_key,
+        args=(run_dir, "prefix", "key", -1),
+    )
 
-    ps[0].start()
-    time.sleep(0.1)
-    ps[1].start()
+    holder.start()
+    assert holding_lock.wait(timeout=5), "holder never entered critical section"
 
-    # join second process first
-    ps[1].join()
+    # The holder is *guaranteed* to be inside the lock at this point,
+    # so any store() the writer attempts must serialize after it.
+    writer.start()
+    may_release.set()
 
-    elapsed = time.monotonic() - start_time
-    assert elapsed >= 0.2
+    writer.join(timeout=5)
+    holder.join(timeout=5)
+    assert holder.exitcode == 0 and writer.exitcode == 0
 
-    ps[0].join()
     assert store.load("key") == -1
 
 
@@ -242,6 +254,27 @@ def _fs_mp_increment_key(run_dir, prefix, key, sleep):
 
     def l(x):
         time.sleep(sleep)
+        return x + 1
+
+    store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
+    store.load_store(key, l)
+
+
+def _fs_mp_increment_key_synced(run_dir, prefix, key, holding_lock, may_release):
+    """Open a _FilesystemBackend and increment `key`, with explicit sync.
+
+    For the `multiprocessing` tests that need deterministic ordering.
+
+    Signals `holding_lock` once inside the load_store closure (i.e. the
+    lock has been acquired), then waits on `may_release` before returning,
+    so the caller can guarantee the lock stays contended for as long as
+    needed without sleeping.
+    """
+
+    def l(x):
+        holding_lock.set()
+        if not may_release.wait(timeout=5):
+            raise TimeoutError("may_release was never signaled")
         return x + 1
 
     store = _FilesystemBackend(key_prefixes=[prefix], runtime_dirs=[run_dir])
