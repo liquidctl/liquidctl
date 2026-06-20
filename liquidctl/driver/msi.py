@@ -448,28 +448,46 @@ class MpgCooler(UsbHidDriver):
                 f"'{','.join(self._UNSAFE)}'"
             )
             return []
+
+        # --- CANLI TELEMETRİ VE FAILSAFE EKLENTİSİ ---
+        try:
+            import subprocess, re
+
+            # 1. CPU Sıcaklığı (Sensors)
+            out_temp = subprocess.check_output("sensors | grep -E '(Tctl|Cpu)' | head -n 1", shell=True, timeout=1).decode('utf-8')
+            match_temp = re.search(r'\+?(\d+\.\d+)', out_temp)
+            cpu_temp = int(float(match_temp.group(1))) if match_temp else 100
+
+            # 2. CPU Frekansı (Linux sysfs üzerinden ilk çekirdeği MHz cinsinden okur)
+            try:
+                out_freq = subprocess.check_output("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", shell=True, timeout=1).decode('utf-8')
+                cpu_freq = int(int(out_freq.strip()) / 1000)
+            except:
+                cpu_freq = 0
+
+            self.set_oled_show_cpu_status(cpu_freq, cpu_temp)
+
+            # 3. GPU Kullanımı (Önce NVIDIA, başarısız olursa AMD dener)
+            gpu_usage = 0
+            try:
+                out_gpu = subprocess.check_output("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits", shell=True, timeout=0.5).decode('utf-8')
+                gpu_usage = int(out_gpu.strip())
+            except:
+                try:
+                    out_gpu = subprocess.check_output("cat /sys/class/drm/card0/device/gpu_busy_percent", shell=True, timeout=0.5).decode('utf-8')
+                    gpu_usage = int(out_gpu.strip())
+                except:
+                    pass
+
+            self.set_oled_gpu_status(0, gpu_usage)
+
+        except Exception:
+            self.set_oled_show_cpu_status(0, 100)
+            self.set_oled_gpu_status(0, 0)
+        # ---------------------------------
+
         self._write((0x31,))
         array = self._read()
-        assert array[1] == 0x31, "Unexpected value in response buffer"
-        return [
-            ("Fan 1 speed", u16le_from(array, offset=2), "rpm"),
-            ("Fan 1 duty", u16le_from(array, offset=0x16), "%"),
-            ("Fan 2 speed", u16le_from(array, offset=4), "rpm"),
-            ("Fan 2 duty", u16le_from(array, offset=0x18), "%"),
-            ("Fan 3 speed", u16le_from(array, offset=6), "rpm"),
-            ("Fan 3 duty", u16le_from(array, offset=0x1A), "%"),
-            ("Water block speed", u16le_from(array, offset=8), "rpm"),
-            ("Water block duty", u16le_from(array, offset=0x1C), "%"),
-            ("Pump speed", u16le_from(array, offset=0xA), "rpm"),
-            ("Pump duty", u16le_from(array, offset=0x1E), "%"),
-            # Temperature values are not used by the K360 model, it only reports
-            # some default values that are not meaningful for the user.
-            # https://github.com/liquidctl/liquidctl/pull/564#discussion_r1450753883
-            # ('Temperature inlet', u16le_from(array, offset=12), '°C'),
-            # ('Temperature outlet', u16le_from(array, offset=14), '°C'),
-            # ('Temperature sensor 1', u16le_from(array, offset=16), '°C'),
-            # ('Temperature sensor 2', u16le_from(array, offset=18), '°C'),
-        ]
 
     def set_time(self, time, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
@@ -527,11 +545,40 @@ class MpgCooler(UsbHidDriver):
         return self._write(buf)
 
     def _send_safe_temp(self):
-        _LOGGER.info(
-            "duty profiles on this device require continuous communication, "
-            "setting initial control temperature to 100C for safety."
-        )
-        self.set_oled_show_cpu_status(0, 100)
+        try:
+            import subprocess, re
+
+            # 1. CPU Sıcaklığı (Sensors)
+            out_temp = subprocess.check_output("sensors | grep -E '(Tctl|Cpu)' | head -n 1", shell=True, timeout=1).decode('utf-8')
+            match_temp = re.search(r'\+?(\d+\.\d+)', out_temp)
+            cpu_temp = int(float(match_temp.group(1))) if match_temp else 100
+
+            # 2. CPU Frekansı (Linux sysfs üzerinden ilk çekirdeği MHz cinsinden okur)
+            try:
+                out_freq = subprocess.check_output("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", shell=True, timeout=1).decode('utf-8')
+                cpu_freq = int(int(out_freq.strip()) / 1000)
+            except:
+                cpu_freq = 0
+
+            self.set_oled_show_cpu_status(cpu_freq, cpu_temp)
+
+            # 3. GPU Kullanımı (Önce NVIDIA, başarısız olursa AMD dener)
+            gpu_usage = 0
+            try:
+                out_gpu = subprocess.check_output("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits", shell=True, timeout=0.5).decode('utf-8')
+                gpu_usage = int(out_gpu.strip())
+            except:
+                try:
+                    out_gpu = subprocess.check_output("cat /sys/class/drm/card0/device/gpu_busy_percent", shell=True, timeout=0.5).decode('utf-8')
+                    gpu_usage = int(out_gpu.strip())
+                except:
+                    pass
+
+            self.set_oled_gpu_status(0, gpu_usage)
+
+        except Exception:
+            self.set_oled_show_cpu_status(0, 100)
+            self.set_oled_gpu_status(0, 0)
 
     def set_profiles(self, channels, profiles, **kwargs):
         """
