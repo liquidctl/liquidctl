@@ -567,19 +567,21 @@ class MpgCooler(UsbHidDriver):
         self.set_fan_temp_config(fan_temp_cfg)
         self._send_safe_temp()
 
+
     def parse_channel(self, channel):
         if channel == "pump":
             return [4]
         elif channel == "fans":
-            return range(_RAD_FAN_COUNT)
+            return list(range(_RAD_FAN_COUNT))
         elif channel == "waterblock-fan":
             return [3]
-        elif channel[:3] == "fan" and (int(channel[3:]) in range(_RAD_FAN_COUNT)):
-            return [int(channel[3:])]
-        else:
-            raise ValueError(
-                'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock-fan" or "pump".'
-            )
+        elif channel.startswith("fan") and channel[3:].isdigit():
+            idx = int(channel[3:])
+            if 1 <= idx <= _RAD_FAN_COUNT:
+                return [idx - 1]
+        raise ValueError(
+            'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock-fan" or "pump".'
+        )
 
     @staticmethod
     def clamp_and_pad(values):
@@ -653,16 +655,15 @@ class MpgCooler(UsbHidDriver):
                 f"Unknown screen mode! Should be one of: {self.SCREEN_MODES.keys()}"
             ) from e
 
-        if value is not None:
-            opts = value.split(";")
+        opts = value.split(";") if value is not None else []
 
         if mode == _ScreenMode.HARDWARE:
-            # hardware monitor options are a list of the values to display
-            # (case-insensitive keys to MPGCooler.HWMONITORDISPLAY)
+            # Donanım izleme için varsayılan değer
+            if not opts:
+                opts = ["cpu_temp"]
             self.set_oled_show_hardware_monitor(opts)
 
-        if mode == _ScreenMode.IMAGE:
-            # image options are: image-type, image-index[, image-file]
+        elif mode == _ScreenMode.IMAGE:
             if len(opts) == 3:
                 self.set_oled_upload_gif(opts)
             elif len(opts) == 2:
@@ -672,11 +673,10 @@ class MpgCooler(UsbHidDriver):
                     f"Unexpected options for LCD image. Expected either:"
                     '"image-type;image-slot" or '
                     '"image-type;image-slot;image-file", '
-                    "instead got: {opts}"
+                    f"instead got: {opts}"
                 )
 
         elif mode == _ScreenMode.BANNER:
-            # banner options are: banner-type, banner-index, message[, image-file]
             if (len(opts) == 3) or (len(opts) == 4):
                 if len(opts) == 4:
                     save_slot = int(opts[1])
@@ -693,20 +693,19 @@ class MpgCooler(UsbHidDriver):
                     f"Unexpected options for LCD banner. Expected either:"
                     '"banner-type;save-slot;message" or '
                     '"banner-type;save-slot;message;image-file", '
-                    "instead got: {opts}"
+                    f"instead got: {opts}"
                 )
 
         elif mode == _ScreenMode.CLOCK:
-            # clock option is the display style
-            self.set_oled_show_clock(int(opts[0]))
+            style = int(opts[0]) if opts else 0
+            self.set_oled_show_clock(style)
 
         elif mode == _ScreenMode.SETTINGS:
-            # setting options are: brightness, direction
-            brightness, direction = [int(x) for x in opts]
+            brightness = int(opts[0]) if len(opts) > 0 else 100
+            direction = int(opts[1]) if len(opts) > 1 else 0
             self.set_oled_brightness_and_direction(brightness=brightness, direction=direction)
 
         elif mode == _ScreenMode.DISABLED:
-            # switches off the display
             self.set_oled_show_disable()
 
     def _prepare_bmp(self, path):
