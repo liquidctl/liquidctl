@@ -104,10 +104,22 @@ These uploads are paced by the device's own flow-control notifications (the
 firmware acknowledges each chunk before the next is sent), which is what makes
 the write actually commit to flash.
 
-> **Note:** after a lot of rapid back-to-back uploads the cooler's flash upload
-> state can wedge — the upload reports `flash slot not ready` and recommends a
-> power-cycle. A full power-cycle (so the cooler's USB rails fully drain) clears
-> it; a soft reboot does not. In normal one-off use you will not hit this.
+> **Note — avoid concurrent access during the upload.** A flash upload is a
+> single erase → write → commit transaction gated by the firmware's flow-control
+> reads. If another process touches the cooler's HID interface *during* the
+> upload — most commonly a monitoring tool such as OpenRGB or a second
+> `liquidctl` polling the same device — its reads can consume the flow-control
+> notifications the uploader is waiting for, desynchronising the transaction.
+> The firmware is then left mid-erase and reports `flash slot not ready`
+> (erase status `ee13 1001`) on the next attempt. Stop any such tool for the few
+> seconds the upload runs, then restart it afterwards.
+>
+> If the slot does wedge, the upload first attempts an automatic recovery
+> (a clean begin/arm/erase sweep) and one retry; do **not** loop further manual
+> retries, as each interrupted attempt deepens the wedge. A *deep* wedge survives
+> a soft reboot, USB reset and rebind — only a full power-cycle (so the cooler's
+> USB +5V rails fully drain) clears it. In normal one-off use you will not hit
+> this.
 
 ### Built-in animation
 

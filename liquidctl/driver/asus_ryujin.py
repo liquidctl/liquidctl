@@ -688,9 +688,12 @@ class AsusRyujin(UsbHidDriver):
         except _FlashSlotStuck as exc:
             raise ExpectationNotMet(
                 "the cooler's flash upload state is wedged (%s) and software "
-                "recovery (sweep + USB rebind) did not clear it. This happens "
-                "after heavy upload cycling; fully power-cycle the system (drain "
-                "the PSU for ~15s so the cooler's USB rails reset) and retry." % exc
+                "recovery (sweep + USB rebind) did not clear it. This is usually "
+                "caused by another process (e.g. OpenRGB or a second liquidctl) "
+                "accessing the cooler during the upload, or by repeated "
+                "interrupted uploads; stop other tools that talk to this device, "
+                "then fully power-cycle the system (drain the PSU for ~15s so the "
+                "cooler's USB rails reset) and retry." % exc
             )
 
     def _unstick_flash(self):
