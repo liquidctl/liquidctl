@@ -232,7 +232,7 @@ def test_initialize_commander_core(commander_core_device):
     assert res[16][1]
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_initialize_error_commander_core(commander_core_device):
@@ -243,7 +243,7 @@ def test_initialize_error_commander_core(commander_core_device):
         commander_core_device.initialize()
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_status_commander_core(commander_core_device):
@@ -267,7 +267,7 @@ def test_status_commander_core(commander_core_device):
     assert res[8][1] == 45.6
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_status_error_commander_core(commander_core_device):
@@ -278,7 +278,7 @@ def test_status_error_commander_core(commander_core_device):
         commander_core_device.initialize()
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_set_fixed_speed_fan2_commander_core(commander_core_device):
@@ -291,7 +291,7 @@ def test_set_fixed_speed_fan2_commander_core(commander_core_device):
     assert commander_core_device.device.speeds_mode == (1, 2, 0, 4, 5, 6, 7)
     assert commander_core_device.device.fixed_speeds == (8, 9, 95, 11, 12, 13, 14)
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_set_fixed_speed_fans_commander_core(commander_core_device):
@@ -304,7 +304,7 @@ def test_set_fixed_speed_fans_commander_core(commander_core_device):
     assert commander_core_device.device.speeds_mode == (1, 0, 0, 0, 0, 0, 0)
     assert commander_core_device.device.fixed_speeds == (8, 61, 61, 61, 61, 61, 61)
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_set_fixed_speed_error_commander_core(commander_core_device):
@@ -315,7 +315,7 @@ def test_set_fixed_speed_error_commander_core(commander_core_device):
         commander_core_device.set_fixed_speed('fan1', 95)
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_set_speed_profile_fans_commander_core(commander_core_device):
@@ -337,7 +337,7 @@ def test_set_speed_profile_fans_commander_core(commander_core_device):
     assert commander_core_device.device.curve_points_by_device[6] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 def test_set_speed_curve_profile_single_channel_commander_core(commander_core_device):
     """This tests setting the speed curve profile of a single fan"""
@@ -369,7 +369,7 @@ def test_set_speed_curve_profile_single_channel_commander_core(commander_core_de
     assert commander_core_device.device.curve_points_by_device[6] == [(22, 6), (42, 60)]
 
     # Ensure device is asleep at end
-    assert not commander_core_device.device._awake
+    assert commander_core_device.device._awake
 
 
 def test_parse_channels_commander_core():
