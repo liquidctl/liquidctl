@@ -27,6 +27,7 @@ _RESPONSE_LENGTH = 96
 _INTERFACE_NUMBER = 0
 
 _FAN_COUNT = 6
+_MAX_RESPONSE_RETRIES = 16  # see _send_command
 
 # Persist LED state across liqctld restarts / fresh device connections.
 # Stored in /run (tmpfs) so it survives service restarts but not reboots.
@@ -848,25 +849,18 @@ class CommanderCore(UsbHidDriver):
         self.device.clear_enqueued_reports()
         self.device.write(buf)
 
-        res = self.device.read(_RESPONSE_LENGTH)
-        while res[0] != 0x00:
+        # Drain unsolicited reports (res[0] != 0x00) and stale command echoes
+        # (res[1] != command[0]); a single budget covers both so the loop is
+        # always bounded.  Avoids the 502 error that causes coolercontrold to
+        # apply the Default Profile (pump=0 RPM).
+        retries = _MAX_RESPONSE_RETRIES
+        while True:
             res = self.device.read(_RESPONSE_LENGTH)
-        buf = bytes(res)
-        # Device occasionally sends unsolicited reports between the drain and
-        # write, arriving with the correct report number (res[0]==0x00) but a
-        # stale command echo (buf[1]!=command[0]).  Retry a bounded number of
-        # times rather than asserting immediately, which avoids the 502 error
-        # that causes coolercontrold to apply the Default Profile (pump=0 RPM).
-        _retries = 8
-        while buf[1] != command[0] and _retries > 0:
-            res = self.device.read(_RESPONSE_LENGTH)
-            while res[0] != 0x00:
-                res = self.device.read(_RESPONSE_LENGTH)
-            buf = bytes(res)
-            _retries -= 1
-        if buf[1] != command[0]:
-            raise ExpectationNotMet('response does not match command')
-        return buf
+            if res[0] == 0x00 and res[1] == command[0]:
+                return bytes(res)
+            retries -= 1
+            if retries <= 0:
+                raise ExpectationNotMet('response does not match command')
 
     @contextmanager
     def _wake_device_context(self, commit_speed=False):
