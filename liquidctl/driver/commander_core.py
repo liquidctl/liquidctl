@@ -1076,20 +1076,14 @@ class CommanderCore(UsbHidDriver):
         self.device.clear_enqueued_reports()
         self.device.write(buf)
 
-        res = self.device.read(_RESPONSE_LENGTH)
-        while res[0] != 0x00:
+        retries = _MAX_RESPONSE_RETRIES
+        while True:
             res = self.device.read(_RESPONSE_LENGTH)
-        buf = bytes(res)
-        _retries = 8
-        while buf[1] != command[0] and _retries > 0:
-            res = self.device.read(_RESPONSE_LENGTH)
-            while res[0] != 0x00:
-                res = self.device.read(_RESPONSE_LENGTH)
-            buf = bytes(res)
-            _retries -= 1
-        if buf[1] != command[0]:
-            raise ExpectationNotMet('response does not match command')
-        return buf
+            if res[0] == 0x00 and res[1] == command[0]:
+                return bytes(res)
+            retries -= 1
+            if retries <= 0:
+                raise ExpectationNotMet('response does not match command')
 
     def _fan_to_channel(self, fan):
         if self._has_pump:
