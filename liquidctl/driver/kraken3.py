@@ -641,14 +641,18 @@ class KrakenZ3(KrakenX3):
             if not found_device:
                 self.bulk_device = None
         else:
-            self.bulk_device = next(
-                (
-                    handle
-                    for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
-                    if handle.serial_number == self.device.serial_number
-                ),
-                None,
-            )
+            self.bulk_device = None
+            for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id):
+                try:
+                    matches = handle.serial_number == self.device.serial_number
+                except ValueError:
+                    # A device without string descriptors (e.g. a Kraken in
+                    # bootloader mode) raises when read; skip it rather than
+                    # letting it break discovery of every device. See #907.
+                    continue
+                if matches:
+                    self.bulk_device = handle
+                    break
             if self.bulk_device:
                 self.bulk_device.open()
         self.bulk_buffer_size = bulk_buffer_size
