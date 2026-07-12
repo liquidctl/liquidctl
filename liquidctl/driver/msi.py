@@ -3,6 +3,7 @@
 Supported devices:
 
 - MPG Coreliquid K360
+- MPG Coreliquid D360 (cooling and monitoring only; no display or RGB support)
 
 Copyright (C) 2021  Andrew Udvare, Aapo Kössi and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -20,6 +21,7 @@ import io
 from PIL import Image
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import RelaxedNamesEnum, check_unsafe, clamp, u16le_from
 
@@ -326,6 +328,12 @@ class MpgCooler(UsbHidDriver):
         ),
         (
             0x0DB0,
+            0xEDFC,
+            "MSI MPG Coreliquid D360",
+            {"fan_count": 5, "oled_compatible": False, "fixed_speed_needs_temp": True},
+        ),
+        (
+            0x0DB0,
             0xCA00,
             "Suspected MSI MPG Coreliquid",
             {"_unsafe": ["experimental_coreliquid_cooler"]},
@@ -349,6 +357,14 @@ class MpgCooler(UsbHidDriver):
         self._per_led_rgb_jrainbow2 = bytearray(_PER_LED_LENGTH)
         self._per_led_rgb_jcorsair = bytearray(_PER_LED_LENGTH)
         self._fan_count = kwargs.pop("fan_count", 5)
+        # whether the device supports the K360 OLED/LCD command set; the
+        # D-series (e.g. D360) uses a different display and does not answer
+        # queries such as the OLED firmware version (0xF1).
+        self._oled_compatible = kwargs.pop("oled_compatible", True)
+        # whether a fixed-speed duty only takes effect once a control
+        # temperature has been sent (true for the D-series, which also enforces
+        # a temperature-linked minimum duty).
+        self._fixed_speed_needs_temp = kwargs.pop("fixed_speed_needs_temp", False)
         # the following fields are only initialized in connect()
         self._data = None
         self._feature_data = None
@@ -395,7 +411,12 @@ class MpgCooler(UsbHidDriver):
         self._aprom_firmware_version = aprom_hi << 4 + aprom_lo
         ldrom_hi, ldrom_lo = self.get_firmware_version_ldrom()
         self._ldrom_firmware_version = ldrom_hi << 4 + ldrom_lo
-        self._oled_firmware_version = self.get_oled_firmware_version()
+        if self._oled_compatible:
+            self._oled_firmware_version = self.get_oled_firmware_version()
+        else:
+            # D-series displays do not answer the K360 OLED firmware query
+            # (0xF1); it would time out.
+            self._oled_firmware_version = None
 
         return ret
 
@@ -421,7 +442,8 @@ class MpgCooler(UsbHidDriver):
         elif direction in ("3", "right"):
             dir_int = 3
         self._data.store("direction", dir_int)
-        self.set_oled_brightness_and_direction(100, dir_int)
+        if self._oled_compatible:
+            self.set_oled_brightness_and_direction(100, dir_int)
         if pump_mode_int == _FanMode.GAME.value:
             self.switch_to_game_mode()
         elif pump_mode_int == _FanMode.BALANCE.value:
@@ -433,13 +455,16 @@ class MpgCooler(UsbHidDriver):
         elif pump_mode_int == _FanMode.SMART.value:
             self.switch_to_smart_mode()
 
-        return [
-            ("Display firmware version", self._oled_firmware_version, ""),
+        status = []
+        if self._oled_firmware_version is not None:
+            status.append(("Display firmware version", self._oled_firmware_version, ""))
+        status += [
             ("APROM firmware version", self._aprom_firmware_version, ""),
             ("LDROM firmware version", self._ldrom_firmware_version, ""),
             ("Serial number", self.serial_number, ""),
             ("Pump mode", pump_mode, ""),
         ]
+        return status
 
     def get_status(self, **kwargs):
         if not check_unsafe(*self._UNSAFE, **kwargs):
@@ -473,6 +498,8 @@ class MpgCooler(UsbHidDriver):
 
     def set_time(self, time, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
+        if not self._oled_compatible:
+            raise NotSupportedByDevice()
         return self.set_oled_clock(time)
 
     def set_hardware_status(self, T, cpu_f=0, gpu_f=0, gpu_U=0, **kwargs):
@@ -574,8 +601,13 @@ class MpgCooler(UsbHidDriver):
             return range(_RAD_FAN_COUNT)
         elif channel == "waterblock-fan":
             return [3]
-        elif channel[:3] == "fan" and (int(channel[3:]) in range(_RAD_FAN_COUNT)):
-            return [int(channel[3:])]
+        elif (
+            channel[:3] == "fan"
+            and channel[3:].isdigit()
+            and 1 <= int(channel[3:]) <= _RAD_FAN_COUNT
+        ):
+            # radiator fans are 1-indexed for the user (fan1..fan3)
+            return [int(channel[3:]) - 1]
         else:
             raise ValueError(
                 'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock-fan" or "pump".'
@@ -619,6 +651,14 @@ class MpgCooler(UsbHidDriver):
 
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
+        if self._fixed_speed_needs_temp:
+            # The D-series applies a CUSTOMIZE duty only once it has received a
+            # control temperature, and it enforces a temperature-linked minimum
+            # (safety floor).  Feed a low, neutral temperature so a one-shot
+            # `set ... speed` (e.g. from an external fan controller) takes
+            # effect and the requested duty is honored down to the device's
+            # own floor.  We deliberately do NOT override that floor.
+            self.set_oled_show_cpu_status(0, 0)
 
     def set_color(self, channel, mode, colors, speed=1, brightness=10, color_selection=1, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
@@ -644,6 +684,11 @@ class MpgCooler(UsbHidDriver):
 
     def set_screen(self, channel, mode, value, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
+        if not self._oled_compatible:
+            # The D-series display does not implement the K360 OLED/LCD
+            # command set (0xF1/0xC2/0xD2 and friends all time out).
+            raise NotSupportedByDevice()
 
         assert channel.lower() == "lcd"
         try:

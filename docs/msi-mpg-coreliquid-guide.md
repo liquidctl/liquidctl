@@ -1,9 +1,38 @@
 # MSI MPG Coreliquid AIO coolers
 _Driver API and source code available in [`liquidctl.driver.msi`](../liquidctl/driver/msi.py)._
 
-_Currently, only the K360 model is experimentally supported as more testing and feedback is needed._
+_The K360 and D360 models are experimentally supported as more testing and feedback is needed._
 
-This driver is for the MSI MPG coreliquid series of AIO coolers, of which currently only the coreliquid K360 has been tested and verified to be working. The usage of speed profiles for this model requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`yoda.py`](../extra/yoda.py). Device configuration, including lighting and fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
+## Supported models
+
+_New in git: the MPG Coreliquid D360._<br>
+
+| Model | USB id | Cooling & monitoring | RGB lighting | LCD/OLED display |
+| --- | --- | --- | --- | --- |
+| MPG Coreliquid K360 | `0db0:b130` | yes | yes (`sync`) | yes |
+| MPG Coreliquid D360 | `0db0:edfc` | yes | none on the device | not supported |
+
+The **D360** reuses the same cooling and monitoring protocol as the K360 and has
+been verified against hardware for status reporting and fan/pump control.  It
+does not require any unsafe feature.  It differs from the K360 in a few ways:
+
+- It has no addressable RGB lighting, so the `sync` lighting channel does not
+  apply.
+- Its display uses a different protocol than the K360's OLED and is **not
+  supported**: the `lcd` screen commands (and `set_time`) raise
+  `NotSupportedByDevice` on this model.  Adding it would require
+  reverse-engineering the D-series display protocol from captured traffic.
+- A fixed speed set with `liquidctl set <channel> speed <duty>` takes effect on
+  its own (the driver sends the device the control temperature it needs).  The
+  device enforces its own temperature-linked minimum duty (a safety floor of
+  roughly 30–35% when cool), so requests below that floor settle at the floor
+  rather than going lower.  Fan speeds also ramp gradually toward the target.
+
+This driver is for the MSI MPG coreliquid series of AIO coolers.  The coreliquid
+K360 has been tested and verified to be working, and the D360 has been verified
+for cooling and monitoring (see above). The usage of speed profiles requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`yoda.py`](../extra/yoda.py). Fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5).
+
+The remainder of this section applies to the K360, which has RGB lighting and a display. Its lighting configuration likewise persists until a new one is sent to the device, and is also lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
 
 LED lighting is controlled via preset modes, which are sent once to the device as a configuration, after which the device then independently commands the LEDs until a new configuration is received.
 
