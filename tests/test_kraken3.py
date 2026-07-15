@@ -12,11 +12,14 @@ from liquidctl.driver.kraken3 import (
     _SPEED_CHANNELS_KRAKENX,
     _COLOR_CHANNELS_KRAKENZ,
     _SPEED_CHANNELS_KRAKENZ,
+    _COLOR_CHANNELS_KRAKEN2023,
+    _SPEED_CHANNELS_KRAKEN2023,
     _HWMON_CTRL_MAPPING_KRAKENX,
     _HWMON_CTRL_MAPPING_KRAKENZ,
 )
 from test_krakenz3_response import krakenz3_response
 
+from liquidctl.error import NotSupportedByDriver
 from liquidctl.util import HUE2_MAX_ACCESSORIES_IN_CHANNEL as MAX_ACCESSORIES
 from liquidctl.util import Hue2Accessory
 
@@ -558,3 +561,59 @@ def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )
+
+
+def test_kraken2024plus_static_uses_bucket_free_protocol():
+    """The 2024 Plus's bucket protocol never gets a real response from the
+    firmware (only unsolicited status broadcasts, see #864 and #908), so
+    static images must be sent through the bucket-free protocol instead.
+    """
+
+    raw = MockKraken(raw_led_channels=0)
+    raw.product_id = 0x3014
+
+    dev = KrakenZ3(
+        raw,
+        "Mock Kraken 2024 Plus",
+        speed_channels=_SPEED_CHANNELS_KRAKEN2023,
+        color_channels=_COLOR_CHANNELS_KRAKEN2023,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+        bulk_buffer_size=1024 * 1024 * 2,
+        lcd_resolution=(240, 240),
+    )
+    dev.connect()
+
+    calls = []
+    dev._send_2023_data_fw2 = lambda data, bulk_info: calls.append("fw2")
+    dev._send_data = lambda data, bulk_info: calls.append("bucket")
+
+    dev.set_screen(
+        "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg")
+    )
+
+    assert calls == ["fw2", "fw2"], "static images must go through the bucket-free protocol"
+
+
+def test_kraken2024plus_gif_not_supported():
+    """GIF mode is not supported on the 2024 Plus, for the same reason it is
+    unsupported on 2023 units running firmware 2.X.Y.
+    """
+
+    raw = MockKraken(raw_led_channels=0)
+    raw.product_id = 0x3014
+
+    dev = KrakenZ3(
+        raw,
+        "Mock Kraken 2024 Plus",
+        speed_channels=_SPEED_CHANNELS_KRAKEN2023,
+        color_channels=_COLOR_CHANNELS_KRAKEN2023,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+        bulk_buffer_size=1024 * 1024 * 2,
+        lcd_resolution=(240, 240),
+    )
+    dev.connect()
+
+    with pytest.raises(NotSupportedByDriver):
+        dev.set_screen(
+            "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
+        )

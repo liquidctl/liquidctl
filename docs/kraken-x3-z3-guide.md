@@ -38,6 +38,13 @@ The functionality of the 2024 RGB AIO is identical to the 2023 model, retaining 
 
 The functionality of the 2024 RGB AIO is identical to the 2023 Standard model, with a 240x240 LCD.
 
+On this device, the bucket-based upload protocol used by other LCD-capable Krakens is not
+functional: bucket queries never receive a real response from the firmware, only continuous
+unsolicited status broadcasts (see [#864][`issue-864`] and [#908][`issue-908`]).  Because of this,
+`static` images are instead sent through the same bucket-free transfer path used by 2023 units on
+firmware 2.X.Y.  **GIF mode is not supported on this device** for the same reason it isn't
+supported on 2023 units running firmware 2.X.Y.
+
 
 ## Initialization
 
@@ -193,7 +200,8 @@ The LCD screen can be configured in a few different modes.
 Images and GiFs are automatically resized and rotated to match the device orientation.
 
 *Note that, on the 2023 models (Standard and Elite), the GIF screen mode is not currently supported
-on firmware versions 2.X (see [#631][`issue-631`]).*
+on firmware versions 2.X (see [#631][`issue-631`]).  The GIF screen mode is also not supported on
+the Kraken 2024 Plus (see [#864][`issue-864`] and [#908][`issue-908`]).*
 
 
 ## Interaction with Linux hwmon drivers
@@ -212,3 +220,5 @@ be forced with `--direct-access`.
 
 [liquidtux]: https://github.com/liquidctl/liquidtux
 [`issue-631`]: https://github.com/liquidctl/liquidctl/issues/631
+[`issue-864`]: https://github.com/liquidctl/liquidctl/issues/864
+[`issue-908`]: https://github.com/liquidctl/liquidctl/issues/908

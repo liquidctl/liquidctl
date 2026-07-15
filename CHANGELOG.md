@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changes since 1.16.0
+
+Fixed:
+
+- Kraken X3/Z3: fix LCD static image upload on the Kraken 2024 Plus, whose firmware does not
+  respond to the bucket-based transfer protocol used by other LCD-capable Krakens; static images
+  are now sent through the same bucket-free protocol already used for Kraken 2023 units on
+  firmware 2.X.Y (liquidctl#908, liquidctl#864)
+
 ## [1.16.0] – 2026-03-03
 
 ### Changes since 1.15.0
