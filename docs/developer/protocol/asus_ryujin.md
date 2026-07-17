@@ -3,6 +3,28 @@
 The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
 
 
+## Ryujin III Extreme LCD
+
+The Ryujin III Extreme (USB ID `0b05:1bcb`) exposes its LCD on a separate bulk
+USB interface.  The cooler control interface is HID, while the LCD pixel data
+is written to bulk OUT endpoint `0x02`.
+
+The display is 640×480 pixels in packed RGB888 format (921,600 bytes per
+frame).  Before a frame upload, perform the following HID operations:
+
+1. Query LCD state: `EC D0`; the reply is headed by `EC 50`.
+   - byte 4 is the panel ID;
+   - byte 5 is the current display mode;
+   - bytes 6–7 are mode arguments.
+2. Write raw framebuffer mode `EC 51 20 <reply byte 6> <reply byte 7>`.
+   Reapply this command even when the reported mode is already `0x20`, to
+   reset display state left by an earlier raw-frame session.
+3. Announce the byte length with `EC 7F 03 <u32le length>`.
+4. Write the RGB888 frame to bulk endpoint `0x02`.
+
+Frame data is sent in ordinary top-to-bottom, left-to-right RGB888 order.
+
+
 ## Generic Operations
 
 ### Get firmware info

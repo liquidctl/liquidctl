@@ -5,9 +5,25 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 import logging
+import sys
+import time
+from itertools import chain
 from typing import List
 
-from liquidctl.driver.usb import UsbHidDriver
+if sys.platform == "win32":
+    from winusbcdc import WinUsbPy
+
+from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
+from liquidctl.driver.asus_ryujin_lcd import (
+    _LCD_FRAME_SIZE,
+    _iter_lcd_animation,
+    _iter_lcd_background,
+    _load_lcd_static_background,
+    _load_lcd_stats_config,
+    _prepare_lcd_frame,
+    _read_lcd_custom_stats,
+    _render_lcd_stats,
+)
 from liquidctl.error import ExpectationNotMet, NotSupportedByDriver
 from liquidctl.util import clamp, u16le_from, rpadlist, fraction_of_byte
 
@@ -35,6 +51,11 @@ _STATUS_COOLER_FAN_SPEED = "Pump fan speed"
 _STATUS_COOLER_FAN_DUTY = "Pump fan duty"
 _STATUS_CONTROLLER_FAN_SPEED = "External fan {} speed"
 _STATUS_CONTROLLER_FAN_DUTY = "External fan duty"
+
+_LCD_PRODUCT_ID = 0x1BCB
+_LCD_RAW_FRAMEBUFFER_MODE = 0x20
+_LCD_BULK_OUT_ENDPOINT = 0x02
+_LCD_TRANSFER_TIMEOUT_MS = 10_000
 
 
 class AsusRyujin(UsbHidDriver):
@@ -112,6 +133,7 @@ class AsusRyujin(UsbHidDriver):
         pump_fan_speed_offset,
         temp_offset,
         duty_channel,
+        bulk_device=None,
         **kwargs,
     ):
         super().__init__(device, description, **kwargs)
@@ -121,6 +143,7 @@ class AsusRyujin(UsbHidDriver):
         self._pump_fan_speed_offset = pump_fan_speed_offset
         self._temp_offset = temp_offset
         self._duty_channel = duty_channel
+        self._bulk_device = bulk_device
 
     def initialize(self, **kwargs):
         msg = self._request(*_REQUEST_GET_FIRMWARE)
@@ -225,9 +248,200 @@ class AsusRyujin(UsbHidDriver):
         for handler in handlers:
             handler(duty)
 
-    def set_screen(self, channel, mode, value, **kwargs):
-        # Not yet reverse engineered / implemented
-        raise NotSupportedByDriver()
+    def set_screen(self, channel, mode, value, interval=None, **kwargs):
+        """Set the Ryujin III Extreme LCD image.
+
+        Supported channels, modes and values:
+
+        | Channel | Mode | Value |
+        | --- | --- | --- |
+        | `lcd` | `static` | path to image |
+        | `lcd` | `gif` | path to animated GIF (plays until interrupted) |
+        | `lcd` | `stats` | path to JSON configuration, or RGB hex shorthand |
+        """
+        if self.product_id != _LCD_PRODUCT_ID:
+            raise NotSupportedByDriver()
+        if channel.lower() != "lcd":
+            raise ValueError(f"invalid channel: {channel}")
+        mode = mode.lower()
+        if mode not in ("static", "gif", "stats"):
+            raise ValueError(f"invalid mode: {mode}")
+
+        content = self._prepare_lcd_content(mode, value, interval)
+        bulk_device = self._open_bulk_device()
+        try:
+            self._switch_to_raw_framebuffer_mode()
+            if mode == "static":
+                self._send_lcd_frame(bulk_device, content)
+            elif mode == "gif":
+                self._play_lcd_animation(bulk_device, content)
+            else:
+                self._display_lcd_statistics(bulk_device, *content)
+        finally:
+            self._close_bulk_device(bulk_device)
+
+    def _prepare_lcd_content(self, mode, value, interval):
+        try:
+            if mode == "static":
+                return _prepare_lcd_frame(value)
+            if mode == "gif":
+                return self._load_lcd_animation(value)
+
+            config = _load_lcd_stats_config(value, interval)
+            static_background = (
+                _load_lcd_static_background(config["background"])
+                if config["background"]
+                else None
+            )
+            if config["background"] and static_background is None:
+                return config, None, self._load_lcd_background(value=config["background"])
+            return config, static_background, None
+        except (OSError, StopIteration, ValueError) as err:
+            raise ValueError(f"invalid {mode} configuration: {err}") from err
+
+    @staticmethod
+    def _load_lcd_animation(path):
+        frames = _iter_lcd_animation(path)
+        first_frame = next(frames)
+        return chain((first_frame,), frames)
+
+    @staticmethod
+    def _load_lcd_background(value):
+        frames = _iter_lcd_background(value)
+        first_frame = next(frames)
+        return chain((first_frame,), frames)
+
+    def _play_lcd_animation(self, bulk_device, frames):
+        try:
+            for frame, duration in frames:
+                self._send_lcd_frame(bulk_device, frame)
+                time.sleep(duration)
+        except KeyboardInterrupt:
+            _LOGGER.debug("stopped Ryujin III Extreme LCD GIF playback")
+
+    def _display_lcd_statistics(self, bulk_device, config, static_background, background_frames):
+        try:
+            if background_frames is not None:
+                self._display_lcd_statistics_with_animation(bulk_device, config, background_frames)
+            else:
+                self._display_lcd_statistics_with_static_background(
+                    bulk_device, config, static_background
+                )
+        except KeyboardInterrupt:
+            _LOGGER.debug("stopped Ryujin III Extreme LCD statistics display")
+
+    def _display_lcd_statistics_with_animation(self, bulk_device, config, background_frames):
+        page = 0
+        status = self.get_status()
+        custom_values = _read_lcd_custom_stats(config, page)
+        next_page = time.monotonic() + config["interval"]
+
+        for background, duration in background_frames:
+            now = time.monotonic()
+            if now >= next_page:
+                page += 1
+                status = self.get_status()
+                custom_values = _read_lcd_custom_stats(config, page)
+                next_page += config["interval"]
+            self._send_lcd_frame(
+                bulk_device,
+                _render_lcd_stats(
+                    status,
+                    config,
+                    page,
+                    max(next_page - now, 0),
+                    background,
+                    custom_values,
+                ),
+            )
+            time.sleep(duration)
+
+    def _display_lcd_statistics_with_static_background(self, bulk_device, config, background):
+        page = 0
+        while True:
+            custom_values = _read_lcd_custom_stats(config, page)
+            next_page = time.monotonic() + config["interval"]
+            while True:
+                now = time.monotonic()
+                if now >= next_page:
+                    break
+                status = self.get_status()
+                self._send_lcd_frame(
+                    bulk_device,
+                    _render_lcd_stats(
+                        status,
+                        config,
+                        page,
+                        next_page - now,
+                        background,
+                        custom_values,
+                    ),
+                )
+                time.sleep(min(1, next_page - now))
+            page += 1
+
+    def _open_bulk_device(self):
+        if self._bulk_device is not None:
+            bulk_device = self._bulk_device
+        elif sys.platform == "win32":
+            bulk_device = WinUsbPy()
+            if not self._find_winusb_device(bulk_device):
+                raise NotSupportedByDriver("could not find the LCD bulk interface")
+        else:
+            bulk_device = next(
+                (
+                    candidate
+                    for candidate in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
+                    if candidate.serial_number == self.serial_number
+                ),
+                None,
+            )
+            if bulk_device is None:
+                raise NotSupportedByDriver("could not find the LCD bulk interface")
+
+        if sys.platform != "win32":
+            bulk_device.open()
+            bulk_device.claim()
+        return bulk_device
+
+    def _close_bulk_device(self, bulk_device):
+        if sys.platform == "win32":
+            bulk_device.close_winusb_device()
+        else:
+            bulk_device.close()
+
+    def _find_winusb_device(self, bulk_device):
+        for candidate in bulk_device.list_usb_devices(
+            deviceinterface=True, present=True, findparent=True
+        ):
+            if (
+                f"vid_{self.vendor_id:x}&pid_{self.product_id:x}" in candidate.path
+                and candidate.parent
+                and self.serial_number in candidate.parent
+            ):
+                bulk_device.init_winusb_device_with_path(candidate.path)
+                return True
+        return False
+
+    def _switch_to_raw_framebuffer_mode(self):
+        reply = self._request(0xD0, 0x50)
+        # Reapply the mode even when it is already selected, avoiding display
+        # state carried over from an earlier raw-frame session.
+        time.sleep(0.1)
+        self._write([_PREFIX, 0x51, _LCD_RAW_FRAMEBUFFER_MODE, reply[6], reply[7]])
+        time.sleep(0.1)
+
+    def _announce_framebuffer_length(self, length):
+        self._write([_PREFIX, 0x7F, 0x03, *length.to_bytes(4, byteorder="little")])
+
+    def _send_lcd_frame(self, bulk_device, frame):
+        assert len(frame) == _LCD_FRAME_SIZE
+        self._announce_framebuffer_length(len(frame))
+        written = bulk_device.write(
+            _LCD_BULK_OUT_ENDPOINT, frame, timeout=_LCD_TRANSFER_TIMEOUT_MS
+        )
+        if written is not None and written != len(frame):
+            raise RuntimeError(f"short LCD bulk write: {written} of {len(frame)} bytes")
 
     def _request(self, request_header: int, response_header: int) -> List[int]:
         self.device.clear_enqueued_reports()

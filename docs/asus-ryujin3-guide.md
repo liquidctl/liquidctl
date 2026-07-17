@@ -67,4 +67,69 @@ Pump impeller and embedded fan duty values approximately map to the following sp
 
 ## Screen
 
-The screen of the cooler is not yet supported.
+_New in git._<br>
+
+The Ryujin III Extreme has a 640×480 LCD.  A static image can be displayed
+with:
+
+```
+# liquidctl set lcd screen static /path/to/image.png
+```
+
+Images are resized to the native resolution and converted to RGB automatically.
+The image stays on screen while the cooler remains powered.
+
+Animated GIFs are streamed from the host computer:
+
+```
+# liquidctl set lcd screen gif /path/to/animation.gif
+```
+
+The command keeps running while the animation plays; press Ctrl+C to stop it.
+
+To rotate through the cooler statistics with the default dashboard, run:
+
+```
+# liquidctl set lcd screen stats B300FF 5
+```
+
+The first argument is an optional six-digit RGB font colour shorthand (default:
+`B300FF`); the second is an optional page interval in seconds (default: `5`).
+The display runs until Ctrl+C.  Display brightness and orientation controls
+are not supported.
+
+For a configurable dashboard, pass a JSON file instead:
+
+```
+# liquidctl set lcd screen stats extra/contrib/asus_ryujin/example_layouts/ryujin_extreme_stats.json
+```
+
+The [example configuration](../extra/contrib/asus_ryujin/example_layouts/ryujin_extreme_stats.json)
+shows the supported keys.  `layout` maps one to four cards to rotating `stats`
+lists.  Card geometry is calculated automatically.  Built-in statistics are
+`liquid_temperature`, `pump_duty`, `pump_speed`, `pump_fan_duty`, and
+`pump_fan_speed`.
+
+`background_opacity` accepts a value from `0.0` to `1.0` and can be set on the
+LCD background and each card.  `offset_x` and `offset_y` adjust a card's
+position in pixels.
+
+For system telemetry, use a `custom` stat with a `command` array and optional
+`unit`.  Its standard output is displayed.  The command is executed directly,
+without a shell; configuration files must still be trusted because they choose
+the executable.
+
+```json
+{
+  "stat": "custom",
+  "indicator": "GPU TEMP",
+  "command": ["nvidia-smi", "--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"],
+  "unit": "°C"
+}
+```
+
+Colours are six-digit hexadecimal strings, such as `"100713"` or `"B300FF"`.
+The leading `#` is optional.
+
+Set `background` to an image or animated GIF.  Relative paths are resolved
+from the JSON file's directory.

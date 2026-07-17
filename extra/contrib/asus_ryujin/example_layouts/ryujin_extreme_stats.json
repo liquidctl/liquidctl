@@ -1,0 +1,39 @@
+{
+  "background_color": "100713",
+  "background_opacity": 1.0,
+  "font_color": "B300FF",
+  "interval": 5,
+  "title": "RYUJIN III EXTREME",
+  "layout": {
+    "coolant": {
+      "background_color": "210B2D",
+      "background_opacity": 1.0,
+      "font_color": "B300FF",
+      "offset_x": 0,
+      "offset_y": 0,
+      "stats": [{"stat": "liquid_temperature", "indicator": "COOLANT"}]
+    },
+    "pump": {
+      "background_color": "210B2D",
+      "background_opacity": 1.0,
+      "font_color": "B300FF",
+      "offset_x": 0,
+      "offset_y": 0,
+      "stats": [
+        {"stat": "pump_speed", "indicator": "PUMP"},
+        {"stat": "pump_duty", "indicator": "PUMP"}
+      ]
+    },
+    "pump_fan": {
+      "background_color": "210B2D",
+      "background_opacity": 1.0,
+      "font_color": "B300FF",
+      "offset_x": 0,
+      "offset_y": 0,
+      "stats": [
+        {"stat": "pump_fan_speed", "indicator": "PUMP FAN"},
+        {"stat": "pump_fan_duty", "indicator": "PUMP FAN"}
+      ]
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import pytest
+
 from _testutils import VirtualBusDevice, VirtualControlMode
 
 import json
@@ -83,3 +84,27 @@ def test_json_status(main):
         }
     ]
     assert got == exp
+
+
+def test_set_screen_forwards_optional_interval():
+    class Device:
+        def __init__(self):
+            self.calls = []
+
+        def set_screen(self, *args, **kwargs):
+            self.calls.append((args, kwargs))
+
+    device = Device()
+    liquidctl.cli._device_set_screen(
+        device,
+        {
+            '<channel>': 'lcd',
+            '<mode>': 'stats',
+            '<value>': 'dashboard.json',
+            '<interval>': '5',
+        },
+    )
+
+    assert device.calls == [
+        (('lcd', 'stats', 'dashboard.json'), {'interval': '5'}),
+    ]
