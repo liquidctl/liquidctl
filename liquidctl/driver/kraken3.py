@@ -554,6 +554,17 @@ class KrakenX3(UsbHidDriver):
         raise NotSupportedByDevice()
 
 
+def _same_serial(a, b):
+    """Compare two serial numbers, ignoring NUL padding.
+
+    Some units report a serial descriptor that hidapi trims and PyUSB does
+    not, leaving the latter with trailing NUL bytes.  Comparing the raw
+    strings would then never match, and the bulk device would not be found.
+    """
+
+    return (a or "").rstrip("\x00") == (b or "").rstrip("\x00")
+
+
 class KrakenZ3(KrakenX3):
     """Fourth-generation Kraken Z liquid cooler."""
 
@@ -645,7 +656,7 @@ class KrakenZ3(KrakenX3):
                 (
                     handle
                     for handle in PyUsbDevice.enumerate(self.vendor_id, self.product_id)
-                    if handle.serial_number == self.device.serial_number
+                    if _same_serial(handle.serial_number, self.device.serial_number)
                 ),
                 None,
             )

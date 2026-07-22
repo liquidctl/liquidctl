@@ -6,7 +6,7 @@ import os
 from _testutils import MockHidapiDevice, MockPyusbDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
-from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3
+from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3, _same_serial
 from liquidctl.driver.kraken3 import (
     _COLOR_CHANNELS_KRAKENX,
     _SPEED_CHANNELS_KRAKENX,
@@ -558,3 +558,18 @@ def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )
+
+
+@pytest.mark.parametrize(
+    "hid_serial,usb_serial,expected",
+    [
+        # hidapi trims the NUL padding that PyUSB reports verbatim
+        ("\xbb\x8c\x90\x82", "\xbb\x8c\x90\x82\x00\x00\x00\x00", True),
+        ("ABC123", "ABC123", True),
+        ("ABC123", "ABC124", False),
+        (None, None, True),
+        (None, "ABC123", False),
+    ],
+)
+def test_same_serial_ignores_nul_padding(hid_serial, usb_serial, expected):
+    assert _same_serial(hid_serial, usb_serial) is expected
