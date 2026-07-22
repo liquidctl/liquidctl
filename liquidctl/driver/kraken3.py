@@ -767,8 +767,45 @@ class KrakenZ3(KrakenX3):
         assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
 
     def _write_then_read(self, data):
+        """Send a command and return the response that belongs to it.
+
+        The device replies to command ``[a, b]`` with report ``[a + 1, b]``, but
+        two things leave unrelated reports in the queue:
+
+        - several call sites send with `_write()` and never consume the reply,
+          so replies accumulate;
+        - the device also emits unsolicited status reports.
+
+        Reading blindly therefore returns some earlier report.  `_send_data()`
+        ends a transfer with a bare ``_write([0x36, 0x02])`` and then calls
+        `_switch_bucket()`, which reads that leftover ``0x37 0x02`` and takes
+        its byte 14 as the switch result: the bucket switch is never actually
+        verified, and can report success without having happened.
+
+        `_query_buckets()` is affected the same way, and because all sixteen
+        queries answer ``0x31 0x04`` a single misread shifts the whole table,
+        so `_get_bucket_memory_offset()` sizes a transfer from another bucket's
+        address.  Clearing the queue first is what prevents that; matching the
+        prefix afterwards cannot, as those replies are indistinguishable.
+        """
+        self.device.clear_enqueued_reports()
         self._write(data)
-        return self._read()
+        expected = bytes([data[0] + 1, data[1]])
+        fallback = None
+        for _ in range(_MAX_READ_ATTEMPTS):
+            msg = self._read()
+            if not msg:
+                break
+            if fallback is None:
+                fallback = msg
+            if bytes(msg[0:2]) == expected:
+                return msg
+        _LOGGER.debug(
+            "no %#04x %#04x response, falling back to first report read",
+            data[0] + 1,
+            data[1],
+        )
+        return fallback
 
     def _bulk_write(self, data):
         if sys.platform == "win32":

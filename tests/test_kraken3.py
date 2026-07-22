@@ -131,12 +131,19 @@ class MockKraken(MockHidapiDevice):
             reply[0:2] = [0x31, 0x01]
             reply[0x18] = 50  # lcd brightness
             reply[0x1A] = 0  # lcd orientation
+        elif data[0:2] == [0x30, 0x04]:  # query bucket
+            reply[0:2] = [0x31, 0x04]
         elif data[0:2] == [0x32, 0x1]:  # setup bucket
+            reply[0:2] = [0x33, 0x01]
             reply[14] = 0x1
         elif data[0:2] == [0x32, 0x2]:  # delete bucker
             reply[0:2] = [0x33, 0x02]
             reply[14] = 0x1
+        elif data[0] == 0x36:  # data transfer start/end
+            reply[0:2] = [0x37, data[1]]
+            reply[14] = 0x1
         elif data[0:2] == [0x38, 0x1]:  # switch bucket
+            reply[0:2] = [0x39, 0x01]
             reply[14] = 0x1
 
         self.preload_read(Report(0, reply))
@@ -558,3 +565,27 @@ def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )
+
+
+def test_write_then_read_matches_response_to_request(mock_krakenz3):
+    """A leftover reply must not be taken for the current command's response.
+
+    _send_data() ends a transfer with a bare _write([0x36, 0x02]) whose reply is
+    never consumed, so _switch_bucket() would read that stale 0x37 0x02 and take
+    its byte 14 as the switch result -- reporting success from an unrelated
+    packet while the bucket switch went unverified.
+    """
+    dev = mock_krakenz3.device
+    dev._read.clear()
+
+    stale = bytearray(64)
+    stale[0:2] = [0x37, 0x02]  # leftover end-of-transfer reply
+    stale[14] = 0x1  # which would read as success
+    dev.preload_read(Report(0, stale))
+
+    failed = bytearray(64)
+    failed[0:2] = [0x39, 0x01]  # the actual switch reply
+    failed[14] = 0x0  # reporting failure
+    dev.preload_read(Report(0, failed))
+
+    assert mock_krakenz3._switch_bucket(0) is False
