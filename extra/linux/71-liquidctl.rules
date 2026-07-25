@@ -524,6 +524,12 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a105", TAG+="uacc
 # Lian Li Uni SL-Infinity
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a102", TAG+="uaccess"
 
+# MSI MPG Coreliquid D-series LCD
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="8dbf", TAG+="uaccess"
+
+# MSI MPG Coreliquid D360
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="edfc", TAG+="uaccess"
+
 # MSI MPG Coreliquid K360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="b130", TAG+="uaccess"
 

@@ -3,6 +3,9 @@
 Supported devices:
 
 - MPG Coreliquid K360
+- MPG Coreliquid D360 (cooling and monitoring; the display is a separate USB
+  device, handled by `MpgCoolerLcd`)
+- MPG Coreliquid D-series LCD panel
 
 Copyright (C) 2021  Andrew Udvare, Aapo Kössi and contributors
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -14,12 +17,16 @@ from collections import namedtuple
 from collections.abc import Sequence
 from copy import copy
 from enum import Enum, unique
-from time import sleep
+from time import monotonic, sleep
 import logging
 import io
+import os
+import sys
+import time
 from PIL import Image
 
 from liquidctl.driver.usb import UsbHidDriver
+from liquidctl.error import ExpectationNotMet, NotSupportedByDevice
 from liquidctl.keyval import RuntimeStorage
 from liquidctl.util import RelaxedNamesEnum, check_unsafe, clamp, u16le_from
 
@@ -326,6 +333,12 @@ class MpgCooler(UsbHidDriver):
         ),
         (
             0x0DB0,
+            0xEDFC,
+            "MSI MPG Coreliquid D360",
+            {"fan_count": 5, "oled_compatible": False, "fixed_speed_needs_temp": True},
+        ),
+        (
+            0x0DB0,
             0xCA00,
             "Suspected MSI MPG Coreliquid",
             {"_unsafe": ["experimental_coreliquid_cooler"]},
@@ -349,6 +362,14 @@ class MpgCooler(UsbHidDriver):
         self._per_led_rgb_jrainbow2 = bytearray(_PER_LED_LENGTH)
         self._per_led_rgb_jcorsair = bytearray(_PER_LED_LENGTH)
         self._fan_count = kwargs.pop("fan_count", 5)
+        # whether the device supports the K360 OLED/LCD command set; the
+        # D-series (e.g. D360) uses a different display and does not answer
+        # queries such as the OLED firmware version (0xF1).
+        self._oled_compatible = kwargs.pop("oled_compatible", True)
+        # whether a fixed-speed duty only takes effect once a control
+        # temperature has been sent (true for the D-series, which also enforces
+        # a temperature-linked minimum duty).
+        self._fixed_speed_needs_temp = kwargs.pop("fixed_speed_needs_temp", False)
         # the following fields are only initialized in connect()
         self._data = None
         self._feature_data = None
@@ -395,7 +416,12 @@ class MpgCooler(UsbHidDriver):
         self._aprom_firmware_version = aprom_hi << 4 + aprom_lo
         ldrom_hi, ldrom_lo = self.get_firmware_version_ldrom()
         self._ldrom_firmware_version = ldrom_hi << 4 + ldrom_lo
-        self._oled_firmware_version = self.get_oled_firmware_version()
+        if self._oled_compatible:
+            self._oled_firmware_version = self.get_oled_firmware_version()
+        else:
+            # D-series displays do not answer the K360 OLED firmware query
+            # (0xF1); it would time out.
+            self._oled_firmware_version = None
 
         return ret
 
@@ -421,7 +447,8 @@ class MpgCooler(UsbHidDriver):
         elif direction in ("3", "right"):
             dir_int = 3
         self._data.store("direction", dir_int)
-        self.set_oled_brightness_and_direction(100, dir_int)
+        if self._oled_compatible:
+            self.set_oled_brightness_and_direction(100, dir_int)
         if pump_mode_int == _FanMode.GAME.value:
             self.switch_to_game_mode()
         elif pump_mode_int == _FanMode.BALANCE.value:
@@ -433,13 +460,16 @@ class MpgCooler(UsbHidDriver):
         elif pump_mode_int == _FanMode.SMART.value:
             self.switch_to_smart_mode()
 
-        return [
-            ("Display firmware version", self._oled_firmware_version, ""),
+        status = []
+        if self._oled_firmware_version is not None:
+            status.append(("Display firmware version", self._oled_firmware_version, ""))
+        status += [
             ("APROM firmware version", self._aprom_firmware_version, ""),
             ("LDROM firmware version", self._ldrom_firmware_version, ""),
             ("Serial number", self.serial_number, ""),
             ("Pump mode", pump_mode, ""),
         ]
+        return status
 
     def get_status(self, **kwargs):
         if not check_unsafe(*self._UNSAFE, **kwargs):
@@ -473,6 +503,8 @@ class MpgCooler(UsbHidDriver):
 
     def set_time(self, time, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
+        if not self._oled_compatible:
+            raise NotSupportedByDevice()
         return self.set_oled_clock(time)
 
     def set_hardware_status(self, T, cpu_f=0, gpu_f=0, gpu_U=0, **kwargs):
@@ -574,8 +606,13 @@ class MpgCooler(UsbHidDriver):
             return range(_RAD_FAN_COUNT)
         elif channel == "waterblock-fan":
             return [3]
-        elif channel[:3] == "fan" and (int(channel[3:]) in range(_RAD_FAN_COUNT)):
-            return [int(channel[3:])]
+        elif (
+            channel[:3] == "fan"
+            and channel[3:].isdigit()
+            and 1 <= int(channel[3:]) <= _RAD_FAN_COUNT
+        ):
+            # radiator fans are 1-indexed for the user (fan1..fan3)
+            return [int(channel[3:]) - 1]
         else:
             raise ValueError(
                 'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock-fan" or "pump".'
@@ -619,6 +656,14 @@ class MpgCooler(UsbHidDriver):
 
         self.set_fan_config(self._fan_cfg)
         self.set_fan_temp_config(self._fan_temp_cfg)
+        if self._fixed_speed_needs_temp:
+            # The D-series applies a CUSTOMIZE duty only once it has received a
+            # control temperature, and it enforces a temperature-linked minimum
+            # (safety floor).  Feed a low, neutral temperature so a one-shot
+            # `set ... speed` (e.g. from an external fan controller) takes
+            # effect and the requested duty is honored down to the device's
+            # own floor.  We deliberately do NOT override that floor.
+            self.set_oled_show_cpu_status(0, 0)
 
     def set_color(self, channel, mode, colors, speed=1, brightness=10, color_selection=1, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
@@ -644,6 +689,11 @@ class MpgCooler(UsbHidDriver):
 
     def set_screen(self, channel, mode, value, **kwargs):
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
+
+        if not self._oled_compatible:
+            # The D-series display does not implement the K360 OLED/LCD
+            # command set (0xF1/0xC2/0xD2 and friends all time out).
+            raise NotSupportedByDevice()
 
         assert channel.lower() == "lcd"
         try:
@@ -1388,3 +1438,417 @@ class MpgCooler(UsbHidDriver):
 
     # def set_reset_mcu(self):
     #     return self._write((0xd0, ), 0xcc, prefix=1)
+
+
+# The D-series LCD panel is a separate USB device from the cooler: the cooler is
+# 0db0:edfc and is handled by MpgCooler above, while the panel is a Nuvoton MCU
+# at 0db0:8dbf.  This is why the cooler does not answer the K360 OLED commands.
+#
+# Commands are 64-byte reports with report ID 1, framed as
+#
+#     6b 5a <cmd> 00 <data length, uint32le> <payload, up to 55 bytes>
+#
+# and file data is streamed as 1024-byte reports with report ID 2.
+
+_LCD_CMD_REPORT_LENGTH = 64
+_LCD_BULK_REPORT_LENGTH = 1024
+_LCD_BULK_CHUNK = _LCD_BULK_REPORT_LENGTH - 1
+_LCD_MAX_PAYLOAD = 55
+_LCD_REPORT_ID_CMD = 1
+_LCD_REPORT_ID_BULK = 2
+_LCD_MAGIC = (0x6B, 0x5A)
+_LCD_WIDTH = 320
+_LCD_HEIGHT = 240
+
+_LCD_GET_DEV_INFO = 0x14
+_LCD_GET_DEV_INFO_R = 0x15
+_LCD_SET_BACKLIGHT = 0x18
+_LCD_SET_DIRECTION = 0x1A
+_LCD_SEND_FILE_NODE = 0x20
+_LCD_SEND_FILE_DATA_START = 0x22
+_LCD_SEND_FILE_DATA_END = 0x26
+_LCD_SAVE_FILE_NODE = 0x28
+_LCD_SEND_HOST_TIME = 0x36
+_LCD_PLAY_MEDIA_NODE = 0x40
+_LCD_SET_DISPLAY_MODE = 0x50
+
+_LCD_MODE_IMAGE = 1
+_LCD_MODE_CLOCK = 5
+
+# media nodes are named M1-S<slot>-<O|V>-R<0|1><ext>, where R0 covers panel
+# orientations of 0 and 180 degrees, and R1 covers 90 and 270
+_LCD_MEDIA_SLOT = 7
+_LCD_IMAGE_SLOTS = 8
+
+_LCD_STATUS_IDLE = 0x00
+_LCD_STATUS_DOWNLOAD_OK = 0xF0
+_LCD_STATUS_FLASH_OK = 0xF1
+
+# settings are persisted by writing these tiny file nodes, whose contents the
+# firmware ignores beyond the marker itself
+_LCD_SETTING_NODE = "HMI_FW_Setting.ini"
+_LCD_MODE_NODE = "HMI_FW_Mode.ini"
+_LCD_SAVE_MARKER = b"MSI"
+
+
+def _u32le(value):
+    return bytes((value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF))
+
+
+class _WindowsHidOutput:
+    """Send output reports with HidD_SetOutputReport and WriteFile.
+
+    On Windows, hidapi pads every `hid_write` to the maximum output report
+    length, which for this device is 1024 bytes because of report ID 2; the
+    panel rejects a report ID 1 write of that length.  Its control transfer
+    helpers, on the other hand, only cover *feature* reports.  Both channels are
+    therefore driven through the Win32 HID API directly.
+    """
+
+    def __init__(self, path):
+        import ctypes
+        from ctypes import wintypes
+
+        self._ctypes = ctypes
+        self._wintypes = wintypes
+        self._kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        self._hid = ctypes.WinDLL("hid", use_last_error=True)
+        self._kernel32.CreateFileW.restype = wintypes.HANDLE
+        self._kernel32.CreateFileW.argtypes = [
+            wintypes.LPCWSTR,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            ctypes.c_void_p,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            wintypes.HANDLE,
+        ]
+        self._kernel32.WriteFile.restype = wintypes.BOOL
+        self._kernel32.WriteFile.argtypes = [
+            wintypes.HANDLE,
+            ctypes.c_void_p,
+            wintypes.DWORD,
+            ctypes.POINTER(wintypes.DWORD),
+            ctypes.c_void_p,
+        ]
+        self._hid.HidD_SetOutputReport.restype = wintypes.BOOLEAN
+        self._hid.HidD_SetOutputReport.argtypes = [
+            wintypes.HANDLE,
+            ctypes.c_void_p,
+            wintypes.ULONG,
+        ]
+
+        if isinstance(path, bytes):
+            path = path.decode()
+        generic_read_write = 0x80000000 | 0x40000000
+        share_read_write = 0x00000001 | 0x00000002
+        open_existing = 3
+        self._handle = self._kernel32.CreateFileW(
+            path, generic_read_write, share_read_write, None, open_existing, 0, None
+        )
+        if self._handle in (None, wintypes.HANDLE(-1).value):
+            raise OSError(
+                f"could not open the display (error {ctypes.get_last_error()}); "
+                "is another application already using it?"
+            )
+
+    def close(self):
+        if self._handle:
+            self._kernel32.CloseHandle(self._handle)
+            self._handle = None
+
+    def send_command(self, data):
+        buf = self._ctypes.create_string_buffer(bytes(data), len(data))
+        if not self._hid.HidD_SetOutputReport(self._handle, buf, len(data)):
+            raise OSError(f"could not send report (error {self._ctypes.get_last_error()})")
+
+    def send_bulk(self, data):
+        buf = self._ctypes.create_string_buffer(bytes(data), len(data))
+        written = self._wintypes.DWORD(0)
+        ok = self._kernel32.WriteFile(
+            self._handle, buf, len(data), self._ctypes.byref(written), None
+        )
+        if not ok:
+            raise OSError(f"could not write data (error {self._ctypes.get_last_error()})")
+        if written.value != len(data):
+            raise OSError(f"wrote {written.value} bytes, expected {len(data)}")
+
+
+class MpgCoolerLcd(UsbHidDriver):
+    """LCD panel on an MSI MPG Coreliquid D-series all-in-one liquid cooler.
+
+    The panel is 320x240 and decodes H.264 MP4 files itself: the host uploads a
+    media node and then selects it for display.
+    """
+
+    _MATCHES = [
+        (
+            0x0DB0,
+            0x8DBF,
+            "MSI MPG Coreliquid D-series LCD",
+            {},
+        ),
+    ]
+
+    def __init__(self, device, description, **kwargs):
+        super().__init__(device, description, **kwargs)
+        self._output = None
+
+    def connect(self, **kwargs):
+        ret = super().connect(**kwargs)
+        if sys.platform == "win32":
+            self._output = _WindowsHidOutput(self.device.path)
+        return ret
+
+    def disconnect(self, **kwargs):
+        if self._output is not None:
+            self._output.close()
+            self._output = None
+        return super().disconnect(**kwargs)
+
+    def initialize(self, **kwargs):
+        info = self._get_device_info()
+        return [
+            ("Firmware version", info["firmware"], ""),
+            ("Brightness", info["brightness"], "%"),
+            ("Orientation", info["orientation"], "°"),
+        ]
+
+    def get_status(self, **kwargs):
+        info = self._get_device_info()
+        return [
+            ("Brightness", info["brightness"], "%"),
+            ("Orientation", info["orientation"], "°"),
+        ]
+
+    def set_screen(self, channel, mode, value, **kwargs):
+        """Configure the LCD panel.
+
+        The supported modes are `brightness` (0-100), `orientation` (0, 90, 180
+        or 270 degrees), `video` (path to an H.264 MP4 file), `clock` (face 0-4)
+        and `off`.
+
+        Appending `;save` to the path of a video also stores it on the panel, so
+        that it is shown again after the machine loses power.
+        """
+
+        if channel.lower() != "lcd":
+            raise ValueError('unknown channel, should be "lcd"')
+
+        mode = mode.lower()
+        if mode == "brightness":
+            self._set_brightness(int(value))
+        elif mode == "orientation":
+            self._set_orientation(int(value))
+        elif mode == "video":
+            path, _, option = str(value).partition(";")
+            option = option.strip().lower()
+            if option not in ("", "save"):
+                raise ValueError('unknown video option, should be "save"')
+            self._show_media(path.strip(), save=option == "save" or bool(kwargs.get("save")))
+        elif mode == "clock":
+            self._show_clock(int(value) if value not in (None, "") else 0)
+        elif mode == "off":
+            self._set_brightness(0)
+        else:
+            raise ValueError("unknown mode, should be brightness, orientation, video, clock or off")
+
+    def set_fixed_speed(self, channel, duty, **kwargs):
+        raise NotSupportedByDevice()
+
+    def set_speed_profile(self, channel, profile, **kwargs):
+        raise NotSupportedByDevice()
+
+    def set_color(self, channel, mode, colors, **kwargs):
+        raise NotSupportedByDevice()
+
+    def _set_brightness(self, brightness):
+        self._write_cmd(_LCD_SET_BACKLIGHT, 4, _u32le(clamp(brightness, 0, 100)))
+
+    def _set_orientation(self, degrees):
+        if degrees not in (0, 90, 180, 270):
+            raise ValueError("orientation should be 0, 90, 180 or 270")
+        self._write_cmd(_LCD_SET_DIRECTION, 4, _u32le(degrees))
+
+    def _show_clock(self, face):
+        # the panel has no clock of its own; it is told the current time as an
+        # epoch already shifted by the local UTC offset
+        now = time.localtime()
+        offset = -time.altzone if now.tm_isdst else -time.timezone
+        local_epoch = (int(time.mktime(now)) + offset) & 0xFFFFFFFF
+        self._write_cmd(_LCD_SEND_HOST_TIME, 12, _u32le(1) + bytes(4) + _u32le(local_epoch))
+        sleep(0.15)
+        self._set_display_mode(_LCD_MODE_CLOCK, screen=[0, clamp(face, 0, 4), 0, 0, 0])
+
+    def _show_media(self, path, save=False):
+        if not os.path.isfile(path):
+            raise ValueError(f"no such file: {path}")
+        if os.path.splitext(path)[1].lower() != ".mp4":
+            raise ValueError(
+                "the panel only decodes H.264 MP4 files; convert the file first, for "
+                f"example with: ffmpeg -i input -vf scale={_LCD_WIDTH}:{_LCD_HEIGHT} "
+                "-c:v libx264 -profile:v baseline -pix_fmt yuv420p output.mp4"
+            )
+        with open(path, "rb") as file:
+            data = file.read()
+
+        # the panel keeps separate assets for the upright and rotated
+        # orientations, and falls back to its own logo if the one it wants is
+        # missing
+        variant = 1 if self._get_device_info()["orientation"] in (90, 270) else 0
+        node = f"M1-S{_LCD_MEDIA_SLOT}-V-R{variant}.mp4"
+
+        self._upload(data, node, save=save)
+
+        screen = [0] * _LCD_IMAGE_SLOTS
+        screen[_LCD_MEDIA_SLOT] = 1  # enable the slot, or nothing is displayed
+        self._set_display_mode(_LCD_MODE_IMAGE, screen=screen)
+        sleep(0.3)
+        self._write_cmd(_LCD_PLAY_MEDIA_NODE, 42, self._make_play_data(node))
+
+        if save:
+            # the media itself is kept by SAVE_FILE_NODE, but the panel also has
+            # to be told to remember which mode and slot to come back to
+            self._persist_config()
+
+    def _persist_config(self):
+        """Persist the current mode and settings to the panel's storage."""
+        for node in (_LCD_MODE_NODE, _LCD_SETTING_NODE):
+            self._upload_raw(_LCD_SAVE_MARKER, node)
+            sleep(0.2)
+
+    def _upload_raw(self, data, node):
+        """Stream `data` to `node` without the trailing end-of-data command.
+
+        The tiny configuration nodes are written exactly like this by MSI's own
+        software, which sends no end-of-data for them.
+        """
+        name = node.encode("ascii")
+        header = bytearray(_LCD_MAX_PAYLOAD)
+        header[0:4] = _u32le(len(data))
+        header[4 : 4 + len(name)] = name
+        self._write_cmd(_LCD_SEND_FILE_NODE, 4 + len(name), bytes(header))
+        sleep(0.05)
+        self._write_cmd(_LCD_SEND_FILE_DATA_START, len(data), bytes(_LCD_MAX_PAYLOAD))
+        sleep(0.05)
+        chunk = bytearray(_LCD_BULK_REPORT_LENGTH)
+        chunk[0] = _LCD_REPORT_ID_BULK
+        chunk[1 : 1 + len(data)] = data
+        self._write_bulk(chunk)
+
+    def _upload(self, data, node, save=False):
+        name = node.encode("ascii")
+        header = bytearray(_LCD_MAX_PAYLOAD)
+        header[0:4] = _u32le(len(data))
+        header[4 : 4 + len(name)] = name
+        self._write_cmd(_LCD_SEND_FILE_NODE, 4 + len(name), bytes(header))
+        sleep(0.05)
+        self._write_cmd(_LCD_SEND_FILE_DATA_START, len(data), bytes(_LCD_MAX_PAYLOAD))
+        sleep(0.05)
+
+        sent = 0
+        while sent < len(data):
+            take = min(_LCD_BULK_CHUNK, len(data) - sent)
+            chunk = bytearray(_LCD_BULK_REPORT_LENGTH)
+            chunk[0] = _LCD_REPORT_ID_BULK
+            chunk[1 : 1 + take] = data[sent : sent + take]
+            self._write_bulk(chunk)
+            sent += take
+        _LOGGER.debug("uploaded %d bytes to %s", len(data), node)
+
+        sleep(0.05)
+        self._write_cmd(_LCD_SEND_FILE_DATA_END, 0, bytes(_LCD_MAX_PAYLOAD))
+        self._wait_until_idle()
+        if save:
+            self._write_cmd(_LCD_SAVE_FILE_NODE, 32, self._make_node_name(node))
+            self._wait_until_idle()
+
+    def _set_display_mode(self, mode, slideshow=0, screen=()):
+        screen = list(screen)
+        data = bytearray(19)
+        data[0] = mode
+        data[1] = slideshow
+        data[2] = len(screen)
+        data[3 : 3 + len(screen)] = bytes(screen)
+        self._write_cmd(_LCD_SET_DISPLAY_MODE, len(data), bytes(data))
+
+    @staticmethod
+    def _make_node_name(node):
+        name = node.encode("ascii")
+        if len(name) > 32:
+            raise ValueError(f"node name is too long: {node}")
+        return name + bytes(32 - len(name))
+
+    def _make_play_data(self, node, x=0, y=0, scroll_direction=0, scroll_speed=0):
+        data = bytearray(42)
+        data[0:32] = self._make_node_name(node)
+        data[32:36] = _u32le(x)
+        data[36:40] = _u32le(y)
+        data[40] = scroll_direction
+        data[41] = scroll_speed
+        return bytes(data)
+
+    def _get_device_info(self):
+        _, data = self._query(_LCD_GET_DEV_INFO, expected=_LCD_GET_DEV_INFO_R)
+        values = [int.from_bytes(data[i : i + 4], "little") for i in range(0, 20, 4)]
+        return {
+            "firmware": values[0],
+            "brightness": values[1],
+            "orientation": values[2],
+            "status": values[3],
+            "sync_mode": values[4],
+        }
+
+    def _wait_until_idle(self, timeout=8):
+        deadline = monotonic() + timeout
+        status = None
+        while monotonic() < deadline:
+            status = self._get_device_info()["status"]
+            if status in (_LCD_STATUS_IDLE, _LCD_STATUS_DOWNLOAD_OK, _LCD_STATUS_FLASH_OK):
+                return status
+            sleep(0.2)
+        _LOGGER.warning("panel is still busy, last status %#04x", status or 0)
+        return status
+
+    @staticmethod
+    def _make_cmd(cmd, data_length, payload=b""):
+        if len(payload) > _LCD_MAX_PAYLOAD:
+            raise ValueError(f"payload is too long: {len(payload)}")
+        data = bytearray(_LCD_CMD_REPORT_LENGTH)
+        data[0] = _LCD_REPORT_ID_CMD
+        data[1], data[2] = _LCD_MAGIC
+        data[3] = cmd
+        data[5:9] = _u32le(data_length)
+        data[9 : 9 + len(payload)] = payload
+        return bytes(data)
+
+    def _write_cmd(self, cmd, data_length=0, payload=b""):
+        data = self._make_cmd(cmd, data_length, payload)
+        if self._output is not None:
+            self._output.send_command(data)
+        else:
+            self.device.write(data)
+
+    def _write_bulk(self, data):
+        if self._output is not None:
+            self._output.send_bulk(data)
+        else:
+            self.device.write(data)
+
+    def _query(self, cmd, data_length=4, payload=None, expected=None):
+        if payload is None:
+            payload = bytes(4)
+        self._write_cmd(cmd, data_length, payload)
+        sleep(0.12)
+        data = bytes(self.device.get_input_report(_LCD_REPORT_ID_CMD, _LCD_CMD_REPORT_LENGTH))
+        start = None
+        for candidate in (0, 1):
+            if len(data) > candidate + 1 and (data[candidate], data[candidate + 1]) == _LCD_MAGIC:
+                start = candidate
+                break
+        if start is None:
+            raise ExpectationNotMet("unexpected response from the panel")
+        reply = data[start:]
+        if expected is not None and reply[2] != expected:
+            raise ExpectationNotMet(f"expected response {expected:#04x}, got {reply[2]:#04x}")
+        return int.from_bytes(reply[4:8], "little"), reply[8:]

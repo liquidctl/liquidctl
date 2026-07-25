@@ -1,9 +1,38 @@
 # MSI MPG Coreliquid AIO coolers
 _Driver API and source code available in [`liquidctl.driver.msi`](../liquidctl/driver/msi.py)._
 
-_Currently, only the K360 model is experimentally supported as more testing and feedback is needed._
+_The K360 and D360 models are experimentally supported as more testing and feedback is needed._
 
-This driver is for the MSI MPG coreliquid series of AIO coolers, of which currently only the coreliquid K360 has been tested and verified to be working. The usage of speed profiles for this model requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`yoda.py`](../extra/yoda.py). Device configuration, including lighting and fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
+## Supported models
+
+_New in git: the MPG Coreliquid D360._<br>
+
+| Model | USB id | Cooling & monitoring | RGB lighting | LCD/OLED display |
+| --- | --- | --- | --- | --- |
+| MPG Coreliquid K360 | `0db0:b130` | yes | yes (`sync`) | yes |
+| MPG Coreliquid D360 | `0db0:edfc` | yes | none on the device | yes, as a separate device (`0db0:8dbf`) |
+
+The **D360** reuses the same cooling and monitoring protocol as the K360 and has
+been verified against hardware for status reporting and fan/pump control.  It
+does not require any unsafe feature.  It differs from the K360 in a few ways:
+
+- It has no addressable RGB lighting, so the `sync` lighting channel does not
+  apply.
+- Its display is a **separate USB device** and uses a different protocol than
+  the K360's OLED, so the `lcd` screen commands (and `set_time`) raise
+  `NotSupportedByDevice` on the cooler itself.  See
+  [The D-series LCD screen](#the-d-series-lcd-screen) below.
+- A fixed speed set with `liquidctl set <channel> speed <duty>` takes effect on
+  its own (the driver sends the device the control temperature it needs).  The
+  device enforces its own temperature-linked minimum duty (a safety floor of
+  roughly 30–35% when cool), so requests below that floor settle at the floor
+  rather than going lower.  Fan speeds also ramp gradually toward the target.
+
+This driver is for the MSI MPG coreliquid series of AIO coolers.  The coreliquid
+K360 has been tested and verified to be working, and the D360 has been verified
+for cooling and monitoring (see above). The usage of speed profiles requires external periodic updates of the current cpu temperature. As a result, to use variable fan speeds you must be careful to make sure that the current cpu temperature gets sent to the device. An example method to accomplish this is the `--use-device-controller` option in [`yoda.py`](../extra/yoda.py). Fan profiles persist until a new configuration is sent to the device, but saved settings are lost after power is lost (power state S5).
+
+The remainder of this section applies to the K360, which has RGB lighting and a display. Its lighting configuration likewise persists until a new one is sent to the device, and is also lost after power is lost (power state S5). Uploaded display images are saved onto the device, and so they can be accessed by their uploaded type and index even after loss of power, preventing the need to repeatedly upload the same files. The lcd display resets to the default animation when the system is suspended (S3).
 
 LED lighting is controlled via preset modes, which are sent once to the device as a configuration, after which the device then independently commands the LEDs until a new configuration is received.
 
@@ -154,7 +183,67 @@ Support for the rainbow option is not yet exposed by the liquidctl cli, but it i
 >>> coreliquid_device.set_colors("sync", "clock", [], color_selection=0)
 ```
 
-## The LCD screen
+## The D-series LCD screen
+
+_New in git._<br>
+
+On the D-series the display is a **separate USB device** (`0db0:8dbf`) from the
+cooler itself (`0db0:edfc`), and so it appears as its own liquidctl device:
+
+```
+# liquidctl list
+Device #0: MSI MPG Coreliquid D360
+Device #1: MSI MPG Coreliquid D-series LCD
+```
+
+This is also why the cooler ignores the K360 screen commands documented below;
+those apply to the K360 only.
+
+The panel is 320 x 240 px and decodes H.264 MP4 files itself, so media must be
+converted before it is uploaded:
+
+```
+# ffmpeg -i input.gif -vf scale=320:240 -c:v libx264 -profile:v baseline \
+      -pix_fmt yuv420p -movflags +faststart output.mp4
+# liquidctl --match lcd set lcd screen video output.mp4
+```
+
+Brightness, orientation and a built-in clock face are also supported:
+
+```
+# liquidctl --match lcd set lcd screen brightness 60
+# liquidctl --match lcd set lcd screen orientation 90
+# liquidctl --match lcd set lcd screen clock 0
+# liquidctl --match lcd set lcd screen off
+```
+
+| mode | action | values |
+| --- | --- | --- |
+| `brightness` | set the backlight level | 0–100 |
+| `orientation` | rotate the panel | 0, 90, 180 or 270 |
+| `video` | upload and play a file | path to an H.264 MP4, optionally followed by `;save` |
+| `clock` | show a clock face | 0–4 |
+| `off` | switch the backlight off | |
+
+Some notes:
+
+- MSI Center must not be running: it holds the display open, and it will also
+  push its own configuration over anything set here.
+- Uploaded media is not written to the device's storage unless `;save` is
+  appended to the path, in which case the panel also remembers the mode and
+  shows the file again after the machine loses power:
+
+  ```
+  # liquidctl --match lcd set lcd screen video 'output.mp4;save'
+  ```
+- The panel keeps separate assets for the upright and rotated orientations, and
+  falls back to showing the vendor logo if the one it wants is missing.  The
+  driver picks the right one for the current orientation, but a file uploaded
+  before rotating will not be used afterwards; upload it again.
+- Because the panel is physically mounted rotated on some coolers, content may
+  need to be pre-rotated to appear upright.
+
+## The K360 LCD screen
 
 The screen resolution is 320 x 240 px, and custom images uploaded with this driver are resized to fit this requirement. The screen orientation and brightness (0-100) can also be controlled. The only channel available for the K360 model is "lcd".
 
