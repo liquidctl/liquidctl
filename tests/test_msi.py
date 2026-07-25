@@ -6,7 +6,13 @@ from datetime import datetime
 import pytest
 from _testutils import MockHidapiDevice, Report
 
-from liquidctl.driver.msi import MpgCooler, _REPORT_LENGTH, _DEFAULT_FEATURE_DATA, _LightingMode
+from liquidctl.driver.msi import (
+    MpgCooler,
+    MpgCoolerLcd,
+    _REPORT_LENGTH,
+    _DEFAULT_FEATURE_DATA,
+    _LightingMode,
+)
 from liquidctl.error import NotSupportedByDevice, UnsafeFeaturesNotEnabled
 
 
@@ -421,3 +427,181 @@ def test_mpg_core_liquid_d360_set_time_not_supported(mpgCoreLiquidD360Device):
     time = datetime(2012, 12, 21, 9, 54, 20)
     with pytest.raises(NotSupportedByDevice):
         mpgCoreLiquidD360Device.set_time(time)
+
+
+# --- MSI MPG Coreliquid D-series LCD -----------------------------------------
+# The panel is a separate USB device (0db0:8dbf) from the cooler, with its own
+# framing: 6b 5a <cmd> 00 <length u32le> <payload>, over report id 1.
+
+
+def _u32le(value):
+    return [value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF]
+
+
+class _MockCoreLiquidLcd(MockHidapiDevice):
+    """Mock panel that answers GET_DEV_INFO (0x14) with 0x15."""
+
+    def __init__(self, firmware=6, brightness=100, orientation=0, **kwargs):
+        super().__init__(**kwargs)
+        self.firmware = firmware
+        self.brightness = brightness
+        self.orientation = orientation
+        self.bulk_reports = 0
+
+    def write(self, data):
+        data = bytes(data)
+        if data[0] == 2:  # bulk file data
+            self.bulk_reports += 1
+        elif len(data) > 3 and data[1] == 0x6B and data[2] == 0x5A:
+            cmd, payload = data[3], data[9:]
+            if cmd == 0x18:  # SET_LCM_BACKLIGHT
+                self.brightness = int.from_bytes(payload[:4], "little")
+            elif cmd == 0x1A:  # SET_LCM_DIR
+                self.orientation = int.from_bytes(payload[:4], "little")
+        return super().write(data)
+
+    def get_input_report(self, report_id, length):
+        frame = [0x6B, 0x5A, 0x15, 0x00] + _u32le(20)
+        frame += _u32le(self.firmware) + _u32le(self.brightness) + _u32le(self.orientation)
+        frame += _u32le(0) + _u32le(0)
+        report = [report_id] + frame
+        return report + [0] * (length - len(report))
+
+
+@pytest.fixture
+def mpgCoolerLcdDevice():
+    # connect() is skipped on purpose: on Windows it opens a real Win32 HID
+    # handle, and with _output left unset the driver writes through the mock
+    device = _MockCoreLiquidLcd(vendor_id=0x0DB0, product_id=0x8DBF)
+    return MpgCoolerLcd(device, "Mock MSI MPG Coreliquid D-series LCD")
+
+
+def test_mpg_cooler_lcd_is_matched():
+    match = [m for m in MpgCoolerLcd._MATCHES if m[1] == 0x8DBF]
+    assert len(match) == 1
+    vid, pid, desc, kwargs = match[0]
+    assert vid == 0x0DB0
+    assert "LCD" in desc
+
+
+def test_mpg_cooler_lcd_initialize(mpgCoolerLcdDevice):
+    status = dict((row[0], row[1]) for row in mpgCoolerLcdDevice.initialize())
+    assert status["Firmware version"] == 6
+    assert status["Brightness"] == 100
+    assert status["Orientation"] == 0
+
+
+def test_mpg_cooler_lcd_get_status(mpgCoolerLcdDevice):
+    status = dict((row[0], row[1]) for row in mpgCoolerLcdDevice.get_status())
+    assert status["Brightness"] == 100
+    assert status["Orientation"] == 0
+
+
+def test_mpg_cooler_lcd_set_brightness(mpgCoolerLcdDevice):
+    mpgCoolerLcdDevice.set_screen("lcd", "brightness", 40)
+
+    report = mpgCoolerLcdDevice.device.sent[-1]
+    assert report.number == 1  # report id
+    assert report.data[0:3] == [0x6B, 0x5A, 0x18]  # magic + SET_LCM_BACKLIGHT
+    assert report.data[8] == 40  # payload starts at frame offset 8
+    assert mpgCoolerLcdDevice.device.brightness == 40
+
+
+def test_mpg_cooler_lcd_brightness_is_clamped(mpgCoolerLcdDevice):
+    mpgCoolerLcdDevice.set_screen("lcd", "brightness", 150)
+    assert mpgCoolerLcdDevice.device.brightness == 100
+
+
+def test_mpg_cooler_lcd_set_orientation(mpgCoolerLcdDevice):
+    mpgCoolerLcdDevice.set_screen("lcd", "orientation", 270)
+
+    report = mpgCoolerLcdDevice.device.sent[-1]
+    assert report.data[0:3] == [0x6B, 0x5A, 0x1A]  # SET_LCM_DIR
+    assert report.data[8] == 14 and report.data[9] == 1  # 270 == 0x010e, little endian
+    assert mpgCoolerLcdDevice.device.orientation == 270
+
+
+def test_mpg_cooler_lcd_rejects_bad_orientation(mpgCoolerLcdDevice):
+    with pytest.raises(ValueError):
+        mpgCoolerLcdDevice.set_screen("lcd", "orientation", 45)
+
+
+def test_mpg_cooler_lcd_rejects_unknown_channel_and_mode(mpgCoolerLcdDevice):
+    with pytest.raises(ValueError):
+        mpgCoolerLcdDevice.set_screen("oled", "brightness", 50)
+    with pytest.raises(ValueError):
+        mpgCoolerLcdDevice.set_screen("lcd", "nonsense", 1)
+
+
+def test_mpg_cooler_lcd_rejects_non_mp4(mpgCoolerLcdDevice, tmp_path):
+    image = tmp_path / "picture.png"
+    image.write_bytes(b"not really a png")
+    with pytest.raises(ValueError):
+        mpgCoolerLcdDevice.set_screen("lcd", "video", str(image))
+
+
+def test_mpg_cooler_lcd_uploads_and_plays_video(mpgCoolerLcdDevice, tmp_path):
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(bytes(2500))  # spans three 1023-byte bulk reports
+
+    mpgCoolerLcdDevice.set_screen("lcd", "video", str(video))
+
+    dev = mpgCoolerLcdDevice.device
+    assert dev.bulk_reports == 3
+    commands = [r.data[2] for r in dev.sent if r.number == 1 and r.data[0] == 0x6B]
+    # file node, data start, data end, display mode, play media node
+    for expected in (0x20, 0x22, 0x26, 0x50, 0x40):
+        assert expected in commands, f"missing command {expected:#04x}"
+    # the slot holding the media must be enabled, else nothing is displayed
+    mode = next(r for r in dev.sent if r.number == 1 and r.data[2] == 0x50)
+    assert mode.data[8] == 1  # image mode
+    assert mode.data[10] == 8  # eight slots
+    assert mode.data[11 + 7] == 1  # screen[7] enabled
+
+
+def test_mpg_cooler_lcd_does_not_support_cooling(mpgCoolerLcdDevice):
+    with pytest.raises(NotSupportedByDevice):
+        mpgCoolerLcdDevice.set_fixed_speed("fan", 50)
+    with pytest.raises(NotSupportedByDevice):
+        mpgCoolerLcdDevice.set_speed_profile("fan", [(20, 30)])
+    with pytest.raises(NotSupportedByDevice):
+        mpgCoolerLcdDevice.set_color("sync", "steady", [[255, 0, 0]])
+
+
+def test_mpg_cooler_lcd_saves_when_requested(mpgCoolerLcdDevice, tmp_path):
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(bytes(1000))
+
+    mpgCoolerLcdDevice.set_screen("lcd", "video", f"{video};save")
+
+    dev = mpgCoolerLcdDevice.device
+    commands = [r.data[2] for r in dev.sent if r.number == 1 and r.data[0] == 0x6B]
+    assert 0x28 in commands, "media was not committed with SAVE_FILE_NODE"
+    # the mode and settings nodes are written so the panel restores them
+    # in SEND_FILE_NODE the payload starts at offset 8 and holds the 4-byte
+    # length followed by the node name
+    nodes = [
+        bytes(r.data[12:44]).split(b"\x00")[0].decode()
+        for r in dev.sent
+        if r.number == 1 and r.data[0] == 0x6B and r.data[2] == 0x20
+    ]
+    assert "HMI_FW_Mode.ini" in nodes
+    assert "HMI_FW_Setting.ini" in nodes
+
+
+def test_mpg_cooler_lcd_does_not_save_by_default(mpgCoolerLcdDevice, tmp_path):
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(bytes(1000))
+
+    mpgCoolerLcdDevice.set_screen("lcd", "video", str(video))
+
+    dev = mpgCoolerLcdDevice.device
+    commands = [r.data[2] for r in dev.sent if r.number == 1 and r.data[0] == 0x6B]
+    assert 0x28 not in commands
+
+
+def test_mpg_cooler_lcd_rejects_unknown_video_option(mpgCoolerLcdDevice, tmp_path):
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(bytes(10))
+    with pytest.raises(ValueError):
+        mpgCoolerLcdDevice.set_screen("lcd", "video", f"{video};bogus")
