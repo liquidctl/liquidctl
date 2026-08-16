@@ -20,7 +20,7 @@ import logging
 import sys
 import time
 
-from PIL import Image, ImageSequence
+from PIL import Image, ImageOps, ImageSequence
 
 if sys.platform == "win32":
     from winusbcdc import WinUsbPy
@@ -871,13 +871,8 @@ class KrakenZ3(KrakenX3):
         path is the path to any image file
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
         """
-        data = (
-            Image.open(path)
-            .resize(self.lcd_resolution)
-            .rotate(rotation * -90)
-            .convert("RGB")
-            .getdata()
-        )
+        with Image.open(path) as image:
+            data = list(self._prepare_lcd_frame(image, rotation).getdata())
         result = []
         pixelDataIndex = 0
         for pixelDataIndex in range(0, len(data)):
@@ -892,13 +887,8 @@ class KrakenZ3(KrakenX3):
         path is the path to any image file
         Rotation is expected as 0 = no rotation, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees
         """
-        data = (
-            Image.open(path)
-            .resize(self.lcd_resolution)
-            .rotate(rotation * -90)
-            .convert("RGB")
-            .getdata()
-        )
+        with Image.open(path) as image:
+            data = list(self._prepare_lcd_frame(image, rotation).getdata())
         result = []
         pixelDataIndex = 0
         for pixelDataIndex in range(0, len(data)):
@@ -916,31 +906,50 @@ class KrakenZ3(KrakenX3):
         Gifs are resized to LCD resolution and rotated to match the desired orientation
         result is a bytesIo stream
         """
-        img = Image.open(path)
+        with Image.open(path) as img:
+            # Avoid a second lossy palette conversion for a native LCD asset.
+            if img.size == self.lcd_resolution and rotation == 0:
+                with open(path, "rb") as source:
+                    return source.read()
 
-        frames = ImageSequence.Iterator(img)
+            durations = []
+            frames = []
+            for frame in ImageSequence.Iterator(img):
+                durations.append(frame.info.get("duration", img.info.get("duration", 100)))
+                prepared = self._prepare_lcd_frame(frame, rotation)
+                frames.append(
+                    prepared.quantize(
+                        colors=256,
+                        method=Image.Quantize.MEDIANCUT,
+                        dither=Image.Dither.FLOYDSTEINBERG,
+                    )
+                )
 
-        def prepare_frames(frames):
-            for frame in frames:
-                resized = frame.copy().resize(self.lcd_resolution).rotate(rotation * -90)
-                yield resized
-
-        frames = prepare_frames(frames)
-
-        result_img = next(frames)  # Handle first frame separately
-        result_img.info = img.info  # Copy sequence info
-
-        result_bytes = io.BytesIO()
-        result_img.save(
-            result_bytes,
-            format="GIF",
-            interlace=False,
-            save_all=True,
-            append_images=list(frames),
-            loop=0,
-        )
+            result_bytes = io.BytesIO()
+            frames[0].save(
+                result_bytes,
+                format="GIF",
+                interlace=False,
+                save_all=True,
+                append_images=frames[1:],
+                duration=durations,
+                loop=img.info.get("loop", 0),
+                disposal=2,
+            )
 
         return result_bytes.getvalue()
+
+    def _prepare_lcd_frame(self, image, rotation):
+        """Convert an image to an aspect-preserving, display-sized RGB frame."""
+        image = ImageOps.pad(
+            image.convert("RGB"),
+            self.lcd_resolution,
+            method=Image.Resampling.LANCZOS,
+            color=(0, 0, 0),
+            centering=(0.5, 0.5),
+        )
+        # Pillow angles are counter-clockwise; undo clockwise physical mounting.
+        return image.rotate(rotation * -90)
 
     def _send_2023_data_fw2(self, data, bulkInfo):
         """

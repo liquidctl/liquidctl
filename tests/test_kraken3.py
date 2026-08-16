@@ -2,6 +2,7 @@
 
 import pytest
 import os
+from PIL import Image
 
 from _testutils import MockHidapiDevice, MockPyusbDevice, Report
 
@@ -558,3 +559,29 @@ def test_krakenz3_screen_not_totally_broken_part2(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
     )
+
+
+def test_prepare_lcd_frame_preserves_aspect_ratio(mock_krakenz3):
+    source = Image.new("RGB", (200, 100), "red")
+
+    result = mock_krakenz3._prepare_lcd_frame(source, 0)
+
+    assert result.size == (320, 320)
+    assert result.getpixel((160, 160)) == (255, 0, 0)
+    assert result.getpixel((160, 0)) == (0, 0, 0)
+
+
+def test_prepare_lcd_frame_applies_clockwise_orientation(mock_krakenz3):
+    source = Image.new("RGB", (320, 320), "black")
+    source.putpixel((0, 0), (255, 0, 0))
+
+    result = mock_krakenz3._prepare_lcd_frame(source, 1)
+
+    assert result.getpixel((319, 0)) == (255, 0, 0)
+
+
+def test_prepare_gif_passes_native_asset_through(mock_krakenz3, tmp_path):
+    path = tmp_path / "native.gif"
+    Image.new("P", (320, 320)).save(path, format="GIF")
+
+    assert mock_krakenz3._prepare_gif_file(path, 0) == path.read_bytes()
