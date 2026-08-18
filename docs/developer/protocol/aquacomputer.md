@@ -30,10 +30,18 @@ the last two places. The checksum is calculated from the data between the starti
 
 Fan speed control subgroups can be found in the control report, and it's currently known that they look like this:
 
-| What             | Where (relative offset) |
-|------------------|-------------------------|
-| Speed curve type | 0x00                    |
-| Speed (0-100%)   | 0x01                    |
+| What                                        | Where (relative offset) |
+|---------------------------------------------|-------------------------|
+| Speed curve type                            | 0x00                    |
+| Speed (0-100%)                              | 0x01                    |
+| Curve start temperature                     | 0x13                    |
+| Curve temperatures (16 × u16be)             | 0x15                    |
+| Curve powers (16 × u16be)                   | 0x35                    |
+
+The curve holds sixteen (temperature, power) points. Temperatures are stored in
+centidegrees Celsius and powers in centipercent, so 37 °C is `0x0E74` (3700) and
+63% is `0x189C` (6300). The points are only honored when the speed curve type is
+set to fan curve mode.
 
 The `Speed curve type` above understands these values (list may be incomplete):
 
@@ -43,7 +51,8 @@ The `Speed curve type` above understands these values (list may be incomplete):
 | 1     | PID control mode                              |
 | 2     | Fan curve mode                                |
 
-The liquidctl driver currently supports only the manual mode.
+The liquidctl driver supports the manual mode on all of these devices, and the
+fan curve mode on the Octo.
 
 ## D5 Next pump
 
@@ -210,6 +219,43 @@ Here is what it's currently known to contain:
 | Fan 6 ctrl substructure | 0x203                    |
 | Fan 7 ctrl substructure | 0x258                    |
 | Fan 8 ctrl substructure | 0x2AD                    |
+| LED controller 1        | 0x307                    |
+| …                       | +0x46 each               |
+| LED controller 12       | 0x64E                    |
+
+The Octo drives two RGBpx strips through twelve LED controllers, each covering a
+range of LEDs on one strip. The controllers are stored back to back, `0x46` bytes
+apart, and look like this:
+
+| What                    | Where (relative offset) |
+|-------------------------|-------------------------|
+| Strip id                | 0x00                    |
+| First LED               | 0x01                    |
+| LED count               | 0x02                    |
+| Lighting mode           | 0x03                    |
+| Color table             | 0x2E                    |
+
+Colors are stored as HSV, four bytes each: a big-endian u16 hue followed by one
+byte each of saturation and value. The hue is scaled to [0, 1535] rather than to
+degrees, so 512 is green and 1024 is blue. Modes with more than one color use
+consecutive entries of the color table.
+
+The lighting mode understands these values:
+
+| Value | Meaning       | | Value | Meaning        |
+|-------|---------------|-|-------|----------------|
+| 0     | Unused        | | 13    | Bar 1          |
+| 1     | Fixed color   | | 14    | Candle         |
+| 2     | Breathing     | | 15-17 | Rain 1-3       |
+| 3     | Rainbow       | | 18    | Switch         |
+| 4-5   | Blink 1-2     | | 19    | Rainbow shift  |
+| 7     | Sequential    | | 20-23 | Sound 1-4      |
+| 8-9   | Visor 1-2     | | 24    | Ambient px     |
+| 10-11 | Marquee 1-2   | | 33    | Gradient       |
+| 12    | Ambient       | |       |                |
+
+The liquidctl driver currently supports the unused (off) and fixed color modes;
+the parameters of the animated modes have not been reverse engineered.
 
 ## Quadro
 

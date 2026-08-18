@@ -756,9 +756,65 @@ def test_octo_set_fixed_speeds_hwmon(mockOctoDevice, has_support, tmp_path):
         assert fan_report.data[0xAE:0xB1] == [0, 19, 136]  # 0, <5000>
 
 
-def test_octo_speed_profiles_not_supported(mockOctoDevice):
-    with pytest.raises(NotSupportedByDriver):
-        mockOctoDevice.set_speed_profile("fan", None)
+def test_octo_set_speed_profile(mockOctoDevice):
+    mockOctoDevice.set_speed_profile("fan1", [(30, 20), (40, 60), (50, 100)])
+
+    (report,) = mockOctoDevice.device.sent
+
+    assert report.number == 3
+
+    # fan1 is switched to the curve control type
+    assert report.data[0x59] == 0x02
+
+    # sixteen (temperature, power) points, in centidegrees and centipercent,
+    # evenly spanning the profile
+    temps = [(report.data[0x6E + i * 2] << 8) | report.data[0x6F + i * 2] for i in range(16)]
+    powers = [(report.data[0x8E + i * 2] << 8) | report.data[0x8F + i * 2] for i in range(16)]
+
+    assert temps[0] == 3000
+    assert temps[-1] == 5000
+    assert temps == sorted(temps)
+
+    assert powers[0] == 2000
+    assert powers[-1] == 10000
+    assert powers == sorted(powers)
+
+
+def test_octo_set_speed_profile_invalid_channel(mockOctoDevice):
+    with pytest.raises(ValueError):
+        mockOctoDevice.set_speed_profile("fan9", [(30, 20), (50, 100)])
+
+
+def test_octo_set_color(mockOctoDevice):
+    mockOctoDevice.set_color("led1", "fixed", [(0xFF, 0x00, 0x00)])
+
+    (report,) = mockOctoDevice.device.sent
+
+    assert report.number == 3
+
+    # led1 is switched to the fixed color mode
+    assert report.data[0x309] == 0x01
+
+    # pure red: hue 0, full saturation and value
+    assert report.data[0x334:0x338] == [0x00, 0x00, 0xFF, 0xFF]
+
+
+def test_octo_set_color_off(mockOctoDevice):
+    mockOctoDevice.set_color("led1", "off", [])
+
+    (report,) = mockOctoDevice.device.sent
+
+    assert report.data[0x309] == 0x00
+
+
+def test_octo_set_color_invalid_channel(mockOctoDevice):
+    with pytest.raises(ValueError):
+        mockOctoDevice.set_color("led13", "fixed", [(0xFF, 0x00, 0x00)])
+
+
+def test_octo_set_color_invalid_mode(mockOctoDevice):
+    with pytest.raises(ValueError):
+        mockOctoDevice.set_color("led1", "breathing", [(0xFF, 0x00, 0x00)])
 
 
 @pytest.fixture

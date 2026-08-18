@@ -59,11 +59,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # uses the psf/black style
 
-import logging, time, errno
+import colorsys, logging, time, errno
 
 from liquidctl.driver.usb import UsbHidDriver
 from liquidctl.error import NotSupportedByDriver, NotSupportedByDevice
-from liquidctl.util import u16be_from, clamp, mkCrcFun
+from liquidctl.util import u16be_from, clamp, interpolate_profile, mkCrcFun, normalize_profile
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,6 +78,34 @@ _AQC_CTRL_REPORT_ID = 0x03
 
 _AQC_FAN_TYPE_OFFSET = 0x00
 _AQC_FAN_PERCENT_OFFSET = 0x01
+
+# Fan controller types; the "direct percent" value is what _set_fixed_speed_directly
+# selects, and the curve type makes the device follow the stored temperature/power
+# points instead
+_AQC_FAN_TYPE_PERCENT = 0x00
+_AQC_FAN_TYPE_CURVE = 0x02
+
+# Each fan controller stores a fixed number of (temperature, power) points, with
+# temperatures in centidegrees Celsius and powers in centipercent
+_AQC_CURVE_POINT_COUNT = 16
+_AQC_CURVE_TEMP_OFFSET = 0x15
+_AQC_CURVE_POWER_OFFSET = 0x35
+
+# Octo RGBpx lighting: the control report holds a fixed number of LED controller
+# records, each covering a range of LEDs on one of the strips
+_AQC_LED_CTRL_SIZE = 0x46
+_AQC_LED_STRIP_ID_OFFSET = 0x00
+_AQC_LED_START_OFFSET = 0x01
+_AQC_LED_COUNT_OFFSET = 0x02
+_AQC_LED_MODE_OFFSET = 0x03
+_AQC_LED_COLOR_OFFSET = 0x2E
+
+_AQC_LED_MODE_UNUSED = 0x00
+_AQC_LED_MODE_FIXED = 0x01
+
+# Colors are stored as HSV, with the hue scaled to [0, _AQC_LED_MAX_HUE] rather
+# than to degrees
+_AQC_LED_MAX_HUE = 1535
 
 
 def put_unaligned_be16(value, data, offset):
@@ -144,6 +172,9 @@ class Aquacomputer(UsbHidDriver):
                     [f"fan{i}" for i in range(1, 8 + 1)],
                     [0x5A, 0xAF, 0x104, 0x159, 0x1AE, 0x203, 0x258, 0x2AD],
                 )
+            },
+            "led_ctrl": {
+                f"led{num}": 0x307 + (num - 1) * _AQC_LED_CTRL_SIZE for num in range(1, 12 + 1)
             },
         },
         _DEVICE_QUADRO: {
@@ -417,15 +448,74 @@ class Aquacomputer(UsbHidDriver):
         return self._get_status_directly()
 
     def set_speed_profile(self, channel, profile, **kwargs):
-        if (
-            self._device_info["type"] == self._DEVICE_D5NEXT
-            or self._device_info["type"] == self._DEVICE_OCTO
-            or self._device_info["type"] == self._DEVICE_QUADRO
-        ):
+        """Set a fan to follow a speed profile.
+
+        Valid channel values are 'fanN', where N >= 1 is the fan number.
+
+        The profile is a sequence of (temperature, duty) pairs, with
+        temperatures in Celsius and duties in percent.  The device stores a
+        fixed number of points, so the profile is resampled onto an evenly
+        spaced temperature axis that spans it; supplying more or fewer points
+        than the device stores is therefore fine.
+
+        The fan is also switched to the curve control type, so that the device
+        follows the stored points instead of a fixed duty.
+        """
+
+        if self._device_info["type"] in [self._DEVICE_FARBWERK360, self._DEVICE_FARBWERK]:
+            raise NotSupportedByDevice()
+
+        if self._device_info["type"] != self._DEVICE_OCTO:
             # Not yet reverse engineered / implemented
             raise NotSupportedByDriver()
-        elif self._device_info["type"] in [self._DEVICE_FARBWERK360, self._DEVICE_FARBWERK]:
-            raise NotSupportedByDevice()
+
+        if channel not in self._device_info["fan_ctrl"]:
+            channels = ", ".join(self._device_info["fan_ctrl"].keys())
+            raise ValueError(f"unknown channel, should be one of: {channels}")
+
+        profile = list(profile)
+        if not profile:
+            raise ValueError("profile must have at least one point")
+
+        # Enforce a monotonic profile, and a failsafe at the highest temperature
+        # the user asked for, so the resampling below cannot invent a dip
+        critical_temp = max(temp for temp, _ in profile)
+        profile = normalize_profile(profile, critical_temp)
+
+        # The device stores a fixed number of points; spread them evenly between
+        # the first and last temperatures of the profile and interpolate the
+        # duties, which preserves the shape the user asked for
+        first_temp, last_temp = profile[0][0], profile[-1][0]
+        steps = _AQC_CURVE_POINT_COUNT - 1
+        span = last_temp - first_temp
+
+        points = []
+        for i in range(_AQC_CURVE_POINT_COUNT):
+            temp = first_temp + (span * i / steps if span else 0)
+            duty = clamp(interpolate_profile(profile, temp), 0, 100)
+            points.append((temp, duty))
+
+        _LOGGER.debug("setting %s curve to %r", channel, points)
+
+        # Request an up to date ctrl report
+        report_length = self._device_info["ctrl_report_length"]
+        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+        fan_ctrl_offset = self._device_info["fan_ctrl"][channel]
+
+        # Set fan to follow its stored curve
+        ctrl_settings[fan_ctrl_offset + _AQC_FAN_TYPE_OFFSET] = _AQC_FAN_TYPE_CURVE
+
+        for i, (temp, duty) in enumerate(points):
+            # Centidegrees Celsius and centipercent
+            put_unaligned_be16(
+                round(temp * 100), ctrl_settings, fan_ctrl_offset + _AQC_CURVE_TEMP_OFFSET + i * 2
+            )
+            put_unaligned_be16(
+                round(duty * 100), ctrl_settings, fan_ctrl_offset + _AQC_CURVE_POWER_OFFSET + i * 2
+            )
+
+        self._write_ctrl_report(ctrl_settings)
 
     def _fan_name_to_hwmon_names(self, channel):
         if "hwmon_ctrl_mapping" in self._device_info:
@@ -468,6 +558,13 @@ class Aquacomputer(UsbHidDriver):
             ctrl_settings,
             fan_ctrl_offset + _AQC_FAN_PERCENT_OFFSET,
         )
+
+        self._write_ctrl_report(ctrl_settings)
+
+    def _write_ctrl_report(self, ctrl_settings):
+        """Update the report's checksum and send it to the device."""
+
+        report_length = self._device_info["ctrl_report_length"]
 
         # Update checksum value at the end of the report
         crc16usb_func = mkCrcFun("crc-16-usb")
@@ -518,9 +615,66 @@ class Aquacomputer(UsbHidDriver):
 
         self._set_fixed_speed_directly(channel, duty)
 
+    def _rgb_to_hsv(self, color):
+        """Convert an 8-bit RGB color to the device's HSV representation."""
+
+        hue, sat, val = colorsys.rgb_to_hsv(color[0] / 255, color[1] / 255, color[2] / 255)
+
+        # the hue is stored scaled to _AQC_LED_MAX_HUE, not in degrees
+        return (
+            round(hue * _AQC_LED_MAX_HUE) % (_AQC_LED_MAX_HUE + 1),
+            round(sat * 255),
+            round(val * 255),
+        )
+
     def set_color(self, channel, mode, colors, **kwargs):
-        # Not yet reverse engineered / implemented
-        raise NotSupportedByDriver()
+        """Set the color of one of the LED controllers.
+
+        Valid channel values are 'ledN', where N is the LED controller number,
+        as shown by the device's own configuration software.  Each controller
+        covers a range of LEDs on one of the RGBpx strips.
+
+        The 'fixed' mode lights the controller's range in a single color, and
+        'off' disables it.  Other lighting modes the device supports are not
+        yet reverse engineered.
+        """
+
+        if "led_ctrl" not in self._device_info:
+            raise NotSupportedByDevice()
+
+        if channel not in self._device_info["led_ctrl"]:
+            raise ValueError(f"unknown channel, should be one of: {self._get_led_channels()}")
+
+        colors = list(colors)
+
+        if mode == "off":
+            led_mode = _AQC_LED_MODE_UNUSED
+            color = (0, 0, 0)
+        elif mode == "fixed":
+            led_mode = _AQC_LED_MODE_FIXED
+            if len(colors) != 1:
+                raise ValueError("fixed mode requires exactly one color")
+            color = self._rgb_to_hsv(colors[0])
+        else:
+            raise ValueError("unsupported mode, should be one of: fixed, off")
+
+        # Request an up to date ctrl report
+        report_length = self._device_info["ctrl_report_length"]
+        ctrl_settings = self.device.get_feature_report(_AQC_CTRL_REPORT_ID, report_length)
+
+        led_ctrl_offset = self._device_info["led_ctrl"][channel]
+
+        ctrl_settings[led_ctrl_offset + _AQC_LED_MODE_OFFSET] = led_mode
+
+        hue, sat, val = color
+        put_unaligned_be16(hue, ctrl_settings, led_ctrl_offset + _AQC_LED_COLOR_OFFSET)
+        ctrl_settings[led_ctrl_offset + _AQC_LED_COLOR_OFFSET + 2] = sat
+        ctrl_settings[led_ctrl_offset + _AQC_LED_COLOR_OFFSET + 3] = val
+
+        self._write_ctrl_report(ctrl_settings)
+
+    def _get_led_channels(self):
+        return ", ".join(self._device_info["led_ctrl"].keys())
 
     def _read_device_statics(self):
         if self._firmware_version is None or self._serial is None:
