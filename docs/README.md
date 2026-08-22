@@ -31,6 +31,7 @@ Device guides
 - [Gigabyte RGB Fusion 2.0 lighting controllers](gigabyte-rgb-fusion2-guide.md)
 - [Lian Li Uni controllers](lianli-uni-guide.md)
 - [Lian Li GA II LCD Liquid cooler](lian-li-ga-ii-lcd-guide.md)
+- [Monster Tulpar TD3 AIO LCD](monster-tulpar-td3-aio-lcd-guide.md)
 - [NVIDIA graphics cards](nvidia-guide.md)
 - [NZXT E-series PSUs](nzxt-e-series-psu-guide.md)
 - [NZXT HUE 2 and Smart Device V2 controllers](nzxt-hue2-guide.md)
