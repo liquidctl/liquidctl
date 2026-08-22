@@ -527,6 +527,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0cf2", ATTRS{idProduct}=="a102", TAG+="uacc
 # MSI MPG Coreliquid K360
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0db0", ATTRS{idProduct}=="b130", TAG+="uaccess"
 
+# Monster Tulpar TD3 AIO LCD
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d6b", ATTRS{idProduct}=="0130", TAG+="uaccess"
+
 # NZXT 2023 RGB Controller
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e71", ATTRS{idProduct}=="2012", TAG+="uaccess"
 

@@ -127,6 +127,7 @@ Device notes are sorted alphabetically, major (upper case) notes before minor
 | AIO liquid cooler  | [EVGA CLC 120 (CL12), 240, 280, 360](docs/asetek-690lc-guide.md) | Z | 1.9.1 |
 | AIO liquid cooler  | [Lian Li GA II LCD](docs/lian-li-ga-ii-lcd-guide.md) | p | 1.16.0 |
 | AIO liquid cooler  | [MSI MPG Coreliquid K360](docs/msi-mpg-coreliquid-guide.md) | p | 1.14.0 |
+| AIO liquid cooler  | [Monster Tulpar TD3 AIO LCD](docs/monster-tulpar-td3-aio-lcd-guide.md) | p | git |
 | AIO liquid cooler  | [NZXT Kraken M22](docs/kraken-x2-m2-guide.md) | | 1.10.0 |
 | AIO liquid cooler  | [NZXT Kraken X40, X60](docs/asetek-690lc-guide.md) | LZ | 1.9.1 |
 | AIO liquid cooler  | [NZXT Kraken X31, X41, X61](docs/asetek-690lc-guide.md) | LZ | 1.9.1 |

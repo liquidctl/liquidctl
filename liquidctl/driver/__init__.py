@@ -39,6 +39,7 @@ from liquidctl.driver import kraken2
 from liquidctl.driver import kraken3
 from liquidctl.driver import lianli_uni
 from liquidctl.driver import msi
+from liquidctl.driver import monster_lcd
 from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
