@@ -3,7 +3,9 @@ from _testutils import MockHidapiDevice
 
 import json
 
+import liquidctl.driver.monster_lcd as monster_lcd_driver
 from liquidctl.driver.monster_lcd import MonsterLcd, _pack_frame
+from liquidctl.driver.usb import HidapiDevice
 from liquidctl.error import NotSupportedByDevice
 
 
@@ -147,3 +149,59 @@ def test_unsupported_cooling_and_color_methods(mock_monster_lcd):
 
 def test_get_status_is_empty(mock_monster_lcd):
     assert mock_monster_lcd.get_status() == []
+
+
+def test_libusb_hidapi_fallback_finds_device_when_hidraw_does_not(monkeypatch):
+    preferred_hidapi = object()
+    libusb_hidapi = object()
+    fallback_device = MockHidapiDevice(
+        vendor_id=0x1D6B,
+        product_id=0x0130,
+        address="fallback-address",
+    )
+
+    def enumerate_devices(cls, api, vid=None, pid=None):
+        assert (vid, pid) == (0x1D6B, 0x0130)
+        if api is preferred_hidapi:
+            return iter(())
+        assert api is libusb_hidapi
+        return iter((fallback_device,))
+
+    monkeypatch.setattr(monster_lcd_driver, "_PREFERRED_HIDAPI", preferred_hidapi)
+    monkeypatch.setattr(monster_lcd_driver, "_LIBUSB_HIDAPI", libusb_hidapi)
+    monkeypatch.setattr(HidapiDevice, "enumerate", classmethod(enumerate_devices))
+
+    devices = list(
+        monster_lcd_driver._MonsterLcdLibusbHidapiBus().find_devices(
+            vendor=0x1D6B,
+            product=0x0130,
+        )
+    )
+
+    assert len(devices) == 1
+    assert isinstance(devices[0], MonsterLcd)
+    assert devices[0].device is fallback_device
+
+
+def test_libusb_hidapi_fallback_avoids_duplicate_hidraw_device(monkeypatch):
+    preferred_hidapi = object()
+    libusb_hidapi = object()
+    preferred_device = MockHidapiDevice(vendor_id=0x1D6B, product_id=0x0130)
+    used_libusb_fallback = False
+
+    def enumerate_devices(cls, api, vid=None, pid=None):
+        nonlocal used_libusb_fallback
+        assert (vid, pid) == (0x1D6B, 0x0130)
+        if api is preferred_hidapi:
+            return iter((preferred_device,))
+        used_libusb_fallback = True
+        return iter(())
+
+    monkeypatch.setattr(monster_lcd_driver, "_PREFERRED_HIDAPI", preferred_hidapi)
+    monkeypatch.setattr(monster_lcd_driver, "_LIBUSB_HIDAPI", libusb_hidapi)
+    monkeypatch.setattr(HidapiDevice, "enumerate", classmethod(enumerate_devices))
+
+    devices = list(monster_lcd_driver._MonsterLcdLibusbHidapiBus().find_devices())
+
+    assert devices == []
+    assert not used_libusb_fallback

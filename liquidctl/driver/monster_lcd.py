@@ -12,7 +12,11 @@ import json
 import logging
 import time
 
-from liquidctl.driver.usb import UsbHidDriver
+import hid as _libusb_hidapi
+
+import liquidctl.driver.usb as _usb
+from liquidctl.driver.base import BaseBus
+from liquidctl.driver.usb import HidapiDevice, UsbHidDriver
 from liquidctl.error import NotSupportedByDevice
 from liquidctl.util import clamp
 
@@ -26,6 +30,11 @@ _ESCAPED_ESCAPE = 0x02
 _HID_REPORT_ID = 0x00
 _MAX_FRAME_LENGTH = 0xFFFF
 _MAX_SEQUENCE = 0x7FFFFFFF
+_VENDOR_ID = 0x1D6B
+_PRODUCT_ID = 0x0130
+
+_PREFERRED_HIDAPI = _usb.hid
+_LIBUSB_HIDAPI = _libusb_hidapi
 
 _NO_BODY = object()
 _METHODS = {"GET", "POST", "STATE", "DELETE"}
@@ -91,7 +100,7 @@ class MonsterLcd(UsbHidDriver):
     """Driver for the LCD controller in the Monster Tulpar TD3 AIO."""
 
     _MATCHES = [
-        (0x1D6B, 0x0130, "Monster Tulpar TD3 AIO LCD", {}),
+        (_VENDOR_ID, _PRODUCT_ID, "Monster Tulpar TD3 AIO LCD", {}),
     ]
 
     def __init__(self, device, description, **kwargs):
@@ -205,3 +214,41 @@ class MonsterLcd(UsbHidDriver):
         report = bytes((_HID_REPORT_ID,)) + _pack_frame(payload)
         self.device.write(report)
         return sequence
+
+
+class _MonsterLcdLibusbHidapiBus(BaseBus):
+    """Find the controller when Linux hidraw does not expose its HID interface."""
+
+    def find_devices(
+        self,
+        vendor=None,
+        product=None,
+        bus=None,
+        address=None,
+        usb_port=None,
+        **kwargs,
+    ):
+        if _PREFERRED_HIDAPI is _LIBUSB_HIDAPI:
+            return
+        if (vendor and vendor != _VENDOR_ID) or (product and product != _PRODUCT_ID):
+            return
+
+        # Avoid yielding a duplicate when the preferred hidraw backend can
+        # already enumerate this controller.
+        if next(HidapiDevice.enumerate(_PREFERRED_HIDAPI, _VENDOR_ID, _PRODUCT_ID), None):
+            return
+
+        _LOGGER.debug("probing Monster LCD through the libusb hidapi fallback")
+        for handle in HidapiDevice.enumerate(_LIBUSB_HIDAPI, _VENDOR_ID, _PRODUCT_ID):
+            if bus and handle.bus != bus:
+                continue
+            if address and handle.address != address:
+                continue
+            if usb_port and handle.port != usb_port:
+                continue
+            yield from MonsterLcd.probe(
+                handle,
+                vendor=vendor,
+                product=product,
+                **kwargs,
+            )

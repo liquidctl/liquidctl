@@ -27,6 +27,11 @@ match the same identifiers, list the candidates and select the working one with
 Do not copy these identifiers to an unverified system.  Check the actual HID
 interfaces first.
 
+On the tested Linux system the controller is visible through the libusb-backed
+hidapi module, but is not exposed as a hidraw device.  The driver automatically
+uses that backend as a device-specific fallback and avoids it when hidraw can
+already enumerate the controller.
+
 ## Initialization and wake
 
 Initialize the controller after boot, resume, or reconnect:
@@ -96,4 +101,3 @@ again after resume.
 Image and animation upload are not supported.  Captured traffic indicates that
 media transfer uses a separate block protocol that has not yet been fully
 decoded and validated.
-

@@ -10,6 +10,10 @@ brightness, and rotate the image.  Firmware revisions may differ.
 The tested controller is a HID device with identifiers `1d6b:0130`.  Writes
 use report ID `0x00`; the encoded control frame follows the report ID.
 
+On the tested Linux system the HID interface is enumerated by the
+libusb-backed hidapi module but not by the hidraw backend.  The driver therefore
+uses a device-specific libusb-hidapi discovery fallback.
+
 The identifiers alone may not be globally unique.  Systems exposing multiple
 matching HID interfaces must identify the correct interface before sending
 commands.
@@ -120,4 +124,3 @@ Additional reverse-engineering notes and the standalone Linux implementation
 are available in the
 [monster-td3-aio-lcd-linux](https://github.com/orcunulutas/monster-td3-aio-lcd-linux)
 repository.
-
