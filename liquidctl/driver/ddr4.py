@@ -137,13 +137,14 @@ class Ddr4Temperature(SmbusDriver):
     def probe(cls, smbus, vendor=None, product=None, address=None, match=None,
               release=None, serial=None, **kwargs):
 
-        # FIXME support mainstream AMD chipsets on Linux; note that unlike
-        # i801_smbus, piix4_smbus does not enumerate and register the available
-        # SPD EEPROMs with i2c_register_spd
-
+        # i801_smbus registers SPD EEPROMs with i2c_register_spd.  AMD's
+        # piix4_smbus exposes the same ee1004 devices through sysfs but does
+        # not provide a stable parent-driver symlink, so identify it by its
+        # adapter description instead.
         _SMBUS_DRIVERS = ['i801_smbus']
 
-        if smbus.parent_driver not in _SMBUS_DRIVERS \
+        if (smbus.parent_driver not in _SMBUS_DRIVERS
+                and 'PIIX4' not in (smbus.description or '')) \
                 or any([vendor, product, release, serial]):  # wont match, always None
             return
 
@@ -315,7 +316,7 @@ class VengeanceRgb(Ddr4Temperature):
     def _match(cls, spd):
         if spd.module_type != (Ddr4Spd.BaseModuleType.UDIMM, None) \
                 or spd.module_manufacturer != 'Corsair' \
-                or not spd.module_part_number.startswith('CMR'):
+                or not spd.module_part_number.startswith(('CMR', 'CMW')):
             return None
 
         return 'Corsair Vengeance RGB'
