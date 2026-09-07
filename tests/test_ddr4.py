@@ -33,6 +33,11 @@ _VENGEANCE_RGB_SAMPLE = bytes.fromhex(
     '0000000000000000000000000000000000000000000000000000000000000000'
 )
 
+# Same RGB controller family as the CMR sample, using a CMW part number.
+_CMW_VENGEANCE_RGB_SAMPLE = patch_spd_dump(
+    _VENGEANCE_RGB_SAMPLE, slice(0x149, 0x15d), b'CMW16GX4M2C3000C15  '
+)
+
 # clear the part number; the Vengeance RGB sample already didn't set the TS bit
 _NON_TS_SPD = patch_spd_dump(_VENGEANCE_RGB_SAMPLE, slice(0x149, 0x15d), b' ' * 20)
 
@@ -110,6 +115,16 @@ def test_tse2004_ignores_not_allowed_buses(smbus, monkeypatch):
             m.setattr(smbus, attr, val)
             assert list(Ddr4Temperature.probe(smbus)) == [], \
                 f'changing {attr} did not cause a mismatch'
+
+
+def test_tse2004_accepts_amd_piix4_adapters(smbus):
+    smbus.parent_driver = None
+    smbus.description = 'SMBus PIIX4 adapter port 0'
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _TS_SPD)
+
+    devs = list(Ddr4Temperature.probe(smbus))
+
+    assert list(map(type, devs)) == [Ddr4Temperature]
 
 
 def test_tse2004_does_not_match_non_ee1004_device(smbus):
@@ -198,6 +213,15 @@ def test_vengeance_rgb_finds_devices(smbus):
 
     assert list(map(type, devs)) == [VengeanceRgb] * 4
     assert devs[1].description.startswith('Corsair Vengeance RGB DIMM4')
+
+
+def test_vengeance_rgb_finds_cmw_devices(smbus):
+    smbus.emulate_eeprom_at(0x51, 'ee1004', _CMW_VENGEANCE_RGB_SAMPLE)
+
+    devs = list(VengeanceRgb.probe(smbus))
+
+    assert list(map(type, devs)) == [VengeanceRgb]
+    assert devs[0].description.startswith('Corsair Vengeance RGB DIMM2')
 
 
 def test_vengeance_get_status_reads_temperature(vengeance_rgb):

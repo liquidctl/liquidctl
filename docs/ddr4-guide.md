@@ -42,6 +42,10 @@ DDR4 DIMM2
 ## Corsair Vengeance RGB
 [vengeance_rgb]: #corsair-vengeance-rgb
 
+The driver supports Corsair Vengeance RGB DDR4 modules identified by `CMR*`
+(and compatible `CMW*` part numbers).  On AMD systems using the `piix4_smbus`
+adapter, the adapter is identified from its `SMBus PIIX4` sysfs description.
+
 Unsafe features:
 
 - `smbus`: see [Inherent unsafeness of I²C/SMBus]
