@@ -6,6 +6,7 @@ import os
 from _testutils import MockHidapiDevice, MockPyusbDevice, Report
 
 from liquidctl.driver.hwmon import HwmonDevice
+from liquidctl.error import ExpectationNotMet
 from liquidctl.driver.kraken3 import KrakenX3, KrakenZ3
 from liquidctl.driver.kraken3 import (
     _COLOR_CHANNELS_KRAKENX,
@@ -549,6 +550,19 @@ def test_krakenz3_screen_not_totally_broken(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg")
     )
+
+
+def test_krakenz3_refused_bucket_setup_aborts_before_streaming(mock_krakenz3):
+    """A refused bucket setup must raise instead of streaming the image."""
+    mock_krakenz3.initialize()
+    mock_krakenz3._setup_bucket = lambda *args: False
+    with pytest.raises(ExpectationNotMet):
+        mock_krakenz3.set_screen(
+            "lcd",
+            "static",
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg"),
+        )
+    assert mock_krakenz3.bulk_data_index == 0
 
 
 @pytest.mark.skip("Currently broken with pillow >= 10.2.0 (see #661)")
