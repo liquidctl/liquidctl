@@ -26,7 +26,7 @@ if sys.platform == "win32":
     from winusbcdc import WinUsbPy
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
-from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
+from liquidctl.error import ExpectationNotMet, NotSupportedByDevice, NotSupportedByDriver
 from liquidctl.util import (
     LazyHexRepr,
     normalize_profile,
@@ -1021,9 +1021,12 @@ class KrakenZ3(KrakenX3):
             bucketIndex = 0  # start from byte 0
             bucketMemoryStart = [0x0, 0x0]
 
-        # setup bucket for transfer
+        # setup bucket for transfer; the device refuses this sporadically
+        # (observed on the 2024 Elite even with free memory), and streaming
+        # the image regardless has wedged devices into their bootloader
+        # (see issue #774), so abort before any bulk data is sent
         if not self._setup_bucket(bucketIndex, bucketIndex + 1, bucketMemoryStart, dataSizeBytes):
-            _LOGGER.error("Failed to setup bucket for data transfer")
+            raise ExpectationNotMet("device refused the bucket setup, image not sent")
 
         self._write_then_read([0x36, 0x01, bucketIndex])  # start data transfer
         self._bulk_write(header)
