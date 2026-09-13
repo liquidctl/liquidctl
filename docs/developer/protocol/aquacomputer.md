@@ -7,6 +7,12 @@ Aquacomputer devices share the same HID report philosophy:
 * A control/configuration report that can be requested and sent back to the device, controlling its settings and mode of operation. Contains a CRC-16/USB checksum in the last two bytes
 * A save report, which is always constant and is sent after a configuration report (the devices seem to work fine without it, but the official software always sends it)
 
+The known save/output report for Quadro settings writes is:
+
+```
+02 00 00 00 02 00 00 00 00 34 c6
+```
+
 These devices also share some substructures in their reports. All listed values are two bytes long and in big endian, unless noted otherwise.
 
 ### Sensor report details & substructures
@@ -30,10 +36,19 @@ the last two places. The checksum is calculated from the data between the starti
 
 Fan speed control subgroups can be found in the control report, and it's currently known that they look like this:
 
-| What             | Where (relative offset) |
-|------------------|-------------------------|
-| Speed curve type | 0x00                    |
-| Speed (0-100%)   | 0x01                    |
+| What                                        | Where (relative offset) |
+|---------------------------------------------|-------------------------|
+| Speed curve type                            | 0x00                    |
+| Speed (0-100%)                              | 0x01                    |
+| Sensor source                               | 0x03                    |
+| Curve start temperature                     | 0x13                    |
+| Curve temperatures (16 × u16be)             | 0x15                    |
+| Curve powers (16 × u16be)                   | 0x35                    |
+
+The curve holds sixteen (temperature, power) points. Temperatures are stored in
+centidegrees Celsius and powers in centipercent, so 37 °C is `0x0E74` (3700) and
+63% is `0x189C` (6300). The points are only honored when the speed curve type is
+set to fan curve mode.
 
 The `Speed curve type` above understands these values (list may be incomplete):
 
@@ -43,7 +58,10 @@ The `Speed curve type` above understands these values (list may be incomplete):
 | 1     | PID control mode                              |
 | 2     | Fan curve mode                                |
 
-The liquidctl driver currently supports only the manual mode.
+The liquidctl driver supports the manual mode on all of these devices, and the
+fan curve mode on the Octo and Quadro. When programming a fan curve,
+`--temperature-sensor` updates the source sensor selection; otherwise liquidctl
+leaves the existing source sensor selection untouched.
 
 ## D5 Next pump
 
@@ -210,6 +228,43 @@ Here is what it's currently known to contain:
 | Fan 6 ctrl substructure | 0x203                    |
 | Fan 7 ctrl substructure | 0x258                    |
 | Fan 8 ctrl substructure | 0x2AD                    |
+| LED controller 1        | 0x307                    |
+| …                       | +0x46 each               |
+| LED controller 12       | 0x64E                    |
+
+The Octo drives two RGBpx strips through twelve LED controllers, each covering a
+range of LEDs on one strip. The controllers are stored back to back, `0x46` bytes
+apart, and look like this:
+
+| What                    | Where (relative offset) |
+|-------------------------|-------------------------|
+| Strip id                | 0x00                    |
+| First LED               | 0x01                    |
+| LED count               | 0x02                    |
+| Lighting mode           | 0x03                    |
+| Color table             | 0x2E                    |
+
+Colors are stored as HSV, four bytes each: a big-endian u16 hue followed by one
+byte each of saturation and value. The hue is scaled to [0, 1535] rather than to
+degrees, so 512 is green and 1024 is blue. Modes with more than one color use
+consecutive entries of the color table.
+
+The lighting mode understands these values:
+
+| Value | Meaning       | | Value | Meaning        |
+|-------|---------------|-|-------|----------------|
+| 0     | Unused        | | 13    | Bar 1          |
+| 1     | Fixed color   | | 14    | Candle         |
+| 2     | Breathing     | | 15-17 | Rain 1-3       |
+| 3     | Rainbow       | | 18    | Switch         |
+| 4-5   | Blink 1-2     | | 19    | Rainbow shift  |
+| 7     | Sequential    | | 20-23 | Sound 1-4      |
+| 8-9   | Visor 1-2     | | 24    | Ambient px     |
+| 10-11 | Marquee 1-2   | | 33    | Gradient       |
+| 12    | Ambient       | |       |                |
+
+The liquidctl driver currently supports the unused (off) and fixed color modes;
+the parameters of the animated modes have not been reverse engineered.
 
 ## Quadro
 
@@ -260,6 +315,26 @@ Here is what it's currently known to contain:
 | Virtual temp sensor 15             | 0x58                     |
 | Virtual temp sensor 16             | 0x5A                     |
 
+The Quadro sensor report also contains controller output and status data near
+the tail:
+
+| What                                | Where/starts at (offset) |
+|-------------------------------------|--------------------------|
+| Controller live data substructures  | 0xA4                     |
+| Current alarm state *[4 bytes]*     | 0xCC                     |
+| Last alarm state *[4 bytes]*        | 0xD0                     |
+| RGBpx/strip data                    | 0xD4                     |
+| Active profile ID                   | 0xDB                     |
+
+Controller live data substructures are eight bytes:
+
+| What          | Where (relative offset) |
+|---------------|-------------------------|
+| Input offset  | 0x00                    |
+| Output offset | 0x02                    |
+| Output scale  | 0x04                    |
+| Output        | 0x06                    |
+
 ### Control report
 
 An example control report of the Quadro looks like this:
@@ -278,3 +353,129 @@ Here is what it's currently known to contain:
 | Fan 2 ctrl substructure | 0x8B                     |
 | Fan 3 ctrl substructure | 0xE0                     |
 | Fan 4 ctrl substructure | 0x135                    |
+
+These offsets are the absolute HID report offsets, including the initial report
+ID byte. The settings payload starts after the report ID, so payload-relative
+offsets are one byte lower.
+
+The settings payload is currently known to be laid out as follows:
+
+```
+byte 0        report ID, 0x03
+bytes 1-958   settings payload
+bytes 959-960 CRC-16/USB over bytes 1-958, big-endian
+```
+
+| Payload offset | Type                  | Field                         |
+|---------------:|-----------------------|-------------------------------|
+| 0x000          | u16be                 | Structure ID                  |
+| 0x002          | u8                    | I2C address                   |
+| 0x003          | u16be                 | Device flags                  |
+| 0x005          | u16be                 | Flow calibration              |
+| 0x007          | s16be                 | Flow factor                   |
+| 0x009          | Sensor config × 4     | Temperature sensor settings   |
+| 0x011          | Fan config × 4        | Fan electrical/safety limits  |
+| 0x035          | Controller config × 4 | Fan controller settings       |
+| 0x189          | u8                    | RGBpx/strip brightness        |
+| 0x18A          | u16be                 | RGBpx/strip flags             |
+| 0x18C          | LED controller × 8    | LED controller settings       |
+| 0x3BC          | u8                    | Profile ID                    |
+| 0x3BD          | u8                    | Dummy/padding                 |
+
+Sensor configs are two bytes:
+
+| What                       | Where (relative offset) |
+|----------------------------|-------------------------|
+| Temperature offset, s16be  | 0x00                    |
+
+Temperature offsets are stored in centidegrees Celsius.
+
+Fan configs are nine bytes:
+
+| What                         | Where (relative offset) |
+|------------------------------|-------------------------|
+| Fan config flags             | 0x00                    |
+| Minimum power, s16be         | 0x01                    |
+| Maximum power, s16be         | 0x03                    |
+| Fallback power, s16be        | 0x05                    |
+| Maximum RPM, s16be           | 0x07                    |
+
+Minimum, maximum and fallback power values are stored in centipercent.
+
+Known fan config flags:
+
+| Bit    | Meaning            |
+|--------|--------------------|
+| `0x01` | Hold minimum power |
+| `0x02` | Start boost        |
+
+Controller configs are `0x55` bytes:
+
+| What                                | Where (relative offset) |
+|-------------------------------------|-------------------------|
+| Mode                                | 0x00                    |
+| Fixed/manual power, s16be           | 0x01                    |
+| Source sensor index, s16be          | 0x03                    |
+| Target-temperature/PID controller   | 0x05                    |
+| Curve controller                    | 0x13                    |
+
+Known controller modes:
+
+| Value | Meaning                                           |
+|------:|---------------------------------------------------|
+| 0     | Fixed power / power preset                        |
+| 1     | Target-temperature controller                     |
+| 2     | Curve controller                                  |
+| 4     | Use or mirror another fan controller's settings   |
+
+Known source sensor values:
+
+| Value | Meaning                            |
+|------:|------------------------------------|
+| -1    | No source / unused                 |
+| 0     | Temperature sensor 1               |
+| 1     | Temperature sensor 2               |
+
+PID configs are 14 bytes:
+
+| What                         | Where (relative offset) |
+|------------------------------|-------------------------|
+| Setpoint, s16be              | 0x00                    |
+| P gain, s16be                | 0x02                    |
+| I gain, s16be                | 0x04                    |
+| D gain, s16be                | 0x06                    |
+| D-Tn, s16be                  | 0x08                    |
+| Hysteresis, s16be            | 0x0A                    |
+| PID flags, u16be             | 0x0C                    |
+
+Setpoint and hysteresis values are stored in centidegrees Celsius.
+
+LED controller configs are `0x46` bytes. Their full structure is not currently
+decoded here, but Quadro stores eight entries starting at payload offset
+`0x18C`.
+
+### Names report
+
+The Quadro exposes a names/flash feature report with ID `0x08`. It is 1013
+bytes long:
+
+```
+byte 0        report ID, 0x08
+bytes 1-1010  names/flash payload
+bytes 1011-1012 CRC-16/USB over bytes 1-1010, big-endian
+```
+
+The names payload starts with a u16be structure ID, followed by 42 name slots of
+24 bytes each. Names are null-terminated ASCII strings.
+
+Known slots:
+
+| Slot  | Name                       |
+|------:|----------------------------|
+| 0     | Unknown/reserved           |
+| 1-4   | Fan 1-4                    |
+| 9-16  | LED Controller 1-8         |
+| 17    | Flow                       |
+| 18-21 | Temperature Sensor 1-4     |
+| 24    | Strip                      |
+| 25-40 | Software sensors           |

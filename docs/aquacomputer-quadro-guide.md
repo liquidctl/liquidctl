@@ -50,7 +50,7 @@ _Changed in 1.12.0: read virtual temperature sensors as well._<br>
 
 ## Programming the fan speeds
 
-Currently, four optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
+Four optionally connected fans can be set to a fixed duty cycle, ranging from 0-100%.
 
 ```
 # liquidctl set fan1 speed 56
@@ -59,6 +59,25 @@ Currently, four optionally connected fans can be set to a fixed duty cycle, rang
 ```
 
 Valid channel values on the Quadro are `fan1` through `fan4`.
+
+### Fan speed profiles
+
+_New in git._<br>
+
+Fans can also follow a temperature/duty profile. The physical temperature
+sensor can be selected with `--temperature-sensor`; if unspecified, the fan's
+existing source sensor selection is preserved.
+
+```
+# liquidctl set fan1 speed 30 20 40 60 50 100 --temperature-sensor 1
+                ^^^^       ^^^^^^^^^^^^^^^^^^
+               channel     temperature/duty pairs
+```
+
+The device stores sixteen points per fan, so the supplied profile is resampled
+onto an evenly spaced temperature axis spanning it; more or fewer points than
+that can be given. Setting a profile also switches the fan to the device's
+curve control type.
 
 ## Interaction with Linux hwmon drivers
 [Linux hwmon]: #interaction-with-linux-hwmon-drivers

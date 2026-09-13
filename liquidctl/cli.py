@@ -36,7 +36,7 @@ Other device options:
   --single-12v-ocp                   Enable single rail +12V OCP
   --pump-mode <mode>                 Set the pump mode (certain Corsair coolers)
   --fan-mode <channel>:<mode>[,...]  Set the mode for each fan (certain Corsair devices)
-  --temperature-sensor <number>      The temperature sensor number for the Commander Pro
+  --temperature-sensor <number>      The temperature sensor number for supported devices
   --legacy-690lc                     Use Asetek 690LC in legacy mode (old Krakens)
   --non-volatile                     Store on non-volatile controller memory
   --direct-access                    Directly access the device despite kernel drivers
