@@ -16,6 +16,7 @@ class ControlHub(_BaseSmartDevice):
 
     _MATCHES = [
         (0x1E71, 0x2022, "NZXT Control Hub", {"speed_channel_count": 5, "color_channel_count": 5}),
+        (0x1E71, 0x2029, "NZXT Control Hub Lite", {"speed_channel_count": 5, "color_channel_count": 5}),
     ]
 
     _MAX_READ_ATTEMPTS = 12
@@ -97,7 +98,7 @@ class ControlHub(_BaseSmartDevice):
     }
 
     # Channel ID to byte mapping
-    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x01, 2: 0x04, 3: 0x08, 4: 0x10}
+    _CHANNEL_BYTE_MAP = {0: 0x01, 1: 0x02, 2: 0x04, 3: 0x08, 4: 0x10}
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
