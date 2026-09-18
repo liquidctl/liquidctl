@@ -16,6 +16,7 @@ class ControlHub(_BaseSmartDevice):
 
     _MATCHES = [
         (0x1E71, 0x2022, "NZXT Control Hub", {"speed_channel_count": 5, "color_channel_count": 5}),
+        (0x1E71, 0x2029, "NZXT Control Hub Lite", {"speed_channel_count": 5, "color_channel_count": 5}),
     ]
 
     _MAX_READ_ATTEMPTS = 12
@@ -27,7 +28,7 @@ class ControlHub(_BaseSmartDevice):
     # packet_config only needs to specify overrides; defaults are applied in _build_mode_packet
     _COLOR_MODES = {
         "off": (0x00, 0x00, 0x00, 0, 0, {"type": "fixed"}),
-        "fixed": (0x00, 0x00, 0x00, 1, 1, {"type": "fixed"}),
+        "fixed": (0x00, 0x00, 0x00, 1, 24, {"type": "fixed"}),
         "fading": (
             0x01,
             0x00,
@@ -97,7 +98,7 @@ class ControlHub(_BaseSmartDevice):
     }
 
     # Channel ID to byte mapping
-    _CHANNEL_BYTE_MAP = {0: 0x02, 1: 0x01, 2: 0x04, 3: 0x08, 4: 0x10}
+    _CHANNEL_BYTE_MAP = {0: 0x01, 1: 0x02, 2: 0x04, 3: 0x08, 4: 0x10}
 
     def __init__(self, device, description, speed_channel_count, color_channel_count, **kwargs):
         """Instantiate a driver with a device handle."""
@@ -289,18 +290,34 @@ class ControlHub(_BaseSmartDevice):
         # Apply defaults
         packet_type = config.get("type", "animated")
 
-        if packet_type == "fixed":
-            # Fixed color mode defaults
+                if packet_type == "fixed":
             base_cmd = config.get("base_cmd", [0x26, 0x04])
             led_count = config.get("led_count", 24)
 
             data = base_cmd + [channel_byte, 0x00]
             if colors:
-                r, g, b = colors[0]
-                for _ in range(led_count):
-                    data.extend([g, r, b])  # GRB order
+                # Reands and sends all the array not only colors[0]
+                for i in range(led_count):
+                    if i < len(colors):
+                        r, g, b = colors[i]
+                    else:
+                        r, g, b = colors[-1]
+                    data.extend([g, r, b])
             else:
                 data.extend([0x00] * (led_count * 3))
+
+        #if packet_type == "fixed":
+            # Fixed color mode defaults
+         #   base_cmd = config.get("base_cmd", [0x26, 0x04])
+          #  led_count = config.get("led_count", 24)
+#
+ #           data = base_cmd + [channel_byte, 0x00]
+  #          if colors:
+   #             r, g, b = colors[0]
+    #            for _ in range(led_count):
+     #               data.extend([g, r, b])  # GRB order
+      #      else:
+       #         data.extend([0x00] * (led_count * 3))
 
         else:  # animated
             # Animated mode defaults
