@@ -537,7 +537,8 @@ class SmartDevice2(_BaseSmartDevice):
 
         # request static infos
         self._write([0x10, 0x01])  # firmware info
-        self._write([0x20, 0x03])  # lighting info
+        if self._color_channels:
+            self._write([0x20, 0x03])  # lighting info
         ret = []
 
         def parse_firm_info(msg):
