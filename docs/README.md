@@ -22,6 +22,7 @@ Device guides
 - [Aquacomputer Quadro fan controller](aquacomputer-quadro-guide.md)
 - [Asetek 690LC liquid coolers](asetek-690lc-guide.md)
 - [Asetek Pro liquid coolers](asetek-pro-guide.md)
+- [Cooler Master HAF 700 EVO IRIS display](cooler-master-haf700-iris-guide.md)
 - [Corsair Commander Core and Core XT](corsair-commander-core-guide.md)
 - [Corsair Commander Pro, Obsidian 1000D and Lighting Node Pro/Core](corsair-commander-guide.md)
 - [Corsair HXi and RMi series PSUs](corsair-hxi-rmi-psu-guide.md)

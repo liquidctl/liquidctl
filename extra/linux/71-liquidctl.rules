@@ -371,6 +371,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0c70", ATTRS{idProduct}=="f00d", TAG+="uacc
 # Asetek 690LC (assuming NZXT Kraken X)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2433", ATTRS{idProduct}=="b200", TAG+="uaccess"
 
+# Cooler Master HAF 700 EVO IRIS
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2516", ATTRS{idProduct}=="01c1", TAG+="uaccess"
+
 # Corsair Commander Core (broken)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="0c1c", TAG+="uaccess"
 

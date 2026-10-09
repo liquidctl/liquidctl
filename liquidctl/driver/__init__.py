@@ -46,6 +46,7 @@ from liquidctl.driver import ga2_lcd
 
 if sys.platform == 'linux':
     from liquidctl.driver import ddr4
+    from liquidctl.driver import haf700_iris
     from liquidctl.driver import nvidia
 
 
