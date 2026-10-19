@@ -36,6 +36,7 @@ Device guides
 - [NZXT HUE 2 and Smart Device V2 controllers](nzxt-hue2-guide.md)
 - [NZXT Smart Device (V1) and Grid+ V3](nzxt-smart-device-v1-guide.md)
 - [Third-generation (X2,M2) NZXT liquid coolers](kraken-x2-m2-guide.md)
+- [XYZ Thermax air cooler temperature display](xyz-thermax-display-guide.md)
 
 Linux topics
 ---------------------
