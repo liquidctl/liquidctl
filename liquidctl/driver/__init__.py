@@ -43,6 +43,7 @@ from liquidctl.driver import nzxt_epsu
 from liquidctl.driver import rgb_fusion2
 from liquidctl.driver import smart_device
 from liquidctl.driver import ga2_lcd
+from liquidctl.driver import razer_hanbo
 
 if sys.platform == 'linux':
     from liquidctl.driver import ddr4
