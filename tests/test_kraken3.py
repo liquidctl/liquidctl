@@ -113,12 +113,19 @@ def mock_krakenz3():
 
 
 class MockKraken(MockHidapiDevice):
-    def __init__(self, raw_led_channels):
+    def __init__(self, raw_led_channels, status_reports=False, switch_result=0x1):
         super().__init__()
         self.raw_led_channels = raw_led_channels
+        self.status_reports = status_reports
+        self.switch_result = switch_result
 
     def write(self, data):
+        if self.status_reports:
+            # unsolicited status report enqueued ahead of the reply, as on real devices
+            self.preload_read(Report(0, Z3_SAMPLE_STATUS[:1] + b"\x02" + Z3_SAMPLE_STATUS[2:]))
+
         reply = bytearray(64)
+        reply[0:2] = [data[0] + 1, data[1]]
         if data[0:2] == [0x10, 0x01]:
             reply[0:2] = [0x11, 0x01]
         elif data[0:2] == [0x20, 0x03]:
@@ -131,13 +138,14 @@ class MockKraken(MockHidapiDevice):
             reply[0:2] = [0x31, 0x01]
             reply[0x18] = 50  # lcd brightness
             reply[0x1A] = 0  # lcd orientation
+        elif data[0:2] == [0x30, 0x4]:  # query bucket
+            reply[14] = data[2]
         elif data[0:2] == [0x32, 0x1]:  # setup bucket
             reply[14] = 0x1
         elif data[0:2] == [0x32, 0x2]:  # delete bucker
-            reply[0:2] = [0x33, 0x02]
             reply[14] = 0x1
         elif data[0:2] == [0x38, 0x1]:  # switch bucket
-            reply[14] = 0x1
+            reply[14] = self.switch_result
 
         self.preload_read(Report(0, reply))
         return super().write(data)
@@ -549,6 +557,127 @@ def test_krakenz3_screen_not_totally_broken(mock_krakenz3):
     mock_krakenz3.set_screen(
         "lcd", "static", os.path.join(os.path.dirname(os.path.abspath(__file__)), "yellow.jpg")
     )
+
+
+class MockKraken2023Fw2(MockHidapiDevice):
+    """Kraken 2023 (1e71:300e) on firmware 2.0.0, with unsolicited 75 02 status reports."""
+
+    def __init__(self, rejected_starts=0):
+        super().__init__(vendor_id=0x1E71, product_id=0x300E)
+        self.rejected_starts = rejected_starts  # frame transfer starts to reject with 0x15
+
+    def write(self, data):
+        reply = bytearray(64)
+        reply[0:2] = [data[0] + 1, data[1]]
+        reply[14] = 0x01  # success
+        if data[0:2] == [0x10, 0x01]:
+            reply[0x11:0x14] = [2, 0, 0]  # firmware 2.0.0
+        elif data[0:2] == [0x30, 0x01]:
+            reply[0x14:0x18] = [240, 0, 240, 0]  # lcd resolution
+            reply[0x18] = 100  # lcd brightness
+            reply[0x1A] = 0  # lcd orientation
+        elif data[0:2] == [0x36, 0x01] and self.rejected_starts:
+            self.rejected_starts -= 1
+            reply[14] = 0x15  # observed after a transfer was left unfinished
+        self.preload_read(Report(0, bytes([0x75, 0x02]) + bytes(62)))  # status broadcast
+        self.preload_read(Report(0, reply))
+        return super().write(data)
+
+
+START = bytes([0x36, 0x01, 0x00, 0x01, 0x06])
+END = bytes([0x36, 0x02, 0, 0, 0])
+CANCEL = bytes([0x36, 0x03, 0, 0, 0])
+LIQUID = bytes([0x38, 0x01, 0x02, 0x00, 0x00])
+FRAME_LEN = 240 * 240 * 2  # rgb565
+
+
+def _stream_rgb_gif(monkeypatch, raw, pushes):
+    """Stream rgb.gif and simulate ctrl+c on the push after `pushes` frames."""
+    dev = KrakenZ3(
+        raw,
+        "Mock Kraken 2023",
+        speed_channels=_SPEED_CHANNELS_KRAKENZ,
+        color_channels=_COLOR_CHANNELS_KRAKENZ,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+        bulk_buffer_size=1024 * 1024 * 2,
+        lcd_resolution=(240, 240),
+    )
+    dev.bulk_device = MockPyusbDevice(0x1E71, 0x300E)
+    monkeypatch.setattr("liquidctl.driver.kraken3.time.sleep", lambda _: None)
+    headers = []
+
+    def bulk_write(data):
+        if len(data) == 20:
+            headers.append(bytes(data))
+            if len(headers) > pushes:
+                raise KeyboardInterrupt
+        else:
+            assert len(data) == FRAME_LEN
+
+    dev._bulk_write = bulk_write
+    with dev.connect():
+        dev.set_screen(
+            "lcd", "gif", os.path.join(os.path.dirname(os.path.abspath(__file__)), "rgb.gif")
+        )
+    hid = [bytes([r.number] + r.data) for r in dev.device.sent]
+    return headers, [h[:5] for h in hid if h[0] in (0x36, 0x38)]
+
+
+def test_kraken2023_fw2_streams_gif_frames(monkeypatch):
+    pushes = 1 + 2 * 3  # first frame is sent twice, then two loops of rgb.gif's 3 frames
+    headers, commands = _stream_rgb_gif(monkeypatch, MockKraken2023Fw2(), pushes)
+
+    magic = bytes.fromhex("12fa01e8abcdef9876543210")
+    header = magic + bytes([0x06, 0, 0, 0]) + FRAME_LEN.to_bytes(4, "little")
+    assert headers == [header] * (pushes + 1)
+    assert commands[0] == CANCEL  # clear any transfer left unfinished
+    assert commands[1:-3] == [START, END] * pushes
+    assert commands[-3:] == [START, CANCEL, LIQUID]  # interrupted mid-frame, then cleanup
+
+
+def test_kraken2023_fw2_recovers_from_rejected_transfer(monkeypatch):
+    raw = MockKraken2023Fw2(rejected_starts=1)
+    headers, commands = _stream_rgb_gif(monkeypatch, raw, pushes=2)
+
+    assert len(headers) == 3
+    assert commands[:5] == [CANCEL, START, CANCEL, START, END]  # rejected, cancelled, retried
+
+
+def _krakenz3_with(raw):
+    dev = KrakenZ3.__new__(KrakenZ3)
+    KrakenX3.__init__(
+        dev,
+        raw,
+        "Mock Kraken 2023 Elite",
+        speed_channels=_SPEED_CHANNELS_KRAKENZ,
+        color_channels=_COLOR_CHANNELS_KRAKENZ,
+        hwmon_ctrl_mapping=_HWMON_CTRL_MAPPING_KRAKENZ,
+    )
+    dev.connect()
+    return dev
+
+
+def test_krakenz3_replies_skip_status_reports():
+    dev = _krakenz3_with(MockKraken(raw_led_channels=1, status_reports=True))
+
+    buckets = dev._query_buckets()
+
+    assert [msg[0:2] for msg in buckets.values()] == [[0x31, 0x04]] * 16
+    assert [msg[14] for msg in buckets.values()] == list(range(16))
+
+
+def test_krakenz3_bucket_switch_failure_not_masked_by_status_reports():
+    # status reports have 0x01 at byte 14, which must not be read as the switch result
+    dev = _krakenz3_with(MockKraken(raw_led_channels=1, status_reports=True, switch_result=0x0A))
+
+    assert not dev._switch_bucket(7)
+
+
+def test_krakenz3_replies_skip_stale_replies():
+    dev = _krakenz3_with(MockKraken(raw_led_channels=1))
+
+    dev._write([0x36, 0x02])  # end of transfer, whose reply is never read
+    assert dev._switch_bucket(0)
 
 
 @pytest.mark.skip("Currently broken with pillow >= 10.2.0 (see #661)")

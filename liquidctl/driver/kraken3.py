@@ -20,13 +20,13 @@ import logging
 import sys
 import time
 
-from PIL import Image, ImageSequence
+from PIL import Image, ImageOps, ImageSequence
 
 if sys.platform == "win32":
     from winusbcdc import WinUsbPy
 
 from liquidctl.driver.usb import PyUsbDevice, UsbHidDriver
-from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver
+from liquidctl.error import NotSupportedByDevice, NotSupportedByDriver, Timeout
 from liquidctl.util import (
     LazyHexRepr,
     normalize_profile,
@@ -767,8 +767,16 @@ class KrakenZ3(KrakenX3):
         assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
 
     def _write_then_read(self, data):
+        """Write a command and return its reply, skipping unrelated reports.
+
+        The next report is not necessarily the reply: the device periodically
+        sends unsolicited `75 02` status reports, and replies to earlier writes
+        may still be enqueued.  Replies echo the command with its first byte
+        incremented, so match on that.
+        """
         self._write(data)
-        return self._read()
+        prefix = bytes([data[0] + 1, data[1]])
+        return self._read_until_first_match({prefix: lambda msg: msg})
 
     def _bulk_write(self, data):
         if sys.platform == "win32":
@@ -844,9 +852,10 @@ class KrakenZ3(KrakenX3):
             return
         elif mode == "gif":
             if _is_2023_fw_version2():
-                raise NotSupportedByDriver(
-                    "gif images are not supported on firmware 2.X.Y, please see issue #631"
-                )
+                # firmware 2.X.Y has no on-device gif playback; stream frames like NZXT CAM
+                frames = self._prepare_gif_frames_rgb16(value, self.orientation)
+                self._stream_frames_fw2(frames, kwargs.get("loop_seconds"))
+                return
             data = self._prepare_gif_file(value, self.orientation)
             assert (
                 len(data) / 1000 < _LCD_TOTAL_MEMORY
@@ -970,6 +979,99 @@ class KrakenZ3(KrakenX3):
             self._bulk_write(list(data[i : i + self.bulk_buffer_size]))
 
         self._write_then_read([0x36, 0x02])  # end data transfer
+
+    def _prepare_gif_frames_rgb16(self, path, rotation):
+        """
+        Decode a gif into (RGB565 big-endian frame bytes, delay in seconds) pairs,
+        center-cropped to the LCD resolution and rotated to the panel orientation.
+        """
+        img = Image.open(path)
+        frames = []
+        for frame in ImageSequence.Iterator(img):
+            # the lcd has no transparency: show transparent pixels as black
+            frame = frame.convert("RGBA")
+            frame = Image.alpha_composite(Image.new("RGBA", frame.size, (0, 0, 0, 255)), frame)
+            rgb = ImageOps.fit(frame.convert("RGB"), self.lcd_resolution, Image.Resampling.LANCZOS)
+            rgb = rgb.rotate(rotation * -90)
+            pixels = bytearray()
+            for r, g, b in rgb.getdata():
+                pixels += (((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)).to_bytes(2, "big")
+            delay = frame.info.get("duration", img.info.get("duration", 100)) or 100
+            # like browsers, treat delays under 20 ms as 100 ms
+            frames.append((bytes(pixels), (delay if delay >= 20 else 100) / 1000))
+        return frames
+
+    def _write_then_read_reply(self, data, timeout=500):
+        """Write a command and return its reply, skipping unsolicited 75 02 status reports."""
+        self._write(data)
+        for _ in range(_MAX_READ_ATTEMPTS):
+            try:
+                msg = self.device.read(_READ_LENGTH, timeout=timeout)
+            except Timeout:
+                return None
+            if msg and msg[0] == data[0] + 1 and msg[1] == data[1]:
+                return msg
+        return None
+
+    def _stream_frames_fw2(self, frames, seconds=None):
+        """
+        Animate frames on Kraken 2023 firmware 2.X.Y the way NZXT CAM does.
+
+        This firmware cannot store and loop a gif, so each frame is streamed
+        (HID 36 01 00 01 06, bulk header + RGB565 frame, HID 36 02) on the gif's
+        own timing. Loops until interrupted or for `seconds`, then restores the
+        liquid temperature screen.
+
+        A transfer left unfinished (for example by a previous process that was
+        interrupted mid-frame) makes the device reject new ones, so pending
+        transfers are cancelled (HID 36 03) at the start, when the device reports
+        a failure, and on exit.
+        """
+        assert self.bulk_device, "Cannot find bulk out device"
+        magic = bytes([0x12, 0xFA, 0x01, 0xE8, 0xAB, 0xCD, 0xEF, 0x98, 0x76, 0x54, 0x32, 0x10])
+
+        def ok(data):
+            reply = self._write_then_read_reply(data)
+            return reply is not None and reply[14] == 0x01
+
+        def cancel_transfers():
+            self._write_then_read_reply([0x36, 0x03])
+
+        def push(pixels):
+            start = [0x36, 0x01, 0x00, 0x01, 0x06]
+            if not ok(start):
+                _LOGGER.debug("start of frame transfer rejected, cancelling pending transfers")
+                cancel_transfers()
+                if not ok(start):
+                    return  # skip this frame, try again with the next one
+            self._bulk_write(magic + bytes([0x06, 0, 0, 0]) + len(pixels).to_bytes(4, "little"))
+            for i in range(0, len(pixels), self.bulk_buffer_size):
+                self._bulk_write(pixels[i : i + self.bulk_buffer_size])
+            if not ok([0x36, 0x02]):
+                _LOGGER.debug("end of frame transfer failed, cancelling pending transfers")
+                cancel_transfers()
+
+        self.device.clear_enqueued_reports()
+        cancel_transfers()
+        push(frames[0][0])  # first image after init needs to be sent twice
+        _LOGGER.info("streaming %d gif frames, interrupt to stop", len(frames))
+        start = next_at = time.monotonic()
+        try:
+            for pixels, delay in itertools.cycle(frames):
+                if seconds is not None and time.monotonic() - start >= float(seconds):
+                    break
+                push(pixels)
+                next_at += delay
+                pause = next_at - time.monotonic()
+                if pause > 0:
+                    time.sleep(pause)
+                else:
+                    next_at = time.monotonic()  # running behind: don't try to catch up
+        except KeyboardInterrupt:
+            pass
+        finally:
+            cancel_transfers()  # in case we were interrupted mid-frame
+            self._write_then_read_reply([0x38, 0x01, 0x02, 0x00])  # back to liquid screen
 
     def _send_data(self, data, bulkInfo):
         """

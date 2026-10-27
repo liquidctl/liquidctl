@@ -180,6 +180,7 @@ they will be removed in a future version and are kept for now for backward compa
 ## The LCD screen (only Z, 2023, 2024 models)
 
 _New in 1.11.0._<br>
+_Changed in 1.17.0: GIFs are streamed on the Kraken 2023 Standard with firmware 2.X._<br>
 
 The LCD screen can be configured in a few different modes.
 
@@ -192,8 +193,12 @@ The LCD screen can be configured in a few different modes.
 
 Images and GiFs are automatically resized and rotated to match the device orientation.
 
-*Note that, on the 2023 models (Standard and Elite), the GIF screen mode is not currently supported
-on firmware versions 2.X (see [#631][`issue-631`]).*
+On the Kraken 2023 Standard with firmware 2.X, the device cannot store and loop a GIF by itself,
+so liquidctl streams its frames instead, the same way NZXT CAM does. In this case `set lcd screen
+gif` keeps running while the animation plays; interrupt it (for example with Ctrl+C) to stop, and
+the screen returns to the liquid temperature mode (see [#631]).
+
+[#631]: https://github.com/liquidctl/liquidctl/issues/631
 
 
 ## Interaction with Linux hwmon drivers
