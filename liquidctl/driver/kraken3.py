@@ -767,8 +767,16 @@ class KrakenZ3(KrakenX3):
         assert False, f"missing messages (attempts={_MAX_READ_ATTEMPTS}, missing={len(parsers)})"
 
     def _write_then_read(self, data):
+        """Write a command and return its reply, skipping unrelated reports.
+
+        The next report is not necessarily the reply: the device periodically
+        sends unsolicited `75 02` status reports, and replies to earlier writes
+        may still be enqueued.  Replies echo the command with its first byte
+        incremented, so match on that.
+        """
         self._write(data)
-        return self._read()
+        prefix = bytes([data[0] + 1, data[1]])
+        return self._read_until_first_match({prefix: lambda msg: msg})
 
     def _bulk_write(self, data):
         if sys.platform == "win32":
