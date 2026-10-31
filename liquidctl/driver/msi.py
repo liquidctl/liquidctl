@@ -553,7 +553,7 @@ class MpgCooler(UsbHidDriver):
                 fanmode = _FanConfig(self.BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
                 tempmode = _FanTempConfig(self.BUILTIN_MODES[prof], 0, 0, 0, 0, 0, 0, 0)
             else:
-                duties, temps = map(self.clamp_and_pad, zip(*prof))
+                temps, duties = map(self.clamp_and_pad, zip(*prof))
                 fanmode = _FanConfig(_FanMode.CUSTOMIZE.value, *duties)
                 tempmode = _FanTempConfig(_FanMode.CUSTOMIZE.value, *temps)
             for i in idx:
@@ -597,8 +597,7 @@ class MpgCooler(UsbHidDriver):
 
         check_unsafe(*self._UNSAFE, error=True, **kwargs)
 
-        duties_temps = list(zip(*profile))
-        duties, temps = tuple(self.clamp_and_pad(v) for v in duties_temps)
+        temps, duties = tuple(self.clamp_and_pad(v) for v in zip(*profile))
 
         for i in self.parse_channel(channel):
             self._fan_cfg[i] = _FanConfig(_FanMode.CUSTOMIZE.value, *duties)
