@@ -159,7 +159,7 @@ def test_mpg_core_liquid_k360_set_fixed_speeds(mpgCoreLiquidK360Device):
 def test_mpg_core_liquid_k360_set_speed_profile(mpgCoreLiquidK360Device):
     duties = [20, 30, 34, 40, 50]
     temps = [30, 50, 80, 90, 100]
-    curve_profile = zip(duties, temps)
+    curve_profile = zip(temps, duties)
 
     mpgCoreLiquidK360Device.set_speed_profile("fans", curve_profile)
 
@@ -174,6 +174,25 @@ def test_mpg_core_liquid_k360_set_speed_profile(mpgCoreLiquidK360Device):
     # fan 3
     assert fan_report.data[17:25] == [3] + duties + [0] * 2
     assert T_report.data[17:25] == [3] + temps + [0] * 2
+
+
+def test_mpg_core_liquid_k360_set_profiles(mpgCoreLiquidK360Device):
+    # profiles are (temperature, duty) pairs, like in the CLI and in yoda
+    temps = [30, 50, 80, 90]
+    duties = [20, 30, 34, 40]
+    curve_profile = list(zip(temps, duties))
+
+    mpgCoreLiquidK360Device.set_profiles(["pump", "waterblock-fan"], [curve_profile, "smart"])
+
+    fan_report, T_report = mpgCoreLiquidK360Device.device.sent[-3:-1]
+
+    # pump
+    assert fan_report.data[33:41] == [3] + duties + [0] * 3
+    assert T_report.data[33:41] == [3] + temps + [0] * 3
+    # waterblock fan: built-in mode, no points
+    smart = MpgCooler.BUILTIN_MODES["smart"]
+    assert fan_report.data[25:33] == [smart] + [0] * 7
+    assert T_report.data[25:33] == [smart] + [0] * 7
 
 
 def test_mpg_core_liquid_k360_set_color(mpgCoreLiquidK360Device):
@@ -259,7 +278,7 @@ def test_unsafe_core_liquid_set_fixed_speed(mpgCoreLiquidDeviceExperimental):
 def test_unsafe_core_liquid_set_speed_profile(mpgCoreLiquidDeviceExperimental):
     duties = [20, 30, 34, 40, 50]
     temps = [30, 50, 80, 90, 100]
-    curve_profile = zip(duties, temps)
+    curve_profile = zip(temps, duties)
     with pytest.raises(UnsafeFeaturesNotEnabled):
         mpgCoreLiquidDeviceExperimental.set_speed_profile("fans", curve_profile)
 
