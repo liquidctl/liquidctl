@@ -574,8 +574,8 @@ class MpgCooler(UsbHidDriver):
             return range(_RAD_FAN_COUNT)
         elif channel == "waterblock-fan":
             return [3]
-        elif channel[:3] == "fan" and (int(channel[3:]) in range(_RAD_FAN_COUNT)):
-            return [int(channel[3:])]
+        elif channel[:3] == "fan" and (int(channel[3:]) - 1 in range(_RAD_FAN_COUNT)):
+            return [int(channel[3:]) - 1]
         else:
             raise ValueError(
                 'unknown channel, should be "fans", "fan1", "fan2", "fan3", "waterblock-fan" or "pump".'
