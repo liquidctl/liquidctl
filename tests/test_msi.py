@@ -156,6 +156,27 @@ def test_mpg_core_liquid_k360_set_fixed_speeds(mpgCoreLiquidK360Device):
     assert fan_report.data[33:41] == [3] + [65] * 7
 
 
+@pytest.mark.parametrize("channel,slot", [("fan1", 0), ("fan2", 1), ("fan3", 2)])
+def test_mpg_core_liquid_k360_set_fixed_speed_individual_fans(
+    mpgCoreLiquidK360Device, channel, slot
+):
+    mpgCoreLiquidK360Device.set_fixed_speed(channel, 42)
+
+    fan_report, T_report = mpgCoreLiquidK360Device.device.sent[-2:]
+    start = 1 + 8 * slot
+    assert fan_report.data[start : start + 8] == [3] + [42] * 7
+    # the other radiator fans must not be affected
+    for other in {0, 1, 2} - {slot}:
+        other_start = 1 + 8 * other
+        assert fan_report.data[other_start : other_start + 8] != [3] + [42] * 7
+
+
+@pytest.mark.parametrize("channel", ["fan0", "fan4"])
+def test_mpg_core_liquid_k360_rejects_invalid_fan_channel(mpgCoreLiquidK360Device, channel):
+    with pytest.raises(ValueError):
+        mpgCoreLiquidK360Device.set_fixed_speed(channel, 42)
+
+
 def test_mpg_core_liquid_k360_set_speed_profile(mpgCoreLiquidK360Device):
     duties = [20, 30, 34, 40, 50]
     temps = [30, 50, 80, 90, 100]
