@@ -107,7 +107,7 @@ class CommanderCore(UsbHidDriver):
             for i, temp in enumerate(self._get_temps()):
                 connected = temp is not None
                 if self._has_pump:
-                    label = 'Water temperature sensor' if i == 0 and self._has_pump else f'Temperature sensor {i}'
+                    label = 'Water temperature sensor' if i == 0 else f'Temperature sensor {i}'
                 else:
                     label = f'Temperature sensor {i+1}'
 
@@ -135,7 +135,7 @@ class CommanderCore(UsbHidDriver):
                 if self._has_pump:
                     label = 'Water temperature' if i == 0 else f'Temperature {i}'
                 else:
-                    label = f'Temperature {i}'
+                    label = f'Temperature {i+1}'
 
                 status += [(label, temp, '°C')]
 
@@ -144,15 +144,34 @@ class CommanderCore(UsbHidDriver):
     def set_color(self, channel, mode, colors, **kwargs):
         raise NotSupportedByDriver
 
-    def set_speed_profile(self, channel, profile, **kwargs):
+    def set_speed_profile(self, channel, profile, temperature_sensor=None, **kwargs):
+        """Set a hardware speed curve using a connected temperature sensor.
+
+        On the Core and ST, sensor 0 is water (the default) and sensor 1 is the
+        external probe.  The Core XT has external probes 1 (the default) and 2.
+        """
         channels = self._parse_channels(channel)
         curve_points = list(profile)
         if len(curve_points) < 2:
             ValueError('a minimum of 2 speed curve points must be configured.')
         if len(curve_points) > 7:
             ValueError('a maximum of 7 speed curve points may be configured.')
+        first_sensor = 0 if self._has_pump else 1
+        if temperature_sensor is None:
+            temperature_sensor = first_sensor
+        if temperature_sensor < first_sensor:
+            raise ValueError(f'temperature sensor numbers start at {first_sensor}')
+        sensor_index = temperature_sensor - first_sensor
 
         with self._wake_device_context():
+            temperatures = self._get_temps()
+            if sensor_index >= len(temperatures):
+                last_sensor = first_sensor + len(temperatures) - 1
+                raise ValueError(f'temperature sensor must be between '
+                                 f'{first_sensor} and {last_sensor}')
+            if temperatures[sensor_index] is None:
+                raise ValueError(f'temperature sensor {temperature_sensor} is not connected')
+
             # Set hardware speed mode
             res = self._read_data(_MODE_HW_SPEED_MODE, _DATA_TYPE_HW_SPEED_MODE)
             device_count = res[0]
@@ -181,7 +200,7 @@ class CommanderCore(UsbHidDriver):
                 new_data = []
 
                 # set temperature sensor
-                new_data.append(b"\x00")
+                new_data.append(bytes([sensor_index]))
 
                 # set number of curve points
                 new_data.append(int.to_bytes(len(curve_points), length=1, byteorder="big"))

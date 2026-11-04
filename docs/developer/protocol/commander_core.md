@@ -327,6 +327,11 @@ Speed Curve:
 | 0x16-0x19 | Speed curve point 6 |
 | 0x1a-0x1d | Speed curve point 7 |
 
+The sensor byte is a zero-based index into the temperature channels returned by
+`0x21`. On the Core and ST, `0x00` selects water and `0x01` the external probe.
+On the Core XT, `0x00` and `0x01` select external probes 1 and 2 respectively.
+The CLI therefore uses sensor numbers 0/1 for Core/ST and 1/2 for Core XT.
+
 Speed Point:
 
 | Byte index | Description (Core) |

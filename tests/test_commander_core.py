@@ -41,6 +41,7 @@ class MockCommanderCoreDevice:
         self.fixed_speeds = (0, 0, 0, 0, 0, 0, 0)
         self.temperatures = (None, None)
         self.curve_points_by_device = [[],[],[],[],[],[],[]]
+        self.temperature_sensors_by_device = [0] * 7
 
     def read(self, length):
         data = bytearray([0x00, self._last_write[2], 0x00])
@@ -104,7 +105,7 @@ class MockCommanderCoreDevice:
                         num_ports = len(self.curve_points_by_device)
                         data.append(num_ports)
                         for i in range(num_ports):
-                            data.append(0) # temp sensor
+                            data.append(self.temperature_sensors_by_device[i])
                             data.append(len(self.curve_points_by_device[i])) # num curve points
                             for (temp, duty) in self.curve_points_by_device[i]:
                                 data.extend(int_to_le(temp * 10)) # temperature
@@ -119,7 +120,7 @@ class MockCommanderCoreDevice:
                 if mode[1] == 0x6d:
                     if mode[0] == 0x62:
                         for i in range(3, 7):
-                            data.append(0) # temp sensor
+                            data.append(self.temperature_sensors_by_device[i])
                             data.append(len(self.curve_points_by_device[i])) # num curve points
                             for (temp, duty) in self.curve_points_by_device[i]:
                                 data.extend(int_to_le(temp * 10))
@@ -131,6 +132,7 @@ class MockCommanderCoreDevice:
 
     def write(self, data):
         data = bytes(data)  # ensure data is convertible to bytes
+        self.sent.append(data)
         self._last_write = data
         if data[0] != 0x00 or data[1] != 0x08:
             raise ValueError('Start of packets going out should be 00:08')
@@ -169,6 +171,9 @@ class MockCommanderCoreDevice:
                         curve_index = 1
                         for port_index in range(0, self.written_data[0]):
                             self.curve_points_by_device[port_index] = []
+                            self.temperature_sensors_by_device[port_index] = (
+                                self.written_data[curve_index]
+                            )
                             # get number of curve points
                             num_points = self.written_data[curve_index + 1]
 
@@ -193,6 +198,7 @@ class MockCommanderCoreDevice:
 @pytest.fixture
 def commander_core_device():
     device = MockCommanderCoreDevice()
+    device.temperatures = (30.0, None)
     core = CommanderCore(device, 'Corsair Commander Core', True)
     core.connect()
     return core
@@ -228,8 +234,8 @@ def test_initialize_commander_core(commander_core_device):
     assert res[14][1]
 
     # Temperature sensors connected
-    assert not res[15][1]
-    assert res[16][1]
+    assert res[15] == ('Water temperature sensor', False, '')
+    assert res[16] == ('Temperature sensor 1', True, '')
 
     # Ensure device is asleep at end
     assert not commander_core_device.device._awake
@@ -263,8 +269,8 @@ def test_status_commander_core(commander_core_device):
     assert res[6][1] == 104
 
     # Temperatures
-    assert res[7][1] == 12.3
-    assert res[8][1] == 45.6
+    assert res[7] == ('Water temperature', 12.3, '°C')
+    assert res[8] == ('Temperature 1', 45.6, '°C')
 
     # Ensure device is asleep at end
     assert not commander_core_device.device._awake
@@ -318,16 +324,21 @@ def test_set_fixed_speed_error_commander_core(commander_core_device):
     assert not commander_core_device.device._awake
 
 
-def test_set_speed_profile_fans_commander_core(commander_core_device):
+@pytest.mark.parametrize('temperature_sensor', [0, 1])
+def test_set_speed_profile_fans_commander_core(commander_core_device, temperature_sensor):
     """This tests setting the speed of all the fans"""
     commander_core_device.device.speeds_mode = (0, 0, 0, 0, 0, 0, 0)
     commander_core_device.device.fixed_speeds = (8, 9, 10, 11, 12, 13, 14)
+    commander_core_device.device.temperatures = (30.0, 25.0)
 
     commander_core_device.set_speed_profile('fans', [
         (22, 0), (32, 25), (34, 50), (36, 75), (38,85), (40,95), (42, 100)
-    ])
+    ], temperature_sensor=temperature_sensor)
 
     assert commander_core_device.device.speeds_mode == (0, 2, 2, 2, 2, 2, 2)
+    assert commander_core_device.device.temperature_sensors_by_device == (
+        [0] + [temperature_sensor] * 6
+    )
     assert commander_core_device.device.curve_points_by_device[0] == []
     assert commander_core_device.device.curve_points_by_device[1] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
     assert commander_core_device.device.curve_points_by_device[2] == [(22, 0), (32, 25), (34, 50), (36, 75), (38, 85), (40, 95), (42, 100)]
@@ -351,7 +362,9 @@ def test_set_speed_curve_profile_single_channel_commander_core(commander_core_de
     commander_core_device.device.curve_points_by_device[5] = []
     commander_core_device.device.curve_points_by_device[6] = []
 
-    commander_core_device.set_speed_profile('pump', [(22, 0), (42, 100)])
+    commander_core_device.device.temperatures = (None, 25.0)
+    commander_core_device.set_speed_profile('pump', [(22, 0), (42, 100)], temperature_sensor=1)
+    commander_core_device.device.temperatures = (30.0, None)
     commander_core_device.set_speed_profile('fan1', [(22, 1), (42, 10)])
     commander_core_device.set_speed_profile('fan2', [(22, 2), (42, 20)])
     commander_core_device.set_speed_profile('fan3', [(22, 3), (42, 30)])
@@ -360,6 +373,7 @@ def test_set_speed_curve_profile_single_channel_commander_core(commander_core_de
     commander_core_device.set_speed_profile('fan6', [(22, 6), (42, 60)])
 
     assert commander_core_device.device.speeds_mode == (2, 2, 2, 2, 2, 2, 2)
+    assert commander_core_device.device.temperature_sensors_by_device == [1, 0, 0, 0, 0, 0, 0]
     assert commander_core_device.device.curve_points_by_device[0] == [(22, 0), (42, 100)]
     assert commander_core_device.device.curve_points_by_device[1] == [(22, 1), (42, 10)]
     assert commander_core_device.device.curve_points_by_device[2] == [(22, 2), (42, 20)]
@@ -370,6 +384,57 @@ def test_set_speed_curve_profile_single_channel_commander_core(commander_core_de
 
     # Ensure device is asleep at end
     assert not commander_core_device.device._awake
+
+
+@pytest.mark.parametrize(('temperature_sensor', 'sensor_index'), [(None, 0), (2, 1)])
+def test_speed_profile_temperature_sensor_commander_core_xt(commander_core_device,
+                                                          temperature_sensor, sensor_index):
+    device = commander_core_device.device
+    device.temperatures = (30.0, None) if sensor_index == 0 else (None, 25.0)
+    device.speeds_mode = (0,) * 6
+    device.curve_points_by_device = [[] for _ in range(6)]
+    device.temperature_sensors_by_device = [1] * 6
+    corext = CommanderCore(device, 'Corsair Commander Core XT', False)
+
+    corext.set_speed_profile('fan1', [(25, 50), (45, 100)], temperature_sensor=temperature_sensor)
+
+    assert device.temperature_sensors_by_device == [sensor_index, 1, 1, 1, 1, 1]
+    assert device.curve_points_by_device == [[(25, 50), (45, 100)], [], [], [], [], []]
+    assert device.speeds_mode == (2, 0, 0, 0, 0, 0)
+    assert not device._awake
+
+
+@pytest.mark.parametrize(('has_pump', 'temperature_sensor', 'temperatures'), [
+    (True, 2, (30.0, 25.0)),
+    (True, 1, (30.0, None)),
+    (False, 0, (30.0, 25.0)),
+])
+def test_speed_profile_rejects_unavailable_temperature_sensor(commander_core_device, has_pump,
+                                                              temperature_sensor, temperatures):
+    device = commander_core_device.device
+    device.temperatures = temperatures
+    core = CommanderCore(device, 'Corsair Commander Core', has_pump)
+
+    with pytest.raises(ValueError):
+        core.set_speed_profile('fans', [(25, 50), (45, 100)], temperature_sensor=temperature_sensor)
+
+    # No fan mode or curve writes may precede sensor validation.
+    assert not any(report[2] in (0x06, 0x07) for report in device.sent)
+    assert not device._awake
+
+
+def test_temperature_sensor_labels_commander_core_xt():
+    device = MockCommanderCoreDevice()
+    device.temperatures = (23.4, 34.5)
+    core = CommanderCore(device, 'Corsair Commander Core XT', False)
+    core.connect()
+
+    assert core.initialize()[-2:] == [
+        ('Temperature sensor 1', True, ''), ('Temperature sensor 2', True, ''),
+    ]
+    assert core.get_status()[-2:] == [
+        ('Temperature 1', 23.4, '°C'), ('Temperature 2', 34.5, '°C'),
+    ]
 
 
 def test_parse_channels_commander_core():

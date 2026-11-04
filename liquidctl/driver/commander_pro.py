@@ -451,6 +451,9 @@ class CommanderPro(UsbHidDriver):
         profile = _prepare_profile(profile, criticalTemp)
 
         # fan_type = kwargs['fan_type'] # need to make sure this is set
+        if temperature_sensor < 1:
+            raise ValueError('temperature sensor numbers start at 1; '
+                             'this device has no water sensor')
         temp_sensor = clamp(temperature_sensor, 1, self._temp_probs)
 
         sensors = self._data.load('temp_sensors_connected', default=[0]*self._temp_probs)

@@ -34,6 +34,8 @@ Corsair Commander Core
 
 ## Retrieving the pump speed, fan speeds, and temperatures
 
+_Changed in git: Core XT temperature labels consistently number external probes from 1._<br>
+
 The Commander Core and ST currently can retrieve the pump speed, fan speeds, temperature of the water, and
 the temperature measured by the probe.
 
@@ -47,7 +49,8 @@ Corsair Commander Core
 ├── Fan speed 4             0  rpm
 ├── Fan speed 5             0  rpm
 ├── Fan speed 6             0  rpm
-└── Water temperature    35.8  °C
+├── Water temperature    35.8  °C
+└── Temperature 1        40.5  °C
 ```
 
 The Core XT variant of the device is not meant for use with an AIO, so parameters relating to the pump are
@@ -69,6 +72,7 @@ Corsair Commander Core XT
 ### Speed curve profiles
 
 _New in 1.14.0._<br>
+_Changed in git: select water or an external probe with `--temperature-sensor`._<br>
 
 The pump or fans speeds can be configured using a speed curve profile with a minimum of 2 or up to 7 curve points.
 
@@ -81,6 +85,26 @@ liquidctl set fans speed 28 0  35 50  40 75  41 85  42 90  43 95  44 100
            channel       |  duty
                       temp
 ```
+
+Use `--temperature-sensor` to select the temperature source for the curve:
+
+| Device | Sensor 0 | Sensor 1 | Sensor 2 |
+| --- | --- | --- | --- |
+| Commander Core / ST | Water temperature (default) | External probe 1 | Not available |
+| Commander Core XT | Not available | External probe 1 (default) | External probe 2 |
+
+For example, to control fan 1 using external probe 1:
+
+```
+liquidctl --temperature-sensor 1 set fan1 speed 25 35  30 50  35 75  40 100
+```
+
+The selected sensor must be connected; otherwise the command fails before changing
+the fan settings. Each channel can use a different sensor, and the device runs the
+curve after liquidctl exits. Omitting the option selects water on the Core/ST and
+probe 1 on the Core XT. Use `--temperature-sensor 0` to explicitly select water;
+the Core XT rejects sensor 0. In `status`, water is labeled `Water temperature`,
+and external probes are labeled `Temperature 1`, `Temperature 2`, and so on.
 
 
 ### Fixed duty cycle

@@ -83,3 +83,20 @@ def test_json_status(main):
         }
     ]
     assert got == exp
+
+
+@pytest.mark.parametrize('options', [{}, {'temperature_sensor': 0}, {'temperature_sensor': 1}])
+def test_temperature_sensor_forwarded_to_speed_profile(main, monkeypatch, options):
+    device = VirtualBusDevice()
+    monkeypatch.setattr(liquidctl.cli, 'find_liquidctl_devices', lambda **kwargs: [device])
+    argv = ['liquidctl', 'set', 'fan1', 'speed', '25', '50', '45', '100']
+    if options:
+        argv += ['--temperature-sensor', str(options['temperature_sensor'])]
+
+    code, _, _ = main(*argv)
+    assert code == 0
+
+    args, kwargs = device.call_args['set_speed_profile']
+    assert args[0] == 'fan1'
+    assert list(args[1]) == [(25, 50), (45, 100)]
+    assert {key: value for key, value in kwargs.items() if key == 'temperature_sensor'} == options
