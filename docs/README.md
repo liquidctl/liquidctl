@@ -58,6 +58,7 @@ Documentation for developers
 
 - [**Development process (including stability guarantees)**](developer/process.md)
 - [Capturing USB traffic](developer/capturing-usb-traffic.md)
+- [Device index for repository tooling](developer/device-index.md)
 - [Interacting with devices with Linux hwmon drivers](developer/hwmon)
 - [Porting drivers from OpenCorsairLink](developer/porting-drivers-from-opencorsairlink.md)
 - [Protocol notes](developer/protocol/)

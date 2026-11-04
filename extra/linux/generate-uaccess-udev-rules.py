@@ -16,9 +16,7 @@ if __name__ == "__main__":
         print("liquidctl udev rules files must use UTF-8, reconfiguring stdout", file=sys.stderr)
         sys.stdout.reconfigure(encoding="utf-8")
 
-    from liquidctl.driver.base import find_all_subclasses
-    from liquidctl.driver.nvidia import _NvidiaI2CDriver
-    from liquidctl.driver.usb import BaseUsbDriver
+    from liquidctl._device_index import nvidia_i2c_device_matches, usb_device_matches
 
     HEADER = """
     # Rules that grant unprivileged access to devices supported by liquidctl.
@@ -86,14 +84,13 @@ if __name__ == "__main__":
 
     nvidia_devs = {}
 
-    for driver in find_all_subclasses(_NvidiaI2CDriver):
-        for did, sdid, description in driver._MATCHES:
-            ids = (driver._VENDOR, did, sdid)
-            if ids in nvidia_devs:
-                nvidia_devs[ids].append(description)
-                nvidia_devs[ids].sort()
-            else:
-                nvidia_devs[ids] = [description]
+    for match in nvidia_i2c_device_matches():
+        ids = (match.subsystem_vendor_id, match.device_id, match.subsystem_device_id)
+        if ids in nvidia_devs:
+            nvidia_devs[ids].append(match.description)
+            nvidia_devs[ids].sort()
+        else:
+            nvidia_devs[ids] = [match.description]
 
     nvidia_devs = [
         (svid, did, sdid, description) for (svid, did, sdid), description in nvidia_devs.items()
@@ -118,14 +115,13 @@ if __name__ == "__main__":
 
     usb_devs = {}
 
-    for driver in find_all_subclasses(BaseUsbDriver):
-        for vid, pid, description, _ in driver._MATCHES:
-            ids = (vid, pid)
-            if ids in usb_devs:
-                usb_devs[ids].append(description)
-                usb_devs[ids].sort()
-            else:
-                usb_devs[ids] = [description]
+    for match in usb_device_matches():
+        ids = (match.vendor_id, match.product_id)
+        if ids in usb_devs:
+            usb_devs[ids].append(match.description)
+            usb_devs[ids].sort()
+        else:
+            usb_devs[ids] = [match.description]
 
     usb_devs = [(vid, pid, description) for (vid, pid), description in usb_devs.items()]
     usb_devs.sort(key=lambda x: x[2][0])
