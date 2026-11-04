@@ -525,6 +525,10 @@ Fan and pump speeds can be set to fixed values or, if the device supports them, 
 # liquidctl [options] set <channel> speed <percentage>
 ```
 
+_Changed in git: Corsair Commander Core/ST and Core XT support
+`--temperature-sensor` for curves; use `0` for Core/ST water or numbered external
+probes starting at `1`. See the [device guide](docs/corsair-commander-core-guide.md)._<br>
+
 Lighting is controlled in a similar fashion.  The specific documentation for each device will list the available channels, modes and additional options.
 
 ```

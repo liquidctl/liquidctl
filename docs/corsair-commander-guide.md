@@ -87,6 +87,12 @@ If a temperature probe is not specified number 1 is used. The last point should
 set the fan to 100% fan speed, or be omitted; in the latter case the fan will
 be set to 5000 rpm at 60°C (this speed may not be appropriate for your device).
 
+External probes are numbered 1 through 4. Sensor 0 is rejected: the Commander Pro
+has no dedicated water-temperature sensor.
+
+_Changed in git: sensor numbers below 1 are rejected instead of silently selecting
+probe 1, preventing an invalid selection from changing fan settings._<br>
+
 ```
 # liquidctl set fan1 speed 70
                 ^^^^       ^^

@@ -173,7 +173,11 @@ Enable single rail +12V OCP.
 Set the pump mode.
 .TP
 .BI \-\-temperature\-sensor= number
-The temperature sensor number for the Commander Pro.
+Select the temperature source for Commander Pro, Core, Core XT and ST speed curves.
+External probes are numbered from 1.
+On Core and ST, 0 selects water temperature and is the default.
+On Pro and Core XT, the default is probe 1; 0 is rejected.
+The selected sensor must be connected.
 .TP
 .B \-\-legacy\-690lc
 Use Asetek 690LC in legacy mode (old Krakens).
