@@ -2,6 +2,7 @@ import pytest
 
 from _testutils import MockHidapiDevice
 from liquidctl.driver.asus_ryujin import AsusRyujin
+from liquidctl.error import NotSupportedByDriver
 
 PROTOCOL_HEADER = 0xEC
 CMD_GET_FIRMWARE = 0x82
@@ -266,3 +267,74 @@ def test_set_fixed_speeds_ryujin3(mock_ryujin3):
         mock_ryujin3.set_fixed_speed(channel="pump-fan", duty=50)
         assert mock_ryujin3.device.requests[-1][2] == 0x01
         assert mock_ryujin3.device.requests[-1][4] == 0x32
+
+
+def test_set_screen_monitor_ryujin2(mock_ryujin):
+    with mock_ryujin.connect():
+        mock_ryujin.set_screen("lcd", "monitor", "CPU Temp.=47.0°C;CPU Freq.=6.100GHz")
+
+        requests = mock_ryujin.device.requests
+        assert len(requests) == 4
+
+        line0, line1, layout, mode = (bytes(r) for r in requests)
+        assert len(line0) == 65 and len(layout) == 65
+
+        assert line0[:3] == bytes([0xEC, 0x53, 0x00])
+        assert line0[3:13] == b"CPU Temp.\x00"
+        assert line0[39:46] == "47.0\u2103".encode()
+        assert line0[46:] == bytes(19)
+
+        assert line1[:3] == bytes([0xEC, 0x53, 0x01])
+        assert line1[39:47] == "6.100\u338f".encode()
+
+        # dark theme, 2 lines, first line in the temperature group
+        assert layout[:9] == bytes([0xEC, 0x52, 0x02, 0x01, 0x02, 0x02, 0x00, 0x00, 0x00])
+        assert layout[9:26] == bytes([0xFF] * 17)
+        assert layout[26:] == bytes(39)
+
+        assert mode[:3] == bytes([0xEC, 0x51, 0x21])
+
+
+@pytest.mark.parametrize(
+    "value,glyph,group",
+    [
+        ("1260rpm", "\u218c", 1),
+        ("0.718 V", "\u218a", 0),
+        ("4.2\u218d", "\u218d", 4),
+        ("6.1GHz", "\u338f", 3),
+    ],
+)
+def test_set_screen_monitor_group_from_unit(mock_ryujin, value, glyph, group):
+    with mock_ryujin.connect():
+        mock_ryujin.set_screen("lcd", "monitor", f"Sensor={value}")
+        line, layout, _ = (bytes(r) for r in mock_ryujin.device.requests)
+        assert glyph.encode() in line[39:]
+        assert layout[3] == 0x00
+        assert layout[4] == layout[5] == group
+
+
+def test_set_screen_monitor_truncates_label(mock_ryujin):
+    with mock_ryujin.connect():
+        mock_ryujin.set_screen("lcd", "monitor", "CPU Fan Speed=625rpm")
+        line = bytes(mock_ryujin.device.requests[0])
+        assert line[3:15] == b"CPU Fan Spe\x00"
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["", "no-equals", "A=1;B=2;C=3;D=4;E=5", "A=1", "A=123456789012°C"],
+)
+def test_set_screen_monitor_rejects_bad_values(mock_ryujin, value):
+    with mock_ryujin.connect():
+        with pytest.raises(ValueError):
+            mock_ryujin.set_screen("lcd", "monitor", value)
+        assert mock_ryujin.device.requests == []
+
+
+def test_set_screen_unsupported(mock_ryujin, mock_ryujin3):
+    with mock_ryujin.connect():
+        with pytest.raises(NotSupportedByDriver):
+            mock_ryujin.set_screen("lcd", "static", "image.png")
+    with mock_ryujin3.connect():
+        with pytest.raises(NotSupportedByDriver):
+            mock_ryujin3.set_screen("lcd", "monitor", "CPU=47°C")

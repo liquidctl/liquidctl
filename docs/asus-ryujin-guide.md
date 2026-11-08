@@ -91,4 +91,19 @@ Note the minimum speed of the embedded pump fan is 390 rpm, meaning the fan may 
 
 ## Screen
 
-The screen of the cooler is not yet supported.
+_New in git._<br>
+
+The screen can show up to four lines of text in the built-in hardware monitor layout.
+Pass the lines as `label=value` pairs separated by `;`.  Each value must end with a unit:
+`°C`, `GHz`, `rpm` or `V`.
+
+```
+# liquidctl set lcd screen monitor "CPU Temp.=47.0°C;CPU Freq.=5.80GHz;Pump=2640rpm"
+```
+
+The unit of the first line selects the icon set of the layout.  Labels longer than 11
+characters are truncated.
+
+The cooler does not read any sensor by itself, so keep calling the command (for example,
+from a script) to update the values.  Only the dark theme is currently supported; images
+and animations are not.

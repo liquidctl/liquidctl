@@ -87,3 +87,56 @@ The data of all usb packets is 65 bytes long, prefixed with `0xEC`.
 - Response:
     - Header: `0xEC 0x2F`
         - Byte 4-17: ?
+
+
+## Screen Operations
+
+Byte numbers below follow the convention of this document (byte 1 is the `0xEC` prefix).
+The host reads the sensors and only sends text; the firmware draws the layout, icons and
+units.  These offsets were checked on a Ryujin II 360 (firmware `AURJ1-S750-0104`); the
+Ryujin III uses a different layout for the same commands.
+
+### Set hardware monitor line
+
+- Request:
+    - Header: `0xEC 0x53`
+    - Data:
+        - Byte 3: Line index, 0 to 3
+        - Byte 4-39: Label, ASCII, null padded (the manufacturer software truncates it to 11
+          characters)
+        - Byte 40-51: Value, UTF-8, null padded, ending with a single unit character:
+            - `U+2103` (℃): temperature
+            - `U+338F` (㎓): frequency
+            - `U+218C`: fan speed (rpm)
+            - `U+218A`: voltage
+            - `U+218D`: water flow
+
+### Set hardware monitor layout
+
+- Request:
+    - Header: `0xEC 0x52`
+    - Data:
+        - Byte 3: Theme: `0x02` dark, `0x01` light, `0x00` custom
+        - Byte 4: Number of lines minus one (0 to 3)
+        - Byte 5: Sensor group of the first line
+        - Byte 6: Sensor group of the first line (same value as byte 5 in all captures)
+            - `0x00`: voltage
+            - `0x01`: fan speed
+            - `0x02`: temperature
+            - `0x03`: frequency
+            - `0x04`: water flow
+        - Byte 7-9: `0x00`
+        - Byte 10-26: `0xFF` with the dark theme; with custom colors, a background RGB
+          triplet followed by one text RGB triplet per line, each triplet followed by
+          `0xFF`
+
+The manufacturer software sends the lines first and then the layout, and only resends the
+layout when the number of lines or the group of the first line changes.  Page rotation is
+done on the host by resending lines.
+
+### Set display mode
+
+- Request:
+    - Header: `0xEC 0x51`
+    - Data:
+        - Byte 3: `0x21` for hardware monitor mode

@@ -27,6 +27,40 @@ _REQUEST_GET_CONTROLLER_SPEED = (0xA0, 0x20)
 _CMD_SET_COOLER_SPEED = 0x1A
 _CMD_SET_CONTROLLER_SPEED = 0x21
 
+# Screen, hardware monitor mode (Ryujin II only; the Ryujin III uses different offsets)
+_CMD_SET_DISPLAY_MODE = 0x51
+_CMD_SET_MONITOR_LAYOUT = 0x52
+_CMD_SET_MONITOR_LINE = 0x53
+_DISPLAY_MODE_MONITOR = 0x21
+_MONITOR_THEME_DARK = 0x02
+_MONITOR_MAX_LINES = 4
+_MONITOR_LABEL_OFFSET = 3
+_MONITOR_LABEL_LENGTH = 11
+_MONITOR_VALUE_OFFSET = 39
+_MONITOR_VALUE_LENGTH = 12
+
+# Sensor group of the first line, as encoded in the layout command
+_GROUP_VOLTAGE = 0
+_GROUP_FAN_SPEED = 1
+_GROUP_TEMPERATURE = 2
+_GROUP_FREQUENCY = 3
+_GROUP_WATER_FLOW = 4
+
+# The firmware draws each unit from a single code point.  Map the suffixes users are
+# expected to type to those code points, longest suffix first.  The code points are also
+# accepted as is (e.g. "\u218d" for water flow, which has no obvious ASCII spelling).
+_MONITOR_UNITS = [
+    ("\u2103", "\u2103", _GROUP_TEMPERATURE),
+    ("\u338f", "\u338f", _GROUP_FREQUENCY),
+    ("\u218c", "\u218c", _GROUP_FAN_SPEED),
+    ("\u218d", "\u218d", _GROUP_WATER_FLOW),
+    ("\u218a", "\u218a", _GROUP_VOLTAGE),
+    ("°c", "\u2103", _GROUP_TEMPERATURE),
+    ("ghz", "\u338f", _GROUP_FREQUENCY),
+    ("rpm", "\u218c", _GROUP_FAN_SPEED),
+    ("v", "\u218a", _GROUP_VOLTAGE),
+]
+
 _STATUS_FIRMWARE = "Firmware version"
 _STATUS_TEMPERATURE = "Liquid temperature"
 _STATUS_PUMP_SPEED = "Pump speed"
@@ -226,8 +260,37 @@ class AsusRyujin(UsbHidDriver):
             handler(duty)
 
     def set_screen(self, channel, mode, value, **kwargs):
-        # Not yet reverse engineered / implemented
-        raise NotSupportedByDriver()
+        """Set the screen mode and content.
+
+        Unstable.  Only implemented for the Ryujin II.
+
+        | Channel | Mode | Value |
+        | --- | --- | --- |
+        | `lcd` | `monitor` | up to 4 `label=value` lines, separated by `;` |
+
+        Each value should end with a unit: `°C`, `GHz`, `rpm`, `V` (or the code point
+        the firmware uses for it).  The unit of the first line selects the icon set.
+        """
+
+        if self._fan_count == 0:
+            # Ryujin III: hardware monitor commands use different offsets
+            raise NotSupportedByDriver()
+        if channel.lower() != "lcd":
+            raise ValueError(f"invalid channel: {channel}")
+        if mode != "monitor":
+            raise NotSupportedByDriver(explanation=f"mode {mode!r} is not supported")
+        if not value:
+            raise ValueError("monitor mode needs at least one label=value line")
+
+        lines = [_parse_monitor_line(x) for x in value.split(";") if x.strip()]
+        if not 1 <= len(lines) <= _MONITOR_MAX_LINES:
+            raise ValueError(f"monitor mode takes 1 to {_MONITOR_MAX_LINES} lines")
+
+        # Same order as the manufacturer software: lines, layout, then display mode
+        for slot, (label, text, _) in enumerate(lines):
+            self._write(_monitor_line_packet(slot, label, text))
+        self._write(_monitor_layout_packet(len(lines), lines[0][2]))
+        self._write([_PREFIX, _CMD_SET_DISPLAY_MODE, _DISPLAY_MODE_MONITOR])
 
     def _request(self, request_header: int, response_header: int) -> List[int]:
         self.device.clear_enqueued_reports()
@@ -246,3 +309,52 @@ class AsusRyujin(UsbHidDriver):
 
     def _write(self, data: List[int]):
         self.device.write(rpadlist(data, _REPORT_LENGTH, 0))
+
+
+def _parse_monitor_line(line: str):
+    """Split `label=value` and convert the unit suffix of the value to the device glyph.
+
+    Returns (label, value, group), where group is the sensor group implied by the unit.
+    """
+    label, sep, value = line.partition("=")
+    label, value = label.strip(), value.strip()
+    if not sep or not label or not value:
+        raise ValueError(f"invalid monitor line, expected label=value: {line!r}")
+
+    lowered = value.lower()
+    for suffix, glyph, group in _MONITOR_UNITS:
+        if lowered.endswith(suffix):
+            number = value[: len(value) - len(suffix)].strip()
+            return label, number + glyph, group
+
+    raise ValueError(f"unknown unit in {value!r}, expected one of: °C, GHz, rpm, V")
+
+
+def _monitor_line_packet(slot: int, label: str, value: str) -> List[int]:
+    """Build the set hardware monitor line packet (label in ASCII, value in UTF-8)."""
+    packet = [_PREFIX, _CMD_SET_MONITOR_LINE, slot]
+    packet = rpadlist(packet, _MONITOR_LABEL_OFFSET, 0)
+
+    label_bytes = label.encode("ascii", errors="replace")[:_MONITOR_LABEL_LENGTH]
+    packet = rpadlist(packet + list(label_bytes), _MONITOR_VALUE_OFFSET, 0)
+
+    value_bytes = value.encode("utf-8")
+    if len(value_bytes) > _MONITOR_VALUE_LENGTH:
+        raise ValueError(f"monitor value too long: {value!r}")
+    return packet + list(value_bytes)
+
+
+def _monitor_layout_packet(line_count: int, first_line_group: int) -> List[int]:
+    """Build the set hardware monitor layout packet, dark theme."""
+    packet = [
+        _PREFIX,
+        _CMD_SET_MONITOR_LAYOUT,
+        _MONITOR_THEME_DARK,
+        line_count - 1,
+        first_line_group,
+        first_line_group,
+        0x00,
+        0x00,
+        0x00,
+    ]
+    return packet + [0xFF] * 17
