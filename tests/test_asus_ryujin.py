@@ -322,7 +322,14 @@ def test_set_screen_monitor_truncates_label(mock_ryujin):
 
 @pytest.mark.parametrize(
     "value",
-    ["", "no-equals", "A=1;B=2;C=3;D=4;E=5", "A=1", "A=123456789012°C"],
+    [
+        "",
+        "no-equals",
+        "A=1;B=2;C=3;D=4;E=5",
+        "A=1",
+        "A=123456789012°C",
+        "A=47°C;B=123456789012°C",
+    ],
 )
 def test_set_screen_monitor_rejects_bad_values(mock_ryujin, value):
     with mock_ryujin.connect():

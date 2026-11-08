@@ -286,11 +286,17 @@ class AsusRyujin(UsbHidDriver):
         if not 1 <= len(lines) <= _MONITOR_MAX_LINES:
             raise ValueError(f"monitor mode takes 1 to {_MONITOR_MAX_LINES} lines")
 
+        # Build every packet first, so that an invalid line does not leave the
+        # screen with a mix of old and new values
+        packets = [
+            _monitor_line_packet(slot, label, text) for slot, (label, text, _) in enumerate(lines)
+        ]
+        packets.append(_monitor_layout_packet(len(lines), lines[0][2]))
+        packets.append([_PREFIX, _CMD_SET_DISPLAY_MODE, _DISPLAY_MODE_MONITOR])
+
         # Same order as the manufacturer software: lines, layout, then display mode
-        for slot, (label, text, _) in enumerate(lines):
-            self._write(_monitor_line_packet(slot, label, text))
-        self._write(_monitor_layout_packet(len(lines), lines[0][2]))
-        self._write([_PREFIX, _CMD_SET_DISPLAY_MODE, _DISPLAY_MODE_MONITOR])
+        for packet in packets:
+            self._write(packet)
 
     def _request(self, request_header: int, response_header: int) -> List[int]:
         self.device.clear_enqueued_reports()
